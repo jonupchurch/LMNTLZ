@@ -20,9 +20,9 @@ Include:
 - **Sort controls** (level, type, recently acquired, power).
 - **A search field** for hero names.
 - **A collection progress header** — "X / total heroes collected," maybe a small breakdown by type as 9 mini meters in type colors.
-- **A selected-hero detail panel or drawer** that slides in when a card is tapped, showing the full hero card (portrait, powers with cooldowns, the 2 strengths / 1 major / 1 minor weakness strip) plus a primary "Add to Squad" action.
+- **A selected-hero detail panel or drawer** that slides in when a card is clicked, showing the full hero card (portrait, powers with cooldowns, the 2 strengths / 1 major / 1 minor weakness strip) plus a primary "Add to Squad" action.
 
-Prioritize scannability: a player should be able to spot "all my Dark heroes" or "who counters Water" in seconds. Show the grid populated with a believable mix of types so the color system does visible work. Design for both desktop web and a narrower mobile layout — indicate how the grid and filter rail reflow.
+Prioritize scannability: a player should be able to spot "all my Dark heroes" or "who counters Water" in seconds. Show the grid populated with a believable mix of types so the color system does visible work. **Desktop only** — mouse and keyboard, minimum window 1280×720, designed for 1600×900. No mobile or touch layouts. The window is freely resizable, so indicate how the grid reflows between the minimum and ultrawide, with the filter rail staying persistent throughout.
 
 ---
 

@@ -15,7 +15,7 @@ In LMNTLZ, players assemble squads of **exactly 6 heroes**, arranged in a fixed 
 
 Include:
 
-- **Six squad slots** laid out in the fixed **2 / 3 / 1** formation — two slots in the front row, three in the middle, one in the back. The rows must read as meaningfully different positions, not just a decorative arrangement; the single back-row slot in particular should feel like the protected seat it is. Empty slots invite tapping to fill.
+- **Six squad slots** laid out in the fixed **2 / 3 / 1** formation — two slots in the front row, three in the middle, one in the back. The rows must read as meaningfully different positions, not just a decorative arrangement; the single back-row slot in particular should feel like the protected seat it is. Empty slots invite clicking to fill.
 - **A reach readout on placement.** Every hero has a **reach of 1 or 2**, and reach counts *rows*, including the hero's own — so what a hero can touch changes completely depending on the slot it's dropped into. A reach-1 hero in the back row can reach neither the enemy nor its own front line. Show what a hero would actually be able to target from the slot it's hovering over, so that consequence is learnable at build time rather than discovered mid-battle. Warn, don't scold — a player is allowed to make that choice.
 - **A hero picker** — the collection grid (reuse grid-cards) alongside or beneath the slots, filterable by type and by weakness, so players can counter-build.
 - **A live squad-synergy / coverage panel** — the strategic centerpiece. As heroes are added, surface:
@@ -26,7 +26,7 @@ Include:
 - **Save / name loadout** controls (players may keep several squads).
 - **A clear primary action:** "Find Battle" (from an attack squad) or "Set as Defense."
 
-The emotional goal: building a squad should feel like solving a puzzle. Reward the player visually when their coverage is strong and warn them (without nagging) when they've stacked a shared weakness. Show a fully-built example squad of 6 mixed-type heroes in the 2/3/1 formation so the coverage panel is doing real work. Provide desktop and mobile reflow guidance — note that the three rows must survive the narrow layout, since the formation is load-bearing rather than cosmetic.
+The emotional goal: building a squad should feel like solving a puzzle. Reward the player visually when their coverage is strong and warn them (without nagging) when they've stacked a shared weakness. Show a fully-built example squad of 6 mixed-type heroes in the 2/3/1 formation so the coverage panel is doing real work. **Desktop only** — mouse and keyboard, minimum window 1280×720, designed for 1600×900. No mobile or touch layouts. Drag-and-drop between slots is available and worth designing for, since placement is the core interaction here.
 
 ---
 

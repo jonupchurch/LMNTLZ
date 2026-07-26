@@ -12,8 +12,8 @@ Design the **Battle screen** for LMNTLZ, a fantasy battler, using the LMNTLZ sty
 
 Design a single battle layout with:
 
-- **Two facing formations** of 6 heroes each, each in the fixed **2 front · 3 middle · 1 back** arrangement — the player's squad (bottom/near, its front row toward the enemy) and the engine-run defenders (top/far, mirrored). Use the battle-chip form: portrait bust, HP bar, type badge. Twelve chips plus rows is a dense screen: the row structure must stay legible at a glance on mobile, since it drives targeting.
-- **The player's action bar** — for the active/selected hero, show their up-to-**5 powers** as tappable buttons, each with:
+- **Two facing formations** of 6 heroes each, each in the fixed **2 front · 3 middle · 1 back** arrangement — the player's squad (bottom/near, its front row toward the enemy) and the engine-run defenders (top/far, mirrored). Use the battle-chip form: portrait bust, HP bar, type badge. Twelve chips plus rows is a dense screen — the row structure must stay legible at a glance even at the minimum 1280×720 window, since it drives targeting.
+- **The player's action bar** — for the active/selected hero, show their up-to-**5 powers** as clickable buttons, each with:
   - a power icon and name,
   - a **cooldown ring/timer** that visibly fills as it recharges (some powers are fast, some slow — show at least one ready and one mid-cooldown),
   - a cost/effect hint.
@@ -27,7 +27,9 @@ Design a single battle layout with:
 - **Turn / initiative flow indicator** and a battle log / recent-events ticker.
 - **Top bar:** both squad banners, a surrender/menu control, and round/timer.
 
-Show the screen mid-battle: a couple of heroes already damaged, one power mid-cooldown, a super-effective hit landing, and the AI defender telegraphing its next move — so all the feedback systems are visible at once. Provide desktop and mobile layouts.
+Show the screen mid-battle: a couple of heroes already damaged, one power mid-cooldown, a super-effective hit landing, and the AI defender telegraphing its next move — so all the feedback systems are visible at once. **Desktop only** — mouse and keyboard, minimum window 1280×720, designed for 1600×900. No mobile or touch layouts.
+
+Because the server resolves every action, a committed power spends a moment **in flight**. Show that state: the action bar must communicate "sent, awaiting result" without stalling the animation, and there must be a legible treatment for **connection loss mid-battle**.
 
 ---
 

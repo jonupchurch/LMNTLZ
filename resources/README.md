@@ -6,14 +6,23 @@ Design-prompt library and lore codex for **LMNTLZ** (working title) — a fantas
 
 Run them in order — later prompts reuse the tokens the earlier ones establish. Paste each file's `## PROMPT` block into Claude Design.
 
-| # | File | Produces |
+| Order | File | Produces |
 |---|------|----------|
-| 00 | `00-style-system.md` | Wordmark, 9-type color system, iconography, UI tokens — **generate first** |
-| 01 | `01-hero-card.md` | The hero card at 3 scales (detail / grid tile / battle chip) |
-| 02 | `02-roster-collection.md` | Collection browser with type + weakness filters |
-| 03 | `03-squad-builder.md` | Pick-5 builder for attack squads and auto-run defense squads |
-| 04 | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
-| 05 | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
+| **1st** | `brand-identity.md` | Wordmark suite, monogram/app icon, the nine colors as one brand spectrum, voice — **generate first** |
+| **2nd** | `design-system.md` | The in-app UI kit: tokens + component library, **with the tech stack that shapes it** |
+| 3rd | `01-hero-card.md` | The hero card at 3 scales (detail / grid tile / battle chip) |
+| 4th | `02-roster-collection.md` | Collection browser with type + weakness filters |
+| 5th | `03-squad-builder.md` | Pick-6 builder in the 2/3/1 formation, for attack and auto-run defense squads |
+| 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
+| 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
+
+> **`00-style-system.md` is superseded and should not be run.** `brand-identity.md` replaced its brand half and `design-system.md` replaced its UI-token half. It is kept only because the two successors still cite its palette. Start at `brand-identity.md`.
+
+## Platform
+
+LMNTLZ is a **desktop game**: an Electron client shipped on Steam and as a standalone installer, plus the same static build served in a desktop browser. Mouse and keyboard, minimum window 1280×720, designed for 1600×900. **There is no mobile or touch target** — every design prompt here assumes a pointer.
+
+Gameplay is **server-authoritative**: the client sends an intent, the server resolves it and returns the result, so every action carries network latency and needs an in-flight state. See `design-system.md` for the full technical context designers need.
 
 ## Mechanics
 

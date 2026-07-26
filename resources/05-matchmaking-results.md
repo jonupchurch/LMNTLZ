@@ -28,7 +28,7 @@ The post-battle payoff, for both win and loss (design both variants):
 - **Battle stats** — total damage, super-effective hits landed, powers used.
 - **Next actions** — "Battle Again," "Rematch," "Back to Roster," and (on defense-relevant losses) a nudge to review the defense squad.
 
-Keep both screens cohesive with the rest of the app. Show believable populated examples. Provide desktop and mobile layouts.
+Keep both screens cohesive with the rest of the app. Show believable populated examples. **Desktop only** — mouse and keyboard, minimum window 1280×720, designed for 1600×900. No mobile or touch layouts.
 
 ---
 
