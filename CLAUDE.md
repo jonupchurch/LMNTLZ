@@ -50,7 +50,10 @@ These are project truth. Don't re-derive or contradict them:
   an event tallies a metric from members' ordinary play (e.g. attack victories),
   counted per Wing and then rolled up per guild. Every Wing is ranked
   independently on one global board; the top Wings are paid directly and their
-  guild takes a lesser reward on top. **Assignments lock when an event starts.**
+  guild takes a lesser reward on top. **Assignments lock when an event starts** —
+  the only change permitted mid-event is removing a member from the guild, and
+  the vacated seat cannot be refilled. That forecloses per-member *average*
+  scoring, which would make cutting a laggard profitable.
   **A squad is always 6 heroes** — do not conflate the two. Details in
   `resources/mechanics/08-guilds.md`.
 - **A hero's whole relationship profile derives from two authored fields**,

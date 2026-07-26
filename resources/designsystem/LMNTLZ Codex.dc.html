@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:760px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:54px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">CODEX</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:8px;padding:3px;gap:3px">
+        <div onClick="{{ setRules }}" style="padding:7px 15px;border-radius:6px;background:{{ rulesBg }};color:{{ rulesColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em">THE LAWS</div>
+        <div onClick="{{ setHeroes }}" style="padding:7px 15px;border-radius:6px;background:{{ heroesBg }};color:{{ heroesColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em">THE CHAMPIONS</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;height:34px;border-radius:7px;background:#1C1930;border:1px solid #3A3357;padding:0 11px;width:230px" style-hover="border-color:#57507A">
+        <div style="width:11px;height:11px;border:2px solid #8E87A8;border-radius:50%;flex:0 0 auto"></div>
+        <input type="text" placeholder="Search the codex" value="{{ query }}" onInput="{{ onQuery }}" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:13px" />
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding-left:14px;border-left:1px solid #241F38"><div style="width:26px;height:26px;border-radius:7px;background:#241F38;border:1px solid #3A3357"></div><span style="font-size:12.5px;color:#B4AECB">jonupchurch</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="width:200px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;padding:16px 12px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>SQUADS</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>ROSTER<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">27</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>MATCHMAKING</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>THE COURT</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;background:#241F38;border-left:2px solid #F2C744;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#F2C744"><div style="width:14px;height:14px;border-radius:4px;background:#F2C744"></div>CODEX</div>
+      <div style="margin-top:auto;border-top:1px solid #241F38;padding-top:14px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;line-height:1.7">CODEX BUILD 1.4.2<br />UPDATED THIS SEASON</div>
+      </div>
+    </div>
+
+    <div style="width:250px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;overflow-y:auto;padding:16px 12px 24px">
+      <sc-if value="{{ isRules }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#6E6690;padding:0 4px 10px">THE LAWS OF AETHRYM</div>
+          <sc-for list="{{ sections }}" as="s" hint-placeholder-count="8">
+            <div onClick="{{ s.select }}" style="display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:7px;background:{{ s.bg }};border-left:2px solid {{ s.mark }};cursor:pointer;margin-bottom:4px" style-hover="background:#1C1930">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;padding-top:2px">{{ s.num }}</div>
+              <div style="min-width:0">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.05em;color:{{ s.color }};line-height:1.25">{{ s.title }}</div>
+                <div style="font-size:11px;color:#6E6690;margin-top:3px;line-height:1.35">{{ s.sub }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="margin-top:18px;padding:12px;border:1px solid #241F38;border-radius:8px;background:#1C1930">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#F2C744;margin-bottom:7px">SETTLED CANON</div>
+            <div style="font-size:12px;line-height:1.55;color:#8E87A8">Anything marked <span style="color:#4E7C3A">SETTLED</span> will not change. Anything marked <span style="color:#B5732E">OPEN</span> is still being tuned and may move between seasons.</div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isHeroes }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;padding:0 2px 12px">
+            <sc-for list="{{ forceChips }}" as="c" hint-placeholder-count="9">
+              <div onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;border:1px solid {{ c.border }};background:{{ c.bg }};cursor:pointer" style-hover="border-color:{{ c.core }}">
+                <div style="width:7px;height:7px;border-radius:50%;background:{{ c.core }}"></div>
+                <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:9px;letter-spacing:0.06em;color:{{ c.label }}">{{ c.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ heroList }}" as="h" hint-placeholder-count="12">
+            <div onClick="{{ h.select }}" style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;background:{{ h.bg }};border-left:2px solid {{ h.mark }};cursor:pointer;margin-bottom:4px" style-hover="background:#1C1930">
+              <div style="width:26px;height:26px;border-radius:6px;background-image:{{ h.emblemUrl }};background-size:contain;background-repeat:no-repeat;background-position:center;flex:0 0 auto"></div>
+              <div style="min-width:0;flex:1">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.04em;color:{{ h.color }};line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ h.name }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ h.core }};margin-top:2px">{{ h.typeName }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ heroEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:20px 10px;text-align:center;font-size:12px;color:#6E6690;line-height:1.5">No champion by that name. Nine forces, twenty-seven of them.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="flex:1 1 auto;min-width:520px;overflow-y:auto;min-height:0">
+      <sc-if value="{{ isRules }}" hint-placeholder-val="{{ true }}">
+        <div style="max-width:880px;padding:26px 32px 60px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.22em;color:#6E6690">LAW {{ activeNum }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:{{ statusColor }};border:1px solid {{ statusColor }};border-radius:4px;padding:3px 7px">{{ statusLabel }}</div>
+          </div>
+          <h1 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:38px;line-height:1.05;letter-spacing:0.02em;margin:0 0 12px;color:#F4EFE4">{{ activeTitle }}</h1>
+          <p style="font-size:16px;line-height:1.65;color:#B4AECB;margin:0 0 26px;max-width:70ch;text-wrap:pretty">{{ activeLede }}</p>
+
+          <sc-if value="{{ showForces }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px">
+                <sc-for list="{{ arcaneCards }}" as="f" hint-placeholder-count="6">
+                  <div style="border:1px solid #241F38;border-top:3px solid {{ f.core }};background:#141221;padding:14px">
+                    <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+                      <div style="width:26px;height:26px;background-image:{{ f.badgeUrl }};background-size:contain;background-repeat:no-repeat"></div>
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4">{{ f.name }}</div>
+                    </div>
+                    <div style="font-size:12.5px;line-height:1.5;color:#8E87A8;margin-bottom:9px">{{ f.blurb }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6E6690;padding-top:9px;border-top:1px solid #241F38">ANSWERED BY <span style="color:{{ f.counterColor }}">{{ f.counter }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:22px">
+                <sc-for list="{{ martialCards }}" as="f" hint-placeholder-count="3">
+                  <div style="border:1px solid #241F38;border-top:3px solid {{ f.core }};background:#141221;padding:14px">
+                    <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+                      <div style="width:26px;height:26px;background-image:{{ f.badgeUrl }};background-size:contain;background-repeat:no-repeat"></div>
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4">{{ f.name }}</div>
+                    </div>
+                    <div style="font-size:12.5px;line-height:1.5;color:#8E87A8;margin-bottom:9px">{{ f.blurb }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6E6690;padding-top:9px;border-top:1px solid #241F38">ANSWERED BY <span style="color:{{ f.counterColor }}">{{ f.counter }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="border-left:3px solid #F2C744;background:#141221;padding:16px 18px">
+                <div style="font-size:15px;line-height:1.6;color:#B4AECB;font-style:italic">“The Six turn like a wheel, each opposed across the circle by its truest rival. The Three are a wager with no winner, each answering the one before it.”</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showDoors }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="border:1px solid #241F38;background:#141221;padding:20px;margin-bottom:18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;color:#B4AECB">strengths = { primary, secondary }<br />Bane&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = counter(primary)&nbsp;&nbsp;<span style="color:#6E6690">// very weak · super effective</span><br />Fault&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= counter(secondary)<span style="color:#6E6690">// somewhat weak</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px">
+                <div style="border:1px solid #241F38;background:#141221;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#4E7C3A;margin-bottom:8px">RESISTED</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:#F4EFE4">×0.5</div><div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:6px">Hitting either of a champion's own two Forces.</div></div>
+                <div style="border:1px solid #241F38;background:#141221;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#8E87A8;margin-bottom:8px">NEUTRAL</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:#F4EFE4">×1.0</div><div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:6px">Everything the derivation leaves untouched.</div></div>
+                <div style="border:1px solid #241F38;background:#141221;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:8px">FAULT · EFFECTIVE</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:#E0A15A">×1.2</div><div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:6px">The lesser door — counter of the attuned second.</div></div>
+                <div style="border:1px solid #C0313A;background:#141221;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#C0313A;margin-bottom:8px">BANE · SUPER EFFECTIVE</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:#F2C744">×1.5</div><div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:6px">The open door — counter of the primary Force. Pinned.</div></div>
+              </div>
+              <div style="border:1px solid #241F38;background:#141221;margin-bottom:18px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.16em;color:#6E6690;padding:11px 18px;border-bottom:1px solid #241F38"><div>FORCE</div><div>ANSWERED BY</div></div>
+                <sc-for list="{{ counterRows }}" as="r" hint-placeholder-count="9">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:9px 18px;border-bottom:1px solid #1C1930">
+                    <div style="display:flex;align-items:center;gap:9px"><div style="width:14px;height:14px;border-radius:4px;background:{{ r.core }}"></div><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.06em;color:#F4EFE4">{{ r.name }}</span></div>
+                    <div style="display:flex;align-items:center;gap:9px"><div style="width:14px;height:14px;border-radius:4px;background:{{ r.counterCore }}"></div><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.06em;color:{{ r.counterCore }}">{{ r.counter }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;gap:10px">
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">A champion's Bane is fixed by its Force.</strong> All three champions of a House share it — a type badge tells you the major weakness on sight.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">No martial champion carries a martial second.</strong> The triangle is a three-cycle: one option is already its Bane, the other would make its Fault its own Force. Every Slash, Pierce and Crush champion therefore carries an arcane attunement.</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showSquads }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="border:1px solid #241F38;background:#141221;padding:20px;margin-bottom:18px">
+                <div style="display:flex;align-items:stretch;gap:8px">
+                  <div style="flex:1;display:grid;gap:6px">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;text-align:center">ATTACKERS</div>
+                    <div style="display:flex;gap:6px;height:120px">
+                      <div style="flex:1;border:1px dashed #3A3357;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#B4AECB">1</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690">BACK · 1</div></div>
+                      <div style="flex:1;border:1px dashed #3A3357;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#B4AECB">2</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690">MIDDLE · 3</div></div>
+                      <div style="flex:1;border:1px solid #4FC3D6;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#4FC3D6">3</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#4FC3D6">FRONT · 2</div></div>
+                    </div>
+                  </div>
+                  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 6px"><div style="width:2px;flex:1;background:linear-gradient(180deg,transparent,#F2C744,transparent)"></div><div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.12em;color:#F2C744;writing-mode:vertical-rl;padding:8px 0">CONTACT</div><div style="width:2px;flex:1;background:linear-gradient(180deg,transparent,#F2C744,transparent)"></div></div>
+                  <div style="flex:1;display:grid;gap:6px">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#F06A72;text-align:center">DEFENDERS</div>
+                    <div style="display:flex;gap:6px;height:120px">
+                      <div style="flex:1;border:1px solid #C0313A;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#F06A72">4</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#F06A72">FRONT · 2</div></div>
+                      <div style="flex:1;border:1px dashed #3A3357;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#B4AECB">5</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690">MIDDLE · 3</div></div>
+                      <div style="flex:1;border:1px dashed #3A3357;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#B4AECB">6</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690">BACK · 1</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6E6690;margin-top:14px;padding-top:12px;border-top:1px solid #241F38">THE AXIS IS ABSOLUTE, NOT PER-SIDE · ROW 1 IS THE ATTACKERS' REARMOST · ROW 6 THE DEFENDERS'</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#4E7C3A;margin-bottom:6px">SETTLED</div><div style="font-size:14px;line-height:1.6;color:#B4AECB">Six champions. Two front, three middle, one back. The row sizes never change — what you choose is who sits where.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#4E7C3A;margin-bottom:6px">SETTLED</div><div style="font-size:14px;line-height:1.6;color:#B4AECB">You keep two squads: an attack six you command yourself, and a defense six the engine runs when you are attacked.</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showReach }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="border-left:3px solid #F2C744;background:#141221;padding:16px 18px;margin-bottom:18px">
+                <div style="font-size:15px;line-height:1.65;color:#F4EFE4">Distance from row <em>R</em> to row <em>T</em> is the number of <strong>occupied</strong> rows you cross to get there — counting the target's row and not your own. A champion may target row <em>T</em> if that distance is at most its reach.</div>
+              </div>
+              <div style="border:1px solid #241F38;background:#141221;margin-bottom:18px">
+                <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.16em;color:#6E6690;padding:11px 18px;border-bottom:1px solid #241F38"><div>YOUR ROW</div><div>REACH 1 TOUCHES</div><div>REACH 2 TOUCHES</div></div>
+                <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;align-items:center;padding:12px 18px;border-bottom:1px solid #1C1930"><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;color:#4FC3D6">3 — FRONT</div><div style="font-size:13.5px;color:#B4AECB">Row 4 — enemy front</div><div style="font-size:13.5px;color:#B4AECB">Rows 4, 5</div></div>
+                <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;align-items:center;padding:12px 18px;border-bottom:1px solid #1C1930"><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;color:#F4EFE4">2 — MIDDLE</div><div style="font-size:13.5px;color:#E0A15A">Row 3 — your own front</div><div style="font-size:13.5px;color:#B4AECB">Rows 3, 4</div></div>
+                <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;align-items:center;padding:12px 18px"><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;color:#F4EFE4">1 — BACK</div><div style="font-size:13.5px;color:#E0A15A">Row 2 — your own middle</div><div style="font-size:13.5px;color:#E0A15A">Rows 2, 3</div></div>
+              </div>
+              <div style="display:grid;gap:10px">
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Your own rows count against you.</strong> At full formation only your two front-row champions, plus any reach-2 champion in the middle, can strike an enemy at all.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Empty rows are free.</strong> A row with nobody left alive stops counting, so range opens as the battle wears on. A squad gains reach as it loses champions.</div></div>
+                <div style="border-left:3px solid #B5732E;background:#141221;padding:14px 16px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:6px">THE BACK SEAT</div><div style="font-size:14px;line-height:1.6;color:#B4AECB">Row 1 cannot be targeted by anything while your middle and front hold — and cannot attack either. A <strong style="color:#F4EFE4">reach-2</strong> champion there can still heal, buff and cleanse the whole squad. A reach-1 champion there does almost nothing. The trap is deliberate and knowable.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">One rule, no exceptions.</strong> Reach governs allies as well as enemies — a heal is range-limited exactly as an attack is. Champions never move; only the count of living rows changes.</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showStats }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="border:1px solid #241F38;background:#141221;margin-bottom:18px">
+                <div style="display:grid;grid-template-columns:130px 1.5fr 110px 1fr;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.16em;color:#6E6690;padding:11px 18px;border-bottom:1px solid #241F38"><div>STAT</div><div>JOB</div><div>KIND</div><div>ANSWERED BY</div></div>
+                <sc-for list="{{ statRows }}" as="r" hint-placeholder-count="10">
+                  <div style="display:grid;grid-template-columns:130px 1.5fr 110px 1fr;align-items:center;padding:10px 18px;border-bottom:1px solid #1C1930">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;letter-spacing:0.04em;color:#F4EFE4">{{ r.stat }}</div>
+                    <div style="font-size:13px;color:#B4AECB;line-height:1.45">{{ r.job }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ r.kindColor }}">{{ r.kind }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8">{{ r.by }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB">There is <strong style="color:#F4EFE4">no separate HP stat</strong>. Toughness is the pool; the bar you see in battle is its length.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Reach is not one of the ten.</strong> It is positional — it never scales and is never rolled against anything.</div></div>
+              </div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.06em;color:#F4EFE4;margin-bottom:12px">THE DAMAGE PIPELINE</div>
+              <div style="border:1px solid #241F38;background:#141221">
+                <sc-for list="{{ pipeline }}" as="p" hint-placeholder-count="8">
+                  <div style="display:grid;grid-template-columns:34px 130px 1fr 1.1fr;align-items:center;padding:11px 18px;border-bottom:1px solid #1C1930">
+                    <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#F2C744">{{ p.n }}</div>
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;letter-spacing:0.06em;color:#F4EFE4">{{ p.step }}</div>
+                    <div style="font-size:13px;color:#B4AECB;line-height:1.45">{{ p.resolves }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;line-height:1.5">{{ p.stats }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="border-left:3px solid #B5732E;background:#141221;padding:14px 16px;margin-top:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:6px">OPEN</div><div style="font-size:14px;line-height:1.6;color:#B4AECB">Whether effectiveness and mitigation both multiply, or effectiveness multiplies and mitigation subtracts, is still being settled — as is what Luck rolls and how Speed interacts with whole-turn cooldowns.</div></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showPowers }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px">
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;color:#F2C744">5</div><div style="font-size:13px;line-height:1.55;color:#8E87A8;margin-top:6px">Powers per champion, at most. Fewer is normal — an unlearned slot reads as deliberately empty, not broken.</div></div>
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;color:#F2C744">TURNS</div><div style="font-size:13px;line-height:1.55;color:#8E87A8;margin-top:6px">Every cooldown is a whole number of turns. Never seconds — the ring is a discrete fill, one step per turn.</div></div>
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;color:#F2C744">REACH</div><div style="font-size:13px;line-height:1.55;color:#8E87A8;margin-top:6px">A power declares whether it wants allies or enemies. Reach decides who is in range — a heal is limited exactly as a strike is.</div></div>
+              </div>
+              <div style="display:grid;gap:10px">
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Combat is turn-based and server-resolved.</strong> You command your six on offense; the engine runs the defense. Every committed action is in flight for a moment while the Court decides it — a miss ends resolution there, with no chip damage and no status.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Learning a champion's cooldowns is learning their song.</strong> No two powers breathe at the same rhythm; a squad of fast rechargers opens hard and fades, a slow one answers after turn four.</div></div>
+                <div style="border-left:3px solid #B5732E;background:#141221;padding:14px 16px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:6px">OPEN</div><div style="font-size:14px;line-height:1.6;color:#B4AECB">Status effects — what manipulation is, and whether Resolve prevents, shortens or weakens it — are not yet written.</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showCourts }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4;margin-bottom:8px">THE VISIBLE WALL</div><div style="font-size:13.5px;line-height:1.6;color:#8E87A8">Before you commit, one of a warden's defensive squads is surfaced in full — six champions in their 2/3/1 formation. Scout it, then bring the six whose Forces open its doors.</div></div>
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4;margin-bottom:8px">THE HIDDEN SIX</div><div style="font-size:13.5px;line-height:1.6;color:#8E87A8">Their second wall stays sealed. On an ambush it answers instead of the one you scouted — and everything you prepared is aimed at the wrong doors.</div></div>
+              </div>
+              <div style="border-left:3px solid #C0313A;background:#141221;padding:16px 18px;margin-bottom:18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#C0313A;margin-bottom:7px">AMBUSH CHANCE</div>
+                <div style="font-size:14.5px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">2% per consecutive attacking win.</strong> The longer your offensive streak runs, the more often the Hidden Six answers the door. A loss resets it to zero. Win enough and the Court starts to expect you.</div>
+              </div>
+              <div style="display:grid;gap:10px">
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Both walls keep their own streak.</strong> A defensive squad that keeps turning attackers away builds a record of its own — visible to anyone scouting it.</div></div>
+                <div style="border-left:3px solid #4E7C3A;background:#141221;padding:14px 16px"><div style="font-size:14px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Rank ladder:</strong> Shardless ▸ Ember-Sworn ▸ Warden ▸ Court-Champion ▸ Sky-Named ▸ Sundered Crown.</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showWorld }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="border-left:3px solid #7A3FA0;background:#141221;padding:18px 20px;margin-bottom:18px">
+                <div style="font-size:15.5px;line-height:1.7;color:#B4AECB;text-wrap:pretty">Before there were kingdoms, there was the <strong style="color:#F4EFE4">Sundering</strong> — the moment the world-soul shattered into Nine Forces and scattered across a broken sky. Aethrym is what grew back around the shards: floating shard-isles, storm-seas, and buried god-bone, where every living thing carries a trace of one of the Nine.</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4;margin-bottom:8px">THE ELEMENTALS</div><div style="font-size:13.5px;line-height:1.6;color:#8E87A8">Those born with a strong enough resonance are the LMNTLZ — champions who shape their Force into weapon, ward and wonder. They are courted, conscripted, and collected.</div></div>
+                <div style="border:1px solid #241F38;background:#141221;padding:16px"><div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4;margin-bottom:8px">THE WARDEN COURTS</div><div style="font-size:13.5px;line-height:1.6;color:#8E87A8">The great houses no longer send armies. They send champions. Six to strike, six to stand — and the world watches.</div></div>
+              </div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.06em;color:#F4EFE4;margin-bottom:12px">THE NINE HOUSES</div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+                <sc-for list="{{ houseCards }}" as="h" hint-placeholder-count="9">
+                  <div style="border:1px solid #241F38;border-left:3px solid {{ h.core }};background:#141221;padding:14px">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:0.06em;color:#F4EFE4;margin-bottom:7px">{{ h.house }}</div>
+                    <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;font-style:italic">{{ h.voice }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHeroes }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="position:relative;height:290px;background-image:{{ hero.img }};background-size:cover;background-position:50% 12%;background-color:#241F38">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,23,.35) 0%,rgba(14,12,23,.1) 40%,rgba(14,12,23,.97) 100%)"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:0 32px 20px;display:flex;align-items:flex-end;gap:16px">
+              <div style="width:60px;height:60px;background-image:{{ hero.emblemUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto;filter:drop-shadow(0 3px 10px rgba(14,12,23,.9))"></div>
+              <div style="min-width:0">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                  <div style="display:flex;align-items:center;gap:7px;background:{{ hero.core }};border:1px solid {{ hero.accent }};border-radius:7px;padding:5px 11px 5px 7px">
+                    <div style="width:12px;height:12px;border-radius:3px;background:#0E0C17"></div>
+                    <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.12em;color:#F4EFE4">{{ hero.typeName }}</span>
+                  </div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:#B4AECB;border:1px solid #3A3357;border-radius:5px;padding:4px 8px;background:rgba(14,12,23,.7)">{{ hero.familyLabel }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:{{ hero.reachColor }};border:1px solid {{ hero.reachColor }};border-radius:5px;padding:4px 8px;background:rgba(14,12,23,.7)">REACH {{ hero.reach }}</div>
+                </div>
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:40px;line-height:1;letter-spacing:0.02em;color:#F4EFE4;text-shadow:0 2px 18px rgba(14,12,23,.9)">{{ hero.name }}</div>
+                <div style="font-size:15px;color:#D6CBE8;margin-top:6px">{{ hero.epithet }} · {{ hero.house }}</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:22px 32px 60px;max-width:960px">
+            <div style="border-left:3px solid {{ hero.core }};background:#141221;padding:16px 18px;margin-bottom:20px">
+              <div style="font-size:15px;line-height:1.65;color:#B4AECB;font-style:italic">{{ hero.voice }}</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:20px">
+              <div style="border:1px solid #241F38;background:#141221;padding:18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">THE EQUATION</div>
+                <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+                  <div>
+                    <div style="display:flex;gap:7px">
+                      <div style="width:42px;height:48px;background:{{ hero.core }};border:2px solid {{ hero.accent }};clip-path:polygon(0 0,100% 0,100% 62%,50% 100%,0 62%)"></div>
+                      <div style="width:42px;height:48px;background:{{ hero.secondCore }};border:2px solid #3A3357;clip-path:polygon(0 0,100% 0,100% 62%,50% 100%,0 62%)"></div>
+                    </div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#4E7C3A;margin-top:8px;text-align:center">RESISTS</div>
+                  </div>
+                  <div style="width:1px;height:48px;background:#3A3357"></div>
+                  <div>
+                    <div style="width:48px;height:48px;border-radius:50%;background:{{ hero.baneCore }};border:3px solid #C0313A;box-shadow:0 0 14px rgba(192,49,58,.5)"></div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#C0313A;margin-top:8px;text-align:center">BANE ×1.5</div>
+                  </div>
+                  <div>
+                    <div style="width:44px;height:44px;background:{{ hero.faultCore }};border:2px dashed #B5732E;clip-path:polygon(0 0,100% 0,100% 78%,78% 100%,0 100%);margin-top:2px"></div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#B5732E;margin-top:8px;text-align:center">FAULT ×1.2</div>
+                  </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.9;color:#6E6690;margin-top:14px;padding-top:12px;border-top:1px solid #241F38">strengths = {'{'} {{ hero.typeName }}, {{ hero.secondName }} {'}'}<br />Bane = counter({{ hero.typeName }}) = <span style="color:{{ hero.baneCore }}">{{ hero.baneName }}</span><br />Fault = counter({{ hero.secondName }}) = <span style="color:{{ hero.faultCore }}">{{ hero.faultName }}</span></div>
+              </div>
+              <div style="border:1px solid #241F38;background:#141221;padding:18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">HOUSE SIBLINGS</div>
+                <div style="display:grid;gap:7px">
+                  <sc-for list="{{ hero.siblings }}" as="s" hint-placeholder-count="3">
+                    <div onClick="{{ s.select }}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;background:{{ s.bg }};border:1px solid {{ s.border }};cursor:pointer" style-hover="border-color:#57507A">
+                      <div style="width:24px;height:24px;background-image:{{ s.emblemUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+                      <div style="min-width:0;flex:1"><div style="font-size:13px;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.name }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:2px">{{ s.note }}</div></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:12px;line-height:1.55;color:#8E87A8;margin-top:12px;padding-top:12px;border-top:1px solid #241F38">All three share the same Bane — it derives from the Force, not the champion.</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+              <div style="border:1px solid #241F38;background:#141221;padding:18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:12px">THE BRIEF</div>
+                <div style="display:grid;gap:11px">
+                  <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:{{ hero.accent }};margin-bottom:4px">CONCEPT</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ hero.concept }}</div></div>
+                  <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:{{ hero.accent }};margin-bottom:4px">BEARING</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ hero.bearing }}</div></div>
+                  <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:{{ hero.accent }};margin-bottom:4px">FORCE EXPRESSION</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ hero.expression }}</div></div>
+                </div>
+              </div>
+              <div style="border:1px solid #241F38;background:#141221;padding:18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:12px">FIELD NOTES</div>
+                <div style="display:grid;gap:9px">
+                  <div style="display:flex;gap:10px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#4E7C3A;padding-top:2px">PLACE</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ hero.placement }}</div></div>
+                  <div style="display:flex;gap:10px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#C0313A;padding-top:2px">AVOID</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ hero.avoid }}</div></div>
+                  <div style="display:flex;gap:10px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#F2C744;padding-top:2px">OPENS</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ hero.opens }}</div></div>
+                </div>
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid #241F38;display:flex;gap:8px;flex-wrap:wrap">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#B4AECB;background:#1C1930;border-radius:5px;padding:6px 10px">PALETTE {{ hero.paletteA }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#B4AECB;background:#1C1930;border-radius:5px;padding:6px 10px">EDGE {{ hero.paletteB }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="border:1px solid #241F38;background:#141221;padding:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">WHO OPENS THIS DOOR</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E87A8">CHAMPIONS WHOSE FORCE IS {{ hero.baneName }}</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ hero.counters }}" as="c" hint-placeholder-count="3">
+                  <div onClick="{{ c.select }}" style="display:flex;align-items:center;gap:9px;padding:8px 12px 8px 8px;border-radius:8px;background:#1C1930;border:1px solid {{ c.border }};cursor:pointer" style-hover="border-color:#F2C744">
+                    <div style="width:26px;height:26px;background-image:{{ c.emblemUrl }};background-size:contain;background-repeat:no-repeat"></div>
+                    <div><div style="font-size:12.5px;color:#F4EFE4">{{ c.name }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#F2C744;margin-top:2px">SUPER EFFECTIVE</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+const TYPES = {
+  earth:{name:"EARTH",core:"#4E7C3A",accent:"#C9922E",house:"House of the Rooted Deep",blurb:"Patience, stone, and root. Slow to move, impossible to erase.",voice:"“The mountain does not hurry. The mountain does not lose.”"},
+  air:{name:"AIR",core:"#8FCFE0",accent:"#DCE6EA",house:"House of the Untethered Breath",blurb:"Storm, sky, and momentum. Everywhere and nowhere.",voice:"“Catch me and you'll only be holding weather.”"},
+  fire:{name:"FIRE",core:"#E8552B",accent:"#FFB347",house:"House of the Hungry Bloom",blurb:"Passion, ruin, rebirth. It gives everything and keeps nothing.",voice:"“Everything I love, I love completely — then it's ash, and I love again.”"},
+  water:{name:"WATER",core:"#2A7FB8",accent:"#4FC3D6",house:"House of the Patient Tide",blurb:"Memory, depth, and erosion. It wins by outlasting.",voice:"“I was here before your walls. I will be here after.”"},
+  light:{name:"LIGHT",core:"#F2C744",accent:"#FFF6D6",house:"House of the First Word",blurb:"Revelation, order, judgment. It leaves nothing hidden.",voice:"“Nothing you did is secret. Kneel or be shown.”"},
+  dark:{name:"DARK",core:"#7A3FA0",accent:"#C64BB0",house:"House of the Last Silence",blurb:"Mystery, undoing, the mercy of the veil.",voice:"“Some things Light would burn. I keep them. Even you.”"},
+  slash:{name:"SLASH",core:"#C0313A",accent:"#F06A72",house:"Blades of the Open Line",blurb:"The wide cut, the duelist's art. Overwhelms the Pierce who steps in too close.",voice:"“One clean cut. Everything else is just the wind-up.”"},
+  pierce:{name:"PIERCE",core:"#3B5BD1",accent:"#7B93F0",house:"Points of the Single Truth",blurb:"The thrust that finds the seam. Slips past the Crush before the weight falls.",voice:"“There is always a seam. I am the answer to it.”"},
+  crush:{name:"CRUSH",core:"#B5732E",accent:"#E0A15A",house:"Weights of the Falling Sky",blurb:"Maul, gauntlet, and avalanche. Shatters the guard that commits too far.",voice:"“I don't find the opening. I make one.”"}
+};
+const COUNTER = {earth:"air",air:"earth",fire:"water",water:"fire",light:"dark",dark:"light",slash:"crush",pierce:"slash",crush:"pierce"};
+const ARCANE = ["earth","air","fire","water","light","dark"], MARTIAL = ["slash","pierce","crush"];
+// slug, name, epithet, type, second, reach, concept, bearing, expression, placement, avoid, paletteA, paletteB
+const R = [
+["01-earth-bramwen","Bramwen","the Slow Wrath","earth","fire",1,"A warden whose anger takes years to arrive and never leaves.","Immense and unhurried; moves like weather over stone.","Fault-lines glow amber through cracked standing stone.","Front row — she is the wall the rest of the six stands behind.","Wasting her in the back seat; she cannot reach past your own lines.","#4E7C3A","#C9922E"],
+["02-earth-ossic","Ossic","Keeper of Bones","earth","dark",2,"Speaks to the god-bone under the isles; walls rise where he kneels.","Gaunt, deliberate, always half-listening to something below.","Bone pillars breach the ground in a slow circle around him.","Reach 2 makes him the rare back-seat champion who can still ward the front.","Treating him as a damage dealer — he is a builder of walls.","#4E7C3A","#42215B"],
+["03-earth-terragosa","Terragosa","the Green Crown","earth","light",2,"Coaxes ruin into orchard; her mercy is a kind of siege.","Antler-crowned, serene, and entirely unmovable.","Blossom breaks through cracked stone wherever she has stood.","Middle row, where reach 2 lets her both strike and sustain.","Reading her as gentle. The orchard grows over the battlefield.","#4E7C3A","#F2C744"],
+["04-air-zephyrine","Zephyrine","the Thin Blade of Wind","air","light",2,"Duels at a distance no one can close.","Slight, poised, always half a step out of reach.","Wind cuts in thin bright arcs, ribbon-trailed.","Middle row — reach 2 lets her open on turn one without exposure.","Front-lining her; she has no armour for the answer.","#8FCFE0","#FFF6D6"],
+["05-air-cirrolan","Cirrolan","Whisper of the High Reach","air","water",2,"Carries rumours and storms in the same breath.","Drifting, amused, never quite where you looked.","Cloud coils cradle a single falling feather.","Middle row support; his Fault is Fire, so keep him off a burning front.","Pairing him with another Air — their Banes stack.","#8FCFE0","#4FC3D6"],
+["06-air-vael","Vael","the Falling Sky","air","dark",1,"Jumps first and lets gravity file the paperwork.","Reckless, grinning, permanently mid-descent.","A dive-chevron split by a lightning fork.","Front row. Reach 1 means he must be where the enemy is.","Expecting him to survive a second round of attention.","#8FCFE0","#C64BB0"],
+["07-fire-ember-saelith","Ember Saelith","the First Spark","fire","air",1,"Laughs while the room warms; stops laughing when it doesn't.","Bright, quick, warm right up until she isn't.","A flame bloom cupped in two hands, feeding on the air.","Front row opener — her burst lands before the wall closes.","Long fights. She spends everything early.","#E8552B","#FFB347"],
+["08-fire-pyrrhic","Pyrrhic","the Glad Ruin","fire","light",1,"Wins by having less left to lose than you.","Scarred, molten at the seams, delighted about it.","Cracks across a brand-marked figure glowing white-hot.","Front row. He trades health for tempo and means it.","Protecting him. The build only pays if he burns.","#E8552B","#F2C744"],
+["09-fire-cindara","Cindara","Daughter of the Long Burn","fire","earth",2,"Quiet, patient heat; the coal, not the flame.","Still, low-voiced, radiating warmth you notice too late.","A ring of banked coals with heat-lines rising.","Middle row — reach 2 and sustained burn, not burst.","Rushing her. Her damage arrives on a schedule.","#E8552B","#4E7C3A"],
+["10-water-marisel","Marisel","the Deep Remembering","water","dark",2,"Drowns you in your own past mistakes.","Calm, unblinking, aware of things she was never told.","A floating orb of water holding a face that isn't yours.","Middle row control; reach 2 covers both lines.","Leaving her to duel — she is an attrition piece.","#2A7FB8","#7A3FA0"],
+["11-water-tidewarden-coll","Tidewarden Coll","the Bulwark","water","earth",1,"A bulwark that gives ground only to take a coastline.","Broad, planted, immovable behind a cresting shield.","A wave-tower shield holds and then breaks forward.","Front row. Everything about him is the front row.","Back seat. Reach 1 there wastes the sturdiest champion you own.","#2A7FB8","#4E7C3A"],
+["12-water-nix","Nix","of the Still Pool","water","air",2,"Perfectly calm, which is the last thing you see.","Small, quiet, unnervingly untroubled.","One expanding ripple crossed by a thin blade.","Middle row; reach 2 turns her stillness into pressure.","Underestimating the pause before she acts.","#2A7FB8","#8FCFE0"],
+["13-light-seraphel","Seraphel","the Verdict","light","fire",1,"A paladin whose gaze itself is an accusation.","Upright, haloed, entirely without doubt.","A greatsword hangs balanced like a pair of scales.","Front row. Judgment is delivered at contact.","Splitting her from the line — she anchors it.","#F2C744","#E8552B"],
+["14-light-lucen","Lucen","the Unhidden","light","air",2,"Strips illusions, wards, and excuses alike.","Thin, precise, uncomfortably attentive.","A prism throws three revealing beams across the field.","Middle row — reach 2 lets him unmake wards before they matter.","Assuming he is fragile because he is quiet.","#F2C744","#8FCFE0"],
+["15-light-auriel-dawnkeep","Auriel Dawnkeep","the Last Lantern","light","water",2,"The last lantern on the wall; will not go out.","Weathered, patient, holding a light in one hand.","A lantern set in a shield radiating a dawn arc.","Back seat with reach 2 — the ideal protected sustain.","Front-lining her; her value is keeping others standing.","#F2C744","#2A7FB8"],
+["16-dark-nyxara","Nyxara","the Kind Veil","dark","water",2,"A gentle executioner — merciful about the endings she brings.","Tall and graceful, with a dancer's calm and unhurried menace.","Darkness pools and drifts like veils, magenta-edged tendrils reaching.","Middle row — reach 2 lets her strike the enemy front without standing in it.","Monstrous readings. Her horror is her kindness.","#7A3FA0","#C64BB0"],
+["17-dark-umbriel","Umbriel","the Undoing","dark","fire",1,"Unwrites what should never have been written.","Frayed at the edges, as if partly erased already.","A void-rift opens with magenta cracks along its seam.","Front row. Reach 1 and a short fuse.","Long engagements — he unravels along with the target.","#7A3FA0","#E8552B"],
+["18-dark-corvane","Corvane","Shepherd of Endings","dark","earth",2,"Knows the hour of every soul on the field.","Stooped, unhurried, carrying a lantern and a crook.","A raven settles; a soul-lantern gutters and holds.","Back or middle — reach 2 makes either seat work.","Rushing him forward. He is a closer, not an opener.","#7A3FA0","#4E7C3A"],
+["19-slash-kaellis","Kaellis","the Duelist Immaculate","slash","light",1,"Has never needed a second stroke.","Immaculate posture, one blade, no wasted motion.","A single crimson cut-arc hangs in the air behind the strike.","Front row duelist — reach 1 by design.","Middle row. He cannot reach from there, and he knows it.","#C0313A","#F2C744"],
+["20-slash-reyna","Reyna Two-Rivers","the Current","slash","water",1,"Fights like a current: wide, fast, everywhere at once.","Constantly moving, two curved blades tracing arcs.","Twin arcs cross and keep travelling.","Front row. Volume, not precision.","Isolating her — she needs targets to flow between.","#C0313A","#2A7FB8"],
+["21-slash-grieve","Grieve","the Wide Reaper","slash","dark",2,"Clears a room the way a scythe clears a field.","Huge, hooded, deliberate on the backswing.","One wide horizontal arc sweeps the whole line.","Middle row — the rare reach-2 martial champion.","Wasting the reach in the front row.","#C0313A","#7A3FA0"],
+["22-pierce-vantric","Vantric","the Threading Spear","pierce","air",2,"Finds the one gap in a wall of shields.","Lean, still, sighting down a long shaft.","A single straight thrust-line ends in a point of light.","Middle row; reach 2 threads past the enemy front.","Treating him as a brawler. He wants one clean line.","#3B5BD1","#8FCFE0"],
+["23-pierce-silka","Silka Pinquick","the Quick","pierce","dark",1,"Small, quick, already behind you.","Tiny, restless, grinning at the wrong moments.","A fan of needle-points springs from one origin.","Front row. She trades safety for speed.","Expecting her to hold ground.","#3B5BD1","#7A3FA0"],
+["24-pierce-aiguille","Lord Aiguille","the Long Point","pierce","light",2,"Reaches you before you've decided to move.","Immaculate, disdainful, arm extended.","An extra-long rapier ends at a far pinpoint.","Middle row — reach 2 and the longest opener in the roster.","Close quarters. Distance is the whole design.","#3B5BD1","#F2C744"],
+["25-crush-boldrek","Boldrek","the Avalanche","crush","light",1,"Arrives all at once, like bad news.","Enormous, unhurried, trailing rubble.","A boulder-maul lands amid tumbling stone.","Front row. Reach 1 and no interest in subtlety.","Anywhere he cannot reach the enemy.","#B5732E","#F2C744"],
+["26-crush-hettamar","Hettamar Ironfall","End of Argument","crush","dark",1,"A walking end-of-argument.","Iron-clad, silent, already swinging.","A maul falls straight into a crater shock-ring.","Front row anchor.","Fine positioning. He goes forward.","#B5732E","#7A3FA0"],
+["27-crush-mauless","Mauless","the Undenied","crush","earth",2,"Guards break; then everything under them breaks too.","Shield-forward, head down, unstoppable.","A ram-shield bursts through shattering shards.","Middle row — reach 2 lets the breaker hit without leading.","Assuming the shield means defense. It is a battering ram.","#B5732E","#4E7C3A"]
+];
+const HEROES = R.map(r => ({
+  slug:r[0], name:r[1], epithet:r[2], type:r[3], second:r[4], reach:r[5],
+  concept:r[6], bearing:r[7], expression:r[8], placement:r[9], avoid:r[10],
+  paletteA:r[11], paletteB:r[12],
+  bane:COUNTER[r[3]], fault:COUNTER[r[4]],
+  emblem:"hero-icons/" + r[0].replace(/^\d+-/,"") + ".svg",
+  img:"portraits/" + r[0] + ".png"
+}));
+const SECTIONS = [
+  { key:"world", num:"I", title:"Aethrym & the Sundering", sub:"The world, the Nine, the Courts", status:"SETTLED",
+    lede:"The sky broke into Nine. Everything after — the Houses, the Courts, the champions — grew back around the pieces." },
+  { key:"forces", num:"II", title:"The Nine Forces", sub:"Six arcane, three martial", status:"SETTLED",
+    lede:"Nine damage types in two families: a closed ring of six arcane Forces, and a turning triangle of three martial disciplines. No Force rules. That is the only law the Sundering left." },
+  { key:"doors", num:"III", title:"Strengths, Banes & Faults", sub:"The derivation rule", status:"SETTLED",
+    lede:"Every champion is born of two kindred Forces and stands strong against both. But no one is born whole — each carries two open doors, and neither of them is authored." },
+  { key:"squads", num:"IV", title:"Squads & Formation", sub:"Six champions, 2/3/1", status:"SETTLED",
+    lede:"A squad is exactly six champions in a fixed three-row formation, sharing one absolute battlefield axis of six rows with the enemy." },
+  { key:"reach", num:"V", title:"Reach & Targeting", sub:"How far a champion can strike", status:"SETTLED",
+    lede:"Every champion has a reach of 1 or 2 — a distance budget measured in occupied rows. It is the single rule that governs all targeting, enemies and allies alike." },
+  { key:"stats", num:"VI", title:"Stats & Damage", sub:"The ten stats, the pipeline", status:"PARTLY OPEN",
+    lede:"Ten stats per champion. Every stat has exactly one job, and every axis of conflict has exactly one counter. Damage resolves through eight steps, in order." },
+  { key:"powers", num:"VII", title:"Powers & Turns", sub:"Cooldowns, actions, resolution", status:"PARTLY OPEN",
+    lede:"Up to five powers per champion, each breathing at its own rhythm. Combat is turn-based, and the Court — not your client — decides what happened." },
+  { key:"courts", num:"VIII", title:"The Warden Courts", sub:"Scouting, ambush, the ladder", status:"SETTLED",
+    lede:"You scout one wall and prepare for it. The other stays sealed — and the longer you win, the more often it is the one that answers." }
+];
+const STATS = [
+  ["Might","How hard the unit hits, regardless of attack type","Scalar","mitigation"],
+  ["Perception","How accurately it lands a blow","Contested","Agility"],
+  ["Agility","How well it avoids being hit","Contested","Perception"],
+  ["Penetration","How well it pierces mitigation","Contested","Armor / Magic Resist"],
+  ["Armor","Absorbs martial damage — Slash, Pierce, Crush","Contested","Penetration"],
+  ["Magic Resist","Absorbs arcane damage — the six elements","Contested","Penetration"],
+  ["Toughness","The size of the health pool itself","Scalar","raw damage"],
+  ["Speed","How quickly and how often it acts","Scalar","—"],
+  ["Resolve","Resists crowd control and manipulation","Contested","power potency"],
+  ["Luck","Shifts the random rolls in its favour","Scalar","—"]
+];
+const PIPELINE = [
+  ["1","Act","Whose turn it is, and how often it comes around","Speed"],
+  ["2","Land","Hit or miss — a miss ends resolution","Perception vs Agility"],
+  ["3","Base","Raw damage before any modifier","Might × power multiplier"],
+  ["4","Type","Bane / Fault / resisted / neutral","no stat — the derivation rule"],
+  ["5","Crit","Whether this one spikes","Luck"],
+  ["6","Mitigate","How much is absorbed","Armor or Magic Resist, less Penetration"],
+  ["7","Apply","Subtract from the pool","pool size from Toughness"],
+  ["8","Status","Does an attached effect stick","potency vs Resolve"]
+];
+
+class Component extends DCLogic {
+  state = { mode: "rules", section: "forces", hero: "16-dark-nyxara", force: null, query: "" };
+
+  renderVals() {
+    const s = this.state, self = this;
+    const isRules = s.mode === "rules";
+    const q = s.query.trim().toLowerCase();
+    const active = SECTIONS.filter(x => x.key === s.section)[0] || SECTIONS[0];
+    const h = HEROES.filter(x => x.slug === s.hero)[0] || HEROES[0];
+    const T = TYPES[h.type];
+
+    const heroList = HEROES.filter(x => {
+      if (s.force && x.type !== s.force) return false;
+      if (q && (x.name + " " + x.epithet + " " + TYPES[x.type].name).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    const sections = SECTIONS.filter(x => !q || (x.title + " " + x.sub + " " + x.lede).toLowerCase().indexOf(q) >= 0);
+
+    const mini = x => ({
+      name: x.name, emblemUrl: "url('" + x.emblem + "')",
+      border: x.slug === h.slug ? "#F2C744" : "#241F38",
+      bg: x.slug === h.slug ? "#241F38" : "#1C1930",
+      note: TYPES[x.type].name + " · " + TYPES[x.second].name + " attuned",
+      select: () => self.setState({ hero: x.slug, mode: "heroes" })
+    });
+
+    return {
+      isRules: isRules, isHeroes: !isRules,
+      setRules: () => this.setState({ mode: "rules" }),
+      setHeroes: () => this.setState({ mode: "heroes" }),
+      rulesBg: isRules ? "#F2C744" : "transparent", rulesColor: isRules ? "#141221" : "#B4AECB",
+      heroesBg: isRules ? "transparent" : "#F2C744", heroesColor: isRules ? "#B4AECB" : "#141221",
+      query: s.query, onQuery: e => this.setState({ query: e.target.value }),
+
+      sections: sections.map(x => ({
+        num: x.num, title: x.title, sub: x.sub,
+        bg: x.key === s.section ? "#241F38" : "transparent",
+        mark: x.key === s.section ? "#F2C744" : "transparent",
+        color: x.key === s.section ? "#F2C744" : "#F4EFE4",
+        select: () => self.setState({ section: x.key })
+      })),
+      activeNum: active.num, activeTitle: active.title, activeLede: active.lede,
+      statusLabel: active.status,
+      statusColor: active.status === "SETTLED" ? "#4E7C3A" : "#B5732E",
+      showWorld: s.section === "world", showForces: s.section === "forces", showDoors: s.section === "doors",
+      showSquads: s.section === "squads", showReach: s.section === "reach", showStats: s.section === "stats",
+      showPowers: s.section === "powers", showCourts: s.section === "courts",
+
+      arcaneCards: ARCANE.map(k => ({
+        name: TYPES[k].name, core: TYPES[k].core, blurb: TYPES[k].blurb,
+        badgeUrl: "url('damage-types/badge-" + k + ".svg')",
+        counter: TYPES[COUNTER[k]].name, counterColor: TYPES[COUNTER[k]].core
+      })),
+      martialCards: MARTIAL.map(k => ({
+        name: TYPES[k].name, core: TYPES[k].core, blurb: TYPES[k].blurb,
+        badgeUrl: "url('damage-types/badge-" + k + ".svg')",
+        counter: TYPES[COUNTER[k]].name, counterColor: TYPES[COUNTER[k]].core
+      })),
+      counterRows: Object.keys(TYPES).map(k => ({
+        name: TYPES[k].name, core: TYPES[k].core,
+        counter: TYPES[COUNTER[k]].name, counterCore: TYPES[COUNTER[k]].core
+      })),
+      houseCards: Object.keys(TYPES).map(k => ({ house: TYPES[k].house, voice: TYPES[k].voice, core: TYPES[k].core })),
+      statRows: STATS.map(r => ({ stat: r[0], job: r[1], kind: r[2].toUpperCase(),
+        kindColor: r[2] === "Scalar" ? "#8E87A8" : "#4FC3D6", by: r[3].toUpperCase() })),
+      pipeline: PIPELINE.map(r => ({ n: r[0], step: r[1].toUpperCase(), resolves: r[2], stats: r[3].toUpperCase() })),
+
+      forceChips: Object.keys(TYPES).map(k => ({
+        name: TYPES[k].name, core: TYPES[k].core,
+        bg: s.force === k ? "rgba(255,255,255,.07)" : "transparent",
+        border: s.force === k ? TYPES[k].core : "#3A3357",
+        label: s.force === k ? "#F4EFE4" : "#8E87A8",
+        pick: () => self.setState({ force: s.force === k ? null : k })
+      })),
+      heroList: heroList.map(x => ({
+        name: x.name, typeName: TYPES[x.type].name, core: TYPES[x.type].core,
+        emblemUrl: "url('" + x.emblem + "')",
+        bg: x.slug === s.hero ? "#241F38" : "transparent",
+        mark: x.slug === s.hero ? "#F2C744" : "transparent",
+        color: x.slug === s.hero ? "#F2C744" : "#F4EFE4",
+        select: () => self.setState({ hero: x.slug, mode: "heroes" })
+      })),
+      heroEmpty: heroList.length === 0,
+
+      hero: {
+        name: h.name.toUpperCase(), epithet: h.epithet, house: T.house,
+        img: "url('" + h.img + "')", emblemUrl: "url('" + h.emblem + "')",
+        typeName: T.name, core: T.core, accent: T.accent,
+        familyLabel: ARCANE.indexOf(h.type) >= 0 ? "ARCANE" : "MARTIAL",
+        reach: h.reach, reachColor: h.reach === 2 ? "#4FC3D6" : "#B4AECB",
+        voice: T.voice,
+        secondName: TYPES[h.second].name, secondCore: TYPES[h.second].core,
+        baneName: TYPES[h.bane].name, baneCore: TYPES[h.bane].core,
+        faultName: TYPES[h.fault].name, faultCore: TYPES[h.fault].core,
+        concept: h.concept, bearing: h.bearing, expression: h.expression,
+        placement: h.placement, avoid: h.avoid,
+        opens: "Her own Force answers " + TYPES[COUNTER[h.type] === h.type ? h.type : h.type].name + " — every champion whose Bane is " + TYPES[h.type].name + " takes ×1.5 from " + h.name + ".",
+        paletteA: h.paletteA, paletteB: h.paletteB,
+        siblings: HEROES.filter(x => x.type === h.type && x.slug !== h.slug).map(mini),
+        counters: HEROES.filter(x => x.type === h.bane).map(x => ({
+          name: x.name, emblemUrl: "url('" + x.emblem + "')",
+          border: TYPES[x.type].core,
+          select: () => self.setState({ hero: x.slug })
+        }))
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

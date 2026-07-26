@@ -3,7 +3,9 @@
 **TL;DR** — Players can band together in guilds of up to 24. For an event a guild
 splits into three **Wings** of eight players each, and those assignments are
 **frozen once the event starts** so nobody can watch the scoreboard and shuffle
-people around to chase a prize. Wings don't fight each other — members just play
+people around to chase a prize. The one thing still allowed mid-event is throwing
+someone out of the guild — and since the empty seat can't be refilled, that only
+ever costs you, which is exactly why it's safe to allow. Wings don't fight each other — members just play
 normally, and the event counts something they do (attack wins, say), tallied per
 Wing and then per guild. The best Wings get paid directly and their guild picks
 up a smaller reward on top. A Wing is a group of *people* and exists only for
@@ -36,6 +38,16 @@ shuts smaller guilds out.
   target Wing is already at 8 the move becomes a **swap** rather than being
   refused, so filling one Wing never leaves another short. **Once an event
   begins, the assignment is frozen for its duration.**
+- **The single exception is removal from the guild.** During an event, an officer
+  may still **remove a member from the guild**, which also removes them from
+  their Wing. Nothing else is permitted — no reassignment, no swaps, and no
+  backfilling the vacated seat. A Wing that drops to seven stays at seven until
+  the event ends.
+- **A player who joins a guild mid-event is Grounded.** They cannot be placed in
+  a Wing, and their Wing status reads **Grounded** for the rest of the event.
+  Grounded is a real, displayed state, not an empty field — a Grounded member is
+  a full member of the guild in every other respect, but nothing they do counts
+  toward any Wing's tally until the next event assigns them.
 
 Everything below is either forced by those five facts or is still open.
 
@@ -56,30 +68,84 @@ Because standings are visible while the event runs, an unlocked guild could:
 Locking makes the assignment a genuine bet placed **before** the board exists,
 which is what makes it a decision at all.
 
-> **The lock has to cover membership, not just assignment.** Freezing which Wing
-> a member sits in while still allowing kicks leaves the same exploit intact
-> through a different door — under per-member average scoring, removing a
-> low-contributing member raises their Wing's score directly, so "kick the
-> laggards at hour 40" replaces "reshuffle at hour 40". Whatever the lock
-> ultimately freezes, **a member cannot be removed from a competing Wing
-> mid-event in a way that improves that Wing's score.** This interacts with
-> question 0 and should be settled alongside it.
+### Why the kick exception is safe — and what it forecloses
 
-### What the lock costs, and the edge cases it creates
+Allowing removal is the one hole a lock like this normally cannot afford, because
+under **per-member average** scoring an officer could raise a Wing's score simply
+by cutting its weakest member. "Kick the laggards at hour 40" would replace
+"reshuffle at hour 40" and the lock would achieve nothing.
 
-The cost is real and worth accepting knowingly: **an inactive member is dead
-weight for the whole event**, with no recourse until it ends. A guild that loses
-someone to a holiday on day one carries a seven-person Wing for the duration.
-That is the price of the commitment being meaningful.
+It is safe here because of how scoring already works. **An event tallies a
+total**, and under a total — or under top-K — removal can never help:
 
-Four cases the rules have to answer explicitly, since the UI cannot invent them:
+| Scoring | Effect of kicking a weak member mid-event | Exploitable? |
+|---|---|---|
+| **Total tally** | Loses every point they would still have scored; the seat cannot be refilled | No — strictly self-harming |
+| **Top K of 8** | Changes nothing if they were outside the top K; costs you if they were inside | No |
+| **Per-member average** | Raises the Wing's score for free | **Yes** |
+
+So the rule carries a dependency worth stating outright: **allowing mid-event
+removal forecloses average scoring.** That is not a loss — average scoring was
+already the weaker option in question 0 for other reasons — but it means the
+decision is now made by elimination rather than still open. If anyone later
+proposes averaging, this rule has to be revisited in the same breath.
+
+The incentive shape that falls out is exactly right. Because the seat cannot be
+refilled, removing someone mid-event is **purely a cleanup action and never an
+optimisation** — it always costs the Wing something. An officer will only do it
+to be rid of a genuinely disruptive member, which is what the exception is for.
+
+### What the lock costs
+
+**An inactive member is dead weight for the rest of the event**, and the only
+remedy is to remove them from the guild entirely — which drops the Wing to seven
+for the duration, since nobody can take the seat. That is a real cost, and it is
+the price of the commitment being meaningful.
+
+It also argues for **top-K scoring** more strongly than anything else in this
+document: if a Wing is scored on its best 5 of 8, a member going quiet costs
+almost nothing, and no officer ever faces a choice between carrying someone and
+cutting them.
+
+### Grounded, and what it does to recruiting
+
+**Grounded** is the state of a guild member who has no Wing for the current
+event: someone who joined after the lock, and — if a guild chose to concentrate
+rather than spread — anyone left unassigned when the lock fell.
+
+It is worth having as a named, visible state rather than a blank, because it
+tells a new recruit *why* their play is not counting, which is otherwise the kind
+of silence that reads as a bug. It also names the thing an officer is choosing
+when they recruit mid-event.
+
+The knock-on is a **recruiting rhythm**: since a mid-event recruit contributes
+nothing, guilds have no reason to fill seats while an event runs, and every
+reason to fill them in the gap beforehand. Recruitment naturally clusters into
+the window between events, which is a good rhythm to design *for* — the guild
+admin screen should be at its most useful exactly then, and should say plainly
+how long is left to recruit before the next lock.
+
+One caution: Grounded lasts a whole event, so a recruit who joins early in a long
+event sits idle for a long time. If events run long, this is the rule most likely
+to feel punishing to a new member, and the mitigation is a visible countdown to
+the next lock rather than a change to the rule.
+
+### Edge cases the rules still have to answer
 
 | Case | Question |
 |---|---|
-| A player **joins the guild** mid-event | Unassigned and ineligible until the next event, presumably — but they need a visible state saying so |
-| A player **leaves voluntarily** mid-event | Does their Wing drop to 7, and does the score they already contributed stay? |
-| A player is **kicked** mid-event | Should be blocked outright for competing Wings, per the note above |
-| A **new event starts** while a guild has empty seats | Does the lock capture the roster as-is, or does it force a fill first? |
+| A **removed member's tally** | Does the score they already earned stay with the Wing, or leave with them? |
+| A **removed member's reward** | They may have contributed most of a paid Wing's score before being cut. Do they get a share? |
+| A player **leaves voluntarily** mid-event | Presumably identical to being removed, but it should be stated rather than assumed |
+| A player **rejoins** a guild they were removed from | Grounded, presumably — but this is also the loophole to check, since remove-then-rejoin must not become a way to reshuffle |
+| A **new event starts** with empty seats | Does the lock capture the roster as-is, or force a fill first? |
+
+On the first of those, **the tally should stay with the Wing**, for an
+architectural reason as much as a design one: a Wing's score is a query over
+battle results the server has already logged, so keeping it means filtering on
+*membership at the time of the battle* rather than current membership — which is
+both the simpler query and the honest one. The alternative would let a removal
+retroactively rewrite a leaderboard mid-event.
 
 **One scheduling consequence, easy to miss:** if assignments lock at event start,
 then whatever makes an event distinctive — a type restriction, a formation rule,

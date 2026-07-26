@@ -440,14 +440,36 @@ wants to be where it can actually connect.
 Reach makes rows matter. Whether they *also* modify damage taken or dealt, or
 weight AI target selection, is unanswered — and may now be unnecessary.
 
-### 5. How is reach assigned across the roster?
+### 5. How is reach assigned across the roster? — *proposed, and it holds up*
 
 Reach is a per-hero property, not one of the ten stats in
-[`01-stats.md`](01-stats.md), and no hero has been given a value yet. The
-distribution matters: reach-2 heroes are the only ones who can fill the back
-slot usefully or attack from the middle row, so if reach 2 is common the
-formation loosens, and if it is rare the front row becomes crowded. Worth
-deciding as a roster-wide budget rather than hero by hero.
+[`01-stats.md`](01-stats.md). `designsystem/LMNTLZ Codex.dc.html` now assigns a
+value to **all 27 heroes**, and the distribution it lands on is sound enough to
+adopt unless there is a reason not to:
+
+| | Count | Share |
+|---|---|---|
+| **Reach 1** | 12 | 44% |
+| **Reach 2** | 15 | 56% |
+
+The important property is not the ratio but the spread across types:
+
+> **Every one of the nine types has at least one reach-1 and at least one reach-2
+> champion.** No type is locked out of any row. A player who wants Fire in the
+> back seat has Cindara; Slash in the middle row has Grieve; Crush at reach 2 has
+> Mauless. Counter-building never forces a placement mistake, which matters
+> because reach and type are the two axes a squad is built on and they must stay
+> independently choosable.
+
+The split also reads correctly against the fiction — martial champions skew
+reach 1 (5 of 9) while arcane skew reach 2 (11 of 18), so melee wants the front
+row without being confined to it.
+
+Two things still to check once powers exist: whether reach 2 needs to cost
+something elsewhere in a hero's stat budget, and whether 15 reach-2 heroes makes
+the back seat too easy to fill well — the seat is designed as a trap for the
+careless, and a trap is not much of a trap if over half the roster springs it
+safely.
 
 ### 6. Does the defense squad follow different combat rules?
 
