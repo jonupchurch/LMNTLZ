@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Vantric — pierce emblem">
+  <title>Vantric · PIERCE</title>
+  <defs><radialGradient id="inner-pierce" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#1F3280" stop-opacity="0"></stop><stop offset="100%" stop-color="#1F3280" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="pierce-vantric"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#3B5BD1"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-pierce)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#7B93F0" stroke-width="4"></polygon><line x1="38" y1="92" x2="78" y2="48" stroke="#F2EDDD" stroke-width="7" stroke-linecap="round"></line><polygon points="88,32 90,54 70,46" fill="#7B93F0"></polygon><circle cx="94" cy="84" r="13" fill="#1F3280" opacity=".85"></circle><polygon points="94,77 98,91 90,91" fill="#7B93F0"></polygon></g>
+</svg>

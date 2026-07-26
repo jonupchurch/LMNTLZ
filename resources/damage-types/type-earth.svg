@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="earth damage">
+  <title>EARTH damage</title>
+  <g id="type-earth" stroke="#14121F" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke"><polygon points="32,6 50,26 32,58 14,26" fill="#4E7C3A"></polygon><polygon points="32,6 50,26 32,58" fill="#C9922E" opacity=".55"></polygon><path d="M14 26 h36" stroke="#C9922E" stroke-width="3" opacity=".7"></path></g>
+</svg>

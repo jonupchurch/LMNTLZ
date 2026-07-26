@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Corvane — dark emblem">
+  <title>Corvane · DARK</title>
+  <defs><radialGradient id="inner-dark" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#42215B" stop-opacity="0"></stop><stop offset="100%" stop-color="#42215B" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="dark-corvane"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#7A3FA0"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-dark)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#C64BB0" stroke-width="4"></polygon><path d="M58 92 V50 a11 11 0 0 1 22 0" stroke="#F2EDDD" stroke-width="8" fill="none" stroke-linecap="round"></path><circle cx="86" cy="68" r="9" fill="#C64BB0"></circle><polygon points="38,50 54,58 38,66" fill="#C64BB0"></polygon><circle cx="94" cy="84" r="13" fill="#42215B" opacity=".85"></circle><circle cx="94" cy="84" r="6" fill="#C64BB0"></circle><circle cx="97.5" cy="82" r="5.4" fill="#42215B"></circle></g>
+</svg>

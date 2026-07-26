@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="crush damage">
+  <title>CRUSH damage</title>
+  <g id="type-crush" stroke="#14121F" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke"><rect x="28" y="2" width="8" height="20" rx="3" fill="#B5732E"></rect><rect x="13" y="22" width="38" height="18" rx="4" fill="#B5732E"></rect><path d="M12 52 q20 -10 40 0" stroke="#B5732E" stroke-width="6" fill="none" stroke-linecap="round"></path><path d="M20 61 q12 -7 24 0" stroke="#E0A15A" stroke-width="4" fill="none" stroke-linecap="round"></path></g>
+</svg>

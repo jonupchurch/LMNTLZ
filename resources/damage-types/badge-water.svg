@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="water damage badge">
+  <title>WATER damage badge</title>
+  <g id="badge-water">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#2A7FB8" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><path d="M32 5 l16 24 a16 16 0 1 1 -32 0 z" fill="#2A7FB8"></path><path d="M24 40 a8 8 0 0 0 10 8" stroke="#4FC3D6" stroke-width="4" fill="none" stroke-linecap="round"></path></g>
+  </g>
+</svg>

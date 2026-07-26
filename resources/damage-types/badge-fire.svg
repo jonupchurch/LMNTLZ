@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="fire damage badge">
+  <title>FIRE damage badge</title>
+  <g id="badge-fire">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#E8552B" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><path d="M32 4 q13 18 13 28 a13 13 0 0 1 -26 0 q0 -10 13 -28 z" fill="#E8552B"></path><path d="M32 26 q6 10 6 15 a6 6 0 0 1 -12 0 q0 -5 6 -15 z" fill="#FFB347"></path></g>
+  </g>
+</svg>

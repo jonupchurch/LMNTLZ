@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Vael — air emblem">
+  <title>Vael · AIR</title>
+  <defs><radialGradient id="inner-air" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#4A7383" stop-opacity="0"></stop><stop offset="100%" stop-color="#4A7383" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="air-vael"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#8FCFE0"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-air)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#4A7383" stroke-width="4"></polygon><polygon points="38,38 64,70 90,38 90,54 64,86 38,54" fill="#14121F"></polygon><polygon points="62,30 76,30 67,48 79,48 56,84 63,56 53,56" fill="#4A7383"></polygon><circle cx="94" cy="84" r="13" fill="#4A7383" opacity=".85"></circle><rect x="88" y="80" width="12" height="2.4" rx="1.2" fill="#4A7383"></rect><rect x="89.5" y="83.5" width="9" height="2.4" rx="1.2" fill="#4A7383"></rect><rect x="91" y="87" width="6" height="2.4" rx="1.2" fill="#4A7383"></rect></g>
+</svg>

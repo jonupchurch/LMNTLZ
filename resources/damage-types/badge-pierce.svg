@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="pierce damage badge">
+  <title>PIERCE damage badge</title>
+  <g id="badge-pierce">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#3B5BD1" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><polygon points="32,3 44,30 32,24 20,30" fill="#3B5BD1"></polygon><rect x="29" y="24" width="6" height="36" rx="3" fill="#3B5BD1"></rect><polygon points="32,3 44,30 32,24" fill="#7B93F0" opacity=".6"></polygon></g>
+  </g>
+</svg>

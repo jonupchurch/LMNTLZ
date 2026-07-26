@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="slash damage badge">
+  <title>SLASH damage badge</title>
+  <g id="badge-slash">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#C0313A" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><path d="M8 52 q20 -34 48 -44 q-10 26 -40 50 z" fill="#C0313A"></path><path d="M14 48 q18 -26 36 -36" stroke="#F06A72" stroke-width="4" fill="none" stroke-linecap="round"></path></g>
+  </g>
+</svg>
