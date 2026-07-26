@@ -1,6 +1,6 @@
 # Ossic — "Keeper of Bones" — DALL·E Portrait Prompt (Earth)
 
-Paste the block below into ChatGPT (DALL·E 3). **Anchor image only:** delete the first "In the exact same art style…" line; keep it for every hero after. Do not alter the rest — wording drift causes style drift. Size **1024×1792** (portrait 2:3). Full workflow, guardrails & QA checklist: `dalle-hero-portraits.md`.
+Paste the block below into ChatGPT (DALL·E 3). **Anchor image only:** delete the first "In the exact same art style…" line; keep it for every hero after. Do not alter the rest — wording drift causes style drift. Size **1024×1792** (portrait 2:3).
 
 ```
 In the exact same art style, rendering, line weight, proportions, lighting setup, framing, crop, and matte finish as the established LMNTLZ portrait series — same look, only the character changes:
