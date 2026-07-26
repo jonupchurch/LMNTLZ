@@ -15,6 +15,10 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | 04 | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 05 | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
 
+## Mechanics
+
+- `mechanics/` — the systems layer: how the game actually resolves. `01-stats.md` (the ten stats + damage pipeline) is drafted; powers, turns, status effects, progression, and defense AI are still to come. See `mechanics/README.md` for the running index and what blocks what.
+
 ## Lore & roster
 
 - `LORE-and-flavor.md` — world (Aethrym), the Nine Forces, the **weakness-derivation rule**, House voices, drop-in flavor text, and the **Design Canon** single-source-of-truth block.
