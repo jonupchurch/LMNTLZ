@@ -11,7 +11,7 @@ Design the **Squad Builder screen** for LMNTLZ, a fantasy battler, using the LMN
 In LMNTLZ, players assemble squads of **exactly 6 heroes**, arranged in a fixed three-row formation: **2 front row · 3 middle row · 1 back row**. There are two distinct build modes the screen must support — make the distinction clear:
 
 1. **Attack squads** — up to **3 saved squads** the player personally controls on offense. These *may share heroes with each other*; the same champion can appear in all three.
-2. **Defense zones** — the player must defend **two** zones, each held by its own 6-hero squad, both run automatically by the game engine when other players attack. (The player sets them up; the AI plays them.)
+2. **Defense zones** — the player must defend **two** zones, each held by its own 6-hero squad, both run automatically by the game engine when other players attack. (The player sets them up; the AI plays them.) **The two zones are not equivalent:** one is *surfaced* to attackers during matchmaking and can be scouted and counter-built against; the other is *blind*. That asymmetry should be visible while building — a squad that must survive being read is a different problem from one nobody can see, and the builder should make clear which is which.
 
 **The roster constraint is the heart of this screen.** Every player has all **27 heroes** from the start — no collection, no unlocking, identical for everyone. But **12 are committed to the two defense zones, and a hero on defense cannot attack.** That leaves 15 for offense, drawn on by all three attack squads.
 

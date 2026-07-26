@@ -100,11 +100,51 @@ another.** Everything that separates two players is what they *do* with the
 same 27 — how they split them, where they place them, and how they read an
 opponent.
 
-### Two defense zones
+### Two defense zones — one seen, one blind
 
 A player must defend **two** zones. Each is held by its own 6-hero squad, so
 **12 heroes are committed to defense** at all times, and both are run by the
 engine when attacked.
+
+The two zones are **not equivalent**. When an attacker is matched against a
+player:
+
+- **One zone is surfaced.** Its full squad is visible during matchmaking —
+  heroes, types, and row placement — so the attacker can scout it and
+  counter-build against it deliberately.
+- **The other is blind.** The attacker knows it exists but sees nothing of what
+  is in it.
+
+The attacker chooses which to hit, and **attacking the blind zone is worth more
+rating.** Certainty is traded for points.
+
+#### What this does to defensive strategy
+
+The two zones pull in opposite directions, which is what makes committing 12
+heroes an interesting decision rather than a flat tax:
+
+| | Attacker arrives with | So the defending squad wants to be |
+|---|---|---|
+| **Seen zone** | A squad built specifically to counter it | **Hard to read** — well-rounded, no stacked Banes, no single exploitable seam |
+| **Blind zone** | A generalist squad; they cannot aim | **Sharp** — a narrow, exploitable weakness is safe here, because nobody knows to target it |
+
+A squad that would be a liability in the open is perfectly viable behind the
+veil. Deciding which of your two builds can survive being *read* is the core of
+defensive play.
+
+#### What it does for the attacker
+
+It also gives the three attack squads distinct jobs. One naturally becomes a
+**generalist team for blind runs** — broad coverage, no assumptions — while the
+others are **counter-specific builds** kept for scouted fights. Without the
+asymmetry, three squads drawn from the same 15 heroes would tend toward
+redundancy.
+
+#### It protects the defender's information too
+
+Because every player owns the same 27 heroes, seeing a defense tells an attacker
+what is *not* available to attack with. Exposing only one zone halves that leak:
+6 heroes revealed rather than 12, leaving 21 unaccounted for.
 
 ### Defense heroes cannot attack
 
@@ -231,16 +271,45 @@ the moment its protection lapses.
 
 ## Still open
 
-### 0. Do the two defense zones differ?
+### 0. Tuning the blind premium — and the degenerate case it guards against
 
-Nothing yet says whether the two zones are equivalent or distinct — different
-stakes, different rewards, one harder to reach than the other, or an attacker
-choosing which to hit. If they are identical, the second zone is purely a tax
-on roster flexibility; if they differ, the split becomes a richer decision.
-This also decides how `../05-matchmaking-results.md` presents an opponent,
-since scouting now means scouting two squads rather than one.
+How much extra rating a blind attack pays is the single most important number
+in this system, and it fails badly in both directions.
 
-### 1. Is placement constrained by type?
+**Premium too high** and every attacker goes blind. The seen zone is never
+attacked, so what a player puts there stops mattering, and half the defensive
+decision evaporates — along with all the counter-building the game is built on,
+since nobody would ever scout.
+
+**Premium too low** and nobody gambles. The blind zone becomes a formality and
+the feature does nothing.
+
+The premium has to sit where a guaranteed higher win rate from counter-building
+genuinely competes with the extra points. That balance point can only really be
+found from live data, so **the value must be a tunable, not a constant compiled
+into the client.**
+
+### 1. Who chooses which zone is exposed?
+
+Unresolved. If the **defender** picks, it is another layer of strategy — you
+decide which build can bear scrutiny. If the **system** picks (fixed, random per
+match, or alternating), the defender must build both squads to survive either
+role, which is a harder and arguably more interesting constraint.
+
+### 2. Does a fought blind zone stay revealed?
+
+If an attacker hits the blind zone, they have now seen it. Whether that
+knowledge persists — for a rematch, or for that attacker generally — decides
+whether the blind premium is repeatable against the same opponent, and whether
+"scouting by attacking" becomes a deliberate strategy.
+
+### 3. Can an attacker hit both zones?
+
+Whether a match is one zone or both, and whether both can be taken in sequence,
+is unstated. It changes what a single attack costs and what a defense loss
+means.
+
+### 4. Is placement constrained by type?
 
 [`../03-squad-builder.md`](../03-squad-builder.md) has always said "melee vs.
 magic positioning matters." A hard rule — martial heroes must be front — sits
@@ -249,12 +318,12 @@ options would be thin. Soft incentives are almost certainly right, but reach
 may already be doing this job on its own: whatever else is true, a melee hero
 wants to be where it can actually connect.
 
-### 2. Does anything besides reach depend on row?
+### 5. Does anything besides reach depend on row?
 
 Reach makes rows matter. Whether they *also* modify damage taken or dealt, or
 weight AI target selection, is unanswered — and may now be unnecessary.
 
-### 3. How is reach assigned across the roster?
+### 6. How is reach assigned across the roster?
 
 Reach is a per-hero property, not one of the ten stats in
 [`01-stats.md`](01-stats.md), and no hero has been given a value yet. The
@@ -263,10 +332,11 @@ slot usefully or attack from the middle row, so if reach 2 is common the
 formation loosens, and if it is rare the front row becomes crowded. Worth
 deciding as a roster-wide budget rather than hero by hero.
 
-### 4. Does the defense squad follow different rules?
+### 7. Does the defense squad follow different combat rules?
 
-The engine plays defense. Whether a defending formation behaves identically
-belongs to [`07-defense-ai.md`](07-defense-ai.md).
+The zones now differ in *visibility*, but whether a defending formation behaves
+differently in combat — row collapse, reach, targeting — is still unanswered.
+Belongs to [`07-defense-ai.md`](07-defense-ai.md).
 
 ---
 

@@ -12,10 +12,14 @@ Design **two connected screens** for LMNTLZ, a fantasy battler, using the LMNTLZ
 
 Players attack other players' **engine-run defense squads**. Design the screen where a player, with their attack squad locked, chooses or is matched to a target:
 
-- **Opponent cards** showing another player's handle, rank/rating, and a **preview of their two defense zones** — each zone's 6 defenders as hero busts with type badges, laid out in their 2/3/1 formation, so the attacker can scout type coverage *and* positioning before committing. Every player defends two zones, so an opponent card previews **12 heroes across two squads**, and the design must keep them distinct rather than blurring into one wall of portraits.
+- **Opponent cards presenting two very different fights.** Every player defends **two zones**, and the attacker picks one:
+  - **The seen zone** — fully surfaced. All 6 defenders as hero busts with type badges in their 2/3/1 formation, so the attacker can scout coverage *and* positioning and counter-build deliberately. Lower rating reward.
+  - **The blind zone** — nothing shown. The attacker knows it exists and knows nothing else. **Higher rating reward.**
+
+  This risk/reward choice is the centrepiece of the screen and should be its most dramatic moment — certainty against points. Design the blind zone as a deliberate, tempting absence: six sealed or shrouded slots that feel like a wager, not like a loading state or missing data. The two options must never read as one squad of 12.
 - A **"scout" readout** that hints at the defense's collective weakness/strength spread (how much can this attacker's squad exploit it?), reinforcing counter-play.
 - **A "your attack squad" strip** pinned for reference, with a quick "swap squad" shortcut.
-- Rank tier, potential rating gain/loss, and a strong **"Attack"** CTA.
+- Rank tier and **the two different rating stakes side by side** — the seen zone's reward against the blind zone's premium — so the gamble is quantified at the moment of choosing, not buried. Two distinct **"Attack"** CTAs, one per zone.
 - Optional: a few match offerings to choose from (risk/reward — tougher defenses for more rating).
 
 ### Screen 2 — Battle Results
@@ -36,5 +40,6 @@ Keep both screens cohesive with the rest of the app. Show believable populated e
 
 - PvP is **attacker (player-controlled) vs. defender (engine-run)**; you attack other players' set defenses.
 - Squads are 6 heroes in a fixed 2 front / 3 middle / 1 back formation; scouting a defense's type coverage, weaknesses, **and row placement** is part of the pre-battle skill.
-- Every player defends **two zones**, so scouting means reading **12 heroes across two squads**. Since all players own the same 27 heroes, seeing an opponent's 12 defenders also tells you a great deal about the 15 they have left to attack with.
+- Every player defends **two zones**: one **surfaced** during matchmaking and scoutable, one **blind**. The attacker chooses which to hit, and the blind zone pays more rating. Certainty traded for points — this is the screen's core decision.
+- Since all players own the same 27 heroes, a revealed defense also tells the attacker what is *not* available to attack with. Exposing only one zone halves that leak.
 - Keep the 9-type color language and strength/weakness cues consistent with the card and battle screens.
