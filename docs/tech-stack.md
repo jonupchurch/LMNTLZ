@@ -228,6 +228,20 @@ traffic inspection shows up in cheating reports.
 
 ---
 
+## Asset storage
+
+**Binary art lives in plain git.** No Git LFS, no object storage. Decided
+2026-07-26 with the tradeoff understood: git cannot delta-compress PNGs, so
+each re-render of the roster adds a full copy to history (~65 MB per pass at
+current portrait sizes).
+
+This is comfortable at present scale and keeps the toolchain free of LFS.
+If history growth ever becomes a problem, the fix is `git lfs migrate import`
+plus a force-push — cheap while the clone count is low, disruptive once it
+isn't. Worth revisiting *before* adding collaborators rather than after.
+
+---
+
 ## Platform target
 
 **Desktop only.** Electron on Steam and as a standalone installer, plus the same
