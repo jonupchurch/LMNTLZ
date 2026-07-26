@@ -1,4 +1,4 @@
-# Claude Design Prompt — 02 · Roster / Collection Screen
+# Claude Design Prompt — 02 · Roster Screen
 
 > **How to use:** Run after `design-system.md` and `01-hero-card`. Reuse the design-system tokens and the grid-card form from the hero-card prompt.
 
@@ -6,7 +6,7 @@
 
 ## PROMPT
 
-Design the **Roster / Collection screen** for LMNTLZ, a fantasy battler, using the LMNTLZ style system (stylized / semi-anime, dark arcane UI, vivid element color) and the established hero **grid card**.
+Design the **Roster screen** for LMNTLZ, a fantasy battler, using the LMNTLZ style system (stylized / semi-anime, dark arcane UI, vivid element color) and the established hero **grid card**.
 
 This is where a player reviews the roster and sees how it is currently allocated, before building a squad. There are 9 damage types (6 magic: Earth, Air, Fire, Water, Light, Dark; 3 melee: Slash, Pierce, Crush) with 3 champions each — **27 heroes, all unlocked from the start, identical for every player.** There is no collection to complete and no locked heroes; the screen's job is to make 27 heroes and their current assignments scannable at a glance.
 

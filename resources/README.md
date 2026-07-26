@@ -11,7 +11,7 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | **1st** | `brand-identity.md` | Wordmark suite, monogram/app icon, the nine colors as one brand spectrum, voice — **generate first** |
 | **2nd** | `design-system.md` | The in-app UI kit: tokens + component library, **with the tech stack that shapes it** |
 | 3rd | `01-hero-card.md` | The hero card at 3 scales (detail / grid tile / battle chip) |
-| 4th | `02-roster-collection.md` | Roster browser — allocation state, type + weakness filters |
+| 4th | `02-roster.md` | Roster browser — allocation state, type + weakness filters |
 | 5th | `03-squad-builder.md` | Pick-6 builder in the 2/3/1 formation, for attack and auto-run defense squads |
 | 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
@@ -21,6 +21,9 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 - `designsystem/` — the rendered Claude Design deliverables. **Anything landing in this folder is intentional and gets committed.**
   - `LMNTLZ Brand Book.dc.html` — output of `brand-identity.md`
   - `LMNTLZ Design System.dc.html` — output of `design-system.md`
+  - `LMNTLZ Hero Card.dc.html` — output of `01-hero-card.md`. Current; includes the reach treatment.
+  - `LMNTLZ Roster.dc.html` — output of `02-roster.md`. **Stale — do not build from it.** It was generated before the roster rules changed and still carries the collection model: an owned / "Unrecruited" filter, a locked-hero count, and an `X / 27` collection meter. None of those exist any more, and it lacks the assignment-status filter and allocation header that replaced them. Regenerate from the current `02-roster.md`.
+  - `hero-icons/` — 27 hero emblems + a 3×9 overview sheet.
 
 Typefaces settled by these: **Chakra Petch** (display), **Barlow** (UI/body), **JetBrains Mono** (numeric/stat). The base surface also tightened to `#0E0C17`, slightly darker than the `#141221` the prompts specified — treat the generated system as the source of truth where the two differ.
 
