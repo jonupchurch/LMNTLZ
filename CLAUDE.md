@@ -18,10 +18,12 @@ to be **ambushed**: +2% per consecutive attack win, capped at 90%, always
 displayed, and Hidden battles pay more. Every defense squad also tracks its own
 public **hold streak**, reset when the squad is edited. Defense totals 12
 heroes, which then *cannot* attack,
-and keeps up to **3 attack squads** drawn from the remaining 15; those squads
-may overlap, and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts
-it from any attack squad and invalidates it. Squads are 6 heroes in a fixed
-**2 front · 3 middle · 1 back** formation;
+and keeps up to **3 attack Wings** drawn from the remaining 15; those Wings
+may overlap, and must, since 3 × 8 exceeds 15. Moving a hero to defense evicts
+it from any attack Wing and invalidates it. **Attack and defense are different
+shapes:** an attacking **Wing** is 8 heroes in **3 front · 4 middle · 1 back**,
+while each defending **Standing Six** is 6 heroes in **2 front · 3 middle ·
+1 back**;
 **the player commands offense while the engine runs everyone's defense.** PvP is
 asynchronous — you attack snapshots of other players' defense squads, so there
 is no realtime netcode. The game is counter-building: read the enemy's
@@ -44,6 +46,19 @@ These are project truth. Don't re-derive or contradict them:
   as a battle wears on. One rule for enemies and allies alike — a heal is
   range-limited exactly as an attack is. Details in
   `resources/mechanics/02-squads.md`.
+- **Squad vocabulary is fixed, and the two shapes differ.** A **Wing** is an
+  attacking squad of 8 (3 front / 4 middle / 1 back). A **Standing Six** is a
+  defending squad of 6 (2/3/1). Avoid the bare word "squad" in new rules text
+  where the shape matters. Every battle is therefore **8 attackers vs. 6
+  defenders** — an unresolved balance problem, tracked as *Still open · 0* in
+  `02-squads.md`. Nothing about reach, the roster economy or the back seat
+  depends on how it resolves, but **no combat number can be tuned until it does.**
+- **Guilds: a Court holds up to 24 players**, and for an event splits into three
+  **Banners** of up to 8. Each Banner scores independently on one global
+  leaderboard rather than being matched against a rival guild; the Court's reward
+  is a function of all three placements. Details and the two open dials —
+  total-vs-average scoring, and the reward tier curve — in
+  `resources/mechanics/08-guilds.md`.
 - **A hero's whole relationship profile derives from two authored fields**,
   `primary` and `secondary`:
   ```

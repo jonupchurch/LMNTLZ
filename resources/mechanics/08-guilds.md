@@ -34,27 +34,20 @@ Everything below is either forced by those four facts or is still open.
 
 ---
 
-## The naming collision
+## The vocabulary
 
-**"Squad" is already taken.** Throughout `02-squads.md` a squad means *exactly
-six heroes in a fixed 2/3/1 formation* — it is the fundamental unit of the whole
-game, and the word appears in the lore (*the Standing Six*), in the rank ladder,
-and on every generated screen. A guild grouping of eight *players* is a
-different kind of object at a different scale, and calling both a "squad" makes
-sentences like "each squad in the squad fields a squad" not merely awkward but
-genuinely ambiguous in a rules document.
-
-The numbers make it worse rather than better: **eight members each fielding six
-heroes** means 8 and 6 sit next to each other constantly, and a reader who loses
-track of which noun a number belongs to cannot recover it from context.
-
-Provisional vocabulary used in this document, so it can be written at all:
+The bare word **"squad" no longer exists as a rules term.** It used to mean six
+heroes in 2/3/1 and nothing else, which made a guild grouping of eight *players*
+genuinely ambiguous to write about — "each squad in the squad fields a squad" is
+not merely awkward, it is unrecoverable from context. The resize replaced it with
+two named shapes, which resolves the collision as a side effect:
 
 | Scale | Term | Size |
 |---|---|---|
 | The whole social group | **Court** | up to 24 players |
 | An event team within it | **Banner** | up to 8 players |
-| What one player fields | **squad** | exactly 6 heroes |
+| What one player attacks with | **Wing** | exactly 8 heroes |
+| What one player defends with | **Standing Six** | exactly 6 heroes, ×2 |
 
 **Court** comes straight from the lore — `LORE-and-flavor.md` already opens on
 *"the age of the **Warden Courts**"*, where houses "send champions" rather than
@@ -62,11 +55,19 @@ armies, which is precisely what a guild does. **Banner** is unused anywhere in
 the project and is the standard fantasy word for a company fighting under one
 sign.
 
-> One snag with **Court**: `Court-Champion` is already the fourth rank on the
-> progression ladder, and the News screen uses *The Court* as a standings
-> destination. A player could be a Court-Champion of a Court. That is survivable
-> — one is a rank, one is an organisation — but it is a real cost and worth
-> naming before the word is locked in.
+> **Two snags, both survivable, both worth knowing about.**
+>
+> `Court-Champion` is already the fourth rank on the progression ladder, and the
+> News screen uses *The Court* as a standings destination — so a player can be a
+> Court-Champion of a Court. One is a rank and one is an organisation, but it
+> reads oddly the first time.
+>
+> More awkwardly, **a Banner and a Wing are both 8.** The nouns are distinct, so
+> nothing is ambiguous the way "squad" was, but "a Banner of eight wardens, each
+> fielding a Wing of eight" is a sentence that will be misread. The saving grace
+> is that the two rarely appear in the same breath: a Banner is a roster of
+> people, a Wing is a formation of heroes, and no rule needs both numbers at
+> once.
 
 ---
 
@@ -124,17 +125,22 @@ out-collect anyone.
 
 ### The defense lock is what creates scarcity
 
-Each member has 12 heroes locked to their two defense zones, leaving **15 to
-attack with** across up to 3 saved squads. Those 15 are the member's real
+Each member has 12 heroes locked to their two Standing Sixes, leaving **15 to
+attack with** across up to 3 saved Wings. Those 15 are the member's real
 contribution to a Banner.
+
+A Wing is 8 of those 15, so **a member commits over half their free roster to
+every battle they fight.** That tightens guild coordination considerably: a
+member cannot quietly hold a counter in reserve for a teammate, because most of
+what they have is already deployed the moment they attack.
 
 This produces a consequence worth stating plainly, because it is the first time
 the game asks a player to change their own setup for someone else's benefit:
 
 > If a Banner needs a specific counter that a member has locked on defense, the
 > only way to free it is for that member to **edit their defense** — which by
-> the existing rule evicts the hero from any attack squad it appears in and
-> **invalidates those squads**, and by the streak rule **resets that defense
+> the existing rule evicts the hero from any Wing it appears in and
+> **invalidates those Wings**, and by the streak rule **resets that defense
 > zone's hold streak to zero**.
 
 So a Court asking a member to free a hero is asking them to give up a public

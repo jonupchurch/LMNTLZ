@@ -13,7 +13,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | # | File | Covers | State |
 |---|------|--------|-------|
 | 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Drafted** — core settled, four tuning questions open |
-| 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, rules open |
+| 02 | `02-squads.md` | The Wing of 8 and the Standing Six, row rules and reach | **Drafted** — shapes settled; 8-vs-6 balance is blocking |
 | 03 | *`03-powers.md`* | Up to 5 powers per hero, cooldowns, targeting, costs | Not started |
 | 04 | *`04-turns.md`* | Turn order, action economy, how Speed spends | Not started |
 | 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started |
@@ -46,6 +46,7 @@ Some of these can't be finished out of order:
 
 - The 9 damage types, their `counter` map, and the weakness-derivation rule —
   `../LORE-and-flavor.md`.
-- 27 heroes, 3 per type; squads of exactly 6 in a fixed 2/3/1 formation; the
-  player commands offense while the engine runs every defense.
+- 27 heroes, 3 per type; an attacking **Wing** of 8 in 3/4/1 against a defending
+  **Standing Six** of 6 in 2/3/1; the player commands offense while the engine
+  runs every defense.
 - Combat is **turn-based**, and cooldowns are counted in whole turns.

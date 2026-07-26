@@ -12,11 +12,19 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | **2nd** | `design-system.md` | The in-app UI kit: tokens + component library, **with the tech stack that shapes it** |
 | 3rd | `01-hero-card.md` | The hero card at 3 scales (detail / grid tile / battle chip) |
 | 4th | `02-roster.md` | Roster browser — allocation state, type + weakness filters |
-| 5th | `03-squad-builder.md` | Pick-6 builder in the 2/3/1 formation, for attack and auto-run defense squads |
+| 5th | `03-squad-builder.md` | Two-shape builder — an attack Wing of 8 in 3/4/1, a defense Six of 6 in 2/3/1 |
 | 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
 
 ## Generated design output
+
+> ### ⚠ Every screen below predates the Wing
+>
+> The attacking squad went from **6 heroes in 2/3/1** to a **Wing of 8 in 3/4/1**, while defense stayed a **Standing Six of 6 in 2/3/1**. Every export in this folder was generated against the old rule and therefore renders **6-hero squads on both sides of a mirrored board**. That is now wrong everywhere it appears.
+>
+> Worst affected are **Squad Builder** (the grid is the wrong shape, and it needs two shapes rather than one), **Battle** (fourteen chips, not twelve, on a board that is deliberately no longer symmetric) and **Matchmaking** (the "your attack squad" strip is 8 against the opponent's 6). **Hero Card**, **Brand Book** and **Design System** are mostly unaffected, since none of them draw a formation.
+>
+> Per-file notes below still stand for everything *other* than squad size — they record defects that survive regeneration.
 
 - `designsystem/` — the rendered Claude Design deliverables. **Anything landing in this folder is intentional and gets committed.**
   - `LMNTLZ Brand Book.dc.html` — output of `brand-identity.md`
@@ -56,4 +64,4 @@ pwsh tools/validate-matchups.ps1
 
 ## The one-paragraph pitch
 
-Nine damage types (6 magic: Earth, Air, Fire, Water, Light, Dark · 3 melee: Slash, Pierce, Crush), three champions each for 27 heroes. Every hero is strong to its 2 kindred elements and carries two open doors — a major weakness (Bane) and a minor weakness (Fault), both *derived* from those two elements rather than authored — plus up to 5 powers on individual turn-based cooldowns. All 27 are unlocked from the start and identical for every player — nothing to collect, so nobody can out-roster anyone. Each player defends **two zones**, which locks 12 heroes away from offense and leaves 15 to attack with, across up to 3 saved squads. Squads are 6 heroes in a fixed 2 front / 3 middle / 1 back formation; you command your strikers while the engine runs everyone's defense. The game is counter-building: read the doors, don't stack your own.
+Nine damage types (6 magic: Earth, Air, Fire, Water, Light, Dark · 3 melee: Slash, Pierce, Crush), three champions each for 27 heroes. Every hero is strong to its 2 kindred elements and carries two open doors — a major weakness (Bane) and a minor weakness (Fault), both *derived* from those two elements rather than authored — plus up to 5 powers on individual turn-based cooldowns. All 27 are unlocked from the start and identical for every player — nothing to collect, so nobody can out-roster anyone. Each player defends **two zones**, which locks 12 heroes away from offense and leaves 15 to attack with, across up to 3 saved Wings. **Attack and defense are different shapes:** an attacking **Wing** is 8 heroes in 3 front / 4 middle / 1 back, while each defending **Standing Six** is 6 in 2 front / 3 middle / 1 back — so every battle is 8 against 6. You command your strikers while the engine runs everyone's defense. The game is counter-building: read the doors, don't stack your own.

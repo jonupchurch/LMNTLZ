@@ -70,5 +70,5 @@ Lay it out as a clean, self-contained design-system reference page — the singl
 - Palette, art direction, and the nine types: `brand-identity.md` and `characters/`.
 - Screens that consume this system: `01-hero-card.md` … `05-matchmaking-results.md`.
 - Systemic rules behind the strength/weakness components: `characters/MATCHUPS.md`.
-- Reach, rows, and the 2/3/1 formation: `mechanics/02-squads.md`.
+- Reach, rows, and the two formations — an attack **Wing** of 8 in 3/4/1 against a defense **Standing Six** of 6 in 2/3/1: `mechanics/02-squads.md`.
 - Hero stats that appear on cards: `mechanics/01-stats.md`.

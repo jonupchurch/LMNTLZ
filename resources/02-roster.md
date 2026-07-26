@@ -31,4 +31,4 @@ Prioritize scannability: a player should be able to spot "all my Dark heroes" or
 - 9 types (6 magic + 3 melee), 3 champions each — **27 heroes, all unlocked from the start**, one copy each, identical for every player. Nothing to collect or unlock.
 - **12 heroes are committed to two defense zones and cannot attack**, leaving 15 available for offense. Assignment state is the screen's primary organising axis.
 - Each hero shows its type + relationship profile (2 strengths / 1 major weakness / 1 minor weakness).
-- This screen feeds into the **Squad Builder** (players pick 6, arranged 2 front / 3 middle / 1 back). Include a persistent entry point to the current squad.
+- This screen feeds into the **Squad Builder**, which builds two different shapes: an attack **Wing** of 8 (3 front / 4 middle / 1 back) and a defense **Standing Six** of 6 (2 front / 3 middle / 1 back). Include a persistent entry point to the current squad.
