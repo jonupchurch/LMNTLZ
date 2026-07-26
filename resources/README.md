@@ -22,6 +22,8 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
   - `LMNTLZ Brand Book.dc.html` — output of `brand-identity.md`
   - `LMNTLZ Design System.dc.html` — output of `design-system.md`
   - `LMNTLZ Hero Card.dc.html` — output of `01-hero-card.md`. Current; includes the reach treatment.
+  - `LMNTLZ Matchmaking and Results.dc.html` — output of `05-matchmaking-results.md`. Current: single Attack CTA, the Hidden Six unselectable, ambush framing, and both defensive hold streaks (`zoneStreak` / `hiddenStreak`). **One defect:** the ambush chance is computed as `MY_STREAK * 2` with no cap, so it will display above 100% past a 50-win streak. It needs clamping to the 90% cap.
+  - `LMNTLZ Battle.dc.html` — output of `04-battle-screen.md`. Not yet verified against the mechanics.
   - `LMNTLZ Roster.dc.html` — output of `02-roster.md`. **Stale — do not build from it.** It was generated before the roster rules changed and still carries the collection model: an owned / "Unrecruited" filter, a locked-hero count, and an `X / 27` collection meter. None of those exist any more, and it lacks the assignment-status filter and allocation header that replaced them. Regenerate from the current `02-roster.md`.
   - `hero-icons/` — 27 hero emblems + a 3×9 overview sheet.
 

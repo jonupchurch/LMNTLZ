@@ -172,9 +172,10 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 - **Cooldown (power recharging):** *Gathering…*
 - **Strong-coverage praise:** *No shared door. A closed formation.*
 - **Shared-weakness warning:** *Three of yours bleed to the same Bane.*
-- **Seen defense zone label:** *The Open Gate*
-- **Blind defense zone label:** *The Closed Gate*
+- **Visible defense label:** *The Standing Six · Visible* — *"Surfaced by the Court."*
+- **Hidden defense label:** *The Hidden Six* — *"Their Hidden Six stays sealed."*
 - **Ambush risk readout:** *Your name travels ahead of you — 28%.*
+- **Defensive hold streak:** *Has turned away twelve.*
 
 ### Rank / tier names (draft ladder)
 Shardless ▸ Ember-Sworn ▸ Warden ▸ Court-Champion ▸ Sky-Named ▸ **Sundered Crown** (apex).

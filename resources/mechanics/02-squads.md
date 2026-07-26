@@ -248,9 +248,17 @@ streak to get them. Two commitments pulling in opposite directions over the same
   punished twice for something they never chose. If a streak is the key to the
   better content, having it snap on the very fight it unlocked is the most
   demoralising possible outcome.
-- **Four streaks exist per player**, and they must not be conflated: one attack
-  streak (drives ambush odds), and one hold streak for each of the two defense
-  squads. Only the attack streak feeds the ambush roll.
+- **Three streaks exist per player**, and they must not be conflated: **one**
+  attack streak, and one hold streak for each of the **two** defense squads.
+  Only the attack streak feeds the ambush roll.
+- **The attack streak is universal, not per squad.** It counts consecutive
+  attack wins across all three offense squads — win with squad 1, then 2, then
+  3 and the streak is 3. Switching squads never resets it.
+
+  That is what makes the "swap builds as ambush risk climbs" strategy actually
+  work: a player can move from a counter-specific build to a robust all-rounder
+  as their odds rise, without paying for it in lost streak. A per-squad streak
+  would punish exactly the adaptation the mechanic is meant to encourage.
 - Every value here is **live-tunable**, never a client constant.
 
 #### It protects the defender's information too

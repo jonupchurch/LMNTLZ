@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes m-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+  @keyframes m-rise { 0% { transform: translateY(10px); opacity: 0 } 100% { transform: translateY(0); opacity: 1 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:760px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:14px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">{{ screenLabel }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:7px;padding:3px;gap:3px">
+        <div onClick="{{ goMatch }}" style="padding:6px 12px;border-radius:5px;background:{{ tabMatchBg }};color:{{ tabMatchColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.08em;white-space:nowrap">MATCHMAKING</div>
+        <div onClick="{{ goWin }}" style="padding:6px 12px;border-radius:5px;background:{{ tabWinBg }};color:{{ tabWinColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.08em;white-space:nowrap">VICTORY</div>
+        <div onClick="{{ goLoss }}" style="padding:6px 12px;border-radius:5px;background:{{ tabLossBg }};color:{{ tabLossColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.08em;white-space:nowrap">DEFEAT</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex:0 0 auto">
+        <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;border:1px solid {{ myStreakColor }};background:rgba(242,199,68,.08)">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8;white-space:nowrap">OFF</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:{{ myStreakColor }}">{{ myStreak }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;border:1px solid #3A3357;background:#1C1930">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8;white-space:nowrap">DEF</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#4E7C3A">{{ defStreak }}</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690">COURT-CHAMPION</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#F2C744">{{ rating }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding-left:14px;border-left:1px solid #241F38"><div style="width:26px;height:26px;border-radius:7px;background:#241F38;border:1px solid #3A3357"></div><span style="font-size:12.5px;color:#B4AECB;white-space:nowrap">jonupchurch</span></div>
+    </div>
+  </div>
+
+  <sc-if value="{{ isMatch }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+      <div style="width:300px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+        <div style="flex:0 0 auto;padding:16px 16px 12px;border-bottom:1px solid #241F38">
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4">MATCH OFFERINGS</div>
+          <div style="font-size:12.5px;color:#8E87A8;margin-top:5px;line-height:1.5">Three courts will hear you. Tougher walls pay more rating.</div>
+        </div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0">
+          <sc-for list="{{ offerings }}" as="o" hint-placeholder-count="3">
+            <div onClick="{{ o.pick }}" style="border:1px solid {{ o.border }};border-radius:10px;background:{{ o.bg }};padding:13px;cursor:pointer" style-hover="border-color:#57507A">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.03em;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.handle }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:{{ o.riskColor }};border:1px solid {{ o.riskColor }};border-radius:4px;padding:2px 6px;white-space:nowrap">{{ o.risk }}</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E87A8;margin-bottom:10px">
+                <span>{{ o.tier }}</span><span>{{ o.rating }}</span>
+              </div>
+              <div style="display:flex;gap:3px;margin-bottom:9px">
+                <sc-for list="{{ o.spread }}" as="s" hint-placeholder-count="12">
+                  <div style="flex:1;height:14px;border-radius:2px;background:{{ s.color }};opacity:{{ s.opacity }}"></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#4E7C3A">WIN {{ o.gain }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#F06A72">LOSE {{ o.loss }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="border:1px dashed #3A3357;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;margin-bottom:8px">NEXT REFRESH</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#B4AECB">04:12</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1 1 auto;min-width:700px;display:flex;flex-direction:column;min-height:0">
+        <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:18px 22px 22px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#F2C744;margin-bottom:7px">SCOUTING · {{ sel.tier }}</div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:34px;letter-spacing:0.02em;color:#F4EFE4;line-height:1">{{ sel.handle }}</div>
+              <div style="font-size:13.5px;color:#8E87A8;margin-top:6px">{{ sel.blurb }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:22px">
+              <div style="text-align:center">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690">THEIR RATING</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:#F4EFE4">{{ sel.rating }}</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690">SWING</div>
+                <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:#4E7C3A">{{ sel.gain }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#F06A72">{{ sel.loss }}</span></div>
+              </div>
+              <div style="height:46px;padding:0 26px;border-radius:8px;background:#F2C744;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.12em;color:#141221;white-space:nowrap" style-hover="filter:brightness(1.08)">ATTACK</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;margin-bottom:16px">
+            <sc-for list="{{ sel.zones }}" as="z" hint-placeholder-count="1">
+              <div style="border:1px solid {{ z.border }};border-radius:11px;background:#141221;overflow:hidden">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid #241F38;background:{{ z.headBg }}">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.1em;color:#F4EFE4">{{ z.name }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#8E87A8">{{ z.note }}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <div style="display:flex;align-items:center;gap:5px;border:1px solid {{ zoneStreak.visibleColor }};border-radius:4px;padding:2px 7px">
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#8E87A8;white-space:nowrap">DEF STREAK</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10.5px;color:{{ zoneStreak.visibleColor }}">{{ zoneStreak.visible }}</span>
+                    </div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:{{ z.threatColor }};border:1px solid {{ z.threatColor }};border-radius:4px;padding:2px 7px">{{ z.threat }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:5px;padding:13px 14px">
+                  <sc-for list="{{ z.rows }}" as="r" hint-placeholder-count="3">
+                    <div style="flex:{{ r.flex }};min-width:0">
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.06em;color:#8E87A8;text-align:center;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.label }}</div>
+                      <div style="display:grid;gap:6px">
+                        <sc-for list="{{ r.units }}" as="u" hint-placeholder-count="2">
+                          <div style="position:relative;height:{{ u.h }};border-radius:8px;border:1px solid {{ u.border }};background-image:{{ u.image }};background-size:cover;background-position:50% 6%;background-color:#241F38;overflow:hidden">
+                            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,23,.2) 0%,rgba(14,12,23,0) 42%,rgba(20,18,33,.95) 100%)"></div>
+                            <div style="position:absolute;top:4px;left:4px;width:19px;height:19px;background-image:{{ u.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 1px 4px rgba(14,12,23,.9))"></div>
+                            <div style="position:absolute;top:4px;right:4px;width:15px;height:15px;background-image:{{ u.typeBadgeUrl }};background-size:contain;background-repeat:no-repeat"></div>
+                            <div style="position:absolute;left:0;right:0;bottom:0;padding:4px 5px">
+                              <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:9px;letter-spacing:0.02em;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.name }}</div>
+                              <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:{{ u.doorColor }};margin-top:2px">{{ u.door }}</div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="padding:0 14px 13px;display:flex;gap:5px;flex-wrap:wrap">
+                  <sc-for list="{{ z.doors }}" as="d" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid {{ d.core }}">
+                      <div style="width:7px;height:7px;border-radius:50%;background:{{ d.core }}"></div>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#EDEAF6">{{ d.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <div style="border:1px dashed #3A3357;border-radius:11px;background:rgba(28,25,48,.4);padding:18px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.1em;color:#8E87A8">THE HIDDEN SIX</div>
+                  <div style="display:flex;align-items:center;gap:6px;border:1px solid {{ ambush.color }};border-radius:5px;padding:2px 8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8">AMBUSH</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:{{ ambush.color }}">{{ ambush.chance }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;border:1px solid {{ zoneStreak.hiddenColor }};border-radius:5px;padding:2px 8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8">DEF STREAK</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:{{ zoneStreak.hiddenColor }}">{{ zoneStreak.hidden }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;border:1px solid #3A3357;border-radius:5px;padding:2px 8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8">YOUR ATTACK STREAK</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#F4EFE4">{{ ambush.streak }}</span>
+                  </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#57507A;border:1px solid #3A3357;border-radius:4px;padding:2px 7px">SEALED</div>
+              </div>
+              <div style="display:flex;gap:8px;flex:1">
+                <div style="flex:1 1 0;min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#57507A;text-align:center;margin-bottom:6px">R1</div><div style="height:196px;border-radius:8px;border:1px dashed #3A3357;background:repeating-linear-gradient(135deg,rgba(58,51,87,.28) 0 6px,transparent 6px 12px)"></div></div>
+                <div style="flex:1 1 0;min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#57507A;text-align:center;margin-bottom:6px">R2</div><div style="height:196px;border-radius:8px;border:1px dashed #3A3357;background:repeating-linear-gradient(135deg,rgba(58,51,87,.28) 0 6px,transparent 6px 12px)"></div></div>
+                <div style="flex:1 1 0;min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#57507A;text-align:center;margin-bottom:6px">R2</div><div style="height:196px;border-radius:8px;border:1px dashed #3A3357;background:repeating-linear-gradient(135deg,rgba(58,51,87,.28) 0 6px,transparent 6px 12px)"></div></div>
+                <div style="flex:1 1 0;min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#57507A;text-align:center;margin-bottom:6px">R2</div><div style="height:196px;border-radius:8px;border:1px dashed #3A3357;background:repeating-linear-gradient(135deg,rgba(58,51,87,.28) 0 6px,transparent 6px 12px)"></div></div>
+                <div style="flex:1 1 0;min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#57507A;text-align:center;margin-bottom:6px">R3</div><div style="height:196px;border-radius:8px;border:1px dashed #3A3357;background:repeating-linear-gradient(135deg,rgba(58,51,87,.28) 0 6px,transparent 6px 12px)"></div></div>
+                <div style="flex:1 1 0;min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#57507A;text-align:center;margin-bottom:6px">R3</div><div style="height:196px;border-radius:8px;border:1px dashed #3A3357;background:repeating-linear-gradient(135deg,rgba(58,51,87,.28) 0 6px,transparent 6px 12px)"></div></div>
+              </div>
+              <div style="font-size:12.5px;line-height:1.55;color:#8E87A8">{{ hiddenZoneNote }}</div>
+              <div style="font-size:12px;line-height:1.5;color:#8E87A8;padding-top:11px;border-top:1px solid #241F38">{{ ambush.note }}</div>
+            </div>
+          </div>
+
+          <div style="border:1px solid #241F38;border-radius:11px;background:#141221;padding:16px 18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">SCOUT READOUT · YOUR SIX AGAINST THEIR TWELVE</div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.08em;color:{{ sel.verdictColor }}">{{ sel.verdict }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#4E7C3A;margin-bottom:9px">DOORS YOU CAN OPEN</div>
+                <div style="display:grid;gap:6px">
+                  <sc-for list="{{ sel.openable }}" as="o" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <div style="width:20px;height:20px;background-image:{{ o.badgeUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+                      <span style="font-size:12.5px;color:#B4AECB;flex:1">{{ o.text }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#F2C744">{{ o.n }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#C0313A;margin-bottom:9px">WALLS YOU CANNOT MOVE</div>
+                <div style="display:grid;gap:6px">
+                  <sc-for list="{{ sel.blocked }}" as="b" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <div style="width:20px;height:20px;background-image:{{ b.badgeUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+                      <span style="font-size:12.5px;color:#B4AECB;flex:1">{{ b.text }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#F06A72">{{ b.n }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#8E87A8;margin-bottom:9px">WHAT THEIR TWELVE IMPLIES</div>
+                <div style="font-size:12.5px;line-height:1.6;color:#8E87A8">{{ sel.implication }}</div>
+              </div>
+            </div>
+          </div>
+          <div style="border:1px solid #241F38;border-radius:11px;background:#141221;padding:16px 18px;margin-top:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:13px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">RECENT BATTLES · REPLAYS HELD 7 DAYS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E87A8">18 OF YOUR LAST 20 SHOWN</div>
+            </div>
+            <div style="column-count:3;column-gap:14px">
+              <sc-for list="{{ recent }}" as="b" hint-placeholder-count="18">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#1C1930;border-left:2px solid {{ b.color }};margin-bottom:7px;break-inside:avoid" style-hover="background:#241F38">
+                  <div style="min-width:0;flex:1">
+                    <div style="display:flex;align-items:center;gap:7px">
+                      <span style="font-size:12.5px;color:#EDEAF6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.handle }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#57507A;white-space:nowrap">{{ b.zone }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:{{ b.outcomeColor }}">{{ b.outcome }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;color:{{ b.deltaColor }}">{{ b.delta }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#57507A;white-space:nowrap">{{ b.rounds }} · {{ b.when }}</span>
+                    </div>
+                  </div>
+                  <div style="height:26px;padding:0 10px;border-radius:6px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:9.5px;letter-spacing:0.1em;color:#B4AECB;flex:0 0 auto" style-hover="border-color:#F2C744;color:#F2C744">WATCH</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:0 0 auto;border-top:1px solid #241F38;background:#141221;padding:12px 22px 14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">CHOOSE YOUR STRIKING SIX</div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.06em;color:#F2C744;white-space:nowrap">{{ squadName }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#57507A">5 SAVED · FIT SCORED AGAINST THE SURFACED WALL</div>
+              <div style="height:32px;padding:0 13px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#F2C744;color:#F2C744">EDIT SQUADS</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:9px;overflow-x:auto;padding:2px 0 4px">
+            <sc-for list="{{ mySquads }}" as="q" hint-placeholder-count="5">
+              <div onClick="{{ q.pick }}" style="flex:1 1 190px;min-width:180px;border:1px solid {{ q.border }};border-radius:9px;background:{{ q.bg }};padding:9px 10px;cursor:pointer" style-hover="border-color:#57507A">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.04em;color:{{ q.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ q.name }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:{{ q.fitColor }};border:1px solid {{ q.fitColor }};border-radius:4px;padding:2px 5px;white-space:nowrap">{{ q.fit }}</div>
+                </div>
+                <div style="display:flex;gap:4px;margin-bottom:6px">
+                  <sc-for list="{{ q.thumbs }}" as="t" hint-placeholder-count="6">
+                    <div style="flex:1;height:38px;border-radius:5px;border:1px solid {{ t.core }};background-image:{{ t.image }};background-size:cover;background-position:50% 6%;background-color:#241F38"></div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;color:#6E6690">{{ q.index }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#8E87A8">{{ q.detail }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1 1 auto;overflow-y:auto;min-height:0;background:{{ res.bg }}">
+      <div style="max-width:1180px;margin:0 auto;padding:26px 24px 40px">
+
+        <div style="border:1px solid {{ res.accent }};border-radius:14px;background:{{ res.bannerBg }};padding:26px 28px;margin-bottom:18px;position:relative;overflow:hidden;animation:m-rise 420ms ease-out">
+          <div style="position:absolute;inset:0;background:{{ res.bannerGlow }}"></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+            <div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:56px;line-height:0.95;letter-spacing:0.04em;color:{{ res.accent }}">{{ res.title }}</div>
+              <div style="font-size:17px;line-height:1.5;color:#EDEAF6;margin-top:10px;font-style:italic">{{ res.line }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#8E87A8;margin-top:12px">{{ res.meta }}</div>
+              <div style="display:flex;align-items:center;gap:9px;margin-top:12px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690">OFFENSE STREAK</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:{{ res.streakColor }}">{{ res.streak }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8E87A8">{{ res.streakNote }}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:26px">
+              <div style="text-align:center">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.16em;color:#6E6690">RATING</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:34px;color:{{ res.accent }}">{{ res.delta }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#B4AECB">{{ res.newRating }}</div>
+              </div>
+              <div style="width:200px">
+                <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:#8E87A8;margin-bottom:6px"><span>COURT-CHAMPION</span><span>SKY-NAMED</span></div>
+                <div style="height:9px;border-radius:99px;background:#241F38;overflow:hidden;box-shadow:inset 0 0 0 1px #3A3357"><div style="width:{{ res.progress }};height:9px;background:linear-gradient(90deg,#B5732E,#F2C744)"></div></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:6px">{{ res.progressNote }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px;margin-bottom:16px">
+          <div style="border:1px solid #241F38;border-radius:12px;background:#141221;padding:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">SQUAD RECAP</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E87A8">{{ res.survivors }}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+              <sc-for list="{{ res.recap }}" as="r" hint-placeholder-count="6">
+                <div style="border:1px solid {{ r.border }};border-radius:9px;background:#1C1930;overflow:hidden;opacity:{{ r.opacity }}">
+                  <div style="position:relative;height:104px;background-image:{{ r.image }};background-size:cover;background-position:50% 6%;background-color:#241F38;filter:{{ r.filter }}">
+                    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,23,.2) 0%,rgba(14,12,23,0) 42%,rgba(28,25,48,.95) 100%)"></div>
+                    <div style="position:absolute;top:5px;left:5px;width:22px;height:22px;background-image:{{ r.emblemUrl }};background-size:contain;background-repeat:no-repeat"></div>
+                    <sc-if value="{{ r.tag }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;top:5px;right:5px;font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;letter-spacing:0.1em;color:#141221;background:{{ r.tagColor }};border-radius:3px;padding:2px 5px">{{ r.tag }}</div>
+                    </sc-if>
+                    <div style="position:absolute;left:0;right:0;bottom:0;padding:5px 7px">
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</div>
+                    </div>
+                  </div>
+                  <div style="padding:8px 9px">
+                    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8E87A8"><span>{{ r.state }}</span><span style="color:{{ r.dmgColor }}">{{ r.dmg }}</span></div>
+                    <div style="height:5px;border-radius:99px;background:#0E0C17;overflow:hidden;margin-top:6px"><div style="width:{{ r.hpPct }};height:5px;background:{{ r.hpFill }}"></div></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:16px;align-content:start">
+            <div style="border:1px solid {{ res.accent }};border-radius:12px;background:#141221;padding:18px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">REWARDS</div>
+              <div style="display:grid;gap:10px">
+                <sc-for list="{{ res.rewards }}" as="w" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;background:#1C1930;border:1px solid {{ w.border }}">
+                    <div style="width:26px;height:26px;border-radius:7px;background:{{ w.chip }};flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:#141221">{{ w.glyph }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:13px;color:#EDEAF6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ w.name }}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:2px">{{ w.note }}</div>
+                    </div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:{{ w.color }};white-space:nowrap">{{ w.value }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="border:1px solid #241F38;border-radius:12px;background:#141221;padding:18px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">BATTLE STATS</div>
+              <div style="display:grid;gap:9px">
+                <sc-for list="{{ res.stats }}" as="s" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <span style="font-size:12.5px;color:#8E87A8">{{ s.label }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:{{ s.color }};white-space:nowrap">{{ s.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ res.showNudge }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #B5732E;border-left-width:3px;border-radius:10px;background:#1C1930;padding:15px 18px;margin-bottom:16px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#B5732E;margin-bottom:6px">YOUR DOORS WERE READ</div>
+            <div style="font-size:13.5px;line-height:1.55;color:#B4AECB">Three of your six bled to Air. Their Vantric and Nix both opened it. Review the Standing Six before the next Court hears you.</div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div onClick="{{ goMatch }}" style="height:46px;padding:0 26px;border-radius:8px;background:#F2C744;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.12em;color:#141221;white-space:nowrap" style-hover="filter:brightness(1.08)">BATTLE AGAIN</div>
+          <div style="height:46px;padding:0 22px;border-radius:8px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.1em;color:#EDEAF6;white-space:nowrap" style-hover="border-color:#57507A">REMATCH {{ res.foe }}</div>
+          <div style="height:46px;padding:0 22px;border-radius:8px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">BACK TO ROSTER</div>
+          <sc-if value="{{ res.showNudge }}" hint-placeholder-val="{{ false }}">
+            <div style="height:46px;padding:0 22px;border-radius:8px;border:1px solid #B5732E;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.1em;color:#E0A15A;white-space:nowrap" style-hover="background:rgba(181,115,46,.12)">REVIEW DEFENSE</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TYPES = {
+  earth:{name:"EARTH",core:"#4E7C3A",accent:"#C9922E"},
+  air:{name:"AIR",core:"#8FCFE0",accent:"#DCE6EA"},
+  fire:{name:"FIRE",core:"#E8552B",accent:"#FFB347"},
+  water:{name:"WATER",core:"#2A7FB8",accent:"#4FC3D6"},
+  light:{name:"LIGHT",core:"#F2C744",accent:"#FFF6D6"},
+  dark:{name:"DARK",core:"#7A3FA0",accent:"#C64BB0"},
+  slash:{name:"SLASH",core:"#C0313A",accent:"#F06A72"},
+  pierce:{name:"PIERCE",core:"#3B5BD1",accent:"#7B93F0"},
+  crush:{name:"CRUSH",core:"#B5732E",accent:"#E0A15A"}
+};
+const COUNTER = {earth:"air",air:"earth",fire:"water",water:"fire",light:"dark",dark:"light",slash:"crush",pierce:"slash",crush:"pierce"};
+const H = {};
+[["01-earth-bramwen","Bramwen","earth","fire"],["02-earth-ossic","Ossic","earth","dark"],["03-earth-terragosa","Terragosa","earth","light"],
+ ["04-air-zephyrine","Zephyrine","air","light"],["05-air-cirrolan","Cirrolan","air","water"],["06-air-vael","Vael","air","dark"],
+ ["07-fire-ember-saelith","Ember Saelith","fire","air"],["08-fire-pyrrhic","Pyrrhic","fire","light"],["09-fire-cindara","Cindara","fire","earth"],
+ ["10-water-marisel","Marisel","water","dark"],["11-water-tidewarden-coll","Tidewarden Coll","water","earth"],["12-water-nix","Nix","water","air"],
+ ["13-light-seraphel","Seraphel","light","fire"],["14-light-lucen","Lucen","light","air"],["15-light-auriel-dawnkeep","Auriel Dawnkeep","light","water"],
+ ["16-dark-nyxara","Nyxara","dark","water"],["17-dark-umbriel","Umbriel","dark","fire"],["18-dark-corvane","Corvane","dark","earth"],
+ ["19-slash-kaellis","Kaellis","slash","light"],["20-slash-reyna","Reyna Two-Rivers","slash","water"],["21-slash-grieve","Grieve","slash","dark"],
+ ["22-pierce-vantric","Vantric","pierce","air"],["23-pierce-silka","Silka Pinquick","pierce","dark"],["24-pierce-aiguille","Lord Aiguille","pierce","light"],
+ ["25-crush-boldrek","Boldrek","crush","light"],["26-crush-hettamar","Hettamar Ironfall","crush","dark"],["27-crush-mauless","Mauless","crush","earth"]
+].forEach(r => {
+  const [slug,name,type,second] = r;
+  H[slug] = { slug, name, type, second, bane: COUNTER[type], fault: COUNTER[second],
+    img: "portraits/" + slug + ".png",
+    emblem: "hero-icons/" + slug.replace(/^\d+-/,"") + ".svg",
+    typeBadge: "damage-types/badge-" + type + ".svg" };
+});
+const MY_SQUADS = [
+  { name: "Read the Doors", six: ["16-dark-nyxara","04-air-zephyrine","22-pierce-vantric","08-fire-pyrrhic","19-slash-kaellis","02-earth-ossic"] },
+  { name: "Anti-Light Trial", six: ["18-dark-corvane","06-air-vael","23-pierce-silka","09-fire-cindara","20-slash-reyna","01-earth-bramwen"] },
+  { name: "Third Strike", six: ["17-dark-umbriel","05-air-cirrolan","24-pierce-aiguille","07-fire-ember-saelith","21-slash-grieve","03-earth-terragosa"] },
+  { name: "Weight of Bone", six: ["25-crush-boldrek","26-crush-hettamar","27-crush-mauless","11-water-tidewarden-coll","13-light-seraphel","10-water-marisel"] },
+  { name: "Fifth Wind", six: ["12-water-nix","14-light-lucen","15-light-auriel-dawnkeep","19-slash-kaellis","04-air-zephyrine","16-dark-nyxara"] }
+];
+// surfaced: the one wall matchmaking reveals. back, mid x3, front x2
+const OPPONENTS = [
+  { handle: "Vantric_Prime", tier: "SKY-NAMED", rating: 2418, risk: "HARD", gain: "+34", loss: "−22", streak: 7, hiddenStreak: 4,
+    blurb: "A Light-and-Crush wall. The Court surfaced one of their two zones — the other stays sealed until you commit.",
+    zone: { name: "STANDING SIX · VISIBLE", note: "SURFACED BY THE COURT", threat: "HIGH",
+      back: ["15-light-auriel-dawnkeep"], mid: ["12-water-nix","01-earth-bramwen","24-pierce-aiguille"], front: ["25-crush-boldrek","13-light-seraphel"] },
+    implication: "Two Light champions on this wall means at most one is left for their offense. Their 15 attackers almost certainly lean Dark and Pierce." },
+  { handle: "SilkaPin", tier: "COURT-CHAMPION", rating: 2180, risk: "EVEN", gain: "+24", loss: "−24", streak: 3, hiddenStreak: 6,
+    blurb: "A fast, thin wall built to trade. One zone surfaced; the second is unknown.",
+    zone: { name: "STANDING SIX · VISIBLE", note: "SURFACED BY THE COURT", threat: "MEDIUM",
+      back: ["18-dark-corvane"], mid: ["23-pierce-silka","06-air-vael","20-slash-reyna"], front: ["09-fire-cindara","27-crush-mauless"] },
+    implication: "No Water and no Light on the surfaced wall — either they are hoarding both for offense, or the sealed zone is stacked with them." },
+  { handle: "TerraCrown", tier: "WARDEN", rating: 1946, risk: "SOFT", gain: "+14", loss: "−31", streak: 1, hiddenStreak: 0,
+    blurb: "Earth-heavy and slow. Cheap rating, but a bad loss costs you double.",
+    zone: { name: "STANDING SIX · VISIBLE", note: "SURFACED BY THE COURT", threat: "LOW",
+      back: ["03-earth-terragosa"], mid: ["11-water-tidewarden-coll","02-earth-ossic","10-water-marisel"], front: ["26-crush-hettamar","21-slash-grieve"] },
+    implication: "Three Earth-adjacent seats on one wall. Air opens all of them, and their sealed zone cannot hold three more." }
+];
+const MY_STREAK = 4;
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+
+class Component extends DCLogic {
+  state = { screen: "match", pick: 0, squadPick: 0 };
+
+  fitFor(six, zone) {
+    const types = {}; six.forEach(k => types[H[k].type] = true);
+    const units = this.zoneUnits(zone);
+    let opened = 0, resisted = 0;
+    units.forEach(u => {
+      if (types[u.bane]) opened += 2;
+      else if (types[u.fault]) opened += 1;
+      if (types[u.type] || types[u.second]) resisted += 1;
+    });
+    return { opened: opened, resisted: resisted, score: opened - resisted };
+  }
+
+  zoneUnits(zone) { return zone.back.concat(zone.mid, zone.front).map(s => H[s]); }
+
+  renderVals() {
+    const s = this.state, self = this;
+    const o = OPPONENTS[s.pick], zone = o.zone, units = this.zoneUnits(zone);
+    const mySquad = MY_SQUADS[s.squadPick];
+    const mine = mySquad.six.map(k => H[k]);
+    const myTypes = {}; mine.forEach(h => myTypes[h.type] = (myTypes[h.type] || 0) + 1);
+
+    // doors of the surfaced wall
+    const baneCount = {}, faultCount = {}, resistCount = {};
+    units.forEach(u => {
+      baneCount[u.bane] = (baneCount[u.bane] || 0) + 1;
+      faultCount[u.fault] = (faultCount[u.fault] || 0) + 1;
+      resistCount[u.type] = (resistCount[u.type] || 0) + 1;
+      resistCount[u.second] = (resistCount[u.second] || 0) + 1;
+    });
+    const openable = Object.keys(baneCount).filter(k => myTypes[k]).sort((a,b) => baneCount[b] - baneCount[a]);
+    const blocked = Object.keys(myTypes).filter(k => !baneCount[k] && (resistCount[k] || 0) >= 2).sort((a,b) => (resistCount[b]||0) - (resistCount[a]||0));
+    const openScore = openable.reduce((a,k) => a + baneCount[k], 0);
+
+    const rowOf = (label, slugs, flex, h) => ({
+      label: label, flex: flex,
+      units: slugs.map(sl => {
+        const u = H[sl], canOpen = !!myTypes[u.bane];
+        return { name: u.name.toUpperCase(), image: "url('" + u.img + "')",
+          emblemUrl: "url('" + u.emblem + "')", typeBadgeUrl: "url('" + u.typeBadge + "')",
+          border: canOpen ? "#F2C744" : TYPES[u.type].core,
+          door: (canOpen ? "OPEN · " : "BANE ") + TYPES[u.bane].name,
+          doorColor: canOpen ? "#F2C744" : "#8E87A8", h: h };
+      })
+    });
+
+    const isMatch = s.screen === "match";
+    const win = s.screen === "win";
+    const seg = on => ({ bg: on ? "#F2C744" : "transparent", color: on ? "#141221" : "#B4AECB" });
+    const tM = seg(isMatch), tW = seg(win), tL = seg(s.screen === "loss");
+
+    const recapSrc = [
+      { slug: "19-slash-kaellis", state: "SURVIVED", hp: 0.72, dmg: "4 120", tag: "MVP", tagColor: "#F2C744" },
+      { slug: "16-dark-nyxara", state: "SURVIVED", hp: 0.46, dmg: "3 480", tag: null, tagColor: "#F2C744" },
+      { slug: "04-air-zephyrine", state: "SURVIVED", hp: 0.88, dmg: "2 940", tag: "BIGGEST HIT", tagColor: "#E0A15A" },
+      { slug: "22-pierce-vantric", state: win ? "SURVIVED" : "DOWN", hp: win ? 0.31 : 0, dmg: "2 210", tag: null, tagColor: "#F2C744" },
+      { slug: "08-fire-pyrrhic", state: "DOWN", hp: 0, dmg: "1 640", tag: null, tagColor: "#F2C744" },
+      { slug: "02-earth-ossic", state: win ? "SURVIVED" : "DOWN", hp: win ? 0.64 : 0, dmg: "980", tag: null, tagColor: "#F2C744" }
+    ];
+
+    const res = {
+      bg: win ? "radial-gradient(90% 70% at 50% 0%,rgba(242,199,68,.12),transparent 62%)" : "radial-gradient(90% 70% at 50% 0%,rgba(192,49,58,.14),transparent 62%)",
+      bannerBg: win ? "linear-gradient(100deg,#241F38,rgba(242,199,68,.1))" : "linear-gradient(100deg,#241F38,rgba(192,49,58,.12))",
+      bannerGlow: win ? "radial-gradient(70% 120% at 88% 10%,rgba(242,199,68,.16),transparent 60%)" : "radial-gradient(70% 120% at 88% 10%,rgba(192,49,58,.18),transparent 60%)",
+      accent: win ? "#F2C744" : "#F06A72",
+      title: win ? "THE COURT HAS ITS ANSWER" : "YOUR DOORS WERE READ",
+      line: win ? "“Six stood. Six struck. The isle is yours.”" : "“Rebuild, and return.”",
+      meta: (win ? "VICTORY" : "DEFEAT") + " · " + o.handle + " · ZONE A · 9 ROUNDS · 4:12",
+      delta: win ? "+34" : "−22",
+      newRating: win ? "2 214 RATING" : "2 158 RATING",
+      streak: win ? "\u00D7" + (MY_STREAK + 1) : "\u00D70",
+      streakColor: win ? "#F2C744" : "#F06A72",
+      streakNote: win ? "ambush chance now " + ((MY_STREAK + 1) * 2) + "% · best \u00D79" : "streak broken · was \u00D7" + MY_STREAK,
+      progress: win ? "62%" : "48%",
+      progressNote: win ? "286 to Sky-Named" : "412 to Sky-Named",
+      survivors: win ? "4 OF 6 STANDING" : "2 OF 6 STANDING",
+      foe: o.handle,
+      showNudge: !win,
+      recap: recapSrc.map(r => {
+        const u = H[r.slug];
+        return { name: u.name.toUpperCase(), image: "url('" + u.img + "')", emblemUrl: "url('" + u.emblem + "')",
+          border: r.hp > 0 ? TYPES[u.type].core : "#2A2640",
+          opacity: r.hp > 0 ? 1 : 0.6, filter: r.hp > 0 ? "none" : "grayscale(1) brightness(.6)",
+          state: r.state, dmg: r.dmg + " DMG", dmgColor: r.tag === "MVP" ? "#F2C744" : "#B4AECB",
+          hpPct: Math.round(r.hp * 100) + "%",
+          hpFill: r.hp > 0.4 ? "linear-gradient(90deg," + TYPES[u.type].core + "," + TYPES[u.type].accent + ")" : "linear-gradient(90deg,#77161C,#C0313A)",
+          tag: r.tag, tagColor: r.tagColor };
+      }),
+      rewards: win ? [
+        { name: "Rating", note: "Court-Champion ladder", value: "+34", color: "#F2C744", chip: "#F2C744", glyph: "\u25B2", border: "#F2C744" },
+        { name: "Shards", note: "spend in the Court", value: "+180", color: "#F4EFE4", chip: "#C64BB0", glyph: "\u25C8", border: "#241F38" },
+        { name: "Hero XP", note: "all six, Kaellis doubled", value: "+2 400", color: "#F4EFE4", chip: "#8FCFE0", glyph: "\u2726", border: "#241F38" },
+        { name: "God-bone fragment", note: "rare drop · 1 of 3", value: "×1", color: "#E0A15A", chip: "#B5732E", glyph: "\u25C6", border: "#B5732E" }
+      ] : [
+        { name: "Rating", note: "Court-Champion ladder", value: "−22", color: "#F06A72", chip: "#C0313A", glyph: "\u25BC", border: "#C0313A" },
+        { name: "Shards", note: "consolation", value: "+40", color: "#F4EFE4", chip: "#C64BB0", glyph: "\u25C8", border: "#241F38" },
+        { name: "Hero XP", note: "reduced on defeat", value: "+700", color: "#F4EFE4", chip: "#8FCFE0", glyph: "\u2726", border: "#241F38" }
+      ],
+      stats: win ? [
+        { label: "Total damage dealt", value: "15 370", color: "#F4EFE4" },
+        { label: "Super-effective hits", value: "6", color: "#F2C744" },
+        { label: "Resisted hits taken", value: "3", color: "#8FCFE0" },
+        { label: "Powers used", value: "19", color: "#F4EFE4" },
+        { label: "Biggest single hit", value: "1 240 · Zephyrine", color: "#E0A15A" }
+      ] : [
+        { label: "Total damage dealt", value: "9 820", color: "#F4EFE4" },
+        { label: "Super-effective hits", value: "2", color: "#F2C744" },
+        { label: "Super-effective taken", value: "7", color: "#F06A72" },
+        { label: "Powers used", value: "14", color: "#F4EFE4" },
+        { label: "Biggest single hit", value: "980 · Kaellis", color: "#E0A15A" }
+      ]
+    };
+
+    return {
+      screenLabel: isMatch ? "MATCHMAKING" : "BATTLE RESULTS",
+      isMatch: isMatch, isResult: !isMatch,
+      rating: "2 180",
+      myStreak: "\u00D7" + MY_STREAK,
+      myStreakNote: "OFFENSE STREAK · BEST \u00D79",
+      myStreakColor: "#F2C744",
+      defStreak: "\u00D75",
+      defStreakNote: "DEFENSE STREAK · BEST \u00D712",
+      goMatch: () => this.setState({ screen: "match" }),
+      goWin: () => this.setState({ screen: "win" }),
+      goLoss: () => this.setState({ screen: "loss" }),
+      tabMatchBg: tM.bg, tabMatchColor: tM.color,
+      tabWinBg: tW.bg, tabWinColor: tW.color,
+      tabLossBg: tL.bg, tabLossColor: tL.color,
+
+      offerings: OPPONENTS.map((op, i) => ({
+        handle: op.handle, tier: op.tier, rating: fmt(op.rating) + " RATING",
+        risk: op.risk, riskColor: op.risk === "HARD" ? "#F06A72" : (op.risk === "EVEN" ? "#F2C744" : "#4E7C3A"),
+        gain: op.gain, loss: op.loss,
+        border: i === s.pick ? "#F2C744" : "#241F38",
+        bg: i === s.pick ? "rgba(242,199,68,.08)" : "#1C1930",
+        spread: self.zoneUnits(op.zone).map(u => ({ color: TYPES[u.type].core, opacity: 1 })),
+        pick: () => self.setState({ pick: i })
+      })),
+
+      sel: {
+        handle: o.handle, tier: o.tier, rating: fmt(o.rating), blurb: o.blurb,
+        gain: o.gain, loss: o.loss,
+        zones: [{
+          name: zone.name, note: zone.note, threat: zone.threat,
+          threatColor: zone.threat === "HIGH" ? "#F06A72" : (zone.threat === "MEDIUM" ? "#F2C744" : "#4E7C3A"),
+          border: "#3A3357", headBg: "linear-gradient(90deg,rgba(192,49,58,.16),rgba(20,18,33,0))",
+          rows: [{ slugs: zone.back, label: "ROW 1 · BACK" }]
+            .concat(zone.mid.map(sl => ({ slugs: [sl], label: "ROW 2 · MID" })))
+            .concat(zone.front.map(sl => ({ slugs: [sl], label: "ROW 3 · FRONT" })))
+            .map(r => rowOf(r.label, r.slugs, "1 1 0", "196px")),
+          doors: Object.keys(baneCount).sort((a,b) => baneCount[b] - baneCount[a]).slice(0,4).map(k => ({
+            core: TYPES[k].core, text: baneCount[k] + "× BANE " + TYPES[k].name
+          }))
+        }],
+        verdict: openScore >= 4 ? "FAVOURABLE READ" : (openScore >= 2 ? "WORKABLE" : "UPHILL"),
+        verdictColor: openScore >= 4 ? "#4E7C3A" : (openScore >= 2 ? "#F2C744" : "#F06A72"),
+        openable: openable.slice(0, 4).map(k => ({
+          badgeUrl: "url('damage-types/badge-" + k + ".svg')",
+          text: "Your " + TYPES[k].name.toLowerCase() + " opens " + baneCount[k] + " Bane" + (baneCount[k] > 1 ? "s" : ""),
+          n: "×" + baneCount[k]
+        })),
+        blocked: (blocked.length ? blocked : ["light"]).slice(0, 4).map(k => ({
+          badgeUrl: "url('damage-types/badge-" + k + ".svg')",
+          text: "Your " + TYPES[k].name.toLowerCase() + " is resisted by " + (resistCount[k] || 0),
+          n: "×" + (resistCount[k] || 0)
+        })),
+        implication: o.implication
+      },
+
+      hiddenZoneNote: "Their Hidden Six stays sealed. You learn it only by attacking — and the six you see already narrows what the other wall can hold.",
+      zoneStreak: {
+        visible: "\u00D7" + o.streak,
+        visibleNote: "consecutive wins by this wall",
+        visibleColor: o.streak >= 6 ? "#F06A72" : (o.streak >= 3 ? "#E0A15A" : "#8E87A8"),
+        hidden: "\u00D7" + (o.hiddenStreak || 0),
+        hiddenNote: "consecutive wins by the sealed wall",
+        hiddenColor: (o.hiddenStreak || 0) >= 6 ? "#F06A72" : ((o.hiddenStreak || 0) >= 3 ? "#E0A15A" : "#8E87A8")
+      },
+      ambush: {
+        chance: (MY_STREAK * 2) + "%",
+        streak: "\u00D7" + MY_STREAK,
+        color: MY_STREAK >= 6 ? "#F06A72" : (MY_STREAK >= 3 ? "#E0A15A" : "#8E87A8"),
+        note: "+2% per consecutive attack win of yours. On " + MY_STREAK + " straight, there is a " + (MY_STREAK * 2) + "% chance the Hidden Six answers the door instead of the wall you scouted — win more and you are expected."
+      },
+      mySix: mine.map(h => ({
+        image: "url('" + h.img + "')", emblemUrl: "url('" + h.emblem + "')",
+        core: TYPES[h.type].core, short: h.name.split(" ")[0].toUpperCase().slice(0, 8)
+      })),
+      recent: [
+        ["Vantric_Prime","ZONE A","WIN","+34","9 rounds","2m ago"],
+        ["SilkaPin","ZONE B","LOSS","−24","11 rounds","18m ago"],
+        ["TerraCrown","ZONE A","WIN","+14","7 rounds","41m ago"],
+        ["Coll_Standing","ZONE B","WIN","+21","8 rounds","1h ago"],
+        ["NyxHollow","ZONE A","LOSS","−19","12 rounds","2h ago"],
+        ["Grievewalker","ZONE B","WIN","+28","6 rounds","3h ago"],
+        ["EmberSworn","ZONE A","WIN","+17","9 rounds","4h ago"],
+        ["Aiguille_XI","ZONE B","LOSS","−26","13 rounds","5h ago"],
+        ["MaulessFan","ZONE A","WIN","+22","7 rounds","7h ago"],
+        ["Lucen_Reads","ZONE B","WIN","+16","10 rounds","9h ago"],
+        ["BoneKeeper","ZONE A","LOSS","−20","12 rounds","11h ago"],
+        ["Reyna2R","ZONE B","WIN","+25","8 rounds","yesterday"],
+        ["SeraphelJudge","ZONE A","LOSS","−23","10 rounds","yesterday"],
+        ["StillPool","ZONE B","WIN","+19","9 rounds","yesterday"],
+        ["HighReach","ZONE A","WIN","+13","6 rounds","2 days ago"],
+        ["IronfallEnd","ZONE B","LOSS","−27","14 rounds","2 days ago"],
+        ["CindaraLong","ZONE A","WIN","+30","8 rounds","3 days ago"],
+        ["VaelDrops","ZONE B","WIN","+18","7 rounds","3 days ago"]
+      ].map(r => {
+        const win = r[2] === "WIN";
+        return { handle: r[0], zone: r[1], outcome: r[2], delta: r[3], rounds: r[4], when: r[5],
+          color: win ? "#4E7C3A" : "#C0313A",
+          deltaColor: win ? "#4E7C3A" : "#F06A72",
+          outcomeColor: win ? "#8FCFE0" : "#F06A72" };
+      }),
+      squadName: mySquad.name,
+      mySquads: MY_SQUADS.map((sq, i) => {
+        const fit = self.fitFor(sq.six, zone), on = i === s.squadPick;
+        const label = fit.score >= 6 ? "STRONG FIT" : (fit.score >= 2 ? "WORKABLE" : "POOR FIT");
+        const col = fit.score >= 6 ? "#4E7C3A" : (fit.score >= 2 ? "#F2C744" : "#F06A72");
+        return {
+          name: sq.name, index: "SQUAD " + (i + 1),
+          border: on ? "#F2C744" : "#241F38",
+          bg: on ? "rgba(242,199,68,.08)" : "#1C1930",
+          nameColor: on ? "#F4EFE4" : "#B4AECB",
+          fit: label, fitColor: col,
+          detail: fit.opened + " door" + (fit.opened === 1 ? "" : "s") + " · " + fit.resisted + " resisted",
+          thumbs: sq.six.map(k => ({ image: "url('" + H[k].img + "')", core: TYPES[H[k].type].core })),
+          pick: () => self.setState({ squadPick: i })
+        };
+      }),
+      res: res
+    };
+  }
+}
+</script>
+</body>
+</html>
