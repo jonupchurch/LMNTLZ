@@ -1,6 +1,6 @@
 # LMNTLZ — Lore & Flavor Codex
 
-*Working title. All names, epithets, and matchup values below are flavor drafts — evocative starting points for writers and designers to tune, not locked canon.*
+*Working title. Names, epithets, and House voices below are flavor drafts — starting points for writers and designers to tune. **The Forces, their `counter` map, and the weakness-derivation rule are not** — those are settled canon that the roster and the matchup table both depend on. See "What is settled vs. what is still soft" at the end.*
 
 ---
 
@@ -37,7 +37,7 @@ The Three are a wager with no winner, each answering the one before it.
 - **Pierce** — *the Single Point.* The thrust that finds the seam. Slips past the **Crush** before the weight can fall.
 - **Crush** — *the Falling Weight.* Maul, gauntlet, and avalanche. Shatters the guard of the **Slash** who commits too far.
 
-> *(Proposed triangle: Slash ▸ Pierce ▸ Crush ▸ Slash. Tunable.)*
+> *(Triangle: Slash ▸ Pierce ▸ Crush ▸ Slash — each beats the next. Settled; the derivation rule depends on it.)*
 
 ---
 
@@ -54,10 +54,18 @@ So every hero reads as a small equation:
 
 The whole game of LMNTLZ is holding those equations in your head — building five heroes whose Banes don't line up, and choosing five attackers whose Forces are keys to the enemy's doors.
 
-**Suggested default oppositions to seed the matchup table (tune freely):**
+### The doors are not chosen — they are consequences
 
-| Force | Opposed by (candidate Bane) |
-|-------|------------------------------|
+A hero's two weaknesses are **derived**, never hand-authored. Each Force is answered by exactly one other, and a hero's openings are simply what answers the two Forces they carry:
+
+```
+strengths = { primary, secondary }
+Bane      = counter(primary)      // very weak — Super Effective
+Fault     = counter(secondary)    // somewhat weak
+```
+
+| Force | Answered by (`counter`) |
+|-------|--------------------------|
 | Earth | Air |
 | Air | Earth |
 | Fire | Water |
@@ -68,7 +76,13 @@ The whole game of LMNTLZ is holding those equations in your head — building fi
 | Pierce | Slash |
 | Crush | Pierce |
 
-*(The Fault/minor weakness can be drawn from a neighboring Force on the ring or triangle — left to design tuning.)*
+Because `counter` is exact and never crosses between the Arcane ring and the Martial triangle, three things follow and hold for the whole roster:
+
+- **A hero's Bane is fixed by their primary.** All three champions of a House share it, so a type badge tells you a hero's major weakness on sight. It is not a tunable number.
+- **The Fault is the only thing the designer chooses**, and only indirectly — by choosing the secondary.
+- **No Elemental of the Martial can take a second Martial discipline.** The triangle is a closed cycle of three: of the two other disciplines, one is already that hero's Bane, and the other would make their Fault their own primary. Both collide. So every Slash, Pierce, and Crush champion carries an Arcane attunement — a shard-trace in a body forged from bone.
+
+The full worked roster, and the effectiveness spread it produces, live in `characters/MATCHUPS.md`. It can be re-verified at any time with `pwsh tools/validate-matchups.ps1`.
 
 ---
 
@@ -171,7 +185,15 @@ Keep this consistent across all prompt files and the build:
 - **Roster:** 3 champions per type = **27 heroes** total.
 - **Powers:** up to **5 per hero**, each with its **own cooldown rate**.
 - **Squads:** exactly **5 heroes**. Each player keeps an **attack** squad (player-controlled on offense) and a **defense** squad (**engine/AI-run** when attacked).
-- **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak).
+- **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak). All four slots are **derived from just two authored fields** — `primary` and `secondary` — via `Bane = counter(primary)`, `Fault = counter(secondary)`. Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix; both are generated.
+- **A Martial hero always carries an Arcane secondary.** A second Martial discipline is impossible — see "The doors are not chosen" above.
+- **Combat is turn-based.** Each power recharges over N *turns*; cooldowns are integer turn counts, never milliseconds.
 - **Core loop:** scout an opponent's defense → build/pick attackers to exploit its doors → command offense while the engine runs their defense → results & rating.
 
-*This codex is a creative seed. Tune names, oppositions, and numbers to taste as the systems firm up.*
+## What is settled vs. what is still soft
+
+**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force; squads of 5; turn-based cooldowns; player-offense / engine-defense.
+
+**Still soft — tune freely:** hero names, epithets, House voices, and all flavor text; the damage multipliers (only the Bane's "+50%" is pinned, in `01-hero-card.md`); stats, powers, and cooldown lengths; the rank ladder.
+
+Names and numbers are a creative seed. The relationship system is not — it is load-bearing for the whole counter-building loop.

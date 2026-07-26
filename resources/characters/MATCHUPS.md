@@ -52,21 +52,46 @@ champions per type. It is not a tunable value.*
 Air ×4 · Earth ×4 · Water ×3 · Fire ×4 · Dark ×6 · Light ×6  
 *Zero for Slash, Pierce, and Crush.*
 
-### Known imbalance — offensive reach per attacking type
+### Effectiveness spread per attacking type
 
-Reach = how many of the 27 heroes a type hits for extra damage (Bane + Fault):
+Counting only the Bane and Fault hits a type lands is misleading, because a
+hero also **resists** both of its own types. A type that is many heroes' Fault
+is also, necessarily, resisted by many heroes — the two move together and
+cancel. The honest measure includes all four buckets. Every hero falls in
+exactly one of them (the distinctness constraints guarantee no overlap):
 
-| Attacking as | Bane to | Fault to | Reach |
-|---|---|---|---|
-| Light, Dark | 3 | 6 | **9** |
-| Earth, Air, Fire | 3 | 4 | 7 |
-| Water | 3 | 3 | 6 |
-| Slash, Pierce, Crush | 3 | 0 | **3** |
+| Attacking as | Super-eff. | Effective | Resisted | Neutral | Avg multiplier |
+|---|---|---|---|---|---|
+| Air, Earth | 3 | 4 | 7 | 13 | 1.028 |
+| Light, Dark | 3 | 6 | 9 | 9 | 1.028 |
+| Slash, Pierce, Crush | 3 | 0 | 3 | 21 | 1.028 |
+| Fire | 3 | 4 | 6 | 14 | 1.037 |
+| Water | 3 | 3 | 7 | 14 | 1.019 |
 
-The melee types are worth a third of Light or Dark as counter-picks. This is
-structural, not an authoring slip: since Fault derives from the 2nd attunement
-and no melee hero can take a melee second, **a melee type can only ever become
-someone's Fault if a magic hero takes a melee 2nd attunement.** Allowing that —
-and rebalancing Light/Dark down toward 3 — is the open decision that would flatten
-this table to a uniform reach of 6 across all nine types.
+**Seven of the nine types are exactly equal.** Melee's zero Faults are paid
+back by being resisted by only 3 heroes instead of 9. Light and Dark's six
+Faults are paid for by nine heroes resisting them.
+
+What differs is not power but **character**: melee is flat and dependable
+(21 neutral matchups — it does what it says against almost anyone), while
+Light and Dark are swingy (9 boosted, 9 blunted — they reward scouting and
+punish blind picks). That is a texture worth keeping, not a bug to sand off.
+It also happens to match the lore: the Martial are forged from the world's
+own bones, the Arcane drawn from a shattered sky.
+
+The only real asymmetry is **Fire (1.037) vs. Water (1.019)**, and it is
+unavoidable. A type's standing is driven entirely by
+`count(2nd == counter(T)) − count(2nd == T)`, so an opposed pair is balanced
+exactly when both are used as a 2nd attunement equally often. That needs an
+even sum per pair — but there are 27 heroes across three magic pairs, and 27
+is odd, so **at least one pair must always be off by one.** Earth/Air (4·4)
+and Light/Dark (6·6) are balanced; Fire/Water (3·4) carries the remainder.
+This distribution is therefore already optimal under the current rule.
+
+(A perfectly uniform spread is reachable only by letting magic heroes take
+melee 2nd attunements — 9 buckets divide 27 evenly where 6 do not. That was
+considered and deliberately declined: the flat-vs-swingy contrast above is
+worth more than the last 0.018 of parity.)
+
+Re-check any time with `pwsh tools/validate-matchups.ps1`.
 
