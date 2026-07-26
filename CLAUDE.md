@@ -12,8 +12,9 @@ Fire, Water, Light, Dark · 3 melee: Slash, Pierce, Crush), three champions each
 for a 27-hero roster. **All 27 are unlocked from the start and identical for
 every player** — nothing to collect, so no one can out-roster anyone. Each
 player defends **two engine-run zones** — one *surfaced* to attackers at
-matchmaking, one *blind*, with the blind attack worth more rating — totalling
-12 heroes, which then *cannot* attack,
+matchmaking, one *blind*, with the blind attack worth more rating, and a rising
+win streak carrying an openly-shown chance of being lured from the seen zone
+into the blind one — totalling 12 heroes, which then *cannot* attack,
 and keeps up to **3 attack squads** drawn from the remaining 15; those squads
 may overlap, and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts
 it from any attack squad and invalidates it. Squads are 6 heroes in a fixed

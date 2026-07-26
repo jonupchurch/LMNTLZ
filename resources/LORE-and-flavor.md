@@ -158,6 +158,7 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 - *"A wall of shields still has a seam. Ask any Pierce."*
 
 ### Battle barks (by outcome)
+- **Lured (chose the seen zone, met the hidden one):** *"The wall was never the wall."* / *"You were expected."* / *"The bait held. Now the jaws."*
 - **Super Effective (Bane hit):** *"There — the open door!"* / *"Struck to the root!"*
 - **Resisted (hit a strength):** *"Kindred to the core. That'll cost you."* / *"You struck the wall, not the seam."*
 - **KO:** *"Returned to the shard."* / *"One less voice in the argument."*
@@ -171,6 +172,9 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 - **Cooldown (power recharging):** *Gathering…*
 - **Strong-coverage praise:** *No shared door. A closed formation.*
 - **Shared-weakness warning:** *Three of yours bleed to the same Bane.*
+- **Seen defense zone label:** *The Open Gate*
+- **Blind defense zone label:** *The Closed Gate*
+- **Ambush risk readout:** *Your name travels ahead of you — 28%.*
 
 ### Rank / tier names (draft ladder)
 Shardless ▸ Ember-Sworn ▸ Warden ▸ Court-Champion ▸ Sky-Named ▸ **Sundered Crown** (apex).
@@ -186,7 +190,8 @@ Keep this consistent across all prompt files and the build:
 - **Powers:** up to **5 per hero**, each with its **own cooldown rate**.
 - **Squads:** exactly **6 heroes**, arranged in a fixed three-row formation — **2 front · 3 middle · 1 back**.
 - **Roster:** all **27 heroes unlocked from the start**, one copy each, **identical for every player**. Nothing to collect or unlock; no duplicates. No player can ever out-roster another.
-- **Allocation:** each player defends **two zones** (12 heroes, engine-run) — one **surfaced** to attackers at matchmaking and one **blind**, with the blind attack paying more rating — and keeps up to **3 attack squads** (player-controlled). **A hero on defense cannot attack**, leaving 15 for offense. Attack squads may overlap each other — and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts it from any attack squad and invalidates that squad.
+- **Allocation:** each player defends **two zones** (12 heroes, engine-run) — one **surfaced** to attackers at matchmaking and one **blind**, with the blind attack paying more rating — and keeps up to **3 attack squads** (player-controlled).
+- **The lure:** a rising win streak carries a growing, openly-displayed chance that an attacker who picks the *seen* zone is drawn into the *blind* one instead. The seen squad is bait; the hidden squad is the trap. **A hero on defense cannot attack**, leaving 15 for offense. Attack squads may overlap each other — and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts it from any attack squad and invalidates that squad.
 - **Reach:** every hero has a **reach of 1 or 2**, measured in rows across a single 1–6 battlefield axis (attacker 1–3, defender 4–6). A hero's *own* rows count against its reach, and fully empty rows are skipped — so range opens up as a battle wears on. See `mechanics/02-squads.md`.
 - **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak). All four slots are **derived from just two authored fields** — `primary` and `secondary` — via `Bane = counter(primary)`, `Fault = counter(secondary)`. Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix; both are generated.
 - **A Martial hero always carries an Arcane secondary.** A second Martial discipline is impossible — see "The doors are not chosen" above.

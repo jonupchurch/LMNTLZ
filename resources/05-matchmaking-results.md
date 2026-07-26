@@ -20,6 +20,7 @@ Players attack other players' **engine-run defense squads**. Design the screen w
 - A **"scout" readout** that hints at the defense's collective weakness/strength spread (how much can this attacker's squad exploit it?), reinforcing counter-play.
 - **A "your attack squad" strip** pinned for reference, with a quick "swap squad" shortcut.
 - Rank tier and **the two different rating stakes side by side** — the seen zone's reward against the blind zone's premium — so the gamble is quantified at the moment of choosing, not buried. Two distinct **"Attack"** CTAs, one per zone.
+- **A win-streak and ambush-risk readout.** Each consecutive attack win raises the chance that choosing the *seen* zone lands the player in the *blind* one instead — lured past the bait. Show it plainly: **"14 wins · 28% chance of ambush."** This must never be a hidden number; overriding a stated choice without warning reads as the game cheating. Displayed, it becomes strategy — at a high enough risk, taking the blind fight for the premium is simply correct, since the danger is already being carried.
 - Optional: a few match offerings to choose from (risk/reward — tougher defenses for more rating).
 
 ### Screen 2 — Battle Results

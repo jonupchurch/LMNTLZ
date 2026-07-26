@@ -140,6 +140,77 @@ others are **counter-specific builds** kept for scouted fights. Without the
 asymmetry, three squads drawn from the same 15 heroes would tend toward
 redundancy.
 
+#### The lure — a streak can override the choice
+
+The attacker picks a zone, but the pick is not guaranteed. **Each consecutive
+attack win adds ~2% to the chance that choosing the seen zone lands them in the
+blind one instead** — lured past the bait and into whatever was waiting.
+
+**The chance is shown explicitly** on the matchmaking screen alongside the
+streak: *"14 wins · 28% chance of ambush."* Overriding a player's stated choice
+without warning reads as the game cheating, and it would read that way most
+sharply the first time it ended a long run. Shown, it becomes a decision.
+
+Something useful falls out of showing it: **at a high trap rate, choosing the
+blind zone becomes the rational play**, because the premium pays for a risk the
+attacker is already carrying. The mechanic steers streaking players toward the
+gamble rather than simply punishing them for winning.
+
+It also completes the zone design. Because the trap fires *regardless of what
+the attacker picks*, the hidden squad matters even to a player who never
+voluntarily gambles — which is exactly the failure mode the blind premium alone
+could not prevent.
+
+##### What it does to defensive strategy
+
+It inverts the earlier reading. With traps in play, the hidden zone absorbs both
+the deliberate gamblers *and* the ambushed, so it should be a player's
+**strongest** squad — and since 27 heroes are fixed, that means the seen zone is
+deliberately the weaker one. **The seen squad becomes the lure and the hidden
+squad becomes the trap**, which is both mechanically self-consistent and exactly
+what the Warden Courts would do.
+
+That produces a clean rhythm: farm visible squads safely → streak climbs → trap
+chance rises → get pulled into a fight you did not prepare for → streak resets.
+Low-streak players get reliable wins to learn on; high-streak players carry
+real risk.
+
+##### What it shifts, rather than removes
+
+An ambush does not delete skill — it moves where skill is expressed. LMNTLZ has
+two distinct skill layers, and the trap trades between them rather than
+subtracting:
+
+| Layer | What it is | Effect of an ambush |
+|---|---|---|
+| **Preparation** | Scouting a defense and building attackers to exploit it | Bypassed — the counter-build meets the wrong squad |
+| **Execution** | Commanding the battle turn by turn: power choice, targeting, reach and row management, cooldown tempo | **Untouched, and now decisive** |
+
+A player pulled into an unprepared fight can still win it by playing well. That
+is arguably a *higher* bar than winning a fight you pre-solved at the squad
+builder, so a high-streak player facing regular ambushes is being tested harder,
+not being denied the ability to demonstrate skill.
+
+The genuine trade is that the **payoff for preparation drops as the trap rate
+climbs**, so the two layers need to stay in balance — preparation must remain
+clearly worth doing at every streak length. That is a tuning constraint on the
+cap, not an argument against the mechanic.
+
+##### Rules this needs
+
+- **The rate must be capped.** At 2% per win, uncapped, it reaches 100% at 50
+  wins. **40–50%** — hit at 20–25 wins — keeps the player's choice meaningful;
+  past 50% the choice is more often overridden than honoured.
+- **A trapped attacker is paid the blind reward, not the seen one.** They fought
+  the hidden squad. Paying the lower rate for the harder fight reads as theft,
+  and arguably it should pay *more*, since they were denied any chance to
+  prepare.
+- **A trapped loss should probably not reset the streak.** Otherwise the streak
+  triggers the trap, and the trap ends the streak — the player eats the rating
+  loss *and* the reset for something they did not choose. Losing a gamble you
+  took is different from losing an ambush.
+- Every value here is **live-tunable**, never a client constant.
+
 #### It protects the defender's information too
 
 Because every player owns the same 27 heroes, seeing a defense tells an attacker
