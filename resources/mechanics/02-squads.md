@@ -1,44 +1,25 @@
 # LMNTLZ · Mechanics 02 — Squads, Formation & Reach
 
-There are **two squad shapes**, and which one you get depends on which side of
-the line you are standing on:
-
-- An attacking **Wing** is **exactly 8 heroes**, in a fixed **3 front / 4 middle
-  / 1 back**.
-- A defending **Standing Six** is **exactly 6 heroes**, in a fixed **2 front /
-  3 middle / 1 back**.
-
-Both sit on a single shared battlefield axis of **six rows, numbered 1–6**,
-running left to right:
+A squad is **exactly 6 heroes** in a **fixed three-row formation**. Both squads
+sit on a single shared battlefield axis of **six rows, numbered 1–6**, running
+left to right:
 
 ```
         ATTACKERS (left)          │          DEFENDERS (right)
-             a Wing · 8           │        a Standing Six · 6
     [1]       [2]       [3]       │      [4]       [5]       [6]
     back      mid      front      │     front      mid      back
-   1 slot   4 slots   3 slots     │    2 slots   3 slots   1 slot
+   1 slot   3 slots   2 slots     │    2 slots   3 slots   1 slot
                             ──────┴──────
                             contact line
 ```
 
 The axis is **absolute**, not per-side. Row 1 is the attackers' rearmost hero;
 row 6 is the defenders' rearmost. For an attacker, deeper into the enemy means
-*higher* numbers; for a defender striking back, *lower*.
+*higher* numbers; for a defender striking back, *lower*. The formation is
+mirror-symmetric about the contact line.
 
-**The formation is no longer mirror-symmetric.** It was when both sides fielded
-six; it stopped being so the moment the attacking Wing grew to eight. The row
-*count* is unchanged and the reach rules below are untouched by the change —
-reach is measured in rows, and there are still three rows a side. What changed is
-how many bodies occupy them.
-
-> **This asymmetry is unresolved as a balance question**, and it is the largest
-> open item in this document. See *Still open · 0* — an attacker fielding eight
-> against a defender fielding six carries a 33% body advantage into every battle,
-> in a game whose hold streaks, ambush odds and Hidden Six all assume defenses
-> hold reasonably often.
-
-The row sizes are fixed. What a player chooses is **which hero sits in which
-slot**.
+Every squad in the game uses this shape — attack and defense alike. The row
+sizes are fixed. What a player chooses is **which hero sits in which slot**.
 
 How many squads a player keeps, and which heroes may fill them, is the
 **roster economy** below.
@@ -72,20 +53,11 @@ range.
 | **2** — middle | row 3 — *own front* | rows 3, 4 |
 | **1** — back | row 2 — *own middle* | rows 2, 3 |
 
-So at the opening of a battle, **only the front-row heroes and any reach-2
-heroes in the middle row can strike an enemy at all.** The back-row hero cannot
-touch the enemy under any circumstances while your own lines are intact.
-
-| | Attacking Wing (8) | Defending Six (6) |
-|---|---|---|
-| Can always open | 3 (front row) | 2 (front row) |
-| Can open with reach 2 | up to 7 of 8 | up to 5 of 6 |
-| Never opens | the back seat | the back seat |
-
-The wider middle row is where the Wing's extra bodies went, so **reach
-distribution matters more on offense than it used to**: the gap between a badly
-built Wing and a well built one is four heroes' worth of opening damage rather
-than three.
+So at the opening of a battle, **only the two front-row heroes and any
+reach-2 heroes in the middle row can strike an enemy at all.** Between 2 and 5
+of your 6 are able to attack, entirely depending on how you distributed reach.
+The back-row hero cannot touch the enemy under any circumstances while your own
+lines are intact.
 
 ### As rows empty
 
@@ -109,12 +81,11 @@ survivor in a row genuinely matters.
 ### Why heroes don't physically advance
 
 An alternative framing is that heroes move up to fill an empty row. It produces
-the same reachability, but it breaks on the formation's own shape: if a Wing's
-3-slot front row empties and its 4-hero middle row advances into it, four heroes
-do not fit in three slots, and the fixed 3/4/1 shape would have to be rebuilt
-mid-battle. The defending Six has the same problem at 3-into-2. Skipping empty
-rows gets the identical result with nobody moving, and it is the reason the two
-formations can differ in size without the rule needing a special case.
+the same reachability, but it breaks on the formation's own asymmetry: if the
+2-slot front row empties and the 3-hero middle row advances into it, three
+heroes do not fit in two slots, and the fixed 2/3/1 shape would have to be
+rebuilt mid-battle. Skipping empty rows gets the identical result with nobody
+moving.
 
 ---
 
@@ -131,10 +102,9 @@ opponent.
 
 ### Two defense zones — Visible and Hidden
 
-A player must defend **two** zones. Each is held by its own **Standing Six** —
-6 heroes in 2/3/1 — so **12 heroes are committed to defense** at all times, and
-both are run by the engine when attacked. Defense zones stayed at six when the
-attacking Wing grew to eight; the arithmetic that forced that is below.
+A player must defend **two** zones. Each is held by its own 6-hero squad, so
+**12 heroes are committed to defense** at all times, and both are run by the
+engine when attacked.
 
 The two have **fixed, permanent roles** — the player designates which squad
 holds which:
@@ -170,7 +140,7 @@ Because every attack begins at a scoutable Visible squad, counter-building is
 always live. But an attacker deep into a streak knows an ambush is likely and
 that their counter-build may meet a squad it wasn't designed for.
 
-That gives the three attack Wings a clear division of labour that shifts with
+That gives the three attack squads a clear division of labour that shifts with
 streak: **counter-specific builds while ambush risk is low, and a robust
 all-rounder as it climbs.** The tension lives inside every attack rather than
 being a menu choice.
@@ -259,7 +229,7 @@ while quietly swapping the squad underneath it, and an attacker scouting *"held
 
 This also creates a genuine cost to tinkering, which is a useful pressure. It
 pushes against the rule that moving a hero onto defense invalidates offense
-squads — a player wanting a hero back for an attack Wing must break a defensive
+squads — a player wanting a hero back for an attack squad must break a defensive
 streak to get them. Two commitments pulling in opposite directions over the same
 27 heroes.
 
@@ -282,7 +252,7 @@ streak to get them. Two commitments pulling in opposite directions over the same
   attack streak, and one hold streak for each of the **two** defense squads.
   Only the attack streak feeds the ambush roll.
 - **The attack streak is universal, not per squad.** It counts consecutive
-  attack wins across all three offense Wings — win with Wing 1, then 2, then
+  attack wins across all three offense squads — win with squad 1, then 2, then
   3 and the streak is 3. Switching squads never resets it.
 
   That is what makes the "swap builds as ambush risk climbs" strategy actually
@@ -302,46 +272,34 @@ what is *not* available to attack with. Exposing only one zone halves that leak:
 A hero assigned to a defense zone is **unavailable for offense**, with no
 exceptions. This is the rule the whole economy turns on.
 
-### Three offense Wings, freely overlapping
+### Three offense squads, freely overlapping
 
-A player may save up to **3 offense Wings**. These *may* share heroes with each
+A player may save up to **3 offense squads**. These *may* share heroes with each
 other — the same champion can sit in all three — provided that hero is not on
-defense. At 8 heroes drawn from a pool of 15, sharing is not optional: **any two
-Wings overlap by at least one hero**, and in practice by far more.
+defense.
 
 ### Changing defense evicts and invalidates
 
 If a player moves a hero onto a defense zone while that hero is in a saved
-offense Wing, the hero is **removed from that Wing**, and the Wing is
+offense squad, the hero is **removed from that squad**, and the squad is
 **invalidated** — it is short a member and cannot be used to attack until
 refilled.
 
-Because Wings overlap, **one swap can invalidate all three at once**. The
-warning should be designed for that case, not the single-squad case — and the
-resize made it likelier, since a Wing of 8 out of 15 free heroes uses over half
-the pool, so a randomly chosen hero is more likely to be in a saved Wing than
-not.
+Because offense squads overlap, **one swap can invalidate all three at once**.
+The warning should be designed for that case, not the single-squad case.
 
 ### The arithmetic this produces
 
 | | |
 |---|---|
 | Roster, every player | **27** |
-| Committed to defense | **12** — two Standing Sixes (44% of the roster) |
+| Committed to defense | **12** (44% of the roster) |
 | Free for offense | **15** |
-| Slots across 3 offense Wings | 24 |
+| Slots across 3 offense squads | 18 |
 
-**Overlap is forced, not merely permitted.** Three full Wings need 24 slots, but
-only 15 heroes are ever free. Three disjoint Wings are mathematically impossible
-— and at 8 apiece, **any two Wings must share at least one hero** (8 + 8 − 15).
-
-This is the number that decided the Wing's size. Holding defense at two Sixes
-rather than growing it to two Eights is what keeps the free pool at 15: a Wing
-of 8 drawn from 15 fields **53%** of what a player has available, which leaves
-real choice in the picking. Had defense also gone to 8, the pool would have
-fallen to 11, a Wing would field **73%** of it, and any two Wings would have been
-forced to share five heroes — three saved Wings that were barely three different
-Wings, and counter-building on offense reduced to almost nothing.
+**Overlap is forced, not merely permitted.** Three full offense squads need 18
+slots, but only 15 heroes are ever free. Three disjoint offense squads are
+mathematically impossible.
 
 **The defense split is the central strategic decision of the game.** With
 identical rosters, choosing *which 12 of your 27 to lock away* is the one
@@ -369,17 +327,12 @@ axis, so it must be tuned carefully — a large level or gear gap between two
 identical rosters would decide matches on its own and undo the very fairness
 this design buys.
 
-## The back seat
+## The sixth slot
 
-Both shapes keep exactly **one** hero in the rearmost row — row 1 for an
-attacking Wing, row 6 for a defending Six. Growing the Wing to eight deliberately
-did **not** widen it; the four new-and-old middle slots absorbed the growth
-instead, because everything below depends on that seat being singular.
-
-It is deliberately **not** another copy of the other slots. It is a contingency
-seat with a sharp profile — real advantages, real costs, and one hard
-requirement — and it falls out of the reach rule rather than needing any special
-case.
+Row 1 is deliberately **not** a sixth copy of the other slots. It is a
+contingency seat with a sharp profile — real advantages, real costs, and one
+hard requirement — and it falls out of the reach rule rather than needing any
+special case.
 
 **It is untouchable at full formation.** Run the same distance rule from the
 enemy's side: a defender in row 4 with reach 2 reaches rows 3 and 2. Row 1 is
@@ -397,16 +350,10 @@ attack. A **reach-1** hero there reaches only row 2 and cannot help the front
 line at all, which is where the damage is landing.
 
 > **Putting a reach-1 hero in the back line is asking for trouble.** It can
-> neither attack nor reach the front line to help it — an eighth of a Wing, or a
-> sixth of a Six, doing almost nothing. This is a deliberate trap with a knowable
-> answer, not a flaw to be designed out: the slot rewards a player who
-> understands reach and punishes one who treats the back row as a safe parking
-> space.
->
-> Note the trap is **cheaper in a Wing than in a Six** — one wasted hero out of
-> eight costs 12.5% of the squad rather than 16.7%. Making the punishing slot
-> proportionally less punishing is a side effect of the resize worth watching,
-> not an intended one.
+> neither attack nor reach the front line to help it — a sixth of the squad
+> doing almost nothing. This is a deliberate trap with a knowable answer, not a
+> flaw to be designed out: the slot rewards a player who understands reach and
+> punishes one who treats row 1 as a safe parking space.
 
 The squad builder should make reach *visible* enough that the mistake is
 learnable — showing what a hero can actually touch from the slot it's being
@@ -426,12 +373,8 @@ the moment its protection lapses.
 
 ## Settled
 
-- An attacking squad is a **Wing** of **8**, formation fixed at **3 front /
-  4 middle / 1 back**.
-- A defending squad is a **Standing Six** of **6**, formation fixed at **2 front
-  / 3 middle / 1 back**.
+- Squad size **6**; formation fixed at **2 front / 3 middle / 1 back**.
 - Rows numbered **1–6** on one shared absolute axis, attacker 1–3, defender 4–6.
-  Row count is the same for both shapes; only occupancy differs.
 - Every hero has **reach 1 or 2**.
 - Reach is **row distance, counting occupied rows only**, own rows included.
 - Empty rows are **skipped**; heroes never move.
@@ -439,8 +382,7 @@ the moment its protection lapses.
   *all* targeting — enemies and allies alike. A heal is range-limited exactly
   as an attack is. Powers declare whether they want allies or enemies; reach
   decides who is in range.
-- **Attack and defense no longer use the same shape.** Both have three rows and
-  a single back seat; they differ in front and middle width.
+- Both attack and defense squads use the same shape.
 - **All 27 heroes unlocked from the start**, one copy each, identical for every
   player. No collection, no unlocking, no duplicates.
 - **Two defense zones with fixed roles** — one **Visible** (scoutable, the only
@@ -451,50 +393,13 @@ the moment its protection lapses.
   win, capped at **90%**, always displayed.
 - **Every defense squad tracks its own hold streak**, reset when the squad is
   edited.
-- **Up to 3 offense Wings**, freely overlapping with each other. At 8 apiece from
-  a pool of 15, any two must share at least one hero.
+- **Up to 3 offense squads**, freely overlapping with each other.
 - Moving a hero to defense **evicts it from offense squads and invalidates**
   them.
 
 ## Still open
 
-### 0. How does a defending Six survive an attacking Wing of 8? — *blocking*
-
-Every battle is now **8 against 6**. The attacker brings a third more bodies,
-a third more actions per round, and a wider front row that opens with three
-strikes instead of two. Nothing currently compensates the defender.
-
-That matters more here than it would in most games, because a startling amount
-of already-settled design assumes defenses hold reasonably often:
-
-- **Hold streaks** are public, per-zone, and a headline scouting signal. If a
-  Six almost never holds against a Wing, every streak in the game reads 0–2 and
-  the number stops meaning anything.
-- **Ambush** is a reward for a long *attack* streak. If attacking is
-  structurally easy, streaks run long, everyone sits near the 90% cap, and the
-  Hidden Six stops being an occasional event.
-- **The defense/offense split is billed as the central strategic decision.**
-  It is only a real dilemma if the 12 you lock away can actually accomplish
-  something.
-
-Four ways out, not mutually exclusive:
-
-| Approach | What it does | Cost |
-|---|---|---|
-| **Defensive multiplier** | Engine-run defenders get a flat bonus to damage, toughness or both | A tuning number with no fiction behind it; needs to be visible or it feels arbitrary |
-| **Terrain / fortification** | The defending zone grants a positional advantage — a shielded front row, a row the attacker must clear first | New mechanic, but it earns the asymmetry rather than papering over it |
-| **Attacker attrition** | The Wing carries damage or spent cooldowns between battles, so 8 fresh heroes is not the standard case | Changes the loop from discrete battles to a campaign; large |
-| **Defense also goes to 8** | Restores symmetry outright | Rejected — it drops the offense pool to 11. See the arithmetic above |
-
-The fourth is already ruled out. The first is the cheapest and the least
-interesting; the second is the one most likely to be *good*, and it belongs in
-`03-powers.md` or a document that does not exist yet.
-
-**Nothing else in this file is blocked on the answer** — the reach rules, the
-roster economy and the back seat all hold regardless. But no battle can be
-balanced until it is settled.
-
-### 1. Which squad deserves the stronger heroes?
+### 0. Which squad deserves the stronger heroes?
 
 The two zones face different populations, and the answer is not obvious. The
 **Visible** squad absorbs the volume — every attack in the game starts there,
@@ -507,21 +412,21 @@ ones depends entirely on the rating stakes attached to each. That is a tuning
 decision with a real strategic answer, and it should be arrived at deliberately
 rather than falling out of whatever the first numbers happen to be.
 
-### 2. Does a fought Hidden squad stay revealed?
+### 1. Does a fought Hidden squad stay revealed?
 
 An ambushed attacker has now seen that player's Hidden squad. Whether that
 knowledge persists — and whether it is even useful, given the Hidden zone can
 never be chosen — decides if "remembering who ambushed you" becomes a real
 layer or a dead end.
 
-### 3. What does a Hidden defense loss mean for the defender?
+### 2. What does a Hidden defense loss mean for the defender?
 
 The Hidden squad is attacked rarely and only by strong players, so its win rate
 will read very differently from the Visible squad's. Whether a defender is
 rewarded for a Hidden hold, and how heavily, needs settling alongside the
 attacker's reward.
 
-### 4. Is placement constrained by type?
+### 3. Is placement constrained by type?
 
 [`../03-squad-builder.md`](../03-squad-builder.md) has always said "melee vs.
 magic positioning matters." A hard rule — martial heroes must be front — sits
@@ -530,12 +435,12 @@ options would be thin. Soft incentives are almost certainly right, but reach
 may already be doing this job on its own: whatever else is true, a melee hero
 wants to be where it can actually connect.
 
-### 5. Does anything besides reach depend on row?
+### 4. Does anything besides reach depend on row?
 
 Reach makes rows matter. Whether they *also* modify damage taken or dealt, or
 weight AI target selection, is unanswered — and may now be unnecessary.
 
-### 6. How is reach assigned across the roster?
+### 5. How is reach assigned across the roster?
 
 Reach is a per-hero property, not one of the ten stats in
 [`01-stats.md`](01-stats.md), and no hero has been given a value yet. The
@@ -544,7 +449,7 @@ slot usefully or attack from the middle row, so if reach 2 is common the
 formation loosens, and if it is rare the front row becomes crowded. Worth
 deciding as a roster-wide budget rather than hero by hero.
 
-### 7. Does the defense squad follow different combat rules?
+### 6. Does the defense squad follow different combat rules?
 
 The zones now differ in *visibility*, but whether a defending formation behaves
 differently in combat — row collapse, reach, targeting — is still unanswered.
@@ -552,26 +457,14 @@ Belongs to [`07-defense-ai.md`](07-defense-ai.md).
 
 ---
 
-## Knock-on effects of the resizes
+## Knock-on effects of 5 → 6
 
-The squad has been resized twice — first from 5 to 6, then the attacking Wing
-from 6 to 8 while defense stayed at 6.
-
-- **Type coverage on offense is nearly total.** A Wing of 8 can field 8 of the 9
-  damage types. "Cover everything" is now one hero short of literal, which makes
-  a Wing much harder to hard-counter and pushes the attacker's skill expression
-  away from coverage and toward *placement and reach* — the things that are still
-  scarce. A defending Six still covers at most 6 of 9, and that gap is part of
-  the 8-vs-6 problem in *Still open · 0*.
-- **Shared-weakness math shifted twice.** The lore's warning microcopy — *"Three
-  of yours bleed to the same Bane"* — was 3 of 5, then 3 of 6, and on offense is
-  now 3 of 8. It has quietly stopped being alarming; on a Wing the threshold
-  probably wants to be 4, while a Six should keep 3. **The two shapes likely need
-  different warning thresholds**, which the builder does not currently model.
-- **The battle screen got denser again.** Fourteen chips rather than twelve, and
-  the two sides are no longer visually symmetric — a Wing's 3/4/1 against a Six's
-  2/3/1. Any layout that assumed a mirrored board needs redoing. Called out in
-  [`../04-battle-screen.md`](../04-battle-screen.md).
-- **The squad builder now has two modes.** Building a defense Six and building an
-  attack Wing are different shapes with different slot counts, so the builder can
-  no longer be one grid. See [`../03-squad-builder.md`](../03-squad-builder.md).
+- **Type coverage went up.** A squad can field 6 of the 9 damage types instead
+  of 5, so "cover everything" gets meaningfully closer.
+- **Shared-weakness math shifted.** The lore's warning microcopy — *"Three of
+  yours bleed to the same Bane"* — is 3 of 6 now rather than 3 of 5. Still a
+  real warning, proportionally less dire; the warning threshold may want
+  revisiting.
+- **The battle screen got denser.** Twelve chips instead of ten, plus row
+  structure on both sides, plus a reach-based reachability state per target.
+  Called out in [`../04-battle-screen.md`](../04-battle-screen.md).

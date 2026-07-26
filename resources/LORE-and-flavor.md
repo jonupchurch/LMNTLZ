@@ -8,7 +8,7 @@
 
 Before there were kingdoms, there was the **Sundering** — the moment the world-soul shattered into Nine Forces and scattered across a broken sky. Aethrym is what grew back around the shards: a realm of floating shard-isles, storm-seas, and buried god-bone, where every living thing carries a trace of one of the Nine.
 
-Those born with a strong enough resonance are the **LMNTLZ** — *Elementals* — heroes who can shape their Force into weapon, ward, and wonder. They are courted, conscripted, and collected. In the age of the **Warden Courts**, the great houses no longer send armies. They send champions. Eight to strike, and twice six to stand. And the world watches.
+Those born with a strong enough resonance are the **LMNTLZ** — *Elementals* — heroes who can shape their Force into weapon, ward, and wonder. They are courted, conscripted, and collected. In the age of the **Warden Courts**, the great houses no longer send armies. They send champions. Six to strike, and twice six to stand. And the world watches.
 
 To command LMNTLZ is to read the eternal argument between the Forces — for no Force is supreme, and every strength is a door that some other strength was made to open.
 
@@ -52,7 +52,7 @@ So every hero reads as a small equation:
 
 > **2 Strengths** (their kindred Forces) · **1 Bane** (major weakness) · **1 Fault** (minor weakness)
 
-The whole game of LMNTLZ is holding those equations in your head — building a wall of six whose Banes don't line up, and choosing eight attackers whose Forces are keys to the enemy's doors.
+The whole game of LMNTLZ is holding those equations in your head — building six heroes whose Banes don't line up, and choosing six attackers whose Forces are keys to the enemy's doors.
 
 ### The doors are not chosen — they are consequences
 
@@ -153,7 +153,7 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 ### Loading-screen / lore whispers
 - *"The sky broke into Nine. We are the pieces that learned to fight back."*
 - *"Every strength is a locked door. Every weakness is the key someone else was born holding."*
-- *"Send eight to strike. Leave twice six to stand. Pray your Banes never line up."*
+- *"Send six to strike. Leave twice six to stand. Pray your Banes never line up."*
 - *"No Force rules. That is the only law the Sundering left us."*
 - *"A wall of shields still has a seam. Ask any Pierce."*
 
@@ -162,11 +162,11 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 - **Super Effective (Bane hit):** *"There — the open door!"* / *"Struck to the root!"*
 - **Resisted (hit a strength):** *"Kindred to the core. That'll cost you."* / *"You struck the wall, not the seam."*
 - **KO:** *"Returned to the shard."* / *"One less voice in the argument."*
-- **Victory:** *"The Court has its answer."* / *"Six stood. Eight struck. The isle is yours."*
+- **Victory:** *"The Court has its answer."* / *"Six stood. Six struck. The isle is yours."*
 - **Defeat:** *"Your doors were read. Rebuild, and return."*
 
 ### UI microcopy
-- **Attack squad label:** *The Striking Wing*
+- **Attack squad label:** *The Striking Six*
 - **Defense squad label:** *The Standing Six*
 - **Empty squad slot:** *An open place at the wall.*
 - **Cooldown (power recharging):** *Gathering…*
@@ -189,11 +189,11 @@ Keep this consistent across all prompt files and the build:
 - **9 damage types:** 6 magic (Earth, Air, Fire, Water, Light, Dark) + 3 melee (Slash, Pierce, Crush).
 - **Roster:** 3 champions per type = **27 heroes** total.
 - **Powers:** up to **5 per hero**, each with its **own cooldown rate**.
-- **Squads — two shapes, not one.** An attacking **Wing** is exactly **8 heroes** in **3 front · 4 middle · 1 back**. A defending **Standing Six** is exactly **6 heroes** in **2 front · 3 middle · 1 back**. Both use three rows and both keep a single hero in the rearmost seat; they differ in front and middle width, so a battle is **8 against 6**.
+- **Squads:** exactly **6 heroes**, arranged in a fixed three-row formation — **2 front · 3 middle · 1 back**.
 - **Roster:** all **27 heroes unlocked from the start**, one copy each, **identical for every player**. Nothing to collect or unlock; no duplicates. No player can ever out-roster another.
-- **Allocation:** each player defends **two zones** (12 heroes, engine-run) with fixed roles — a **Visible** defense, scoutable and the only squad anyone can choose to attack, and a **Hidden** defense that is never shown and never selectable — and keeps up to **3 attack Wings** (player-controlled).
+- **Allocation:** each player defends **two zones** (12 heroes, engine-run) with fixed roles — a **Visible** defense, scoutable and the only squad anyone can choose to attack, and a **Hidden** defense that is never shown and never selectable — and keeps up to **3 attack squads** (player-controlled).
 - **The lure:** the only way into a Hidden battle is to be **ambushed** there. Each consecutive attack win adds ~2% to the chance (capped at 90%), openly displayed, and Hidden battles pay more. A win streak is the key to the better fights, not a liability.
-- **Hold streaks:** every defense squad tracks its own consecutive successful defenses. Both are public — even the Hidden squad's, giving it a reputation without revealing what stands behind it. Editing a squad resets its streak. **A hero on defense cannot attack**, leaving 15 for offense. Wings may overlap each other — and must, since 3 × 8 exceeds 15; at 8 apiece from 15, any two Wings share at least one hero. Moving a hero to defense evicts it from any Wing and invalidates that Wing.
+- **Hold streaks:** every defense squad tracks its own consecutive successful defenses. Both are public — even the Hidden squad's, giving it a reputation without revealing what stands behind it. Editing a squad resets its streak. **A hero on defense cannot attack**, leaving 15 for offense. Attack squads may overlap each other — and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts it from any attack squad and invalidates that squad.
 - **Reach:** every hero has a **reach of 1 or 2**, measured in rows across a single 1–6 battlefield axis (attacker 1–3, defender 4–6). A hero's *own* rows count against its reach, and fully empty rows are skipped — so range opens up as a battle wears on. See `mechanics/02-squads.md`.
 - **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak). All four slots are **derived from just two authored fields** — `primary` and `secondary` — via `Bane = counter(primary)`, `Fault = counter(secondary)`. Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix; both are generated.
 - **A Martial hero always carries an Arcane secondary.** A second Martial discipline is impossible — see "The doors are not chosen" above.
@@ -202,7 +202,7 @@ Keep this consistent across all prompt files and the build:
 
 ## What is settled vs. what is still soft
 
-**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force, all unlocked from the start and identical for every player; the attacking Wing of 8 in 3/4/1 and the defending Standing Six of 6 in 2/3/1; two engine-run defense zones locking 12 heroes out of offense; reach of 1–2 rows gating all targeting; turn-based cooldowns; player-offense / engine-defense.
+**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force, all unlocked from the start and identical for every player; squads of 6 in a 2/3/1 formation; two engine-run defense zones locking 12 heroes out of offense; reach of 1–2 rows gating all targeting; turn-based cooldowns; player-offense / engine-defense.
 
 **Still soft — tune freely:** hero names, epithets, House voices, and all flavor text; the damage multipliers (only the Bane's "+50%" is pinned, in `01-hero-card.md`); stats, powers, and cooldown lengths; the rank ladder.
 
