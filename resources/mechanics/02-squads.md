@@ -100,80 +100,80 @@ another.** Everything that separates two players is what they *do* with the
 same 27 — how they split them, where they place them, and how they read an
 opponent.
 
-### Two defense zones — one seen, one blind
+### Two defense zones — Visible and Hidden
 
 A player must defend **two** zones. Each is held by its own 6-hero squad, so
 **12 heroes are committed to defense** at all times, and both are run by the
 engine when attacked.
 
-The two zones are **not equivalent**. When an attacker is matched against a
-player:
+The two have **fixed, permanent roles** — the player designates which squad
+holds which:
 
-- **One zone is surfaced.** Its full squad is visible during matchmaking —
-  heroes, types, and row placement — so the attacker can scout it and
-  counter-build against it deliberately.
-- **The other is blind.** The attacker knows it exists but sees nothing of what
-  is in it.
+- **The Visible defense.** Fully surfaced during matchmaking — heroes, types,
+  and row placement — so an attacker can scout it and counter-build against it.
+  **This is the only zone anyone can choose to attack.**
+- **The Hidden defense.** Never shown, and **never selectable.** No attacker can
+  decide to fight it. The *only* way into a Hidden battle is to be **ambushed**
+  there, and Hidden battles pay a higher reward.
 
-The attacker chooses which to hit, and **attacking the blind zone is worth more
-rating.** Certainty is traded for points.
+There is therefore no choice at matchmaking. An attacker attacks the Visible
+squad; the game decides whether they arrive somewhere else.
 
-#### What this does to defensive strategy
+#### The two zones face completely different populations
 
-The two zones pull in opposite directions, which is what makes committing 12
-heroes an interesting decision rather than a flat tax:
+This is what makes splitting 12 heroes interesting:
 
-| | Attacker arrives with | So the defending squad wants to be |
-|---|---|---|
-| **Seen zone** | A squad built specifically to counter it | **Hard to read** — well-rounded, no stacked Banes, no single exploitable seam |
-| **Blind zone** | A generalist squad; they cannot aim | **Sharp** — a narrow, exploitable weakness is safe here, because nobody knows to target it |
+| | Attacked by | Frequency | Attacker arrives | So the squad wants to be |
+|---|---|---|---|---|
+| **Visible** | Everyone | **High** — every attack starts here | Counter-built against it, having scouted | **Hard to read** — well-rounded, no stacked Banes, no single exploitable seam |
+| **Hidden** | Only ambushed players, i.e. those on win streaks | **Low** | Unable to aim; whatever squad they happened to bring | **Punishing** — it only ever meets strong attackers, and a narrow weakness is safe because nobody can target it |
 
-A squad that would be a liability in the open is perfectly viable behind the
-veil. Deciding which of your two builds can survive being *read* is the core of
-defensive play.
+The allocation question is genuinely open, and it is the heart of defensive
+play: the Visible squad absorbs the *volume* of incoming attacks from the whole
+playerbase, while the Hidden squad meets a *small number of the best* players.
+Which of those deserves your strongest heroes depends entirely on how rating is
+won and lost in each — a tuning decision, not an obvious one.
 
 #### What it does for the attacker
 
-It also gives the three attack squads distinct jobs. One naturally becomes a
-**generalist team for blind runs** — broad coverage, no assumptions — while the
-others are **counter-specific builds** kept for scouted fights. Without the
-asymmetry, three squads drawn from the same 15 heroes would tend toward
-redundancy.
+Because every attack begins at a scoutable Visible squad, counter-building is
+always live. But an attacker deep into a streak knows an ambush is likely and
+that their counter-build may meet a squad it wasn't designed for.
 
-#### The lure — a streak can override the choice
+That gives the three attack squads a clear division of labour that shifts with
+streak: **counter-specific builds while ambush risk is low, and a robust
+all-rounder as it climbs.** The tension lives inside every attack rather than
+being a menu choice.
 
-The attacker picks a zone, but the pick is not guaranteed. **Each consecutive
-attack win adds ~2% to the chance that choosing the seen zone lands them in the
-blind one instead** — lured past the bait and into whatever was waiting.
+#### The ambush — the only door into a Hidden battle
+
+An attacker always sets out against the Visible squad. **Each consecutive attack
+win adds ~2% to the chance that they arrive at the Hidden one instead** — lured
+past the open gate into whatever was waiting behind it.
+
+This is the *sole* path to a Hidden battle. It cannot be chosen, bought, or
+sought out; it is earned by winning.
 
 **The chance is shown explicitly** on the matchmaking screen alongside the
-streak: *"14 wins · 28% chance of ambush."* Overriding a player's stated choice
-without warning reads as the game cheating, and it would read that way most
-sharply the first time it ended a long run. Shown, it becomes a decision.
+streak: *"14 wins · 28% chance of ambush."* Two reasons it must be visible — an
+unannounced switch of opponent reads as the game cheating, and more importantly
+the number is **aspirational**. It tells a player their streak is worth
+something concrete and rising.
 
-Something useful falls out of showing it: **at a high trap rate, choosing the
-blind zone becomes the rational play**, because the premium pays for a risk the
-attacker is already carrying. The mechanic steers streaking players toward the
-gamble rather than simply punishing them for winning.
+##### It is a reward, not a punishment
 
-It also completes the zone design. Because the trap fires *regardless of what
-the attacker picks*, the hidden squad matters even to a player who never
-voluntarily gambles — which is exactly the failure mode the blind premium alone
-could not prevent.
+Hidden battles pay more. So the streak mechanic reads as: **win more, and you
+earn access to higher-stakes, higher-reward fights.** A long streak isn't
+something the game takes away from you — it's the key to the better content.
 
-##### What it does to defensive strategy
+That produces a clean rhythm: win Visible battles → streak climbs → the odds of
+a lucrative Hidden battle rise with it → eventually one lands, and it is the
+hardest fight available. Low-streak players get reliable, scoutable battles to
+learn on. High-streak players are routed toward the fights worth having.
 
-It inverts the earlier reading. With traps in play, the hidden zone absorbs both
-the deliberate gamblers *and* the ambushed, so it should be a player's
-**strongest** squad — and since 27 heroes are fixed, that means the seen zone is
-deliberately the weaker one. **The seen squad becomes the lure and the hidden
-squad becomes the trap**, which is both mechanically self-consistent and exactly
-what the Warden Courts would do.
-
-That produces a clean rhythm: farm visible squads safely → streak climbs → trap
-chance rises → get pulled into a fight you did not prepare for → streak resets.
-Low-streak players get reliable wins to learn on; high-streak players carry
-real risk.
+It also solves what a chosen premium could not: because the ambush fires
+regardless of intent, **the Hidden squad matters to every attacker**, not only
+to those who would opt into a gamble.
 
 ##### What it shifts, rather than removes
 
@@ -191,38 +191,66 @@ is arguably a *higher* bar than winning a fight you pre-solved at the squad
 builder, so a high-streak player facing regular ambushes is being tested harder,
 not being denied the ability to demonstrate skill.
 
-The genuine trade is that the **payoff for scouting-and-countering drops as the
-trap rate climbs**. With the cap at 90%, preparation against a *specific* seen
-squad stops being worthwhile deep into a long streak — but preparation itself
-doesn't disappear, it changes target: building a squad that performs well
-against an unknown defense is still a build decision, just a different one.
-Elite play trades counter-picking for robustness, and then leans on execution.
+The genuine trade is that **scouting-and-countering pays off less as the ambush
+rate climbs**. At a 90% cap, preparing against the *specific* Visible squad
+stops being worthwhile deep into a long streak — but preparation doesn't
+disappear, it changes target. Building a squad that performs well against an
+unknown defense is still a build decision, just a different one. Elite play
+trades counter-picking for robustness, then leans on execution.
+
+#### Defensive streaks
+
+Streaks are not only an attacker's stat. **Every defense squad tracks its own
+consecutive successful holds** — Visible and Hidden alike, two counters per
+player, each independent of the other and of the player's attack streak.
+
+This gives the defensive half of the game something to play for. Setting a
+defense is otherwise a fire-and-forget action whose outcome a player never
+witnesses; a hold count turns it into a number that grows while they're away,
+and one they'll want to protect.
+
+**A Visible squad's streak is shown when scouting it.** It is the single most
+useful thing an attacker can know beyond composition — *"this squad has turned
+away 12 attackers"* says something the roster alone doesn't, because it reflects
+how the squad actually performs rather than how it looks.
+
+**A Hidden squad's streak should be visible even though its composition is
+not.** An opponent card can honestly say *"their Closed Gate has held 9 times"*
+while showing nothing of what stands behind it. That gives the Hidden zone a
+**reputation** — a rising threat with no visible shape, which is exactly the
+tone the ambush wants, and it makes the streak meaningful for a squad almost
+nobody sees.
+
+##### Editing a defense must reset its streak
+
+Otherwise the number measures nothing: a player could ride a long hold streak
+while quietly swapping the squad underneath it, and an attacker scouting *"held
+12 times"* would be reading a claim about heroes that are no longer there.
+
+This also creates a genuine cost to tinkering, which is a useful pressure. It
+pushes against the rule that moving a hero onto defense invalidates offense
+squads — a player wanting a hero back for an attack squad must break a defensive
+streak to get them. Two commitments pulling in opposite directions over the same
+27 heroes.
 
 ##### Rules this needs
 
 - **The rate is capped at 90%**, reached at 45 consecutive wins. Uncapped it
-  would hit 100% at 50 and break past that.
-
-  A cap this high deliberately lets the choice collapse in the tail. Above
-  roughly a 40% trap rate, **choosing the blind zone becomes strictly better**:
-  picking blind costs only the remaining chance of drawing the easy fight, and
-  pays the full premium for it. So elite streaks converge on always gambling —
-  which is the correct outcome, since a player on a 45-win run should be facing
-  the hardest content available and being paid for it.
-
-  The practical effect is that the seen/blind decision stays live across the
-  streak lengths most play actually occurs at, and stops mattering only for
-  exceptional runs, where it acts as a soft ceiling on dominance. Because the
-  odds are displayed throughout, a player converging on "always blind" is making
-  an informed choice rather than being quietly overruled.
-- **A trapped attacker is paid the blind reward, not the seen one.** They fought
-  the hidden squad. Paying the lower rate for the harder fight reads as theft,
-  and arguably it should pay *more*, since they were denied any chance to
-  prepare.
-- **A trapped loss should probably not reset the streak.** Otherwise the streak
-  triggers the trap, and the trap ends the streak — the player eats the rating
-  loss *and* the reset for something they did not choose. Losing a gamble you
-  took is different from losing an ambush.
+  would hit 100% at 50 and break past that. The 10% floor matters: a player deep
+  into a streak still occasionally draws the Visible squad, so scouting never
+  becomes entirely pointless and the ladder never fully collapses into one fight.
+- **The streak is the only currency that buys Hidden battles**, and they pay
+  more. That makes a streak an asset a player is building toward rather than a
+  liability they're carrying — the mechanic should read as *earning access*, not
+  as risk accumulating.
+- **An ambushed loss should probably not reset the streak.** Otherwise the
+  streak triggers the ambush, and the ambush ends the streak — a player is
+  punished twice for something they never chose. If a streak is the key to the
+  better content, having it snap on the very fight it unlocked is the most
+  demoralising possible outcome.
+- **Four streaks exist per player**, and they must not be conflated: one attack
+  streak (drives ambush odds), and one hold streak for each of the two defense
+  squads. Only the attack streak feeds the ambush roll.
 - Every value here is **live-tunable**, never a client constant.
 
 #### It protects the defender's information too
@@ -349,52 +377,48 @@ the moment its protection lapses.
 - Both attack and defense squads use the same shape.
 - **All 27 heroes unlocked from the start**, one copy each, identical for every
   player. No collection, no unlocking, no duplicates.
-- **Two defense zones**, 12 heroes committed, unavailable for offense.
+- **Two defense zones with fixed roles** — one **Visible** (scoutable, the only
+  zone anyone can choose to attack) and one **Hidden** (never shown, never
+  selectable, reachable only by ambush and paying more). 12 heroes committed,
+  unavailable for offense.
+- **Ambush** is the sole door into a Hidden battle: +2% per consecutive attack
+  win, capped at **90%**, always displayed.
+- **Every defense squad tracks its own hold streak**, reset when the squad is
+  edited.
 - **Up to 3 offense squads**, freely overlapping with each other.
 - Moving a hero to defense **evicts it from offense squads and invalidates**
   them.
 
 ## Still open
 
-### 0. Tuning the blind premium — and the degenerate case it guards against
+### 0. Which squad deserves the stronger heroes?
 
-How much extra rating a blind attack pays is the single most important number
-in this system, and it fails badly in both directions.
+The two zones face different populations, and the answer is not obvious. The
+**Visible** squad absorbs the volume — every attack in the game starts there,
+from the whole skill range, all of them able to scout it. The **Hidden** squad
+faces few attackers, but every one of them is on a win streak and therefore
+good.
 
-**Premium too high** and every attacker goes blind. The seen zone is never
-attacked, so what a player puts there stops mattering, and half the defensive
-decision evaporates — along with all the counter-building the game is built on,
-since nobody would ever scout.
+Whether a player should fortify against many average attacks or few excellent
+ones depends entirely on the rating stakes attached to each. That is a tuning
+decision with a real strategic answer, and it should be arrived at deliberately
+rather than falling out of whatever the first numbers happen to be.
 
-**Premium too low** and nobody gambles. The blind zone becomes a formality and
-the feature does nothing.
+### 1. Does a fought Hidden squad stay revealed?
 
-The premium has to sit where a guaranteed higher win rate from counter-building
-genuinely competes with the extra points. That balance point can only really be
-found from live data, so **the value must be a tunable, not a constant compiled
-into the client.**
+An ambushed attacker has now seen that player's Hidden squad. Whether that
+knowledge persists — and whether it is even useful, given the Hidden zone can
+never be chosen — decides if "remembering who ambushed you" becomes a real
+layer or a dead end.
 
-### 1. Who chooses which zone is exposed?
+### 2. What does a Hidden defense loss mean for the defender?
 
-Unresolved. If the **defender** picks, it is another layer of strategy — you
-decide which build can bear scrutiny. If the **system** picks (fixed, random per
-match, or alternating), the defender must build both squads to survive either
-role, which is a harder and arguably more interesting constraint.
+The Hidden squad is attacked rarely and only by strong players, so its win rate
+will read very differently from the Visible squad's. Whether a defender is
+rewarded for a Hidden hold, and how heavily, needs settling alongside the
+attacker's reward.
 
-### 2. Does a fought blind zone stay revealed?
-
-If an attacker hits the blind zone, they have now seen it. Whether that
-knowledge persists — for a rematch, or for that attacker generally — decides
-whether the blind premium is repeatable against the same opponent, and whether
-"scouting by attacking" becomes a deliberate strategy.
-
-### 3. Can an attacker hit both zones?
-
-Whether a match is one zone or both, and whether both can be taken in sequence,
-is unstated. It changes what a single attack costs and what a defense loss
-means.
-
-### 4. Is placement constrained by type?
+### 3. Is placement constrained by type?
 
 [`../03-squad-builder.md`](../03-squad-builder.md) has always said "melee vs.
 magic positioning matters." A hard rule — martial heroes must be front — sits
@@ -403,12 +427,12 @@ options would be thin. Soft incentives are almost certainly right, but reach
 may already be doing this job on its own: whatever else is true, a melee hero
 wants to be where it can actually connect.
 
-### 5. Does anything besides reach depend on row?
+### 4. Does anything besides reach depend on row?
 
 Reach makes rows matter. Whether they *also* modify damage taken or dealt, or
 weight AI target selection, is unanswered — and may now be unnecessary.
 
-### 6. How is reach assigned across the roster?
+### 5. How is reach assigned across the roster?
 
 Reach is a per-hero property, not one of the ten stats in
 [`01-stats.md`](01-stats.md), and no hero has been given a value yet. The
@@ -417,7 +441,7 @@ slot usefully or attack from the middle row, so if reach 2 is common the
 formation loosens, and if it is rare the front row becomes crowded. Worth
 deciding as a roster-wide budget rather than hero by hero.
 
-### 7. Does the defense squad follow different combat rules?
+### 6. Does the defense squad follow different combat rules?
 
 The zones now differ in *visibility*, but whether a defending formation behaves
 differently in combat — row collapse, reach, targeting — is still unanswered.

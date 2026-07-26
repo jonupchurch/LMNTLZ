@@ -12,15 +12,13 @@ Design **two connected screens** for LMNTLZ, a fantasy battler, using the LMNTLZ
 
 Players attack other players' **engine-run defense squads**. Design the screen where a player, with their attack squad locked, chooses or is matched to a target:
 
-- **Opponent cards presenting two very different fights.** Every player defends **two zones**, and the attacker picks one:
-  - **The seen zone** — fully surfaced. All 6 defenders as hero busts with type badges in their 2/3/1 formation, so the attacker can scout coverage *and* positioning and counter-build deliberately. Lower rating reward.
-  - **The blind zone** — nothing shown. The attacker knows it exists and knows nothing else. **Higher rating reward.**
-
-  This risk/reward choice is the centrepiece of the screen and should be its most dramatic moment — certainty against points. Design the blind zone as a deliberate, tempting absence: six sealed or shrouded slots that feel like a wager, not like a loading state or missing data. The two options must never read as one squad of 12.
+- **Opponent cards showing the Visible defense — the only squad anyone can choose to attack.** All 6 defenders as hero busts with type badges in their 2/3/1 formation, so the attacker can scout coverage *and* positioning and counter-build deliberately.
+- **A hold-streak badge on that squad** — *"has turned away 12 attackers"* — the most useful thing an attacker can learn beyond composition, since it reflects how the squad actually performs rather than how it looks.
+- **The Hidden defense as a presence, not a panel.** Every player also keeps a second, Hidden squad that **can never be selected** — the only way into it is to be ambushed. Show that it exists and show *its* hold streak (*"their Closed Gate has held 9 times"*) while revealing nothing of its composition. It should read as a rising reputation with no visible shape: a threat you can measure but not see. Never as a locked panel, a loading state, or missing data.
 - A **"scout" readout** that hints at the defense's collective weakness/strength spread (how much can this attacker's squad exploit it?), reinforcing counter-play.
 - **A "your attack squad" strip** pinned for reference, with a quick "swap squad" shortcut.
-- Rank tier and **the two different rating stakes side by side** — the seen zone's reward against the blind zone's premium — so the gamble is quantified at the moment of choosing, not buried. Two distinct **"Attack"** CTAs, one per zone.
-- **A win-streak and ambush-risk readout.** Each consecutive attack win raises the chance that choosing the *seen* zone lands the player in the *blind* one instead — lured past the bait. Show it plainly: **"14 wins · 28% chance of ambush."** This must never be a hidden number; overriding a stated choice without warning reads as the game cheating. Displayed, it becomes strategy — at a high enough risk, taking the blind fight for the premium is simply correct, since the danger is already being carried.
+- Rank tier, the rating at stake, and a single strong **"Attack"** CTA — there is only one squad to choose.
+- **A win-streak and ambush readout, framed as a reward.** Each consecutive attack win raises the chance the player is instead pulled into that opponent's Hidden defense — a harder fight that **pays more**. Show it plainly: **"14 wins · 28% chance of ambush."** This is aspirational, not a warning: the streak is the only thing that buys access to Hidden battles, so the number should feel like progress toward better content rather than accumulating danger. It must never be concealed — an unannounced switch of opponent reads as the game cheating.
 - Optional: a few match offerings to choose from (risk/reward — tougher defenses for more rating).
 
 ### Screen 2 — Battle Results
@@ -41,6 +39,7 @@ Keep both screens cohesive with the rest of the app. Show believable populated e
 
 - PvP is **attacker (player-controlled) vs. defender (engine-run)**; you attack other players' set defenses.
 - Squads are 6 heroes in a fixed 2 front / 3 middle / 1 back formation; scouting a defense's type coverage, weaknesses, **and row placement** is part of the pre-battle skill.
-- Every player defends **two zones**: one **surfaced** during matchmaking and scoutable, one **blind**. The attacker chooses which to hit, and the blind zone pays more rating. Certainty traded for points — this is the screen's core decision.
+- Every player defends **two zones with fixed roles**: a **Visible** squad, scoutable and the only one anyone can choose to attack, and a **Hidden** squad that is never shown and **never selectable**. The sole way into a Hidden battle is to be **ambushed**, and Hidden battles pay more.
+- **Both defense squads track their own hold streak**, and both streaks are public — even the Hidden squad's, which gives it a reputation without revealing its composition.
 - Since all players own the same 27 heroes, a revealed defense also tells the attacker what is *not* available to attack with. Exposing only one zone halves that leak.
 - Keep the 9-type color language and strength/weakness cues consistent with the card and battle screens.
