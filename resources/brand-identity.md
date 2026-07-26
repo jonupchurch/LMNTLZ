@@ -14,7 +14,7 @@ Design a complete **brand identity page** for **LMNTLZ** (pronounced "elementals
 - **Lockups:** horizontal, stacked, and a compact one-line version.
 - **Monochrome:** solid black and solid white (knockout) versions that still read.
 
-**2. Brand mark / monogram / app icon.** A standalone sigil that works with no wordmark — an "L" built from an elemental sigil, or a unifying emblem that suggests "the nine forces / five-to-strike-five-to-stand." Show it as a rounded-square **app icon** on a dark arcane ground, and as a small favicon/avatar. It must be legible at 32px.
+**2. Brand mark / monogram / app icon.** A standalone sigil that works with no wordmark — an "L" built from an elemental sigil, or a unifying emblem that suggests "the nine forces / six-to-strike-six-to-stand." Show it as a rounded-square **app icon** on a dark arcane ground, and as a small favicon/avatar. It must be legible at 32px.
 
 **3. Brand color system — "the Elemental Spectrum."** The nine type colors ARE the brand palette; treat them as a spectrum, not nine random swatches. Present them grouped as the 6-magic ring and 3-melee triangle, with hex:
 - Earth `#4E7C3A` · Air `#8FCFE0` · Fire `#E8552B` · Water `#2A7FB8` · Light `#F2C744` · Dark `#7A3FA0` · Slash `#C0313A` · Pierce `#3B5BD1` · Crush `#B5732E`.
@@ -23,7 +23,7 @@ Design a complete **brand identity page** for **LMNTLZ** (pronounced "elementals
 
 **4. Brand typography.** A characterful **display face** for the wordmark, headlines, and hero names; a clean, highly legible **support face** for body, UI, and numerals. Show a brand type specimen with pairing rules and a scale.
 
-**5. Brand voice & messaging.** A short voice descriptor (confident, mythic, a little wry — see the lore), 3–5 **tagline options** drawn from the world (e.g. "Send five to strike. Leave five to stand." / "Every strength is a locked door." / "No force rules."), and a one-line elevator description. Keep it to a tidy panel.
+**5. Brand voice & messaging.** A short voice descriptor (confident, mythic, a little wry — see the lore), 3–5 **tagline options** drawn from the world (e.g. "Send six to strike. Leave six to stand." / "Every strength is a locked door." / "No force rules."), and a one-line elevator description. Keep it to a tidy panel.
 
 **6. Iconography language.** The nine element sigils as one consistent icon family (Earth crystal/leaf, Air spiral/feather, Fire flame, Water droplet/wave, Light burst, Dark crescent, Slash blade-streak, Pierce spearpoint, Crush impact), shown at badge size.
 

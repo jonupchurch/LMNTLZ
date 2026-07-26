@@ -30,4 +30,4 @@ Prioritize scannability: a player should be able to spot "all my Dark heroes" or
 
 - 9 types (6 magic + 3 melee), multiple heroes each; a full collection is dozens of heroes.
 - Each hero shows its type + relationship profile (2 strengths / 1 major weakness / 1 minor weakness).
-- This screen feeds into the **Squad Builder** (players pick 5). Include a persistent entry point to the current squad.
+- This screen feeds into the **Squad Builder** (players pick 6, arranged 2 front / 3 middle / 1 back). Include a persistent entry point to the current squad.

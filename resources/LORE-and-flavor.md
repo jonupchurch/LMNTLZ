@@ -8,7 +8,7 @@
 
 Before there were kingdoms, there was the **Sundering** — the moment the world-soul shattered into Nine Forces and scattered across a broken sky. Aethrym is what grew back around the shards: a realm of floating shard-isles, storm-seas, and buried god-bone, where every living thing carries a trace of one of the Nine.
 
-Those born with a strong enough resonance are the **LMNTLZ** — *Elementals* — heroes who can shape their Force into weapon, ward, and wonder. They are courted, conscripted, and collected. In the age of the **Warden Courts**, the great houses no longer send armies. They send champions. Five to strike, five to stand. And the world watches.
+Those born with a strong enough resonance are the **LMNTLZ** — *Elementals* — heroes who can shape their Force into weapon, ward, and wonder. They are courted, conscripted, and collected. In the age of the **Warden Courts**, the great houses no longer send armies. They send champions. Six to strike, six to stand. And the world watches.
 
 To command LMNTLZ is to read the eternal argument between the Forces — for no Force is supreme, and every strength is a door that some other strength was made to open.
 
@@ -52,7 +52,7 @@ So every hero reads as a small equation:
 
 > **2 Strengths** (their kindred Forces) · **1 Bane** (major weakness) · **1 Fault** (minor weakness)
 
-The whole game of LMNTLZ is holding those equations in your head — building five heroes whose Banes don't line up, and choosing five attackers whose Forces are keys to the enemy's doors.
+The whole game of LMNTLZ is holding those equations in your head — building six heroes whose Banes don't line up, and choosing six attackers whose Forces are keys to the enemy's doors.
 
 ### The doors are not chosen — they are consequences
 
@@ -153,7 +153,7 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 ### Loading-screen / lore whispers
 - *"The sky broke into Nine. We are the pieces that learned to fight back."*
 - *"Every strength is a locked door. Every weakness is the key someone else was born holding."*
-- *"Send five to strike. Leave five to stand. Pray your Banes never line up."*
+- *"Send six to strike. Leave six to stand. Pray your Banes never line up."*
 - *"No Force rules. That is the only law the Sundering left us."*
 - *"A wall of shields still has a seam. Ask any Pierce."*
 
@@ -161,12 +161,12 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 - **Super Effective (Bane hit):** *"There — the open door!"* / *"Struck to the root!"*
 - **Resisted (hit a strength):** *"Kindred to the core. That'll cost you."* / *"You struck the wall, not the seam."*
 - **KO:** *"Returned to the shard."* / *"One less voice in the argument."*
-- **Victory:** *"The Court has its answer."* / *"Five stood. Five struck. The isle is yours."*
+- **Victory:** *"The Court has its answer."* / *"Six stood. Six struck. The isle is yours."*
 - **Defeat:** *"Your doors were read. Rebuild, and return."*
 
 ### UI microcopy
-- **Attack squad label:** *The Striking Five*
-- **Defense squad label:** *The Standing Five*
+- **Attack squad label:** *The Striking Six*
+- **Defense squad label:** *The Standing Six*
 - **Empty squad slot:** *An open place at the wall.*
 - **Cooldown (power recharging):** *Gathering…*
 - **Strong-coverage praise:** *No shared door. A closed formation.*
@@ -184,7 +184,7 @@ Keep this consistent across all prompt files and the build:
 - **9 damage types:** 6 magic (Earth, Air, Fire, Water, Light, Dark) + 3 melee (Slash, Pierce, Crush).
 - **Roster:** 3 champions per type = **27 heroes** total.
 - **Powers:** up to **5 per hero**, each with its **own cooldown rate**.
-- **Squads:** exactly **5 heroes**. Each player keeps an **attack** squad (player-controlled on offense) and a **defense** squad (**engine/AI-run** when attacked).
+- **Squads:** exactly **6 heroes**, arranged in a fixed three-row formation — **2 front · 3 middle · 1 back**. Each player keeps an **attack** squad (player-controlled on offense) and a **defense** squad (**engine/AI-run** when attacked).
 - **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak). All four slots are **derived from just two authored fields** — `primary` and `secondary` — via `Bane = counter(primary)`, `Fault = counter(secondary)`. Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix; both are generated.
 - **A Martial hero always carries an Arcane secondary.** A second Martial discipline is impossible — see "The doors are not chosen" above.
 - **Combat is turn-based.** Each power recharges over N *turns*; cooldowns are integer turn counts, never milliseconds.
@@ -192,7 +192,7 @@ Keep this consistent across all prompt files and the build:
 
 ## What is settled vs. what is still soft
 
-**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force; squads of 5; turn-based cooldowns; player-offense / engine-defense.
+**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force; squads of 6 in a 2/3/1 formation; turn-based cooldowns; player-offense / engine-defense.
 
 **Still soft — tune freely:** hero names, epithets, House voices, and all flavor text; the damage multipliers (only the Bane's "+50%" is pinned, in `01-hero-card.md`); stats, powers, and cooldown lengths; the rank ladder.
 

@@ -9,7 +9,8 @@ Always-on operating context for LMNTLZ. The shared, tool-neutral rules live in
 
 A competitive fantasy squad battler. Nine damage types (6 magic: Earth, Air,
 Fire, Water, Light, Dark · 3 melee: Slash, Pierce, Crush), three champions each
-for a 27-hero roster. Players field 5 heroes to attack and leave 5 to defend;
+for a 27-hero roster. Players field 6 heroes to attack and leave 6 to defend, each
+squad in a fixed **2 front · 3 middle · 1 back** formation;
 **the player commands offense while the engine runs everyone's defense.** PvP is
 asynchronous — you attack snapshots of other players' defense squads, so there
 is no realtime netcode. The game is counter-building: read the enemy's
