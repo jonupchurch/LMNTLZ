@@ -12,7 +12,7 @@ Design **two connected screens** for LMNTLZ, a fantasy battler, using the LMNTLZ
 
 Players attack other players' **engine-run defense squads**. Design the screen where a player, with their attack squad locked, chooses or is matched to a target:
 
-- **Opponent cards** showing another player's handle, rank/rating, and a **preview of their defense squad** — the 6 defenders as hero busts with their type badges, laid out in their 2/3/1 formation so the attacker can scout both type coverage *and* positioning before committing.
+- **Opponent cards** showing another player's handle, rank/rating, and a **preview of their two defense zones** — each zone's 6 defenders as hero busts with type badges, laid out in their 2/3/1 formation, so the attacker can scout type coverage *and* positioning before committing. Every player defends two zones, so an opponent card previews **12 heroes across two squads**, and the design must keep them distinct rather than blurring into one wall of portraits.
 - A **"scout" readout** that hints at the defense's collective weakness/strength spread (how much can this attacker's squad exploit it?), reinforcing counter-play.
 - **A "your attack squad" strip** pinned for reference, with a quick "swap squad" shortcut.
 - Rank tier, potential rating gain/loss, and a strong **"Attack"** CTA.
@@ -36,4 +36,5 @@ Keep both screens cohesive with the rest of the app. Show believable populated e
 
 - PvP is **attacker (player-controlled) vs. defender (engine-run)**; you attack other players' set defenses.
 - Squads are 6 heroes in a fixed 2 front / 3 middle / 1 back formation; scouting a defense's type coverage, weaknesses, **and row placement** is part of the pre-battle skill.
+- Every player defends **two zones**, so scouting means reading **12 heroes across two squads**. Since all players own the same 27 heroes, seeing an opponent's 12 defenders also tells you a great deal about the 15 they have left to attack with.
 - Keep the 9-type color language and strength/weakness cues consistent with the card and battle screens.

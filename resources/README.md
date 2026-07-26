@@ -11,7 +11,7 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | **1st** | `brand-identity.md` | Wordmark suite, monogram/app icon, the nine colors as one brand spectrum, voice — **generate first** |
 | **2nd** | `design-system.md` | The in-app UI kit: tokens + component library, **with the tech stack that shapes it** |
 | 3rd | `01-hero-card.md` | The hero card at 3 scales (detail / grid tile / battle chip) |
-| 4th | `02-roster-collection.md` | Collection browser with type + weakness filters |
+| 4th | `02-roster-collection.md` | Roster browser — allocation state, type + weakness filters |
 | 5th | `03-squad-builder.md` | Pick-6 builder in the 2/3/1 formation, for attack and auto-run defense squads |
 | 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
@@ -49,4 +49,4 @@ pwsh tools/validate-matchups.ps1
 
 ## The one-paragraph pitch
 
-Nine damage types (6 magic: Earth, Air, Fire, Water, Light, Dark · 3 melee: Slash, Pierce, Crush), three champions each for 27 heroes. Every hero is strong to its 2 kindred elements and carries two open doors — a major weakness (Bane) and a minor weakness (Fault), both *derived* from those two elements rather than authored — plus up to 5 powers on individual turn-based cooldowns. Players field 6 to attack and leave 6 to defend — each squad in a fixed 2 front / 3 middle / 1 back formation — and you command your strikers while the engine runs everyone's defense. The game is counter-building: read the doors, don't stack your own.
+Nine damage types (6 magic: Earth, Air, Fire, Water, Light, Dark · 3 melee: Slash, Pierce, Crush), three champions each for 27 heroes. Every hero is strong to its 2 kindred elements and carries two open doors — a major weakness (Bane) and a minor weakness (Fault), both *derived* from those two elements rather than authored — plus up to 5 powers on individual turn-based cooldowns. All 27 are unlocked from the start and identical for every player — nothing to collect, so nobody can out-roster anyone. Each player defends **two zones**, which locks 12 heroes away from offense and leaves 15 to attack with, across up to 3 saved squads. Squads are 6 heroes in a fixed 2 front / 3 middle / 1 back formation; you command your strikers while the engine runs everyone's defense. The game is counter-building: read the doors, don't stack your own.

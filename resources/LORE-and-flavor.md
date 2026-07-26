@@ -8,7 +8,7 @@
 
 Before there were kingdoms, there was the **Sundering** — the moment the world-soul shattered into Nine Forces and scattered across a broken sky. Aethrym is what grew back around the shards: a realm of floating shard-isles, storm-seas, and buried god-bone, where every living thing carries a trace of one of the Nine.
 
-Those born with a strong enough resonance are the **LMNTLZ** — *Elementals* — heroes who can shape their Force into weapon, ward, and wonder. They are courted, conscripted, and collected. In the age of the **Warden Courts**, the great houses no longer send armies. They send champions. Six to strike, six to stand. And the world watches.
+Those born with a strong enough resonance are the **LMNTLZ** — *Elementals* — heroes who can shape their Force into weapon, ward, and wonder. They are courted, conscripted, and collected. In the age of the **Warden Courts**, the great houses no longer send armies. They send champions. Six to strike, and twice six to stand. And the world watches.
 
 To command LMNTLZ is to read the eternal argument between the Forces — for no Force is supreme, and every strength is a door that some other strength was made to open.
 
@@ -153,7 +153,7 @@ Each of the Nine is a **House** with its own creed, colors, and troublemakers. B
 ### Loading-screen / lore whispers
 - *"The sky broke into Nine. We are the pieces that learned to fight back."*
 - *"Every strength is a locked door. Every weakness is the key someone else was born holding."*
-- *"Send six to strike. Leave six to stand. Pray your Banes never line up."*
+- *"Send six to strike. Leave twice six to stand. Pray your Banes never line up."*
 - *"No Force rules. That is the only law the Sundering left us."*
 - *"A wall of shields still has a seam. Ask any Pierce."*
 
@@ -184,7 +184,9 @@ Keep this consistent across all prompt files and the build:
 - **9 damage types:** 6 magic (Earth, Air, Fire, Water, Light, Dark) + 3 melee (Slash, Pierce, Crush).
 - **Roster:** 3 champions per type = **27 heroes** total.
 - **Powers:** up to **5 per hero**, each with its **own cooldown rate**.
-- **Squads:** exactly **6 heroes**, arranged in a fixed three-row formation — **2 front · 3 middle · 1 back**. Each player keeps an **attack** squad (player-controlled on offense) and a **defense** squad (**engine/AI-run** when attacked).
+- **Squads:** exactly **6 heroes**, arranged in a fixed three-row formation — **2 front · 3 middle · 1 back**.
+- **Roster:** all **27 heroes unlocked from the start**, one copy each, **identical for every player**. Nothing to collect or unlock; no duplicates. No player can ever out-roster another.
+- **Allocation:** each player defends **two zones** (12 heroes, engine-run) and keeps up to **3 attack squads** (player-controlled). **A hero on defense cannot attack**, leaving 15 for offense. Attack squads may overlap each other — and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts it from any attack squad and invalidates that squad.
 - **Reach:** every hero has a **reach of 1 or 2**, measured in rows across a single 1–6 battlefield axis (attacker 1–3, defender 4–6). A hero's *own* rows count against its reach, and fully empty rows are skipped — so range opens up as a battle wears on. See `mechanics/02-squads.md`.
 - **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak). All four slots are **derived from just two authored fields** — `primary` and `secondary` — via `Bane = counter(primary)`, `Fault = counter(secondary)`. Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix; both are generated.
 - **A Martial hero always carries an Arcane secondary.** A second Martial discipline is impossible — see "The doors are not chosen" above.
@@ -193,7 +195,7 @@ Keep this consistent across all prompt files and the build:
 
 ## What is settled vs. what is still soft
 
-**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force; squads of 6 in a 2/3/1 formation; reach of 1–2 rows gating all targeting; turn-based cooldowns; player-offense / engine-defense.
+**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force, all unlocked from the start and identical for every player; squads of 6 in a 2/3/1 formation; two engine-run defense zones locking 12 heroes out of offense; reach of 1–2 rows gating all targeting; turn-based cooldowns; player-offense / engine-defense.
 
 **Still soft — tune freely:** hero names, epithets, House voices, and all flavor text; the damage multipliers (only the Bane's "+50%" is pinned, in `01-hero-card.md`); stats, powers, and cooldown lengths; the rank ladder.
 

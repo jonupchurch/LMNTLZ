@@ -25,7 +25,7 @@ Show the card in **three states/sizes**, side by side:
 - **Core stats** (HP, and a couple of combat stats) as clean numeric pills.
 - A **rarity/level accent** on the frame.
 
-**B. Grid card (collection tile).** A compact version for browsing a roster of dozens: portrait, name, type badge, the 4 relationship badges shrunk into a tidy corner cluster, and a level chip. Must stay legible at roughly 160px wide in a scrolling grid.
+**B. Grid card (roster tile).** A compact version for browsing the 27-hero roster: portrait, name, type badge, the 4 relationship badges shrunk into a tidy corner cluster, and a level chip. Must stay legible at roughly 160px wide in a scrolling grid.
 
 **C. Battle chip (in-combat).** The smallest form used on the battlefield: portrait bust, type badge, an HP bar, and the 5 power slots as a compact action bar with live cooldown rings. This is what a player clicks to act on offense. Twelve of these share the battle screen at once, so it must stay readable at the minimum 1280×720 window.
 

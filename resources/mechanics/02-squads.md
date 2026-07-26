@@ -18,9 +18,11 @@ row 6 is the defenders' rearmost. For an attacker, deeper into the enemy means
 *higher* numbers; for a defender striking back, *lower*. The formation is
 mirror-symmetric about the contact line.
 
-Every player maintains two squads — an **attack** squad they command personally
-and a **defense** squad the engine runs — and both use this same shape. The row
+Every squad in the game uses this shape — attack and defense alike. The row
 sizes are fixed. What a player chooses is **which hero sits in which slot**.
+
+How many squads a player keeps, and which heroes may fill them, is the
+**roster economy** below.
 
 ---
 
@@ -87,6 +89,83 @@ moving.
 
 ---
 
+## Roster economy
+
+**Every player has all 27 heroes from the start**, one copy of each champion.
+There is no collection, no unlocking, no duplicates. Rosters are identical
+across the entire playerbase.
+
+That is a deliberate competitive stance: **no player can ever out-roster
+another.** Everything that separates two players is what they *do* with the
+same 27 — how they split them, where they place them, and how they read an
+opponent.
+
+### Two defense zones
+
+A player must defend **two** zones. Each is held by its own 6-hero squad, so
+**12 heroes are committed to defense** at all times, and both are run by the
+engine when attacked.
+
+### Defense heroes cannot attack
+
+A hero assigned to a defense zone is **unavailable for offense**, with no
+exceptions. This is the rule the whole economy turns on.
+
+### Three offense squads, freely overlapping
+
+A player may save up to **3 offense squads**. These *may* share heroes with each
+other — the same champion can sit in all three — provided that hero is not on
+defense.
+
+### Changing defense evicts and invalidates
+
+If a player moves a hero onto a defense zone while that hero is in a saved
+offense squad, the hero is **removed from that squad**, and the squad is
+**invalidated** — it is short a member and cannot be used to attack until
+refilled.
+
+Because offense squads overlap, **one swap can invalidate all three at once**.
+The warning should be designed for that case, not the single-squad case.
+
+### The arithmetic this produces
+
+| | |
+|---|---|
+| Roster, every player | **27** |
+| Committed to defense | **12** (44% of the roster) |
+| Free for offense | **15** |
+| Slots across 3 offense squads | 18 |
+
+**Overlap is forced, not merely permitted.** Three full offense squads need 18
+slots, but only 15 heroes are ever free. Three disjoint offense squads are
+mathematically impossible.
+
+**The defense split is the central strategic decision of the game.** With
+identical rosters, choosing *which 12 of your 27 to lock away* is the one
+irreversible commitment a player makes — and it is made blind, before knowing
+who will attack. Committing your best counters to defense makes you hard to
+beat and leaves you weaker on offense. That tension is the game.
+
+It also means a defense squad leaks information: an attacker scouting two
+defense zones has seen 12 of your 27, and therefore knows a great deal about
+the 15 you have left to attack with.
+
+### What this implies for progression
+
+There is no horizontal progression — nothing to collect, no roster to widen. So
+**all progression must be vertical**: levels, ascension, gear, or whatever
+`06-progression.md` eventually settles on.
+
+That is a strong competitive position. No player can buy or grind a wider
+roster than an opponent, so matches turn on allocation, placement, and reading
+the enemy rather than on who owns more. It also removes the most common
+pay-to-win vector in the genre before it exists.
+
+The corresponding risk is that vertical progression becomes the *only* power
+axis, so it must be tuned carefully — a large level or gear gap between two
+identical rosters would decide matches on its own and undo the very fairness
+this design buys.
+
 ## The sixth slot
 
 Row 1 is deliberately **not** a sixth copy of the other slots. It is a
@@ -143,8 +222,23 @@ the moment its protection lapses.
   as an attack is. Powers declare whether they want allies or enemies; reach
   decides who is in range.
 - Both attack and defense squads use the same shape.
+- **All 27 heroes unlocked from the start**, one copy each, identical for every
+  player. No collection, no unlocking, no duplicates.
+- **Two defense zones**, 12 heroes committed, unavailable for offense.
+- **Up to 3 offense squads**, freely overlapping with each other.
+- Moving a hero to defense **evicts it from offense squads and invalidates**
+  them.
 
 ## Still open
+
+### 0. Do the two defense zones differ?
+
+Nothing yet says whether the two zones are equivalent or distinct — different
+stakes, different rewards, one harder to reach than the other, or an attacker
+choosing which to hit. If they are identical, the second zone is purely a tax
+on roster flexibility; if they differ, the split becomes a richer decision.
+This also decides how `../05-matchmaking-results.md` presents an opponent,
+since scouting now means scouting two squads rather than one.
 
 ### 1. Is placement constrained by type?
 
