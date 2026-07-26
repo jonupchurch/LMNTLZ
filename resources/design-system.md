@@ -1,6 +1,6 @@
 # Claude Design Prompt — UI Design System
 
-> **How to use:** Paste the `## PROMPT` block into Claude Design. This is the in-app UI kit — foundations (tokens) and components — that all the screen prompts (`01`–`05`) draw from. It pairs with `brand-identity.md` (the outward brand) and supersedes the UI-token half of `00-style-system.md`. Generate the brand identity first so the wordmark and accent color are settled, then build this.
+> **How to use:** Paste the `## PROMPT` block into Claude Design. This is the in-app UI kit — foundations (tokens) and components — that all the screen prompts (`01`–`05`) draw from. It pairs with `brand-identity.md` (the outward brand). Generate the brand identity first so the wordmark and accent color are settled, then build this.
 >
 > The **TECHNICAL CONTEXT** block is not background reading — it changes what components the system needs. Keep it in the prompt.
 
@@ -67,7 +67,7 @@ Lay it out as a clean, self-contained design-system reference page — the singl
 
 ## Reference
 
-- Palette, art direction, and the nine types: `00-style-system.md`, `brand-identity.md`, and `characters/`.
+- Palette, art direction, and the nine types: `brand-identity.md` and `characters/`.
 - Screens that consume this system: `01-hero-card.md` … `05-matchmaking-results.md`.
 - Systemic rules behind the strength/weakness components: `characters/MATCHUPS.md`.
 - Reach, rows, and the 2/3/1 formation: `mechanics/02-squads.md`.

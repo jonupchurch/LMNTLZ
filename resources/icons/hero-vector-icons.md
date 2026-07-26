@@ -1,6 +1,6 @@
 # Claude Design Prompt — Hero Vector Icon Set (SVG)
 
-> **How to use:** Run after `../00-style-system.md`. Paste that file's token summary first, then the prompt below. This generates a **single cohesive SVG sheet** of all 27 hero emblems as flat vectors matching the character designs — one distilled, on-model icon per hero. Consistency is enforced by a shared badge frame, fixed grid, fixed stroke rules, and the per-hero motif table at the bottom. You can also ask for any single hero as its own SVG using the same spec.
+> **How to use:** Run after `../design-system.md`. Paste its tokens first, then the prompt below. This generates a **single cohesive SVG sheet** of all 27 hero emblems as flat vectors matching the character designs — one distilled, on-model icon per hero. Consistency is enforced by a shared badge frame, fixed grid, fixed stroke rules, and the per-hero motif table at the bottom. You can also ask for any single hero as its own SVG using the same spec.
 
 ---
 
@@ -76,5 +76,5 @@ Type colors — Earth `#4E7C3A` · Air `#8FCFE0` · Fire `#E8552B` · Water `#2A
 
 ## Design canon reference
 
-- 9 types (6 magic + 3 melee), 3 heroes each = 27 emblems. Type colors and element sigils come from `../00-style-system.md`.
+- 9 types (6 magic + 3 melee), 3 heroes each = 27 emblems. Type colors and element sigils come from `../design-system.md`.
 - Motifs are distilled from the full character briefs in `../characters/` — see each hero's *Weapon & props* and *Element expression* sections for more detail if a glyph needs refining.

@@ -1,6 +1,6 @@
 # Claude Design Prompt — Brand Identity
 
-> **How to use:** Paste the `## PROMPT` block into Claude Design. This is the outward-facing brand system — logo, marks, brand color, voice, applications. It pairs with `design-system.md` (the in-app UI kit) and expands the brand half of `00-style-system.md`. Generate this before or alongside the design system so the wordmark and brand colors are settled.
+> **How to use:** Paste the `## PROMPT` block into Claude Design. This is the outward-facing brand system — logo, marks, brand color, voice, applications. It pairs with `design-system.md` (the in-app UI kit). Generate this **first** — the design system builds on the wordmark and accent color it settles.
 
 ---
 
@@ -35,6 +35,6 @@ Lay it out as a polished, self-contained brand book — cohesive with the semi-a
 
 ## Reference
 
-- Art direction, palette, and the nine types come from `00-style-system.md` and the character work in `characters/`.
+- Art direction and the nine types come from the character work in `characters/`. The palette hexes are inline in the prompt above.
 - Companion prompt: `design-system.md` (the in-app UI component system).
 - Lore, taglines, and world names live in `LORE-and-flavor.md`.

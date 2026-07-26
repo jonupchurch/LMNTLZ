@@ -16,8 +16,6 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
 
-> **`00-style-system.md` is superseded and should not be run.** `brand-identity.md` replaced its brand half and `design-system.md` replaced its UI-token half. It is kept only because the two successors still cite its palette. Start at `brand-identity.md`.
-
 ## Platform
 
 LMNTLZ is a **desktop game**: an Electron client shipped on Steam and as a standalone installer, plus the same static build served in a desktop browser. Mouse and keyboard, minimum window 1280×720, designed for 1600×900. **There is no mobile or touch target** — every design prompt here assumes a pointer.

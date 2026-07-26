@@ -1,6 +1,6 @@
 # Claude Design Prompt — 02 · Roster / Collection Screen
 
-> **How to use:** Run after `00-style-system` and `01-hero-card`. Reuse the style tokens and the grid-card form from the hero-card prompt.
+> **How to use:** Run after `design-system.md` and `01-hero-card`. Reuse the design-system tokens and the grid-card form from the hero-card prompt.
 
 ---
 

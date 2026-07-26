@@ -1,6 +1,6 @@
 # Claude Design Prompt — 01 · Hero Card System
 
-> **How to use:** Run after `00-style-system`. Paste the token summary from that file first, then this prompt. The hero card is the atomic unit of LMNTLZ — it appears in the roster, the squad builder, and (compact) in battle — so nail it here and reuse it everywhere.
+> **How to use:** Run after `design-system.md`. Paste its tokens and component set first, then this prompt. The hero card is the atomic unit of LMNTLZ — it appears in the roster, the squad builder, and (compact) in battle — so nail it here and reuse it everywhere.
 
 ---
 
