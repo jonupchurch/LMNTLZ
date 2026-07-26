@@ -1,3 +1,17 @@
+# Spec-Kit transient state — a pointer to the active feature, not project data.
+# NOTE: specs/ is deliberately NOT ignored. In this project the specs are the
+# source of truth and belong in history. (The ai-tools toolkit repo ignores
+# specs/ because it ships the engine, not any one project's state.)
+.specify/feature.json
+
+# Machine-local Claude Code settings (permissions/paths, never shared).
+# Personal overrides like defaultMode belong here, not in settings.json.
+.claude/settings.local.json
+
+# Secrets
+.env*
+!.env.example
+
 # OS
 Thumbs.db
 ehthumbs.db
