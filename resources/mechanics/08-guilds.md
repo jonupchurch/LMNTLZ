@@ -48,6 +48,12 @@ shuts smaller guilds out.
   Grounded is a real, displayed state, not an empty field — a Grounded member is
   a full member of the guild in every other respect, but nothing they do counts
   toward any Wing's tally until the next event assigns them.
+- **The lock covers Wing composition, nothing else.** Frozen: Wing assignment,
+  swaps, and any route by which a member could newly *enter* a Wing. Unaffected:
+  promoting or demoting an officer, changing the recruitment mode, editing the
+  tagline, and sending invitations — invitations still work, and anyone who
+  accepts simply arrives Grounded. None of those can change a Wing's roster or
+  its tally, which is the only thing the lock exists to protect.
 
 Everything below is either forced by those five facts or is still open.
 

@@ -109,11 +109,33 @@
           </div>
         </div>
 
+        <div style="flex:0 0 auto;border:1px solid {{ eventBorder }};border-radius:12px;background:#141221;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:18px;padding:16px 18px;flex-wrap:wrap;background:{{ eventTint }}">
+            <div style="display:flex;align-items:center;gap:11px;min-width:0">
+              <div style="width:34px;height:34px;border-radius:9px;border:1px solid {{ eventBorder }};display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+                <div style="width:11px;height:9px;border:2px solid {{ eventColor }};border-radius:2px;position:relative;margin-top:4px">
+                  <div style="position:absolute;left:1px;top:-7px;width:7px;height:7px;border:2px solid {{ eventColor }};border-bottom:none;border-radius:4px 4px 0 0"></div>
+                </div>
+              </div>
+              <div style="min-width:0">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14.5px;letter-spacing:0.06em;color:#F4EFE4;line-height:1.15">{{ eventName }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:{{ eventColor }};margin-top:4px">{{ eventPhaseLabel }}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding-left:18px;border-left:1px solid #241F38">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;white-space:nowrap">{{ countdownLabel }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;color:{{ eventColor }};letter-spacing:0.04em">{{ countdown }}</div>
+            </div>
+            <div style="flex:1 1 260px;min-width:230px;font-size:13px;line-height:1.55;color:#B4AECB">{{ eventNote }}</div>
+            <div onClick="{{ togglePhase }}" style="flex:0 0 auto;height:30px;padding:0 12px;border-radius:6px;border:1px solid #241F38;display:flex;align-items:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#57507A" style-hover="color:#B4AECB;border-color:#3A3357">SIMULATE {{ simulateTo }}</div>
+          </div>
+        </div>
+
         <div style="flex:0 0 auto;border:1px solid #241F38;border-radius:12px;background:#141221;overflow:hidden">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-bottom:1px solid #241F38;flex-wrap:wrap">
             <div>
               <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.08em;color:#F4EFE4">MEMBERS</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#6E6690;margin-top:3px">RANK AND WING CHANGES APPLY IMMEDIATELY</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:{{ memberNoteColor }};margin-top:3px">{{ memberNote }}</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <sc-for list="{{ wingCounts }}" as="w" hint-placeholder-count="3">
@@ -153,10 +175,17 @@
                 </sc-if>
               </div>
               <div style="position:relative">
-                <div onClick="{{ m.toggleWing }}" style="height:32px;border-radius:7px;background:#1C1930;border:1px solid {{ m.wingBorder }};display:flex;align-items:center;gap:6px;padding:0 9px;cursor:pointer" style-hover="border-color:#57507A">
+                <div onClick="{{ m.toggleWing }}" style="height:32px;border-radius:7px;background:{{ m.wingBg }};border:1px solid {{ m.wingBorder }};display:flex;align-items:center;gap:6px;padding:0 9px;cursor:{{ m.wingCursor }};opacity:{{ m.wingOpacity }}" style-hover="border-color:{{ m.wingHover }}">
                   <div style="width:7px;height:7px;border-radius:2px;background:{{ m.wingColor }};flex:0 0 auto"></div>
                   <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.08em;color:{{ m.wingColor }};flex:1;white-space:nowrap">{{ m.wingLabel }}</span>
-                  <div style="width:6px;height:6px;border-right:1.5px solid #8E87A8;border-bottom:1.5px solid #8E87A8;transform:rotate(45deg);margin-bottom:3px"></div>
+                  <sc-if value="{{ m.wingsLocked }}" hint-placeholder-val="{{ false }}">
+                    <div style="width:8px;height:7px;border:1.5px solid #8E87A8;border-radius:1px;position:relative;margin-top:3px;flex:0 0 auto">
+                      <div style="position:absolute;left:1px;top:-5px;width:4px;height:5px;border:1.5px solid #8E87A8;border-bottom:none;border-radius:3px 3px 0 0"></div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.wingsOpen }}" hint-placeholder-val="{{ true }}">
+                    <div style="width:6px;height:6px;border-right:1.5px solid #8E87A8;border-bottom:1.5px solid #8E87A8;transform:rotate(45deg);margin-bottom:3px"></div>
+                  </sc-if>
                 </div>
                 <sc-if value="{{ m.wingOpen }}" hint-placeholder-val="{{ false }}">
                   <div style="position:absolute;top:36px;left:0;right:0;z-index:20;border-radius:8px;background:#241F38;border:1px solid #57507A;box-shadow:0 10px 26px rgba(0,0,0,.6);overflow:hidden">
@@ -224,6 +253,13 @@
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
 const WINGS = { "1": { name: "FIRST WING", core: "#F2C744" }, "2": { name: "SECOND WING", core: "#4FC3D6" }, "3": { name: "THIRD WING", core: "#4E7C3A" } };
 const RANKS = { GM: "#F2C744", Officer: "#C9922E", Member: "#57507A" };
+const EVENT = { name: "Trial of the Sundered Crown", lockIn: 3 * 3600 + 41 * 60 + 12, unlockIn: 22 * 3600 + 6 * 60 + 48 };
+const clock = secs => {
+  const t = Math.max(0, secs);
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60;
+  const pad = n => (n < 10 ? "0" : "") + n;
+  return pad(h) + ":" + pad(m) + ":" + pad(sec);
+};
 const CAP = 8;
 const SEED = [
   ["jonupchurch","16-dark-nyxara","Court-Champion",2180,"12-5","GM","1","Season 1","#4E7C3A"],
@@ -257,15 +293,23 @@ class Component extends DCLogic {
   state = {
     tagline: DEFAULT_TAGLINE, savedTagline: DEFAULT_TAGLINE, recruit: "invite",
     members: SEED.map(m => ({ name: m[0], slug: m[1], tier: m[2], rating: m[3], record: m[4], rank: m[5], wing: m[6], joined: m[7], statusColor: m[8] })),
-    swap: null, log: "No changes this session.", menu: null
+    swap: null, log: "No changes this session.", menu: null,
+    phase: "open", now: 0, vacated: { "1": 0, "2": 0, "3": 0 }
   };
+
+  componentDidMount() { this.tick = setInterval(() => this.setState(s => ({ now: s.now + 1 })), 1000); }
+  componentWillUnmount() { clearInterval(this.tick); }
 
   toggleMenu(key) { this.setState(s => ({ menu: s.menu === key ? null : key })); }
 
-  countIn(wing, list) { return (list || this.state.members).filter(m => m.wing === wing).length; }
+  countIn(wing, list) {
+    const held = this.state.phase === "locked" ? (this.state.vacated[wing] || 0) : 0;
+    return (list || this.state.members).filter(m => m.wing === wing).length + held;
+  }
 
   requestWing(name, wing) {
     const s = this.state;
+    if (s.phase === "locked") return;
     const me = s.members.filter(m => m.name === name)[0];
     if (!me || me.wing === wing) return;
     if (this.countIn(wing) < CAP) {
@@ -304,6 +348,8 @@ class Component extends DCLogic {
       closed: "The wall is sealed. No invitations, no applications."
     };
     const swapping = s.swap ? s.members.filter(m => m.name === s.swap.name)[0] : null;
+    const locked = s.phase === "locked";
+    const heldTotal = locked ? ["1","2","3"].reduce((a, w) => a + (s.vacated[w] || 0), 0) : 0;
 
     return {
       tagline: s.tagline,
@@ -326,10 +372,37 @@ class Component extends DCLogic {
       }),
       recruitNote: notes[s.recruit],
 
+      eventName: EVENT.name,
+      eventPhaseLabel: locked ? "WINGS LOCKED · TRIAL UNDER WAY" : "WINGS OPEN · LOCK PENDING",
+      eventColor: locked ? "#C0313A" : "#F2C744",
+      eventBorder: locked ? "#C0313A" : "#3A3357",
+      eventTint: locked ? "rgba(192,49,58,.08)" : "rgba(242,199,68,.05)",
+      countdownLabel: locked ? "WINGS UNLOCK IN" : "WINGS LOCK IN",
+      countdown: clock(locked ? EVENT.unlockIn - s.now : EVENT.lockIn - s.now),
+      eventNote: locked
+        ? "No warden may change wing while the trial runs. A warden can only be dropped from the guild, never from a wing — and the seat they leave stays empty until the trial ends."
+        : "When the trial opens, every wing seals. Settle your three wings before the lock — after it, only a removal can free a seat.",
+      simulateTo: locked ? "OPEN" : "LOCK",
+      togglePhase: () => this.setState(st => {
+        const ending = st.phase === "locked";
+        const heldTotal = ["1","2","3"].reduce((a, w) => a + (st.vacated[w] || 0), 0);
+        return { phase: ending ? "open" : "locked", now: 0, menu: null, swap: null,
+          vacated: ending ? { "1": 0, "2": 0, "3": 0 } : st.vacated,
+          log: ending
+            ? EVENT.name + " ended — wings unlocked" + (heldTotal ? ", " + heldTotal + " held seat" + (heldTotal > 1 ? "s" : "") + " released." : ".")
+            : EVENT.name + " began — wings locked." };
+      }),
+      memberNote: locked
+        ? "WINGS LOCKED · REMOVAL DROPS A WARDEN FROM THE GUILD AND HOLDS THEIR SEAT EMPTY" + (heldTotal ? " · " + heldTotal + " SEAT" + (heldTotal > 1 ? "S" : "") + " HELD" : "")
+        : "RANK AND WING CHANGES APPLY IMMEDIATELY",
+      memberNoteColor: locked ? "#F06A72" : "#6E6690",
+
       wingCounts: ["1","2","3"].map(w => {
-        const n = self.countIn(w);
-        return { name: WINGS[w].name, count: n + " / " + CAP, color: n >= CAP ? "#F06A72" : WINGS[w].core,
-          border: n >= CAP ? "#C0313A" : "#3A3357", bg: n >= CAP ? "rgba(192,49,58,.1)" : "transparent" };
+        const n = self.countIn(w), held = locked ? (s.vacated[w] || 0) : 0;
+        return { name: WINGS[w].name + (held ? " · " + held + " HELD" : ""), count: n + " / " + CAP,
+          color: held ? "#E0A15A" : (n >= CAP ? "#F06A72" : WINGS[w].core),
+          border: held ? "#B5732E" : (n >= CAP ? "#C0313A" : "#3A3357"),
+          bg: held ? "rgba(181,115,46,.1)" : (n >= CAP ? "rgba(192,49,58,.1)" : "transparent") };
       }),
 
       inviteName: s.inviteName || "",
@@ -369,10 +442,16 @@ class Component extends DCLogic {
               menu: null, log: m.name + " set to " + r + "."
             }))
           })),
-          wingColor: WINGS[m.wing].core, wingBorder: "#3A3357",
+          wingColor: locked ? "#8E87A8" : WINGS[m.wing].core,
+          wingBorder: locked ? "#241F38" : "#3A3357",
+          wingBg: locked ? "#161327" : "#1C1930",
+          wingCursor: locked ? "not-allowed" : "pointer",
+          wingOpacity: locked ? 0.7 : 1,
+          wingHover: locked ? "#241F38" : "#57507A",
+          wingsLocked: locked, wingsOpen: !locked,
           wingLabel: WINGS[m.wing].name,
           wingOpen: s.menu === "wing:" + m.name,
-          toggleWing: () => self.toggleMenu("wing:" + m.name),
+          toggleWing: () => { if (!locked) self.toggleMenu("wing:" + m.name); },
           wingOptions: ["1", "2", "3"].map(w => {
             const n = self.countIn(w);
             return { name: WINGS[w].name, core: WINGS[w].core,
@@ -389,7 +468,16 @@ class Component extends DCLogic {
             log: m.name + " set to " + e.target.value + "."
           })),
           setWing: e => self.requestWing(m.name, e.target.value),
-          kick: () => { if (!isGM) self.setState(st => ({ members: st.members.filter(x => x.name !== m.name), log: m.name + " removed from the guild." })); }
+          kick: () => {
+            if (isGM) return;
+            self.setState(st => {
+              const held = st.phase === "locked";
+              const vacated = Object.assign({}, st.vacated);
+              if (held) vacated[m.wing] = (vacated[m.wing] || 0) + 1;
+              return { members: st.members.filter(x => x.name !== m.name), vacated: vacated,
+                log: m.name + " removed from the guild." + (held ? " " + WINGS[m.wing].name + " holds the empty seat until the trial ends." : "") };
+            });
+          }
         };
       }),
 
