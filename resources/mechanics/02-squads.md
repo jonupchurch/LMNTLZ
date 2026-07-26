@@ -191,16 +191,30 @@ is arguably a *higher* bar than winning a fight you pre-solved at the squad
 builder, so a high-streak player facing regular ambushes is being tested harder,
 not being denied the ability to demonstrate skill.
 
-The genuine trade is that the **payoff for preparation drops as the trap rate
-climbs**, so the two layers need to stay in balance — preparation must remain
-clearly worth doing at every streak length. That is a tuning constraint on the
-cap, not an argument against the mechanic.
+The genuine trade is that the **payoff for scouting-and-countering drops as the
+trap rate climbs**. With the cap at 90%, preparation against a *specific* seen
+squad stops being worthwhile deep into a long streak — but preparation itself
+doesn't disappear, it changes target: building a squad that performs well
+against an unknown defense is still a build decision, just a different one.
+Elite play trades counter-picking for robustness, and then leans on execution.
 
 ##### Rules this needs
 
-- **The rate must be capped.** At 2% per win, uncapped, it reaches 100% at 50
-  wins. **40–50%** — hit at 20–25 wins — keeps the player's choice meaningful;
-  past 50% the choice is more often overridden than honoured.
+- **The rate is capped at 90%**, reached at 45 consecutive wins. Uncapped it
+  would hit 100% at 50 and break past that.
+
+  A cap this high deliberately lets the choice collapse in the tail. Above
+  roughly a 40% trap rate, **choosing the blind zone becomes strictly better**:
+  picking blind costs only the remaining chance of drawing the easy fight, and
+  pays the full premium for it. So elite streaks converge on always gambling —
+  which is the correct outcome, since a player on a 45-win run should be facing
+  the hardest content available and being paid for it.
+
+  The practical effect is that the seen/blind decision stays live across the
+  streak lengths most play actually occurs at, and stops mattering only for
+  exceptional runs, where it acts as a soft ceiling on dominance. Because the
+  odds are displayed throughout, a player converging on "always blind" is making
+  an informed choice rather than being quietly overruled.
 - **A trapped attacker is paid the blind reward, not the seen one.** They fought
   the hidden squad. Paying the lower rate for the harder fight reads as theft,
   and arguably it should pay *more*, since they were denied any chance to
