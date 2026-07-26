@@ -92,7 +92,12 @@ or leave the values equal and let hero stat budgets account for it, so
 Armor-heavy heroes get more total budget. **Decide before assigning any hero
 its numbers,** because it changes what a "high defense" hero costs.
 
-### 2. Speed vs. whole-turn cooldowns
+### 2. Speed vs. whole-turn cooldowns — *parked*
+
+**Deferred by decision**, to be taken up once the battle system is being worked
+on properly. The three options below are recorded so the discussion starts from
+somewhere; none is chosen, and this is the keystone question for the whole
+battle system — turn order, cooldown pacing and Speed's value all hang on it.
 
 Cooldowns are counted in whole turns (settled). If `Speed` shortens cooldowns,
 it produces fractions — and a small Speed buff does nothing at all until it
@@ -107,7 +112,7 @@ Three clean ways out:
   advances a variable number of them based on `Speed`.
 - **Order only** — `Speed` decides who goes first and never touches cooldowns.
 
-This properly belongs to `03-turns.md`, but it is a stat question first.
+This properly belongs to `04-turns.md`, but it is a stat question first.
 
 ### 3. What Luck actually rolls
 
@@ -119,7 +124,7 @@ stat or a meta stat, and whether it belongs on the hero card at all.
 ### 4. Resolve is defined against a system that doesn't exist
 
 There is no crowd control yet. `Resolve` can be named now but cannot be
-specified — "resists manipulation" needs `04-status.md` to say what
+specified — "resists manipulation" needs `05-status.md` to say what
 manipulation *is* (stun, taunt, silence, damage-over-time, stat debuffs) and
 whether resisting means **prevented**, **shortened**, or **weakened**.
 

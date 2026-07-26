@@ -29,6 +29,11 @@ questions or keep raising them:
 - **Hero numbers.** The ten stats' tuning values *and* the per-hero reach
   assignment are one pass, to be done together later. `02-squads.md` keeps a
   starting proposal for reach; it is not a decision.
+- **What `Speed` does.** Whether Speed grants extra turns, only decides order, or
+  drives cooldown ticks — `01-stats.md` open question 2. This is the **keystone
+  of the battle system**: turn order, cooldown pacing and Speed's whole value
+  hang on it, so `04-turns.md` cannot start until it is answered. Three options
+  are on file; none is chosen.
 - **Event specifics.** Which metrics an event tallies, reward tiers, and the
   shape of a season. The *structure* of guild events is settled in
   `08-guilds.md`; the content of them is for much later.
