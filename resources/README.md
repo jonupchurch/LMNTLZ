@@ -18,6 +18,13 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 
 ## Generated design output
 
+> **These are for look and feel, not rules.** When a screen disagrees with a
+> decision made in discussion, the discussion wins and the screen is wrong —
+> however finished it looks. The rules live in `../CLAUDE.md`, `mechanics/` and
+> `LORE-and-flavor.md`. Anything a screen appears to settle is a **proposal to
+> confirm**, not a decision. The notes below record discrepancies so nobody
+> builds from them; they are not a fix queue.
+
 - `designsystem/` — the rendered Claude Design deliverables. **Anything landing in this folder is intentional and gets committed.**
   - `LMNTLZ Brand Book.dc.html` — output of `brand-identity.md`
   - `LMNTLZ Design System.dc.html` — output of `design-system.md`

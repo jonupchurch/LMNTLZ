@@ -31,6 +31,28 @@ weaknesses, don't stack your own.
 prompt per screen) and `LORE-and-flavor.md` (world, the Nine Forces, House
 voices, and the Design Canon block).
 
+## Where the rules actually live
+
+**Conversation beats design output, always.** The generated screens in
+`resources/designsystem/` exist for **look and feel** — layout, colour, hierarchy,
+voice. They are not a source of rules. When a screen and a decision made in
+discussion disagree, **the discussion wins and the screen is wrong**, no matter
+how confident or complete the screen looks.
+
+In practice:
+
+- The rules live in `CLAUDE.md`, `resources/mechanics/`, and
+  `resources/LORE-and-flavor.md`. A `.dc.html` export is never authoritative.
+- A screen may still *surface* something useful — the Codex derives Banes and
+  Faults correctly, the Guild Admin models the event lock well. Treat those as
+  **proposals to confirm**, not decisions already made. Say "the screen suggests
+  X — adopt it?" rather than writing X into the rules and moving on.
+- Contradictions in **copy and flavor text** are worth *noting* so nobody builds
+  from them, but they are not defects to fix. Data and logic errors — a wrong
+  cap, an uncapped percentage, a broken derivation — are worth flagging properly.
+- Never rewrite a generated screen to match the rules unless asked. Record the
+  discrepancy in `resources/README.md` and let it be regenerated.
+
 ## Settled design decisions
 
 These are project truth. Don't re-derive or contradict them:
