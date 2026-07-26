@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  select { appearance: none; -webkit-appearance: none; }
+  @keyframes ga-rise { 0% { transform: translateY(10px); opacity: 0 } 100% { transform: translateY(0); opacity: 1 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:760px;display:flex;flex-direction:column;overflow:hidden;position:relative">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:14px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">GUILD ADMINISTRATION</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;border:1px solid #F2C744;background:rgba(242,199,68,.1)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8">YOUR RANK</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:#F2C744">GM</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding-left:12px;border-left:1px solid #241F38"><div style="width:26px;height:26px;border-radius:7px;background:#241F38;border:1px solid #3A3357"></div><span style="font-size:12.5px;color:#B4AECB;white-space:nowrap">jonupchurch</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="width:212px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;padding:16px 12px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>SQUADS</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>ROSTER<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">27</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>MATCHMAKING</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;background:#241F38;border-left:2px solid #F2C744;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#F2C744"><div style="width:14px;height:14px;border-radius:4px;background:#F2C744"></div>THE COURT</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>DISPATCHES</div>
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid #241F38;display:flex;flex-direction:column;gap:3px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.18em;color:#6E6690;padding:0 4px 6px">GUILD</div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;font-size:12px;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4">Roster<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">23</span></div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;font-size:12px;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4">Chat</div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;background:#241F38;font-size:12px;color:#F4EFE4">Administration</div>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #241F38;padding-top:14px">
+        <div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#4E7C3A"><div style="width:7px;height:7px;border-radius:50%;background:#4E7C3A"></div>CONNECTED · 38ms</div>
+      </div>
+    </div>
+
+    <div style="flex:1 1 auto;min-width:760px;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:18px 22px 32px;display:flex;flex-direction:column;gap:16px">
+
+        <div style="flex:0 0 auto;border:1px solid #241F38;border-radius:12px;background:#141221;padding:18px 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:46px;height:46px;border-radius:11px;background:linear-gradient(140deg,#4E7C3A,#2C4620);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:22px;color:#C9922E">◆</div>
+              <div>
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:22px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.1">THE ROOTED DEEP</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;margin-top:4px">GUILD #12 · 23 OF 24 WARDENS · FOUNDED SEASON 1</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div onClick="{{ resetTagline }}" style="height:36px;padding:0 14px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">REVERT</div>
+              <div onClick="{{ saveTagline }}" style="height:36px;padding:0 18px;border-radius:7px;background:{{ saveBg }};border:1px solid {{ saveBorder }};display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.1em;color:{{ saveColor }};white-space:nowrap">{{ saveLabel }}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:8px">GUILD TAGLINE · SHOWN ON YOUR COURT PAGE</div>
+              <input type="text" value="{{ tagline }}" onInput="{{ onTagline }}" maxlength="90" style="width:100%;height:44px;border-radius:8px;background:#1C1930;border:1px solid {{ taglineBorder }};outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:15px;padding:0 14px" />
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">
+                <div style="font-size:12px;color:#8E87A8">{{ taglineNote }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ countColor }}">{{ taglineCount }} / 90</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:8px">RECRUITMENT</div>
+              <div style="display:flex;gap:6px">
+                <sc-for list="{{ recruitModes }}" as="r" hint-placeholder-count="3">
+                  <div onClick="{{ r.pick }}" style="flex:1;text-align:center;padding:12px 0;border-radius:8px;border:1px solid {{ r.border }};background:{{ r.bg }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.08em;color:{{ r.color }}" style-hover="border-color:#57507A">{{ r.name }}</div>
+                </sc-for>
+              </div>
+              <div style="font-size:12px;color:#8E87A8;margin-top:7px">{{ recruitNote }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:0 0 auto;border:1px solid #241F38;border-radius:12px;background:#141221;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-bottom:1px solid #241F38;flex-wrap:wrap">
+            <div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.08em;color:#F4EFE4">MEMBERS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#6E6690;margin-top:3px">RANK AND WING CHANGES APPLY IMMEDIATELY</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <sc-for list="{{ wingCounts }}" as="w" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:6px;border:1px solid {{ w.border }};background:{{ w.bg }}">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#8E87A8;white-space:nowrap">{{ w.name }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11.5px;color:{{ w.color }}">{{ w.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(190px,1.4fr) 120px 138px 96px 92px 84px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.14em;color:#6E6690;padding:10px 18px;border-bottom:1px solid #1C1930">
+            <div>WARDEN</div><div>RANK</div><div>WING</div><div>RATING</div><div>WEEK W-L</div><div style="text-align:right">ACTIONS</div>
+          </div>
+          <sc-for list="{{ members }}" as="m" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:minmax(190px,1.4fr) 120px 138px 96px 92px 84px;align-items:center;padding:9px 18px;border-bottom:1px solid #1C1930;background:{{ m.bg }}" style-hover="background:#1C1930">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <div style="position:relative;flex:0 0 auto">
+                  <div style="width:32px;height:32px;border-radius:8px;background-image:{{ m.avatar }};background-size:cover;background-position:50% 10%;background-color:#241F38;border:1px solid {{ m.ring }}"></div>
+                  <div style="position:absolute;right:-3px;bottom:-3px;width:9px;height:9px;border-radius:50%;background:{{ m.statusColor }};border:2px solid #141221"></div>
+                </div>
+                <div style="min-width:0">
+                  <div style="font-size:13px;color:{{ m.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.name }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.tier }} · {{ m.joined }}</div>
+                </div>
+              </div>
+              <div style="position:relative">
+                <div onClick="{{ m.toggleRank }}" style="height:32px;border-radius:7px;background:#1C1930;border:1px solid {{ m.rankBorder }};display:flex;align-items:center;gap:6px;padding:0 9px;cursor:{{ m.rankCursor }}" style-hover="border-color:#57507A">
+                  <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.08em;color:{{ m.rankColor }};flex:1">{{ m.rankLabel }}</span>
+                  <div style="width:6px;height:6px;border-right:1.5px solid #8E87A8;border-bottom:1.5px solid #8E87A8;transform:rotate(45deg);margin-bottom:3px"></div>
+                </div>
+                <sc-if value="{{ m.rankOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:36px;left:0;right:0;z-index:20;border-radius:8px;background:#241F38;border:1px solid #57507A;box-shadow:0 10px 26px rgba(0,0,0,.6);overflow:hidden">
+                    <sc-for list="{{ m.rankOptions }}" as="o" hint-placeholder-count="3">
+                      <div onClick="{{ o.pick }}" style="padding:9px 11px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.08em;color:{{ o.color }};background:{{ o.bg }};cursor:pointer" style-hover="background:#302A4A">{{ o.name }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="position:relative">
+                <div onClick="{{ m.toggleWing }}" style="height:32px;border-radius:7px;background:#1C1930;border:1px solid {{ m.wingBorder }};display:flex;align-items:center;gap:6px;padding:0 9px;cursor:pointer" style-hover="border-color:#57507A">
+                  <div style="width:7px;height:7px;border-radius:2px;background:{{ m.wingColor }};flex:0 0 auto"></div>
+                  <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.08em;color:{{ m.wingColor }};flex:1;white-space:nowrap">{{ m.wingLabel }}</span>
+                  <div style="width:6px;height:6px;border-right:1.5px solid #8E87A8;border-bottom:1.5px solid #8E87A8;transform:rotate(45deg);margin-bottom:3px"></div>
+                </div>
+                <sc-if value="{{ m.wingOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:36px;left:0;right:0;z-index:20;border-radius:8px;background:#241F38;border:1px solid #57507A;box-shadow:0 10px 26px rgba(0,0,0,.6);overflow:hidden">
+                    <sc-for list="{{ m.wingOptions }}" as="o" hint-placeholder-count="3">
+                      <div onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:8px;padding:9px 11px;background:{{ o.bg }};cursor:pointer" style-hover="background:#302A4A">
+                        <div style="width:7px;height:7px;border-radius:2px;background:{{ o.core }}"></div>
+                        <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.08em;color:{{ o.color }};flex:1;white-space:nowrap">{{ o.name }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ o.countColor }}">{{ o.count }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12.5px;color:#F4EFE4">{{ m.rating }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#B4AECB">{{ m.record }}</div>
+              <div style="display:flex;justify-content:flex-end;gap:6px">
+                <div onClick="{{ m.kick }}" style="height:28px;padding:0 10px;border-radius:6px;border:1px solid {{ m.kickBorder }};display:flex;align-items:center;cursor:{{ m.kickCursor }};font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;color:{{ m.kickColor }}" style-hover="border-color:#C0313A;color:#F06A72">REMOVE</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;flex-wrap:wrap;gap:10px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#6E6690">{{ logLine }}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="text" placeholder="Warden handle" value="{{ inviteName }}" onInput="{{ onInviteName }}" style="width:190px;height:34px;border-radius:7px;background:#1C1930;border:1px solid {{ inviteBorder }};outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:13px;padding:0 11px" />
+              <div onClick="{{ sendInvite }}" style="height:34px;padding:0 16px;border-radius:7px;background:{{ inviteBg }};border:1px solid {{ inviteBtnBorder }};box-shadow:{{ inviteShadow }};display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:0.12em;color:{{ inviteColor }};white-space:nowrap" style-hover="filter:brightness(1.12)">INVITE BY NAME</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ swap }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(14,12,23,.86);display:flex;align-items:center;justify-content:center;z-index:40;padding:24px">
+      <div style="width:min(560px,100%);max-height:86%;display:flex;flex-direction:column;border:1px solid #F2C744;border-radius:13px;background:#1C1930;box-shadow:0 24px 64px rgba(0,0,0,.7);overflow:hidden;animation:ga-rise 220ms ease-out">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #241F38">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#F2C744;margin-bottom:8px">WING FULL · 8 OF 8</div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.15">{{ swap.title }}</div>
+          <div style="font-size:13.5px;line-height:1.55;color:#B4AECB;margin-top:8px">{{ swap.blurb }}</div>
+        </div>
+        <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:12px 14px">
+          <sc-for list="{{ swap.options }}" as="o" hint-placeholder-count="8">
+            <div onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;border:1px solid {{ o.border }};background:{{ o.bg }};cursor:pointer;margin-bottom:6px" style-hover="border-color:#F2C744">
+              <div style="width:34px;height:34px;border-radius:8px;background-image:{{ o.avatar }};background-size:cover;background-position:50% 10%;background-color:#241F38;flex:0 0 auto"></div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="font-size:13px;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.name }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.08em;font-weight:700;color:#141221;background:{{ o.rankColor }};border-radius:3px;padding:2px 5px">{{ o.rank }}</span>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:3px">{{ o.detail }}</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#F2C744;white-space:nowrap">SWAP →</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:14px 18px;border-top:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#6E6690">{{ swap.footer }}</div>
+          <div onClick="{{ cancelSwap }}" style="height:36px;padding:0 16px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.1em;color:#B4AECB" style-hover="border-color:#57507A;color:#F4EFE4">CANCEL</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+const WINGS = { "1": { name: "FIRST WING", core: "#F2C744" }, "2": { name: "SECOND WING", core: "#4FC3D6" }, "3": { name: "THIRD WING", core: "#4E7C3A" } };
+const RANKS = { GM: "#F2C744", Officer: "#C9922E", Member: "#57507A" };
+const CAP = 8;
+const SEED = [
+  ["jonupchurch","16-dark-nyxara","Court-Champion",2180,"12-5","GM","1","Season 1","#4E7C3A"],
+  ["Terra_Crown","03-earth-terragosa","Sky-Named",2418,"18-4","Officer","1","Season 1","#F2C744"],
+  ["Ossic_Keeps","02-earth-ossic","Sky-Named",2364,"16-6","Officer","1","Season 1","#4E7C3A"],
+  ["Seraphel_V","13-light-seraphel","Sky-Named",2402,"17-5","Member","1","Season 2","#4E7C3A"],
+  ["Kaellis_One","19-slash-kaellis","Sky-Named",2288,"14-6","Member","1","Season 2","#F2C744"],
+  ["Boldrek_Falls","25-crush-boldrek","Court-Champion",2166,"12-6","Member","1","Season 2","#B5732E"],
+  ["Marisel_Deep","10-water-marisel","Court-Champion",2142,"11-7","Member","1","Season 2","#4E7C3A"],
+  ["Coll_Standing","11-water-tidewarden-coll","Court-Champion",2098,"9-8","Member","1","Season 3","#B5732E"],
+  ["EmberSworn","07-fire-ember-saelith","Court-Champion",2044,"10-6","Officer","2","Season 2","#4E7C3A"],
+  ["Reyna_Rivers","20-slash-reyna","Court-Champion",2028,"10-7","Member","2","Season 2","#4E7C3A"],
+  ["Umbriel_Un","17-dark-umbriel","Warden",1986,"9-6","Member","2","Season 3","#57507A"],
+  ["Vael_Drops","06-air-vael","Warden",1962,"7-9","Member","2","Season 3","#57507A"],
+  ["Cirrolan_Hi","05-air-cirrolan","Warden",1948,"8-8","Member","2","Season 3","#B5732E"],
+  ["Silka_Quick","23-pierce-silka","Warden",1938,"8-7","Member","2","Season 3","#F2C744"],
+  ["Mauless_Deny","27-crush-mauless","Warden",1912,"7-7","Member","2","Season 3","#F2C744"],
+  ["Lucen_Reads","14-light-lucen","Warden",1904,"6-8","Member","2","Season 3","#57507A"],
+  ["Pyrrhic_Glad","08-fire-pyrrhic","Warden",1878,"6-7","Member","3","Season 3","#4E7C3A"],
+  ["BoneKeeper","02-earth-ossic","Warden",1846,"5-6","Member","3","Season 3","#4E7C3A"],
+  ["Zephyr_Thin","04-air-zephyrine","Ember-Sworn",1744,"4-8","Member","3","Season 3","#57507A"],
+  ["Cindara_Low","09-fire-cindara","Ember-Sworn",1702,"4-9","Member","3","Season 3","#57507A"],
+  ["Nix_Still","12-water-nix","Ember-Sworn",1664,"3-7","Member","3","Season 3","#F2C744"],
+  ["Grieve_New","21-slash-grieve","Ember-Sworn",1590,"2-8","Member","3","Season 3","#B5732E"],
+  ["Aiguille_XI","24-pierce-aiguille","Shardless",1482,"1-5","Member","3","Season 3","#57507A"]
+];
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+const DEFAULT_TAGLINE = "The mountain does not hurry. The mountain does not lose.";
+
+class Component extends DCLogic {
+  state = {
+    tagline: DEFAULT_TAGLINE, savedTagline: DEFAULT_TAGLINE, recruit: "invite",
+    members: SEED.map(m => ({ name: m[0], slug: m[1], tier: m[2], rating: m[3], record: m[4], rank: m[5], wing: m[6], joined: m[7], statusColor: m[8] })),
+    swap: null, log: "No changes this session.", menu: null
+  };
+
+  toggleMenu(key) { this.setState(s => ({ menu: s.menu === key ? null : key })); }
+
+  countIn(wing, list) { return (list || this.state.members).filter(m => m.wing === wing).length; }
+
+  requestWing(name, wing) {
+    const s = this.state;
+    const me = s.members.filter(m => m.name === name)[0];
+    if (!me || me.wing === wing) return;
+    if (this.countIn(wing) < CAP) {
+      this.setState(st => ({
+        members: st.members.map(m => m.name === name ? Object.assign({}, m, { wing: wing }) : m),
+        log: name + " moved to " + WINGS[wing].name + "."
+      }));
+      return;
+    }
+    this.setState({ swap: { name: name, wing: wing } });
+  }
+
+  doSwap(otherName) {
+    const s = this.state, moving = s.swap;
+    this.setState(st => {
+      const from = st.members.filter(m => m.name === moving.name)[0];
+      return {
+        members: st.members.map(m => {
+          if (m.name === moving.name) return Object.assign({}, m, { wing: moving.wing });
+          if (m.name === otherName) return Object.assign({}, m, { wing: from.wing });
+          return m;
+        }),
+        swap: null,
+        log: moving.name + " ↔ " + otherName + " swapped between " + WINGS[moving.wing].name + " and " + WINGS[from.wing].name + "."
+      };
+    });
+  }
+
+  renderVals() {
+    const s = this.state, self = this;
+    const dirty = s.tagline !== s.savedTagline;
+    const modes = [{ key: "open", name: "OPEN" }, { key: "invite", name: "INVITE ONLY" }, { key: "closed", name: "CLOSED" }];
+    const notes = {
+      open: "Any warden at Warden tier or above may join without approval.",
+      invite: "Wardens must be invited by a GM or Officer. Applications still arrive in Dispatches.",
+      closed: "The wall is sealed. No invitations, no applications."
+    };
+    const swapping = s.swap ? s.members.filter(m => m.name === s.swap.name)[0] : null;
+
+    return {
+      tagline: s.tagline,
+      onTagline: e => this.setState({ tagline: e.target.value }),
+      taglineBorder: dirty ? "#F2C744" : "#3A3357",
+      taglineCount: s.tagline.length,
+      countColor: s.tagline.length > 80 ? "#E0A15A" : "#57507A",
+      taglineNote: dirty ? "Unsaved change — this replaces your Court page line." : "Saved. Shown on your Court page and in matchmaking previews.",
+      saveLabel: dirty ? "SAVE TAGLINE" : "SAVED",
+      saveBg: dirty ? "#F2C744" : "#1C1930",
+      saveBorder: dirty ? "#F2C744" : "#2A2640",
+      saveColor: dirty ? "#141221" : "#57507A",
+      saveTagline: () => this.setState(st => ({ savedTagline: st.tagline, log: "Guild tagline updated." })),
+      resetTagline: () => this.setState(st => ({ tagline: st.savedTagline })),
+
+      recruitModes: modes.map(m => {
+        const on = s.recruit === m.key;
+        return { name: m.name, bg: on ? "rgba(242,199,68,.1)" : "transparent", border: on ? "#F2C744" : "#3A3357",
+          color: on ? "#F2C744" : "#B4AECB", pick: () => self.setState({ recruit: m.key, log: "Recruitment set to " + m.name.toLowerCase() + "." }) };
+      }),
+      recruitNote: notes[s.recruit],
+
+      wingCounts: ["1","2","3"].map(w => {
+        const n = self.countIn(w);
+        return { name: WINGS[w].name, count: n + " / " + CAP, color: n >= CAP ? "#F06A72" : WINGS[w].core,
+          border: n >= CAP ? "#C0313A" : "#3A3357", bg: n >= CAP ? "rgba(192,49,58,.1)" : "transparent" };
+      }),
+
+      inviteName: s.inviteName || "",
+      onInviteName: e => this.setState({ inviteName: e.target.value }),
+      inviteBorder: (s.inviteName || "").trim() ? "#F2C744" : "#3A3357",
+      inviteBg: (s.inviteName || "").trim() ? "linear-gradient(140deg,#FFE27A,#F2C744 55%,#E0A15A)" : "rgba(242,199,68,.12)",
+      inviteBtnBorder: "#F2C744",
+      inviteColor: (s.inviteName || "").trim() ? "#141221" : "#F2C744",
+      inviteShadow: (s.inviteName || "").trim() ? "0 0 22px rgba(242,199,68,.45)" : "0 0 10px rgba(242,199,68,.18)",
+      sendInvite: () => this.setState(st => {
+        const n = (st.inviteName || "").trim();
+        if (!n) return {};
+        return { inviteName: "", log: "Invitation sent to " + n + " · pending their answer." };
+      }),
+
+      members: s.members.slice().sort((a, b) => (a.wing === b.wing ? b.rating - a.rating : a.wing.localeCompare(b.wing))).map(m => {
+        const isGM = m.rank === "GM", isMe = m.name === "jonupchurch";
+        return {
+          name: m.name, avatar: "url('portraits/" + m.slug + ".png')", tier: m.tier, joined: m.joined,
+          rating: fmt(m.rating), record: m.record, rank: m.rank, wing: m.wing,
+          statusColor: m.statusColor,
+          ring: isMe ? "#F2C744" : "#3A3357",
+          nameColor: isMe ? "#F2C744" : "#EDEAF6",
+          bg: isMe ? "rgba(242,199,68,.05)" : "transparent",
+          rankColor: RANKS[m.rank] === "#57507A" ? "#B4AECB" : RANKS[m.rank],
+          rankBorder: isGM ? "#F2C744" : "#3A3357",
+          rankLabel: m.rank.toUpperCase(),
+          rankCursor: isGM ? "not-allowed" : "pointer",
+          rankOpen: s.menu === "rank:" + m.name,
+          toggleRank: () => { if (!isGM) self.toggleMenu("rank:" + m.name); },
+          rankOptions: ["GM", "Officer", "Member"].map(r => ({
+            name: r.toUpperCase(),
+            color: r === m.rank ? "#F2C744" : "#EDEAF6",
+            bg: r === m.rank ? "rgba(242,199,68,.1)" : "transparent",
+            pick: () => self.setState(st => ({
+              members: st.members.map(x => x.name === m.name ? Object.assign({}, x, { rank: r }) : x),
+              menu: null, log: m.name + " set to " + r + "."
+            }))
+          })),
+          wingColor: WINGS[m.wing].core, wingBorder: "#3A3357",
+          wingLabel: WINGS[m.wing].name,
+          wingOpen: s.menu === "wing:" + m.name,
+          toggleWing: () => self.toggleMenu("wing:" + m.name),
+          wingOptions: ["1", "2", "3"].map(w => {
+            const n = self.countIn(w);
+            return { name: WINGS[w].name, core: WINGS[w].core,
+              color: w === m.wing ? "#F2C744" : "#EDEAF6",
+              bg: w === m.wing ? "rgba(242,199,68,.1)" : "transparent",
+              count: n + "/" + CAP, countColor: n >= CAP ? "#F06A72" : "#6E6690",
+              pick: () => { self.setState({ menu: null }); self.requestWing(m.name, w); } };
+          }),
+          kickBorder: isGM ? "#2A2640" : "#3A3357",
+          kickColor: isGM ? "#3A3357" : "#8E87A8",
+          kickCursor: isGM ? "not-allowed" : "pointer",
+          setRank: e => self.setState(st => ({
+            members: st.members.map(x => x.name === m.name ? Object.assign({}, x, { rank: e.target.value }) : x),
+            log: m.name + " set to " + e.target.value + "."
+          })),
+          setWing: e => self.requestWing(m.name, e.target.value),
+          kick: () => { if (!isGM) self.setState(st => ({ members: st.members.filter(x => x.name !== m.name), log: m.name + " removed from the guild." })); }
+        };
+      }),
+
+      logLine: s.log,
+
+      swap: s.swap ? {
+        title: swapping.name + " → " + WINGS[s.swap.wing].name,
+        blurb: WINGS[s.swap.wing].name + " already holds eight wardens. Choose who trades places — they move to " + WINGS[swapping.wing].name + ".",
+        footer: "SWAP IS IMMEDIATE · BOTH WARDENS KEEP THEIR RANK",
+        options: s.members.filter(m => m.wing === s.swap.wing).sort((a, b) => b.rating - a.rating).map(m => ({
+          name: m.name, avatar: "url('portraits/" + m.slug + ".png')",
+          rank: m.rank.toUpperCase(), rankColor: RANKS[m.rank] === "#57507A" ? "#8E87A8" : RANKS[m.rank],
+          detail: m.tier + " · " + fmt(m.rating) + " · week " + m.record,
+          border: "#241F38", bg: "#141221",
+          pick: () => self.doSwap(m.name)
+        }))
+      } : null,
+      cancelSwap: () => this.setState({ swap: null })
+    };
+  }
+}
+</script>
+</body>
+</html>
