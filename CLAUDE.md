@@ -27,6 +27,12 @@ These are project truth. Don't re-derive or contradict them:
 - **Combat is discrete turn-based.** Each power recharges over N *turns*.
   Cooldowns are integer turn counts, never milliseconds; a cooldown ring is a
   fill fraction over turns remaining, not a clock.
+- **Reach gates all targeting.** Every hero has a reach of 1 or 2, measured in
+  rows on one shared 1–6 axis (attacker 1–3, defender 4–6). A hero's *own* rows
+  count against its reach, and fully empty rows are skipped, so range opens up
+  as a battle wears on. One rule for enemies and allies alike — a heal is
+  range-limited exactly as an attack is. Details in
+  `resources/mechanics/02-squads.md`.
 - **A hero's whole relationship profile derives from two authored fields**,
   `primary` and `secondary`:
   ```

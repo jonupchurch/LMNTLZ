@@ -26,6 +26,14 @@ There is **no separate HP stat.** `Toughness` *is* the pool — a hero's maximum
 HP is a function of it. The battle UI still shows an HP bar; `Toughness` is
 what sets its length.
 
+**`Reach` is not one of the ten.** Every hero also has a reach of 1 or 2, which
+governs which rows it can target. It is a positional property rather than a
+combat stat — it never scales, never contributes to a damage formula, and is
+not tuned against an opposing stat. It lives in
+[`02-squads.md`](02-squads.md), but it belongs on the hero card alongside these
+ten, because it is one of the first things a player needs to know when placing
+a hero.
+
 ### Notes on the ones that moved
 
 `Might` is deliberately **type-agnostic**. There is no split between physical

@@ -185,6 +185,7 @@ Keep this consistent across all prompt files and the build:
 - **Roster:** 3 champions per type = **27 heroes** total.
 - **Powers:** up to **5 per hero**, each with its **own cooldown rate**.
 - **Squads:** exactly **6 heroes**, arranged in a fixed three-row formation — **2 front · 3 middle · 1 back**. Each player keeps an **attack** squad (player-controlled on offense) and a **defense** squad (**engine/AI-run** when attacked).
+- **Reach:** every hero has a **reach of 1 or 2**, measured in rows across a single 1–6 battlefield axis (attacker 1–3, defender 4–6). A hero's *own* rows count against its reach, and fully empty rows are skipped — so range opens up as a battle wears on. See `mechanics/02-squads.md`.
 - **Per-hero relationship profile:** **2 strengths** (own/kindred elements) · **1 major weakness / Bane** (very weak, "super effective") · **1 minor weakness / Fault** (somewhat weak). All four slots are **derived from just two authored fields** — `primary` and `secondary` — via `Bane = counter(primary)`, `Fault = counter(secondary)`. Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix; both are generated.
 - **A Martial hero always carries an Arcane secondary.** A second Martial discipline is impossible — see "The doors are not chosen" above.
 - **Combat is turn-based.** Each power recharges over N *turns*; cooldowns are integer turn counts, never milliseconds.
@@ -192,7 +193,7 @@ Keep this consistent across all prompt files and the build:
 
 ## What is settled vs. what is still soft
 
-**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force; squads of 6 in a 2/3/1 formation; turn-based cooldowns; player-offense / engine-defense.
+**Settled — do not contradict these:** the nine Forces and their `counter` map; the derivation rule and its three distinctness constraints; 27 heroes at 3 per Force; squads of 6 in a 2/3/1 formation; reach of 1–2 rows gating all targeting; turn-based cooldowns; player-offense / engine-defense.
 
 **Still soft — tune freely:** hero names, epithets, House voices, and all flavor text; the damage multipliers (only the Bane's "+50%" is pinned, in `01-hero-card.md`); stats, powers, and cooldown lengths; the rank ladder.
 

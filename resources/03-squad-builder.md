@@ -16,6 +16,7 @@ In LMNTLZ, players assemble squads of **exactly 6 heroes**, arranged in a fixed 
 Include:
 
 - **Six squad slots** laid out in the fixed **2 / 3 / 1** formation — two slots in the front row, three in the middle, one in the back. The rows must read as meaningfully different positions, not just a decorative arrangement; the single back-row slot in particular should feel like the protected seat it is. Empty slots invite tapping to fill.
+- **A reach readout on placement.** Every hero has a **reach of 1 or 2**, and reach counts *rows*, including the hero's own — so what a hero can touch changes completely depending on the slot it's dropped into. A reach-1 hero in the back row can reach neither the enemy nor its own front line. Show what a hero would actually be able to target from the slot it's hovering over, so that consequence is learnable at build time rather than discovered mid-battle. Warn, don't scold — a player is allowed to make that choice.
 - **A hero picker** — the collection grid (reuse grid-cards) alongside or beneath the slots, filterable by type and by weakness, so players can counter-build.
 - **A live squad-synergy / coverage panel** — the strategic centerpiece. As heroes are added, surface:
   - **Type coverage:** which of the 9 damage types the squad can deal.
