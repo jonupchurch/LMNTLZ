@@ -440,17 +440,20 @@ wants to be where it can actually connect.
 Reach makes rows matter. Whether they *also* modify damage taken or dealt, or
 weight AI target selection, is unanswered — and may now be unnecessary.
 
-### 5. How is reach assigned across the roster? — *a proposal awaiting a decision*
+### 5. How is reach assigned across the roster? — *parked*
+
+**Deferred deliberately.** Reach assignment is part of the hero-numbers pass,
+along with the ten stats, and will be picked up when that work starts. Nothing
+below is a decision; it is a starting proposal kept on file so the pass does not
+begin from nothing.
 
 Reach is a per-hero property, not one of the ten stats in
 [`01-stats.md`](01-stats.md).
 
-> **This came from a generated screen, so it is not settled.**
-> `designsystem/LMNTLZ Codex.dc.html` assigns a reach to all 27 heroes, and the
+> **The numbers came from a generated screen, so they are not settled.**
+> `designsystem/LMNTLZ Codex.dc.html` assigns a reach to all 27 heroes and the
 > distribution stands up to checking — but design output is for look and feel and
-> does not settle rules. **This needs an explicit decision before anything is
-> built on it.** It is recorded here because it is a good starting proposal, not
-> because the question is answered.
+> does not settle rules.
 
 The distribution it lands on:
 

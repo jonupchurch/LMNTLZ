@@ -21,6 +21,18 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three event teams of up to 8 | **Drafted** — membership settled, competition format open |
 
+## Parked, on purpose
+
+Not blocked — **deferred by decision**, so don't treat these as outstanding
+questions or keep raising them:
+
+- **Hero numbers.** The ten stats' tuning values *and* the per-hero reach
+  assignment are one pass, to be done together later. `02-squads.md` keeps a
+  starting proposal for reach; it is not a decision.
+- **Event specifics.** Which metrics an event tallies, reward tiers, and the
+  shape of a season. The *structure* of guild events is settled in
+  `08-guilds.md`; the content of them is for much later.
+
 ## Dependencies between them
 
 Some of these can't be finished out of order:
