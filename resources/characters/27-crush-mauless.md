@@ -4,10 +4,11 @@
 *Art brief for character design. Type matchups (strengths & weaknesses) are in the panel just below; broader systemic lore lives in `../LORE-and-flavor.md`. Keep the Crush read unmistakable — the palette below drives frame, glow, and effects.*
 
 > **Type matchups**  
-> **Identity:** Crush *(primary)* · Pierce *(second discipline — melee)*  
-> **Strong to / resists:** Crush · Pierce  
-> **Weak to:** Slash  
-> *Pure-martial specialist — no Light/Dark attunement; strong against two melee forms, with a single opening. he drives straight through the guard that beats Crush — but a clean edge undoes him.*
+> **Identity:** Crush *(primary)* · Earth *(attuned — lesser)*  
+> **Strong to / resists:** Crush · Earth  
+> **Very weak to — Bane (super-effective vs. this hero):** Pierce  
+> **Moderately weak to — Fault:** Air  
+> *Attunement: siege-weight and breach-dust — the ground itself brought down on a wall.*
 
 ## Concept
 A relentless siege-breaker for whom guards break first and then everything under them; he refuses to be stopped.

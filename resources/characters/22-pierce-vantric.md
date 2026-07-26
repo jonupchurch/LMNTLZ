@@ -4,10 +4,11 @@
 *Art brief for character design. Type matchups (strengths & weaknesses) are in the panel just below; broader systemic lore lives in `../LORE-and-flavor.md`. Keep the Pierce read unmistakable — the palette below drives frame, glow, and effects.*
 
 > **Type matchups**  
-> **Identity:** Pierce *(primary)* · Slash *(second discipline — melee)*  
-> **Strong to / resists:** Pierce · Slash  
-> **Weak to:** Crush  
-> *Pure-martial specialist — no Light/Dark attunement; strong against two melee forms, with a single opening. his discipline turns aside the wide cut — but sheer weight can still crack his line.*
+> **Identity:** Pierce *(primary)* · Air *(attuned — lesser)*  
+> **Strong to / resists:** Pierce · Air  
+> **Very weak to — Bane (super-effective vs. this hero):** Slash  
+> **Moderately weak to — Fault:** Earth  
+> *Attunement: the thin, aerodynamic line — a needle threaded through the gap.*
 
 ## Concept
 A patient lancer who finds the one gap in a wall of shields; a needle threaded through armor.

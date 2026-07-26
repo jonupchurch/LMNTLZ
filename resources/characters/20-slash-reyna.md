@@ -4,10 +4,11 @@
 *Art brief for character design. Type matchups (strengths & weaknesses) are in the panel just below; broader systemic lore lives in `../LORE-and-flavor.md`. Keep the Slash read unmistakable — the palette below drives frame, glow, and effects.*
 
 > **Type matchups**  
-> **Identity:** Slash *(primary)* · Crush *(second discipline — melee)*  
-> **Strong to / resists:** Slash · Crush  
-> **Weak to:** Pierce  
-> *Pure-martial specialist — no Light/Dark attunement; strong against two melee forms, with a single opening. her whirling current shrugs off the heavy blow — but a precise point still finds her.*
+> **Identity:** Slash *(primary)* · Water *(attuned — lesser)*  
+> **Strong to / resists:** Slash · Water  
+> **Very weak to — Bane (super-effective vs. this hero):** Crush  
+> **Moderately weak to — Fault:** Fire  
+> *Attunement: the twin rivers she is named for — a current made of blades.*
 
 ## Concept
 A dual-blade whirlwind who fights like a current — wide, fast, and everywhere at once.

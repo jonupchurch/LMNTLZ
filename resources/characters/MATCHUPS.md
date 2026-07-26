@@ -4,6 +4,8 @@ Strength/weakness profile for all 27 heroes. Rules: a hero **resists** its prima
 
 Element oppositions — Earth↔Air · Fire↔Water · Light↔Dark. Melee triangle — Slash ▸ Pierce ▸ Crush ▸ Slash (each is Bane-weak to the one that beats it).
 
+**Constraint:** all four slots must stay distinct, so `2nd ≠ primary`, `counter(primary) ≠ 2nd`, and `counter(2nd) ≠ primary`. A consequence worth stating plainly: **a melee hero can never take a melee 2nd attunement** — the triangle is a 3-cycle, so both remaining options collide (one is already the hero's Bane, the other makes the Fault equal the hero's own primary). Every melee hero therefore carries a magic attunement.
+
 | # | Hero | Type | Attuned 2nd | Strong to (resists) | Very weak — Bane | Moderately weak — Fault |
 |---|------|------|-------------|---------------------|------------------|--------------------------|
 | 1 | Bramwen — "The Slow Wrath" | Earth | Fire | Earth · Fire | Air | Water |
@@ -25,32 +27,46 @@ Element oppositions — Earth↔Air · Fire↔Water · Light↔Dark. Melee trian
 | 17 | Umbriel — "The Undoing" | Dark | Fire | Dark · Fire | Light | Water |
 | 18 | Corvane — "Shepherd of Endings" | Dark | Earth | Dark · Earth | Light | Air |
 | 19 | Kaellis — "The Duelist Immaculate" | Slash | Light | Slash · Light | Crush | Dark |
-| 20 | Reyna Two-Rivers | Slash | Crush (melee) | Slash · Crush | Pierce | — |
+| 20 | Reyna Two-Rivers | Slash | Water | Slash · Water | Crush | Fire |
 | 21 | Grieve — "The Wide Reaper" | Slash | Dark | Slash · Dark | Crush | Light |
-| 22 | Vantric — "The Threading Spear" | Pierce | Slash (melee) | Pierce · Slash | Crush | — |
+| 22 | Vantric — "The Threading Spear" | Pierce | Air | Pierce · Air | Slash | Earth |
 | 23 | Silka Pinquick | Pierce | Dark | Pierce · Dark | Slash | Light |
 | 24 | Lord Aiguille — "The Long Point" | Pierce | Light | Pierce · Light | Slash | Dark |
 | 25 | Boldrek — "The Avalanche" | Crush | Light | Crush · Light | Pierce | Dark |
 | 26 | Hettamar Ironfall | Crush | Dark | Crush · Dark | Pierce | Light |
-| 27 | Mauless — "The Undenied" | Crush | Pierce (melee) | Crush · Pierce | Slash | — |
+| 27 | Mauless — "The Undenied" | Crush | Earth | Crush · Earth | Pierce | Air |
 
-## Distribution (kept as even as possible)
+## Distribution (whole roster, all 27)
 
-**Magic — 2nd attunement (each element chosen 3×):**  
-Earth ×3 · Air ×3 · Fire ×3 · Water ×3 · Light ×3 · Dark ×3  
+**2nd attunement — what each element was chosen as (27 total):**  
+Earth ×4 · Air ×4 · Fire ×3 · Water ×4 · Light ×6 · Dark ×6  
+*No melee type appears as a 2nd attunement: a melee hero cannot take a melee
+second (see the constraint above), and no magic hero was given one.*
 
-**Magic — Bane / major weakness (3× each, by primary opposition):**  
-Earth ×3 · Air ×3 · Fire ×3 · Water ×3 · Light ×3 · Dark ×3  
+**Bane / major weakness — perfectly uniform by construction (27 total):**  
+Earth ×3 · Air ×3 · Fire ×3 · Water ×3 · Light ×3 · Dark ×3 · Slash ×3 · Pierce ×3 · Crush ×3  
+*This is forced: Bane derives from the primary, and there are exactly 3
+champions per type. It is not a tunable value.*
 
-**Magic — Fault / moderate weakness (3× each):**  
-Earth ×3 · Air ×3 · Fire ×3 · Water ×3 · Light ×3 · Dark ×3  
+**Fault / moderate weakness — follows the attunement spread above (27 total):**  
+Air ×4 · Earth ×4 · Water ×3 · Fire ×4 · Dark ×6 · Light ×6  
+*Zero for Slash, Pierce, and Crush.*
 
-**Melee — Light/Dark attunement split (3 & 3):**  
-Light ×3 · Dark ×3  
+### Known imbalance — offensive reach per attacking type
 
-**Melee — pure-martial 2nd discipline (one per melee type):**  
-Slash ×1 · Pierce ×1 · Crush ×1  
+Reach = how many of the 27 heroes a type hits for extra damage (Bane + Fault):
 
-**Melee — all weakness incidences by type:**  
-Slash ×3 · Pierce ×3 · Crush ×3 · Light ×3 · Dark ×3  
+| Attacking as | Bane to | Fault to | Reach |
+|---|---|---|---|
+| Light, Dark | 3 | 6 | **9** |
+| Earth, Air, Fire | 3 | 4 | 7 |
+| Water | 3 | 3 | 6 |
+| Slash, Pierce, Crush | 3 | 0 | **3** |
+
+The melee types are worth a third of Light or Dark as counter-picks. This is
+structural, not an authoring slip: since Fault derives from the 2nd attunement
+and no melee hero can take a melee second, **a melee type can only ever become
+someone's Fault if a magic hero takes a melee 2nd attunement.** Allowing that —
+and rebalancing Light/Dark down toward 3 — is the open decision that would flatten
+this table to a uniform reach of 6 across all nine types.
 
