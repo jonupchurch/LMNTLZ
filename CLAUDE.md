@@ -55,16 +55,36 @@ These are project truth. Don't re-derive or contradict them:
 > the profile as four independent slots. The derivation rule above wins. Rewrite
 > the codex when the roster settles.
 
+## Tech stack — settled
+
+Full decision record with reasoning in `docs/tech-stack.md`. Read it before
+proposing anything structural; the *why* is recorded there precisely so it isn't
+re-litigated.
+
+- **Desktop only.** Electron on Steam + standalone, plus the same static build
+  in a desktop browser. Mouse and keyboard, min window 1280×720, target
+  1600×900. No mobile, no touch, no gamepad.
+- TypeScript throughout · pnpm + Turborepo · Vite + React + Tailwind client ·
+  Electron + `steamworks.js` · Hono on Vercel (versioned JSON REST) ·
+  Neon Postgres + Drizzle · Vercel Edge Config for the maintenance flag ·
+  auth owned in-house (Google ID tokens + Steam session tickets → own JWTs).
+- **Gameplay is server-authoritative.** The client sends an intent; the server
+  resolves it. The RNG seed never leaves the server. `packages/sim` splits into
+  *rules* (pure, shared, no RNG) and *resolver* (RNG, server only).
+- **In-progress battle state is never stored** — it is re-derived from the
+  append-only action log each request. One source of truth, no cache, no TTL.
+- **Replays are stored JSON event logs, never re-simulated**, so a balance patch
+  can never change a past battle's outcome.
+
+> **`stacks/nextjs.md` does not apply to this repo.** It ships with the
+> `ai-tools` toolkit; Next.js was considered and explicitly rejected — Steam
+> requires a static bundle, so its server half is unusable. Don't follow it.
+
 ## Deliberately undecided
 
-- **Stack, framework, and hosting are open.** An earlier stack decision was
-  explicitly discarded and should not be treated as precedent. `stacks/nextjs.md`
-  ships with the toolkit as a reference pack, **not** as a choice that's been
-  made — don't infer Next.js from its presence.
-- **Whether magic heroes may take melee secondaries.** Allowing it makes every
-  one of the 9 types Bane to 3 heroes and Fault to 3 heroes (reaching 6 of 27),
-  which is perfectly symmetric. Disallowing it is coherent but leaves melee
-  attackers at roughly a third the counter-building reach of magic ones.
+- Powers, damage multipliers beyond the Bane's +50%, turn order, the defense AI,
+  and progression. See `resources/mechanics/README.md` for the index and what
+  blocks what.
 
 ## Toolkit available in this repo
 

@@ -16,6 +16,16 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
 
+## Generated design output
+
+- `designsystem/` — the rendered Claude Design deliverables. **Anything landing in this folder is intentional and gets committed.**
+  - `LMNTLZ Brand Book.dc.html` — output of `brand-identity.md`
+  - `LMNTLZ Design System.dc.html` — output of `design-system.md`
+
+Typefaces settled by these: **Chakra Petch** (display), **Barlow** (UI/body), **JetBrains Mono** (numeric/stat). The base surface also tightened to `#0E0C17`, slightly darker than the `#141221` the prompts specified — treat the generated system as the source of truth where the two differ.
+
+> These exports reference a sibling `./support.js` that isn't in the folder, so they won't render standalone in a browser as-is.
+
 ## Platform
 
 LMNTLZ is a **desktop game**: an Electron client shipped on Steam and as a standalone installer, plus the same static build served in a desktop browser. Mouse and keyboard, minimum window 1280×720, designed for 1600×900. **There is no mobile or touch target** — every design prompt here assumes a pointer.
