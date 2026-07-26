@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes c-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:760px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:14px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">THE COURT · CHAT</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:7px;border:1px solid #4E7C3A;background:rgba(78,124,58,.1)">
+        <div style="width:7px;height:7px;border-radius:50%;background:#4E7C3A"></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#4E7C3A;white-space:nowrap">{{ onlineLabel }}</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#F2C744">◈ 2 480</div>
+      <div style="display:flex;align-items:center;gap:9px;padding-left:14px;border-left:1px solid #241F38"><div style="width:26px;height:26px;border-radius:7px;background:#241F38;border:1px solid #3A3357"></div><span style="font-size:12.5px;color:#B4AECB;white-space:nowrap">jonupchurch</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="width:262px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:14px 14px 12px;border-bottom:1px solid #241F38">
+        <div style="display:flex;align-items:center;gap:9px;height:34px;border-radius:7px;background:#1C1930;border:1px solid #3A3357;padding:0 11px">
+          <div style="width:11px;height:11px;border:2px solid #8E87A8;border-radius:50%;flex:0 0 auto"></div>
+          <input type="text" placeholder="Search channels &amp; wardens" value="{{ query }}" onInput="{{ onQuery }}" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:13px" />
+        </div>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:10px 10px 18px">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+          <div style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 8px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.2em;color:#6E6690">{{ g.label }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#57507A">{{ g.meta }}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <sc-for list="{{ g.rooms }}" as="r" hint-placeholder-count="3">
+                <div onClick="{{ r.pick }}" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;background:{{ r.bg }};border-left:2px solid {{ r.side }};cursor:pointer" style-hover="background:#1C1930">
+                  <div style="width:24px;height:24px;border-radius:6px;background:{{ r.avatarBg }};background-image:{{ r.avatar }};background-size:cover;background-position:50% 12%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:{{ r.glyphColor }}">{{ r.glyph }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12.5px;color:{{ r.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.preview }}</div>
+                  </div>
+                  <sc-if value="{{ r.unread }}" hint-placeholder-val="{{ false }}">
+                    <div style="flex:0 0 auto;min-width:18px;height:18px;border-radius:99px;background:{{ r.badgeBg }};display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:#141221">{{ r.unread }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:0 0 auto;border-top:1px solid #241F38;padding:10px 14px;display:flex;align-items:center;gap:9px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#4E7C3A"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8E87A8">SLOW MODE OFF · 3s COOLDOWN</div>
+      </div>
+    </div>
+
+    <div style="flex:1 1 auto;min-width:520px;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:14px 20px 13px;border-bottom:1px solid #241F38;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="width:34px;height:34px;border-radius:8px;background:{{ room.avatarBg }};background-image:{{ room.avatar }};background-size:cover;background-position:50% 12%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:{{ room.glyphColor }}">{{ room.glyph }}</div>
+        <div style="min-width:0">
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.06em;color:#F4EFE4;white-space:nowrap">{{ room.name }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8E87A8;margin-top:3px;white-space:nowrap">{{ room.sub }}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <div style="height:32px;padding:0 12px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">MEMBERS {{ room.members }}</div>
+          <div style="width:32px;height:32px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="border-color:#57507A"><div style="display:flex;flex-direction:column;gap:2.5px"><div style="width:3px;height:3px;border-radius:50%;background:#B4AECB"></div><div style="width:3px;height:3px;border-radius:50%;background:#B4AECB"></div><div style="width:3px;height:3px;border-radius:50%;background:#B4AECB"></div></div></div>
+        </div>
+      </div>
+
+      <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:16px 20px 10px;display:flex;flex-direction:column;gap:12px">
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.16em;color:#57507A;padding:4px 0">{{ room.dayMark }}</div>
+        <sc-for list="{{ messages }}" as="m" hint-placeholder-count="8">
+          <div style="display:flex;gap:11px;align-items:flex-start;padding:{{ m.pad }};border-radius:9px;background:{{ m.bg }};border-left:{{ m.accentWidth }} solid {{ m.accent }}">
+            <sc-if value="{{ m.showAvatar }}" hint-placeholder-val="{{ true }}">
+              <div style="width:32px;height:32px;border-radius:8px;background:{{ m.avatarBg }};background-image:{{ m.avatar }};background-size:cover;background-position:50% 10%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:{{ m.glyphColor }}">{{ m.glyph }}</div>
+            </sc-if>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+                <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.03em;color:{{ m.nameColor }}">{{ m.author }}</span>
+                <sc-if value="{{ m.badge }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;font-weight:700;color:#141221;background:{{ m.badgeColor }};border-radius:3px;padding:2px 5px">{{ m.badge }}</span>
+                </sc-if>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#57507A">{{ m.time }}</span>
+              </div>
+              <div style="font-size:13.5px;line-height:1.55;color:{{ m.textColor }};text-wrap:pretty">{{ m.text }}</div>
+              <sc-if value="{{ m.attachTitle }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:9px;border:1px solid {{ m.attachBorder }};border-radius:9px;background:#1C1930;padding:11px 13px;max-width:420px">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+                    <div style="width:22px;height:22px;background-image:{{ m.attachBadge }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.05em;color:#F4EFE4">{{ m.attachTitle }}</div>
+                    <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8E87A8;white-space:nowrap">{{ m.attachMeta }}</div>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    <sc-for list="{{ m.attachSix }}" as="u" hint-placeholder-count="6">
+                      <div style="flex:1;height:44px;border-radius:5px;border:1px solid {{ u.core }};background-image:{{ u.image }};background-size:cover;background-position:50% 6%;background-color:#241F38"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690">{{ m.attachNote }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#F2C744;cursor:pointer">{{ m.attachCta }}</div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:9px;padding-left:8px">
+            <div style="display:flex;gap:3px">
+              <div style="width:5px;height:5px;border-radius:50%;background:#57507A;animation:c-pulse 1000ms ease-in-out infinite"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#57507A;animation:c-pulse 1000ms ease-in-out 160ms infinite"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#57507A;animation:c-pulse 1000ms ease-in-out 320ms infinite"></div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#6E6690">{{ typing }}</div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:0 0 auto;border-top:1px solid #241F38;background:#141221;padding:12px 20px 14px">
+        <sc-if value="{{ room.readOnly }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:9px;border:1px dashed #3A3357;background:#1C1930">
+            <div style="width:20px;height:20px;border-radius:5px;background:#3A3357;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#B4AECB">!</div>
+            <div style="font-size:13px;color:#8E87A8">System dispatches are read-only. The Court does not take replies.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ room.writable }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:flex-end;gap:10px">
+            <div style="flex:1;min-width:0;border:1px solid {{ inputBorder }};border-radius:9px;background:#1C1930;padding:10px 12px">
+              <input type="text" placeholder="{{ room.placeholder }}" value="{{ draft }}" onInput="{{ onDraft }}" onKeyDown="{{ onKey }}" style="width:100%;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:14px" />
+              <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#57507A;border:1px solid #3A3357;border-radius:5px;padding:3px 7px;cursor:pointer" style-hover="color:#F2C744;border-color:#F2C744">SHARE SQUAD</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#57507A;border:1px solid #3A3357;border-radius:5px;padding:3px 7px;cursor:pointer" style-hover="color:#F2C744;border-color:#F2C744">SHARE REPLAY</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#57507A;border:1px solid #3A3357;border-radius:5px;padding:3px 7px;cursor:pointer" style-hover="color:#F2C744;border-color:#F2C744">LINK CHAMPION</div>
+                <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ countColor }}">{{ countLabel }}</div>
+              </div>
+            </div>
+            <div onClick="{{ send }}" style="height:44px;padding:0 20px;border-radius:9px;background:{{ sendBg }};border:1px solid {{ sendBorder }};display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.12em;color:{{ sendColor }};white-space:nowrap">SEND</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="width:250px;flex:0 0 auto;background:#141221;border-left:1px solid #241F38;overflow-y:auto;padding:16px 14px 24px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#6E6690;margin-bottom:11px">{{ rosterTitle }}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px">
+        <sc-for list="{{ members }}" as="p" hint-placeholder-count="8">
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;background:{{ p.bg }}" style-hover="background:#1C1930">
+            <div style="position:relative;flex:0 0 auto">
+              <div style="width:26px;height:26px;border-radius:7px;background-image:{{ p.avatar }};background-size:cover;background-position:50% 10%;background-color:#241F38"></div>
+              <div style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:{{ p.statusColor }};border:2px solid #141221"></div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;color:{{ p.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690;margin-top:1px">{{ p.status }}</div>
+            </div>
+            <sc-if value="{{ p.tag }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.08em;color:{{ p.tagColor }};border:1px solid {{ p.tagColor }};border-radius:3px;padding:2px 4px;flex:0 0 auto">{{ p.tag }}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="border:1px solid #241F38;border-radius:10px;background:#1C1930;padding:13px 14px;margin-bottom:16px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:9px">GUILD · THE ROOTED DEEP</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;color:#F2C744">14</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8">/ 20 WARDENS</span>
+        </div>
+        <div style="height:6px;border-radius:99px;background:#241F38;overflow:hidden;margin-bottom:11px"><div style="width:70%;height:6px;background:#4E7C3A"></div></div>
+        <div style="font-size:12px;line-height:1.5;color:#8E87A8">Weekly goal: 60 attack wins. <span style="color:#F4EFE4">41 logged</span>.</div>
+      </div>
+
+      <div style="border:1px solid #241F38;border-radius:10px;background:#1C1930;padding:13px 14px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:9px">HOUSE RULES</div>
+        <div style="font-size:12px;line-height:1.6;color:#8E87A8">Scout freely, share replays, no handle-shaming after a loss. Reports go to the Warden Courts, not the chat.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+const TYPES = {
+  earth:"#4E7C3A", air:"#8FCFE0", fire:"#E8552B", water:"#2A7FB8", light:"#F2C744",
+  dark:"#7A3FA0", slash:"#C0313A", pierce:"#3B5BD1", crush:"#B5732E"
+};
+const P = s => "portraits/" + s + ".png";
+const ROOMS = [
+  { id: "general", kind: "general", name: "General · Aethrym", glyph: "#", glyphColor: "#F2C744", avatarBg: "#241F38",
+    sub: "1 482 wardens online · slow mode 3s", members: "1.4K", preview: "Nix_Still: anyone else drawing ambushes…", unread: 12,
+    placeholder: "Say something to the whole realm", typing: "Nix_Still and 3 others are typing" },
+  { id: "guild", kind: "guild", name: "The Rooted Deep", glyph: "\u25C6", glyphColor: "#4E7C3A", avatarBg: "rgba(78,124,58,.25)",
+    sub: "14 of 20 wardens · weekly goal 41/60", members: "14", preview: "Ossic_Keeps: wall B held ×6 tonight", unread: 5,
+    placeholder: "Message your guild", typing: "Ossic_Keeps is typing" },
+  { id: "sys-court", kind: "system", name: "Court Notices", glyph: "\u2691", glyphColor: "#C64BB0", avatarBg: "rgba(198,75,176,.2)",
+    sub: "Read-only · season, ladder and service", members: "—", preview: "Season 3 opens: the Hidden Six answers", unread: 4,
+    readOnly: true, typing: null },
+  { id: "sys-battle", kind: "system", name: "Battle Reports", glyph: "\u2694", glyphColor: "#F06A72", avatarBg: "rgba(192,49,58,.2)",
+    sub: "Read-only · defense results while you were away", members: "—", preview: "Your Standing Six held against BoneKeeper", unread: 7,
+    readOnly: true, typing: null }
+];
+const MSGS = {
+  general: [
+    { author: "Nix_Still", type: "water", time: "21:04", text: "Four straight wins and I just got ambushed twice in a row. Working as intended, apparently." },
+    { author: "Grievewalker", type: "slash", time: "21:05", text: "That's 8%, you were unlucky. It stacks fast though — past ten straight I stop pushing and farm defense instead." },
+    { author: "EmberSworn", type: "fire", time: "21:07", text: "Genuine question: does anyone scout the visible wall's DEF streak before committing? A wall on ×7 is usually a wall that counters half the ladder." },
+    { author: "jonupchurch", type: "dark", time: "21:09", text: "Always. If the visible wall is on a long streak I assume the hidden one is the softer of the two and take the ambush odds.", me: true },
+    { author: "Grievewalker", type: "slash", time: "21:10", text: "That's the read, yeah. Here's the six I use into Light-heavy walls — nothing shares a Bane.",
+      attach: { title: "READ THE DOORS", meta: "STRIKING SIX", badge: "light", border: "#F2C744",
+        six: ["16-dark-nyxara","04-air-zephyrine","22-pierce-vantric","08-fire-pyrrhic","19-slash-kaellis","02-earth-ossic"],
+        note: "12 doors · 4 resisted", cta: "IMPORT →" } },
+    { author: "Nix_Still", type: "water", time: "21:12", text: "Stealing that. Ossic in the back seat with reach 2 is the part I keep forgetting." }
+  ],
+
+  guild: [
+    { author: "Ossic_Keeps", type: "earth", time: "20:58", text: "Wall B held six in a row tonight. Whoever suggested splitting the Light champions across both walls — that was the fix." },
+    { author: "Terra_Crown", type: "earth", time: "21:01", text: "Weekly goal is 41 of 60. Six of us have not attacked today.", badge: "OFFICER", badgeColor: "#C9922E" },
+    { author: "jonupchurch", type: "dark", time: "21:03", text: "On it. Three runs after this match.", me: true },
+    { author: "Marisel_Deep", type: "water", time: "21:06", text: "Replay of the ×6 hold if anyone wants to see how their Crush opened us:",
+      attach: { title: "BONEKEEPER vs THE CLOSED WALL", meta: "REPLAY · 12 ROUNDS", badge: "crush", border: "#B5732E",
+        six: ["03-earth-terragosa","10-water-marisel","14-light-lucen","11-water-tidewarden-coll","26-crush-hettamar","01-earth-bramwen"],
+        note: "defense win · +18 rating", cta: "WATCH →" } }
+  ],
+
+  "sys-court": [
+    { author: "THE WARDEN COURTS", type: "dark", time: "26 JUL", system: true, badge: "SEASON", badgeColor: "#C64BB0",
+      text: "Season 3 opens. Every Warden now keeps two Standing Six; matchmaking surfaces one. Each consecutive attack win adds 2% ambush chance." },
+    { author: "THE WARDEN COURTS", type: "light", time: "24 JUL", system: true, badge: "BALANCE", badgeColor: "#F2C744",
+      text: "Patch 3.2.1 is live. Fire's Fault multiplier trimmed to 1.20, Water's erosion now stacks twice, Crush heavy powers cost one fewer turn." },
+    { author: "THE WARDEN COURTS", type: "crush", time: "23 JUL", system: true, badge: "SERVICE", badgeColor: "#B5732E",
+      text: "The Courts close Thursday 03:00 UTC for roughly two hours. Battles in progress are discarded and nothing is lost." },
+    { author: "THE WARDEN COURTS", type: "water", time: "21 JUL", system: true, badge: "LADDER", badgeColor: "#4FC3D6",
+      text: "You reached Court-Champion. Sixteen Sky-Named seats remain before the Sundered Crown bracket closes." }
+  ],
+  "sys-battle": [
+    { author: "BATTLE REPORT", type: "earth", time: "21:02", system: true, badge: "DEFENSE HELD", badgeColor: "#4E7C3A",
+      text: "Your Standing Six held against BoneKeeper. Two champions standing at the end. +18 rating." },
+    { author: "BATTLE REPORT", type: "slash", time: "19:48", system: true, badge: "DEFENSE LOST", badgeColor: "#C0313A",
+      text: "The Long Vigil fell to Reyna2R. Three of yours bled to Air — the same door, three times. −14 rating." },
+    { author: "BATTLE REPORT", type: "dark", time: "17:30", system: true, badge: "AMBUSH", badgeColor: "#C64BB0",
+      text: "Your Hidden Six answered the door against Lucen_Reads and won. Ambushes have paid out twice today." }
+  ]
+};
+const MEMBERS = {
+  general: [
+    ["Nix_Still","12-water-nix","In battle · round 4","#F2C744","MOD","#4FC3D6"],
+    ["Grievewalker","21-slash-grieve","Squad builder","#4E7C3A",null,null],
+    ["EmberSworn","07-fire-ember-saelith","Matchmaking","#4E7C3A",null,null],
+    ["Terra_Crown","03-earth-terragosa","Idle","#B5732E",null,null],
+    ["Aiguille_XI","24-pierce-aiguille","In battle · round 9","#F2C744",null,null],
+    ["Marisel_Deep","10-water-marisel","Codex","#4E7C3A",null,null],
+    ["BoneKeeper","02-earth-ossic","Offline","#57507A",null,null],
+    ["Lucen_Reads","14-light-lucen","Offline","#57507A",null,null]
+  ],
+  guild: [
+    ["Terra_Crown","03-earth-terragosa","Squad builder","#4E7C3A","OFFICER","#C9922E"],
+    ["Ossic_Keeps","02-earth-ossic","In battle · round 2","#F2C744","OFFICER","#C9922E"],
+    ["Marisel_Deep","10-water-marisel","Codex","#4E7C3A",null,null],
+    ["jonupchurch","16-dark-nyxara","Chat","#4E7C3A","YOU","#F2C744"],
+    ["Coll_Standing","11-water-tidewarden-coll","Idle","#B5732E",null,null],
+    ["EmberSworn","07-fire-ember-saelith","Matchmaking","#4E7C3A",null,null],
+    ["Vael_Drops","06-air-vael","Offline","#57507A",null,null]
+  ],
+
+  system: [
+    ["THE WARDEN COURTS","13-light-seraphel","Official channel","#C64BB0","SYSTEM","#C64BB0"]
+  ]
+};
+
+class Component extends DCLogic {
+  state = { active: "general", drafts: {}, query: "", extra: {}, read: {} };
+
+  room() { return ROOMS.filter(r => r.id === this.state.active)[0]; }
+
+  send() {
+    const id = this.state.active, text = (this.state.drafts[id] || "").trim();
+    if (!text) return;
+    this.setState(s => {
+      const extra = Object.assign({}, s.extra);
+      const drafts = Object.assign({}, s.drafts);
+      extra[id] = (extra[id] || []).concat([{ author: "jonupchurch", type: "dark", time: "now", text: text, me: true }]);
+      drafts[id] = "";
+      return { extra: extra, drafts: drafts };
+    });
+  }
+
+  renderVals() {
+    const s = this.state, self = this;
+    const room = this.room();
+    const q = s.query.trim().toLowerCase();
+    const groupDefs = [
+      { key: "general", label: "GENERAL", meta: "REALM-WIDE" },
+      { key: "guild", label: "GUILD", meta: "14/20" },
+      { key: "system", label: "SYSTEM", meta: "READ-ONLY" }
+    ];
+    const msgs = (MSGS[s.active] || []).concat(s.extra[s.active] || []);
+    const draft = s.drafts[s.active] || "";
+    const over = draft.length > 240;
+    const memberKey = room.kind === "guild" ? "guild" : (room.kind === "system" ? "system" : "general");
+
+    return {
+      onlineLabel: "1 482 WARDENS ONLINE",
+      query: s.query, onQuery: e => this.setState({ query: e.target.value }),
+      groups: groupDefs.map(g => ({
+        label: g.label, meta: g.meta,
+        rooms: ROOMS.filter(r => r.kind === g.key).filter(r => !q || r.name.toLowerCase().indexOf(q) >= 0).map(r => {
+          const on = r.id === s.active;
+          const unread = s.read[r.id] ? 0 : r.unread;
+          return {
+            name: r.name, preview: r.preview,
+            glyph: r.glyph, glyphColor: r.glyphColor,
+            avatar: r.avatar ? "url('" + r.avatar + "')" : "none",
+            avatarBg: r.avatarBg || "#241F38",
+            bg: on ? "#241F38" : "transparent",
+            side: on ? "#F2C744" : "transparent",
+            nameColor: on ? "#F4EFE4" : (unread ? "#EDEAF6" : "#B4AECB"),
+            unread: unread ? String(unread) : null,
+            badgeBg: r.kind === "system" ? "#C64BB0" : (r.kind === "guild" ? "#4E7C3A" : "#F2C744"),
+            pick: () => self.setState(st => {
+              const read = Object.assign({}, st.read); read[r.id] = true;
+              return { active: r.id, read: read };
+            })
+          };
+        })
+      })),
+      room: {
+        name: room.name, sub: room.sub, members: room.members,
+        glyph: room.glyph, glyphColor: room.glyphColor,
+        avatar: room.avatar ? "url('" + room.avatar + "')" : "none",
+        avatarBg: room.avatarBg || "#241F38",
+        readOnly: !!room.readOnly, writable: !room.readOnly,
+        placeholder: room.placeholder || "Write a message",
+        dayMark: room.kind === "system" ? "OFFICIAL DISPATCHES" : "TODAY"
+      },
+      messages: msgs.map(m => ({
+        author: m.system ? m.author : m.author,
+        time: m.time, text: m.text,
+        showAvatar: !m.system,
+        avatar: m.system ? "none" : "url('" + P(self.slugFor(m)) + "')",
+        avatarBg: "#241F38",
+        glyph: "", glyphColor: "#F4EFE4",
+        nameColor: m.me ? "#F2C744" : (m.system ? "#C64BB0" : "#F4EFE4"),
+        textColor: m.system ? "#EDEAF6" : "#B4AECB",
+        badge: m.badge || null, badgeColor: m.badgeColor || "#F2C744",
+        bg: m.system ? "#1C1930" : (m.me ? "rgba(242,199,68,.05)" : "transparent"),
+        pad: m.system ? "13px 15px" : "6px 8px",
+        accent: m.system ? (m.badgeColor || "#C64BB0") : "transparent",
+        accentWidth: m.system ? "3px" : "0px",
+        attachTitle: m.attach ? m.attach.title : null,
+        attachMeta: m.attach ? m.attach.meta : "",
+        attachNote: m.attach ? m.attach.note : "",
+        attachCta: m.attach ? m.attach.cta : "",
+        attachBorder: m.attach ? m.attach.border : "#241F38",
+        attachBadge: m.attach ? "url('damage-types/badge-" + m.attach.badge + ".svg')" : "none",
+        attachSix: m.attach ? m.attach.six.map(sl => ({
+          image: "url('" + P(sl) + "')",
+          core: TYPES[sl.replace(/^\d+-/, "").split("-")[0]] || "#3A3357"
+        })) : []
+      })),
+      typing: room.typing,
+      draft: draft,
+      onDraft: e => this.setState(st => { const d = Object.assign({}, st.drafts); d[st.active] = e.target.value; return { drafts: d }; }),
+      onKey: e => { if (e.key === "Enter") self.send(); },
+      send: () => self.send(),
+      inputBorder: draft ? "#57507A" : "#3A3357",
+      countLabel: draft.length + " / 240",
+      countColor: over ? "#F06A72" : "#57507A",
+      sendBg: draft && !over ? "#F2C744" : "#1C1930",
+      sendBorder: draft && !over ? "#F2C744" : "#2A2640",
+      sendColor: draft && !over ? "#141221" : "#57507A",
+      rosterTitle: room.kind === "system" ? "CHANNEL" : (room.kind === "guild" ? "GUILD ROSTER" : "ACTIVE WARDENS"),
+      members: (MEMBERS[memberKey] || []).map(m => ({
+        name: m[0], avatar: "url('" + P(m[1]) + "')", status: m[2], statusColor: m[3],
+        tag: m[4], tagColor: m[5] || "#8E87A8",
+        nameColor: m[0] === "jonupchurch" ? "#F2C744" : "#EDEAF6",
+        bg: m[0] === "jonupchurch" ? "rgba(242,199,68,.06)" : "transparent"
+      }))
+    };
+  }
+
+  slugFor(m) {
+    const map = {
+      water: "12-water-nix", slash: "21-slash-grieve", fire: "07-fire-ember-saelith",
+      dark: "16-dark-nyxara", earth: "02-earth-ossic", pierce: "23-pierce-silka",
+      light: "13-light-seraphel", air: "06-air-vael", crush: "25-crush-boldrek"
+    };
+    const byAuthor = {
+      "Nix_Still": "12-water-nix", "Grievewalker": "21-slash-grieve", "EmberSworn": "07-fire-ember-saelith",
+      "jonupchurch": "16-dark-nyxara", "Terra_Crown": "03-earth-terragosa", "Ossic_Keeps": "02-earth-ossic",
+      "Marisel_Deep": "10-water-marisel", "SilkaPin": "23-pierce-silka", "Vantric_Prime": "22-pierce-vantric",
+      "TerraCrown": "03-earth-terragosa"
+    };
+    return byAuthor[m.author] || map[m.type] || "16-dark-nyxara";
+  }
+}
+</script>
+</body>
+</html>

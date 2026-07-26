@@ -19,6 +19,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started |
 | 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
+| 08 | `08-guilds.md` | Guilds of up to 24, split into three event teams of up to 8 | **Drafted** — membership settled, competition format open |
 
 ## Dependencies between them
 
@@ -36,6 +37,10 @@ Some of these can't be finished out of order:
   power answers it. Neither finishes alone.
 - **Defense AI gates nothing but needs everything.** It can only be written
   once there's a full action space to choose from.
+- **Guilds gate nothing and block on progression.** The membership and team
+  arithmetic is settled and needs nothing else, but rewards can't be specified
+  until `06-progression.md` defines a currency to pay them in. Safe to design
+  in parallel with powers and turns.
 
 ## Settled elsewhere, assumed here
 
