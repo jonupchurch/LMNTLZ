@@ -1,15 +1,15 @@
 # 08 · Guilds
 
 **TL;DR** — Players can band together in guilds of up to 24. For an event a guild
-splits into three **Wings** of eight players each; every Wing in the game is
-ranked on one shared board, the best Wings are paid directly, and their guild
-picks up a smaller reward on top. Wings are a guild-only idea that exists purely
-for events — they never appear in a battle, and a player's own **squad is still
-6 heroes** as it always was. Because everyone owns the same 27 heroes, a guild
-can never win by having *better* heroes than another, only by deciding better who
-fights whom. One dial still matters more than it looks: whether a Wing's score is
-a **total** or an **average** decides whether guilds recruit people or get rid of
-them.
+splits into three **Wings** of eight players each, and those assignments are
+**frozen once the event starts** so nobody can watch the scoreboard and shuffle
+people around to chase a prize. Wings don't fight each other — members just play
+normally, and the event counts something they do (attack wins, say), tallied per
+Wing and then per guild. The best Wings get paid directly and their guild picks
+up a smaller reward on top. A Wing is a group of *people* and exists only for
+events; a **squad is still 6 heroes**, as it always was. The main thing left to
+decide is how a short-handed Wing is scored, since counting raw totals quietly
+shuts smaller guilds out.
 
 ---
 
@@ -26,7 +26,67 @@ them.
   paid twice over — once to its eight members, once to the guild they belong to —
   and a guild benefits from its best Wing even if the other two place nowhere.
 
-Everything below is either forced by those four facts or is still open.
+- **Wings compete; they never battle.** There is no Wing-versus-Wing fight and no
+  Wing-shaped formation. Members play the game normally for the duration of an
+  event, and the event **tallies a metric** from what they do — a PvP event might
+  count attack victories. Those tallies are **counted by Wing first, then rolled
+  up by guild.**
+- **Wing assignment is set by officers and locks when an event starts.** The GM
+  and Officers move members between Wings from the guild admin screen; when the
+  target Wing is already at 8 the move becomes a **swap** rather than being
+  refused, so filling one Wing never leaves another short. **Once an event
+  begins, the assignment is frozen for its duration.**
+
+Everything below is either forced by those five facts or is still open.
+
+### Why the lock matters more than it looks
+
+Without it, a live leaderboard is an exploit surface rather than a scoreboard.
+Because standings are visible while the event runs, an unlocked guild could:
+
+- **Chase tier boundaries.** See that Wing I is comfortably inside its bracket
+  and Wing II sits three places below the next one, then move the strongest
+  members across to convert one safe placement into two paid ones. The reward
+  curve is the main strategic dial, and this reduces it to arithmetic performed
+  with full information.
+- **Consolidate late.** Spread wide early to see where the field lands, then
+  collapse the best players into one Wing for the closing hours — turning a
+  commitment into a hedge.
+
+Locking makes the assignment a genuine bet placed **before** the board exists,
+which is what makes it a decision at all.
+
+> **The lock has to cover membership, not just assignment.** Freezing which Wing
+> a member sits in while still allowing kicks leaves the same exploit intact
+> through a different door — under per-member average scoring, removing a
+> low-contributing member raises their Wing's score directly, so "kick the
+> laggards at hour 40" replaces "reshuffle at hour 40". Whatever the lock
+> ultimately freezes, **a member cannot be removed from a competing Wing
+> mid-event in a way that improves that Wing's score.** This interacts with
+> question 0 and should be settled alongside it.
+
+### What the lock costs, and the edge cases it creates
+
+The cost is real and worth accepting knowingly: **an inactive member is dead
+weight for the whole event**, with no recourse until it ends. A guild that loses
+someone to a holiday on day one carries a seven-person Wing for the duration.
+That is the price of the commitment being meaningful.
+
+Four cases the rules have to answer explicitly, since the UI cannot invent them:
+
+| Case | Question |
+|---|---|
+| A player **joins the guild** mid-event | Unassigned and ineligible until the next event, presumably — but they need a visible state saying so |
+| A player **leaves voluntarily** mid-event | Does their Wing drop to 7, and does the score they already contributed stay? |
+| A player is **kicked** mid-event | Should be blocked outright for competing Wings, per the note above |
+| A **new event starts** while a guild has empty seats | Does the lock capture the roster as-is, or does it force a fill first? |
+
+**One scheduling consequence, easy to miss:** if assignments lock at event start,
+then whatever makes an event distinctive — a type restriction, a formation rule,
+a scoring change — has to be **published before the lock**, or guilds are
+assigning blind. The News screen's event calendar already advertises modifiers
+like *"Fire-only attack squads"* and *"No shared Banes permitted"*, so this is
+not hypothetical. Events need an announced pre-lock window.
 
 > **The two-level payout resolves what the leaderboard format left dangling.**
 > The worry with independent scoring was that the three Wings never interact, so
@@ -200,23 +260,33 @@ balance, steepen it to make a hero Wing worth building. Setting it needs
 
 ## Still open
 
-### 0. Is a Wing's score a total or an average? — *decides whether guilds recruit or purge*
+### 0. Is a Wing's score a total or an average? — *less severe than it first looked*
 
-Under a global board this is no longer a detail, because Wings of different
-sizes are ranked against each other directly. The two obvious answers both fail,
-in opposite directions:
+**A tally is a total by nature.** "Count attack victories per Wing" is a sum, and
+the natural reading of the settled rules is that scores are totals. Two facts
+make that far safer here than it would normally be:
 
-- **Total contribution.** A Wing of 8 out-scores a Wing of 4 roughly
-  two-to-one before anyone plays a single battle, so small and mid-size guilds are
-  structurally excluded rather than merely disadvantaged. Combined with the
-  recruiting cliff below, this makes 24/24 not a goal but a prerequisite.
-- **Per-member average.** Fixes the size problem and immediately creates a worse
-  one: a Wing raises its average by **removing its weakest members**. Cutting a
-  struggling player becomes the mathematically correct play, which inverts the
-  entire reason the feature exists.
+- **Wings are a fixed size.** Every Wing is 8, so any two full Wings are compared
+  on equal footing. The size problem only exists for *under-filled guilds*, not
+  as a general property of the format.
+- **Guild size is capped at 24.** Nobody can field a bigger Wing than anyone
+  else, so a total cannot be inflated by out-recruiting.
 
-Neither is shippable as-is. Two mitigations worth evaluating, both of which keep
-adding a member from ever being negative:
+What survives is narrower but still real: **a guild below 24 is structurally
+disadvantaged**, roughly in proportion to how short it is. A guild of 12 running
+`4 / 4 / 4` posts three half-strength tallies and places nowhere with any of
+them. Combined with the recruiting cliff below, a raw total makes 24/24 less a
+goal than a prerequisite for competing at all.
+
+The alternative fails worse. **Per-member average** fixes the size problem and
+immediately creates a nastier one: a Wing raises its average by **removing its
+weakest members**, so cutting a struggling player becomes the mathematically
+correct play — which inverts the entire reason the feature exists, and reopens
+the kick loophole the assignment lock was meant to close.
+
+So: **default to totals**, and treat under-filled guilds as the thing to
+mitigate. Two options, both of which keep adding a member from ever being
+negative:
 
 - **Score the top K contributors** (say the best 5 of 8). A short Wing can
   still compete; a full Wing gets depth and insurance rather than raw
@@ -225,26 +295,13 @@ adding a member from ever being negative:
 - **Cap the score per Wing**, reached faster with more members. Size becomes
   a convenience rather than an advantage, and the ceiling is common to everyone.
 
+**Top-K is the better fit**, because it is the only one of the two that also
+survives the inactive-member problem the assignment lock creates: if a Wing is
+scored on its best 5 of 8, one member disappearing on holiday mid-event costs the
+Wing very little, and the guild has no incentive to kick them. It solves the
+size problem and the lock's main cost with one rule.
+
 This is the first thing to settle after progression exists.
-
-### 1. When can Wing assignment change? — *the "who" is answered*
-
-**Who** is settled by `designsystem/LMNTLZ Guild Admin.dc.html`: the GM and
-Officers assign members to Wings from an admin screen, and when the target Wing
-is already at 8 the UI requires a **swap** rather than refusing the move. That is
-a good rule and worth keeping — it means a Wing is never left short as a side
-effect of filling another.
-
-**When** is still open, and the admin screen currently implies "always", because
-nothing locks assignments.
-
-Leader-assigned, self-selected, or automatic. And whether the split is locked for
-an event's duration or can be rearranged partway — on a live leaderboard a guild
-can see all three of its Wings' standings mid-event, so a guild that can
-reshuffle is able to abandon a lost placement and pile onto a reachable tier,
-while one that commits up front is betting before the board exists. Given that
-the reward curve is the main strategic dial, allowing mid-event reshuffles
-substantially weakens it.
 
 ### 2. Must all three Wings be filled?
 
@@ -254,33 +311,44 @@ concentrate into `8 / 4 / 0` and post two scores instead of three. Downstream of
 question 0 — under a top-K or capped score, concentrating is a real option worth
 allowing; under a raw total it is close to mandatory.
 
-### 3. What does a Wing actually *do* to generate a score?
+### 3. Which metrics do events tally? — *the shape is settled, the menu is not*
 
-With no assigned opponent, the source of score is fully open. Three shapes:
+Settled above: an event tallies a metric from members' ordinary play, counted by
+Wing and then rolled up by guild. A PvP event counting attack victories is the
+worked example.
 
-- **A shared PvE target** — every Wing in the game attacks the same authored
-  defense set, and scores on damage, clear time or depth. Perfectly comparable
-  across Wings, which is exactly what a leaderboard needs, and it lets the
-  event author the counter-building puzzle deliberately rather than leaving it to
-  whoever a Wing happened to draw.
-- **Ordinary ladder play, aggregated** — a Wing's score is its members' normal
-  attack results over the event window. Cheapest to build, since it needs no new
-  battle content, but it makes the event a participation contest and rewards
-  playtime over skill.
-- **Attacks against other guilds' defenses** — closest to the core loop and the
-  most alive, but comparability suffers: two Wings drawing different opponents
-  are not scored on the same problem.
+**This is a very cheap feature to build**, and that is worth saying plainly. It
+needs no new battle content, no bracket, no matchmaking and no Wing-shaped
+formation — the metric is an aggregate over battle results the server already
+resolved and logged. A new event type is a new query and a new leaderboard, not
+new gameplay.
 
-The shared PvE target fits the leaderboard best, because ranking Wings against
-each other is only meaningful if they all faced the same thing.
+The open part is which metrics are worth tallying, because **the metric is the
+event's entire design.** Counting raw attack victories rewards playtime almost
+purely. Metrics that reward *skill* rather than hours are the ones worth
+authoring:
 
-### 3a. Do Wing attacks share the ambush and hold-streak systems?
+| Metric | What it actually rewards | Watch for |
+|---|---|---|
+| Attack victories | Volume, hours played | Pure participation contest; the default, and the least interesting |
+| Victories **against higher-rated defenses** | Punching up | Needs a rating floor or people farm the boundary |
+| **Hold** count across both defense zones | Good defensive building, which nothing else rewards | Defenders don't control when they're attacked |
+| Super-effective hits landed | Counter-building — the game's actual thesis | Easiest to game by farming a known-weak defense |
+| Victories under an event restriction (Fire-only, no shared Banes) | Constrained building | Needs the restriction announced before the assignment lock |
 
-Whatever the target is, event battles either feed the personal attack streak or
-they do not, and either answer has a cost: feeding it means a heavy event week
-inflates everyone's ambush chance on the normal ladder, while not feeding it
-means the streak silently stops counting some of a player's wins. Related to
-question 4.
+A defense-flavoured event is the notable gap: **hold streaks are already tracked,
+public and per-zone**, and nothing else in the design rewards being good at
+defense. Tallying holds would make the Standing Six matter competitively without
+inventing a single new mechanic.
+
+### 3a. Do event battles feed the personal attack streak?
+
+Event battles are ordinary battles, so by default they do — which means a heavy
+event week inflates everyone's ambush chance on the normal ladder, and near the
+90% cap a PvP-victory event quietly becomes a Hidden-squad event. Excluding them
+instead means the streak silently stops counting some of a player's real wins,
+which is worse. Probably: **let them count, and expect events to drive ambush
+rates up as a designed side effect.** Related to question 4.
 
 ### 4. Does the Hidden zone participate?
 

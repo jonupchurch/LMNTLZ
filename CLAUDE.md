@@ -46,10 +46,13 @@ These are project truth. Don't re-derive or contradict them:
   `resources/mechanics/02-squads.md`.
 - **Guilds hold up to 24 players, split into three *Wings* of 8.** A **Wing is a
   grouping of 8 players**, not heroes — it exists only inside a guild and only
-  for events, and never appears in a battle. Every Wing is ranked independently
-  on one global board; the top Wings are paid directly and their guild takes a
-  lesser reward on top. **A squad is always 6 heroes** — do not conflate the two.
-  Details in `resources/mechanics/08-guilds.md`.
+  for events, and never appears in a battle. **Wings compete, they never fight** —
+  an event tallies a metric from members' ordinary play (e.g. attack victories),
+  counted per Wing and then rolled up per guild. Every Wing is ranked
+  independently on one global board; the top Wings are paid directly and their
+  guild takes a lesser reward on top. **Assignments lock when an event starts.**
+  **A squad is always 6 heroes** — do not conflate the two. Details in
+  `resources/mechanics/08-guilds.md`.
 - **A hero's whole relationship profile derives from two authored fields**,
   `primary` and `secondary`:
   ```
