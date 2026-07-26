@@ -1,7 +1,8 @@
 # 08 · Guilds
 
 **TL;DR** — Players can band together in guilds of up to 24. For an event a guild
-splits into three **Wings** of eight players each, and those assignments are
+splits into three **Wings** of eight players each — or benches people as
+**Grounded**, a fourth slot with no size limit — and those assignments are
 **frozen once the event starts** so nobody can watch the scoreboard and shuffle
 people around to chase a prize. The one thing still allowed mid-event is throwing
 someone out of the guild — and since the empty seat can't be refilled, that only
@@ -43,11 +44,18 @@ shuts smaller guilds out.
   their Wing. Nothing else is permitted — no reassignment, no swaps, and no
   backfilling the vacated seat. A Wing that drops to seven stays at seven until
   the event ends.
-- **A player who joins a guild mid-event is Grounded.** They cannot be placed in
-  a Wing, and their Wing status reads **Grounded** for the rest of the event.
-  Grounded is a real, displayed state, not an empty field — a Grounded member is
-  a full member of the guild in every other respect, but nothing they do counts
-  toward any Wing's tally until the next event assigns them.
+- **Grounded is a fourth assignment, alongside the three Wings.** Every guild
+  member is in Wing I, Wing II, Wing III, or **Grounded**. It is a real slot with
+  a name, not an empty field or a missing value, and it has **no capacity limit**
+  — it is the bench, and a guild can hold any number of members there.
+- **Grounded is set two ways.** An officer may **ground a member manually** while
+  Wings are unlocked, and may move a Grounded member **into a Wing** the same way
+  — before an event or after one, but never during. Separately, anyone who
+  **joins the guild mid-event is Grounded automatically**, because the lock
+  forbids any route into a Wing.
+- **A Grounded member is a full member in every other respect.** They hold rank,
+  appear in the roster, use chat, and play the game normally. What they do simply
+  counts toward no Wing's tally, and they share in no Wing's reward.
 - **The lock covers Wing composition, nothing else.** Frozen: Wing assignment,
   swaps, and any route by which a member could newly *enter* a Wing. Unaffected:
   promoting or demoting an officer, changing the recruitment mode, editing the
@@ -112,6 +120,36 @@ It also argues for **top-K scoring** more strongly than anything else in this
 document: if a Wing is scored on its best 5 of 8, a member going quiet costs
 almost nothing, and no officer ever faces a choice between carrying someone and
 cutting them.
+
+### Grounded settles whether all three Wings must be filled
+
+They need not. A guild of 12 can run `4 / 4 / 4`, or `8 / 4 / 0` with four
+Grounded, and **Grounded is the mechanism that makes the choice expressible** —
+without it, "concentrate into two strong Wings" has nowhere to put the leftovers.
+
+The useful part is what the scoring model does to that choice:
+
+> **Under a tally, concentrating is never actually better.** Scores are totals,
+> nothing is averaged, and a low-placing Wing does not drag the guild's reward
+> down — the guild's cut sits *on top of* whatever its Wings earn. So a third
+> Wing of four costs nothing to field and might place; grounding those four
+> guarantees they contribute nothing. The competitive answer is almost always
+> **fill all three**.
+
+That is a good property rather than a disappointing one. **Grounding has no
+competitive upside, so it cannot be weaponised** — no officer can improve a
+Wing's standing by benching someone, which means the feature is safe to leave
+freely available whenever Wings are unlocked, with no rules guarding it.
+
+What it *is* for is administrative: benching a member who is inactive, disruptive,
+or who has asked to sit an event out. Those are social problems, and giving them
+a visible mechanical answer is better than the alternative, which is removing
+someone from the guild entirely.
+
+> **One caution.** Grounding is a whole-event bench with no recourse, and an
+> officer can apply it minutes before a lock. It needs to be visible to the
+> member themselves, not only in the admin view — a player who quietly earns
+> nothing for an event and is never told why has been punished invisibly.
 
 ### Grounded, and what it does to recruiting
 
@@ -222,11 +260,9 @@ The consequence is that **a full guild is the only size with no slack.** Below
 | 12 | 4 / 4 / 4 | Even; or 8 / 4 / 0 if concentration is allowed |
 | < 3 | — | Cannot field three Wings at all |
 
-This raises a question the rules have to answer rather than leave to the UI:
-**is a short Wing allowed to compete, or must all three be filled?** A guild of
-12 choosing between three even Wings of 4 and two strong Wings of 6 is
-making a real strategic decision, and whether that decision exists is a design
-choice, not an implementation detail.
+A short Wing is allowed to compete, and the leftovers of any split sit
+**Grounded** — see below. Under a tally, filling all three is almost always
+right, so these splits are a genuine choice that mostly has an obvious answer.
 
 ### Recruiting has a hard ceiling with a visible cliff
 
@@ -375,15 +411,7 @@ size problem and the lock's main cost with one rule.
 
 This is the first thing to settle after progression exists.
 
-### 2. Must all three Wings be filled?
-
-See the table above. There is no opponent to be outnumbered by here, so the
-question is narrower than it looks: it is really about whether a guild of 12 may
-concentrate into `8 / 4 / 0` and post two scores instead of three. Downstream of
-question 0 — under a top-K or capped score, concentrating is a real option worth
-allowing; under a raw total it is close to mandatory.
-
-### 3. Which metrics do events tally? — *the shape is settled, the menu is not*
+### 1. Which metrics do events tally? — *the shape is settled, the menu is not*
 
 Settled above: an event tallies a metric from members' ordinary play, counted by
 Wing and then rolled up by guild. A PvP event counting attack victories is the
@@ -413,7 +441,7 @@ public and per-zone**, and nothing else in the design rewards being good at
 defense. Tallying holds would make the Standing Six matter competitively without
 inventing a single new mechanic.
 
-### 3a. Do event battles feed the personal attack streak?
+### 1a. Do event battles feed the personal attack streak?
 
 Event battles are ordinary battles, so by default they do — which means a heavy
 event week inflates everyone's ambush chance on the normal ladder, and near the
@@ -422,14 +450,14 @@ instead means the streak silently stops counting some of a player's real wins,
 which is worse. Probably: **let them count, and expect events to drive ambush
 rates up as a designed side effect.** Related to question 4.
 
-### 4. Does the Hidden zone participate?
+### 2. Does the Hidden zone participate?
 
 Guild events are the natural place for the ambush mechanic to feel different —
 but ambush is currently driven by the *attacker's personal* win streak, which
 does not obviously translate to a team. Whether a Wing has a collective streak
 is a real question and would be the first streak in the game that isn't personal.
 
-### 5. How deep does "top Wings" go, and what is the split inside one?
+### 3. How deep does "top Wings" go, and what is the split inside one?
 
 The *shape* is settled — top Wings are paid directly, the guild gets a lesser
 reward on top. Two things inside that are not:
