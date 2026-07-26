@@ -26,6 +26,14 @@ Everything below is either forced by those four facts or is still open.
 
 ---
 
+> **The generated Chat screen contradicts this.** `designsystem/LMNTLZ Chat.dc.html`
+> shows the guild cap as **20** (`14 / 20 WARDENS`), and has no notion of the
+> three-way event split at all — it tracks a single flat weekly goal for the
+> whole guild. It was generated before these rules existed. The numbers above
+> win; the screen needs regenerating once the vocabulary below is locked.
+
+---
+
 ## The naming collision
 
 **"Squad" is already taken.** Throughout `02-squads.md` a squad means *exactly

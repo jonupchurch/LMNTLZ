@@ -265,3 +265,22 @@ mandatory keyboard focus rings.
 - **Admin/moderation tooling** is now owned rather than provided. Nothing needed
   on day one, but banning a cheater has to be possible before the ladder means
   anything.
+- **Chat needs a realtime transport this stack does not have.** Everything
+  settled above is request/response — versioned JSON REST over Hono on Vercel —
+  and that was a sound call *for gameplay*, because PvP is asynchronous and a
+  battle turn is a request. Chat is not asynchronous. The generated Chat screen
+  assumes live message delivery, presence (`1 482 wardens online`), per-member
+  status (`In battle · round 4`) and typing indicators, none of which REST
+  provides.
+
+  This is a genuine gap rather than an oversight: Vercel's serverless functions
+  cannot hold an open WebSocket, so the answer is either a managed realtime
+  service, a separate long-lived process outside Vercel, or dropping to polling
+  and accepting that presence and typing indicators go with it. **Note the
+  ordering risk** — chat is the first feature to need this, but guild events,
+  live leaderboards and battle-report pushes all want the same pipe, so it is
+  worth deciding once rather than per-feature.
+
+  Not blocking anything today. It *is* the largest unpriced item in the stack,
+  and picking polling now quietly forecloses the presence features the screens
+  already show.
