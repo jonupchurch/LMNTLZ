@@ -26,17 +26,22 @@ BY_ROLE = {
                 "carry the highest Might on the board and hold the two front slots, so "
                 "their passive rewards closing out rather than opening."),
     "Tank":    ("Hold the Line",
-                "Allies sharing this hero's row take reduced damage while it is alive. "
-                "Positional rather than numeric - it pays for putting the tank where the "
-                "formation needs it, and it stops mattering the moment the tank falls."),
+                "Permanent row-scoped TAUNT. Any enemy that can reach both this hero and "
+                "an ally sharing its row must target this hero. Scoped to the row so it "
+                "never locks down the whole board, and it obeys the reach invariant - an "
+                "attacker that cannot reach the tank chooses freely. Because taunt and "
+                "fade cancel on the same hero, applying fade to an enemy tank disables "
+                "its taunt entirely."),
     "Ranged":  ("Measured Shot",
                 "Bonus damage against targets at the far edge of this hero's reach "
                 "(distance 2). Rewards staying back and punishes an enemy that closes, "
                 "which is the whole reason Ranged pays a lower stat budget."),
-    "Buffer":  ("Long Counsel",
-                "Buffs and heals this hero applies last one turn longer. Ties straight "
-                "to the duration clock in 04-turns.md - durations tick on the bearer's "
-                "own turn, so this is worth more on a slow ally than a fast one."),
+    "Buffer":  ("Behind the Line",
+                "Permanent FADE. Enemies cannot target this hero while any non-faded ally "
+                "is available to be targeted instead. Self-limiting by the fade invariant "
+                "- once the buffer is the only thing an attacker can reach, it is "
+                "targetable normally. Because taunt and fade cancel, applying taunt to an "
+                "enemy buffer strips its fade and drags it into the open."),
 }
 
 # --- House: the Force's signature, one per primary type ---------------------

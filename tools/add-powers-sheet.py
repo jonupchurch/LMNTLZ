@@ -31,7 +31,9 @@ BY_PRIMARY = {
     "Water":  ["Undertow", "Wear the Stone", "The Tide Remembers"],
     "Light":  ["Verdict Light", "Nothing Hidden", "The First Word Spoken"],
     "Dark":   ["Veilcut", "Draw the Veil", "The Last Silence"],
-    "Slash":  ["Open Line", "Riposte", "One Clean Stroke"],
+    # "Redouble" is the fencing term for a renewed attack of your own, not a
+    # counter — "Riposte" read as a reactive power once reactions became real.
+    "Slash":  ["Open Line", "Redouble", "One Clean Stroke"],
     "Pierce": ["Seamfinder", "Thread the Guard", "The Single Truth"],
     "Crush":  ["Deadweight", "Make an Opening", "The Sky Falls"],
 }
@@ -52,7 +54,10 @@ UNIQUE = {
     "Ossic":             ("Kneel and Raise", "The God-Bone Wakes"),
     "Terragosa":         ("Orchard Over Ruin", "The Green Crown Descends"),
     "Zephyrine":         ("A Distance Never Closed", "The Thin Blade Falls"),
-    "Cirrolan":          ("Rumour and Storm", "Whisper from the High Reach"),
+    # The three Buffers' P4 slots carry the game's only healing — one each at
+    # single-target / row / party scale. They replaced a redundant second
+    # buff-strip or speed-buff apiece.
+    "Cirrolan":          ("Fair Weather", "Whisper from the High Reach"),
     "Vael":              ("Jump First", "Nothing to Catch You"),
     "Ember Saelith":     ("The Room Warms", "First Spark, Last Laugh"),
     "Pyrrhic":           ("Less Left to Lose", "Glad Ruin"),
@@ -61,10 +66,10 @@ UNIQUE = {
     "Tidewarden Coll":   ("Give Ground, Take Coast", "The Bulwark Holds"),
     "Nix":               ("Perfectly Calm", "The Still Pool Closes"),
     "Seraphel":          ("The Gaze Accuses", "Sentence Passed"),
-    "Lucen":             ("Three Beams, No Shadow", "The Unhidden Hour"),
+    "Lucen":             ("Enough Light for Everyone", "The Unhidden Hour"),
     "Auriel Dawnkeep":   ("The Lantern Holds", "Last Light on the Wall"),
     "Nyxara":            ("A Kindness, Ending", "Mercy at the End"),
-    "Umbriel":           ("Unwrite the Line", "The Undoing"),
+    "Umbriel":           ("Unmake the Wound", "The Undoing"),
     "Corvane":           ("I Know Your Hour", "Shepherd of Endings"),
     "Kaellis":           ("Never Twice", "Immaculate"),
     "Reyna Two-Rivers":  ("Two Rivers Meeting", "The Current Takes All"),
