@@ -75,7 +75,52 @@ player can actually ask.
 
 ---
 
-## Priorities are hidden — but they are discoverable
+## Power preference
+
+**Each hero also carries an ordered ranking of its six powers.** The engine fires
+the **highest-ranked power that is off cooldown and past its gate** — tier 4 from
+turn 3, tier 5 from turn 5 (`03-powers.md`). The tier-0 auto-attack has a
+cooldown of 0 and no gate, so a legal choice always exists and no fallback rule
+is needed.
+
+That is the whole algorithm. **The defender's entire interface is two ordered
+lists per hero** — who to hit, which power to use — and nothing else.
+
+### Why ranking beats firing the biggest thing available
+
+The obvious rule is greedy: always fire the most expensive available power, so
+its cooldown starts sooner. Measured against the real cooldown ladders, greedy
+distributes tiers *well* but makes every defense in the game behave the same:
+
+| | Distinct rotations across 27 heroes | Distinct openings |
+|---|---|---|
+| **Greedy** | **4** | **1** — every hero opens `3·2·4·1·5·3` |
+| **Preference order** | **240** per hero | **64** per hero |
+
+Seventeen of the twenty-seven heroes share a single greedy rotation. An attacker
+who learns one opening has learned **63% of the defenses in the game** — which is
+precisely what the targeting layer exists to prevent, undone one layer down.
+
+Greedy's tier distribution is genuinely healthy, and worth recording so it is not
+"fixed" later: **4.6% tier 0 · 19.6% tier 1 · 23.3% tier 2 · 23.5% tier 3 · 16.4%
+tier 4 · 12.6% tier 5.** The cooldown ladder was retuned once already to achieve
+that. The problem is not *what* greedy fires — it is that every hero fires it in
+the same order.
+
+At squad level, ranking gives **240⁶ ≈ 1.9 × 10¹⁴** behavioural combinations.
+
+### Why not scripting the opening instead
+
+Letting a defender choose their first three powers and running greedy afterwards
+was the other candidate. It is the lightest interface of the three, and the
+opening is where front-loading matters most.
+
+It was dropped on arithmetic: **a battle runs roughly 13 turns per hero**
+(`01-stats.md`), so a three-power script configures **under a quarter** of a
+hero's fight and greedy runs the rest. Defenses would diverge early and converge
+late — and the gates mean tier 5 can never appear in an opening script at all,
+with tier 4 only reachable in the third slot. A ranking governs every turn from
+the same single setting.
 
 **An attacker never sees a defender's priorities**, in either zone, on the
 Visible squad or the Hidden one.
@@ -164,17 +209,11 @@ later.
 
 ## Open
 
-- **Power selection is the other half, and it is not decided.** Priority says
-  *who* a hero attacks; nothing yet says *which power it fires.* With six powers
-  on independent cooldowns and tiers 4 and 5 gated to turns 3 and 5, a naive
-  "highest available tier" rule collapses into one fixed rotation — the exact
-  degenerate pattern found when simulating combat, where the auto-attack fired on
-  **0%** of turns. Until this is answered, half of every defense behaves
-  identically for every player, and the targeting layer is carrying the whole
-  burden of making defenses feel different.
-- **One priority or an ordered list.** A single choice is readable on a squad
-  row; an ordered fallback chain (*Buffers, then lowest HP*) is more expressive
-  and more UI. The fallback rule above works either way.
+- **Whether targeting is a single choice or an ordered list too.** Power
+  preference is an ordered ranking, so a single-choice targeting priority is now
+  the odd one out. An ordered chain — *Buffers, then lowest HP, then nearest* —
+  would be consistent and more expressive, at the cost of a second ranking widget
+  on every squad row. The fallback rule above works either way.
 - **Whether reactive powers are configurable.** `04-turns.md` leaves open whether
   "reactive" is a power property or a stance a hero adopts. If it is a stance, it
   is a **defender's** decision and belongs here — and it would be the second
