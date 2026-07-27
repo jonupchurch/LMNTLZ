@@ -374,11 +374,95 @@ for a power that skips Defense, where both happen in phase 4.
 
 ---
 
+## How a battle ends
+
+Everything above describes what happens *inside* a turn and what happens
+*between* turns. This is the outer loop, and until 2026-07-27 no document had it:
+every mention of a victory in `06-progression.md` and `08-guilds.md` **pays** for
+one without anything defining what one is.
+
+### Death is immediate and total
+
+> **A champion reduced to 0 HP leaves the board at once.**
+
+It does not act again, cannot be targeted, cannot be healed or revived, and —
+this is the part that matters — **its row stops counting it as occupied.**
+
+Death is checked continuously, not at a phase boundary. A champion can die in its
+own Upkeep to a damage-over-time effect without ever taking its turn, which
+`05-status.md` already relies on.
+
+> **"Fully empty" means no *living* champion.** `02-squads.md` skips fully empty
+> rows for reach, and describes a row being "wiped" — so this was always the
+> intent, but it was never stated. If corpses held their rows, rows would never
+> empty, reach would never open up, and the whole *a squad gains reach as it
+> loses heroes* dynamic — the thing that gives a losing position its own
+> momentum — would silently not exist. It is one sentence and it is load-bearing.
+
+### Victory
+
+**A side wins when all six of the opposing squad have left the board.** There is
+no surrender, no flee and no early concession: defense is engine-run, so there is
+nobody on the other side to accept one.
+
+### The turn cap
+
+> **A battle is capped at 300 hero-turns.** When the cap is reached the side with
+> the **higher share of its pooled HP remaining** wins.
+
+**This is an engineering requirement before it is a design one.** `docs/tech-stack.md`
+settles that in-progress battle state is never stored — it is re-derived from the
+append-only action log on every request. An unbounded battle is therefore an
+unbounded per-request compute cost, which makes an unkillable squad a denial-of-
+service vector rather than merely a boring matchup. The cap has to exist before
+`packages/sim` does.
+
+**300 is roughly 2× the simulated median.** A 6v6 resolves in about 155
+hero-turns, so the cap sits far enough out that no ordinary battle approaches it
+while still bounding the log. It is a tuning constant like any other and has to
+be re-checked once healing is numbered — a heal-heavy pairing is the one shape
+that could legitimately run long.
+
+Resolution when the cap is reached, in order:
+
+| # | Test |
+|---|---|
+| 1 | Higher **pooled HP remaining as a share of pooled maximum** |
+| 2 | More champions still standing |
+| 3 | **The defender holds** |
+
+**Pooled HP share already encodes deaths**, since a fallen champion contributes
+zero to the numerator and its full maximum to the denominator — a side with three
+down cannot exceed 50%. That is why it leads rather than champion count.
+
+**Why not simply "the attacker loses".** It is the simpler rule and it reads
+naturally as *the wall held*, but it hands defenders a live exploit: build a
+squad that cannot be killed inside 300 turns and farm hold streaks forever. Hold
+streaks are public, they pay 10 shards each, and `02-squads.md` makes them a
+tracked stat — so the incentive is real rather than theoretical, and policing it
+would become a permanent balance chore. Deciding on remaining HP means a stalling
+squad still loses when it is behind, which is the whole point.
+
+**Why not a true draw.** Cleanest incentive-wise, since neither side can farm it,
+but an ambush that draws burns a win streak the attacker spent up to 45
+consecutive victories building — the single most punishing outcome the game could
+produce, applied to its most invested players.
+
+The third tiebreak favours the defender because at that point the attacker chose
+the fight and failed to finish it. An exact tie on both HP share and champion
+count is vanishingly rare, so the residual stall incentive it creates is not
+worth a fourth test.
+
+---
+
 ## Settled
 
 The five phases, their order, and:
 
 - A turn belongs to the **acting** hero; the phase order is the attacker's.
+- A battle ends when **all six of one side have left the board**, or at a
+  **300 hero-turn cap** decided on pooled HP share remaining.
+- A champion at 0 HP **leaves the board immediately** and stops occupying its row.
 - Upkeep resolves effects **on the acting hero**, on its own turn.
 - Losing the turn to crowd control skips phases 2–4 but **always** reaches 5.
 - The acting hero dying in Upkeep is the **only** early termination.
