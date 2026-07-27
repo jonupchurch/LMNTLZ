@@ -61,22 +61,28 @@ HEROES = [
 STATS = ["Might", "Perception", "Agility", "Toughness", "Armor",
          "Penetration", "MagicResist", "Speed", "Resolve", "Luck"]
 
-BUDGET = 250          # every hero's ten base stats must sum to this
 BASE_MIN, BASE_MAX = 1, 50
-HARD_CAP = 100        # ceiling after future growth; not enforced on base values
+HARD_CAP = 100        # eventual per-stat ceiling after growth; not enforced here
+
+# Targets are NOT hard-capped and need not be equal across heroes. They are
+# driven by reach so a shorter-reach hero can be given a richer stat budget.
+# Left blank on purpose — set them in Y2/Y3 and every row follows.
+TARGET_REACH_1 = None
+TARGET_REACH_2 = None
 
 HEAD = ["#", "Hero", "Slug", "Family", "Primary", "Secondary",
         "Bane (derived)", "Fault (derived)", "Reach (proposed)"] + STATS + \
-       ["TOTAL", "CHECK", "BUDGET"]
+       ["TOTAL", "CHECK", "TARGET"]
 
 FIRST_STAT = HEAD.index(STATS[0]) + 1              # J
 LAST_STAT = FIRST_STAT + len(STATS) - 1            # S
 COL_TOTAL = LAST_STAT + 1                          # T
 COL_CHECK = COL_TOTAL + 1                          # U
-COL_BUDGET = COL_CHECK + 1                         # V
+COL_TARGET = COL_CHECK + 1                         # V
 
 SL, SR = get_column_letter(FIRST_STAT), get_column_letter(LAST_STAT)
-CT, CC, CB = (get_column_letter(c) for c in (COL_TOTAL, COL_CHECK, COL_BUDGET))
+CT, CC, CB = (get_column_letter(c) for c in (COL_TOTAL, COL_CHECK, COL_TARGET))
+COL_REACH = "I"
 
 INK = "FFF4EFE4"
 HEAD_FILL = PatternFill("solid", fgColor="FF241F38")
@@ -118,24 +124,57 @@ def build() -> Workbook:
             ws.cell(row=r, column=c).fill = STAT_FILL
 
         ws.cell(row=r, column=COL_TOTAL, value=f"=SUM({SL}{r}:{SR}{r})").font = Font(bold=True)
+        # Target follows reach. Overwrite any cell with a literal for a one-off.
+        ws.cell(row=r, column=COL_TARGET,
+                value=f'=IF(N($Y$2)+N($Y$3)=0,"",IF(${COL_REACH}{r}=1,$Y$2,$Y$3))')
+        # Blank while unfilled; INCOMPLETE until all ten are in; then silent
+        # unless a target is set, in which case OK or the signed difference.
         ws.cell(row=r, column=COL_CHECK, value=(
             f'=IF(COUNT({SL}{r}:{SR}{r})=0,"",'
             f'IF(COUNT({SL}{r}:{SR}{r})<{len(STATS)},"INCOMPLETE",'
-            f'IF({CT}{r}=${CB}$2,"OK","OFF BY "&TEXT({CT}{r}-${CB}$2,"+0;-0"))))'
+            f'IF(N({CB}{r})=0,"",'
+            f'IF({CT}{r}={CB}{r},"OK","OFF BY "&TEXT({CT}{r}-{CB}{r},"+0;-0")))))'
         ))
-
-    ws.cell(row=2, column=COL_BUDGET, value=BUDGET).font = Font(bold=True)
-    ws.cell(row=3, column=COL_BUDGET, value="edit V2 only").font = Font(italic=True, size=9)
 
     last = len(HEROES) + 1
 
+    # Target parameters — the only cells to edit to move budgets around.
+    ws["X1"] = "TARGET TOTAL BY REACH"
+    ws["X1"].font = Font(bold=True, color=INK)
+    ws["X1"].fill = HEAD_FILL
+    ws["X2"], ws["X3"] = "Reach 1", "Reach 2"
+    ws["Y2"], ws["Y3"] = TARGET_REACH_1, TARGET_REACH_2
+    for c in ("X2", "X3"):
+        ws[c].font = Font(bold=True)
+    for c in ("Y2", "Y3"):
+        ws[c].fill = STAT_FILL
+    ws["X4"] = "Blank = no target. Need not match; a shorter reach may earn more."
+    ws["X4"].font = Font(italic=True, size=9)
+
+    # Live read-out so the reach/budget trade stays visible while tuning.
+    ws["X6"] = "SPREAD"
+    ws["X6"].font = Font(bold=True, color=INK)
+    ws["X6"].fill = HEAD_FILL
+    for col, label in (("X", "Group"), ("Y", "Heroes"), ("Z", "Avg TOTAL")):
+        ws[f"{col}7"] = label
+        ws[f"{col}7"].font = Font(bold=True)
+    ws["X8"], ws["X9"], ws["X10"] = "Reach 1", "Reach 2", "All"
+    ws["Y8"] = f"=COUNTIF({COL_REACH}2:{COL_REACH}{last},1)"
+    ws["Y9"] = f"=COUNTIF({COL_REACH}2:{COL_REACH}{last},2)"
+    ws["Y10"] = f"=COUNT({COL_REACH}2:{COL_REACH}{last})"
+    ws["Z8"] = f'=IFERROR(ROUND(AVERAGEIF({COL_REACH}2:{COL_REACH}{last},1,{CT}2:{CT}{last}),1),"")'
+    ws["Z9"] = f'=IFERROR(ROUND(AVERAGEIF({COL_REACH}2:{COL_REACH}{last},2,{CT}2:{CT}{last}),1),"")'
+    ws["Z10"] = f'=IFERROR(ROUND(AVERAGE({CT}2:{CT}{last}),1),"")'
+
+    # Warning, not stop — it guides without blocking experimentation.
     dv = DataValidation(
         type="whole", operator="between", formula1=BASE_MIN, formula2=BASE_MAX,
         allow_blank=True, showErrorMessage=True, showInputMessage=True,
-        errorTitle="Out of range",
-        error=f"Base stats are whole numbers from {BASE_MIN} to {BASE_MAX}.",
+        errorStyle="warning",
+        errorTitle="Outside the base range",
+        error=f"Base stats are normally {BASE_MIN}-{BASE_MAX}. Continue anyway?",
         promptTitle="Base stat",
-        prompt=f"{BASE_MIN}-{BASE_MAX}. All ten must sum to the budget in {CB}2.",
+        prompt=f"Normally {BASE_MIN}-{BASE_MAX}. Totals are targets, not caps.",
     )
     ws.add_data_validation(dv)
     dv.add(f"{SL}2:{SR}{last}")
@@ -144,7 +183,8 @@ def build() -> Workbook:
     ws.auto_filter.ref = f"A1:{CB}{last}"
 
     widths = {"A": 5, "B": 20, "C": 26, "D": 10, "E": 12, "F": 12,
-              "G": 15, "H": 15, "I": 16, CT: 9, CC: 15, CB: 11}
+              "G": 15, "H": 15, "I": 16, CT: 9, CC: 15, CB: 11,
+              "X": 30, "Y": 11, "Z": 12}
     for c in range(FIRST_STAT, LAST_STAT + 1):
         widths[get_column_letter(c)] = 12
     for col, w in widths.items():
@@ -154,19 +194,28 @@ def build() -> Workbook:
     for row in [
         ["LMNTLZ — hero base stats"],
         [],
-        ["Budget", f"All ten base stats must sum to {BUDGET}, identical for every hero."],
-        ["", "Change it in one place: cell V2 of the Hero Stats sheet."],
-        ["Base range", f"Each base stat is a whole number from {BASE_MIN} to {BASE_MAX}."],
-        ["Hard cap", f"{HARD_CAP} per stat after future growth. Growth is not designed yet."],
+        ["Targets", "Nothing here is capped. A target total is a guide you set, not a"],
+        ["", "limit, and totals need not match across heroes."],
+        ["", "Set Y2 (reach 1) and Y3 (reach 2) on the Hero Stats sheet and every"],
+        ["", "row's TARGET follows. A shorter-reach hero may be given the richer"],
+        ["", "budget — that is the point of splitting the target by reach."],
+        ["", "Leave both blank and CHECK simply stays quiet."],
+        ["", "For a one-off hero, overwrite that row's TARGET cell with a number."],
+        ["Base range", f"Each base stat is normally {BASE_MIN}-{BASE_MAX}. Outside that you get a"],
+        ["", "warning you can dismiss, not a block."],
+        ["Later ceiling", f"{HARD_CAP} per stat once growth exists. Growth is not designed yet."],
         ["CHECK column", 'Blank until you start; INCOMPLETE until all ten are filled;'],
-        ["", 'then OK, or "OFF BY +n / -n" against the budget.'],
+        ["", 'then quiet if no target is set, else OK or "OFF BY +n / -n".'],
+        ["SPREAD block", "X6:Z10 on the Hero Stats sheet — live hero counts and average"],
+        ["", "totals per reach group, so the reach/budget trade stays visible."],
         [],
         ["Derived", "Bane and Fault are computed from Primary and Secondary and must"],
         ["", "never be hand-edited. Bane = counter(Primary), Fault = counter(Secondary)."],
         ["", "counter: Earth<->Air, Fire<->Water, Light<->Dark, Crush>Slash>Pierce>Crush."],
         [],
-        ["Reach", "Proposed only — not settled, and NOT part of the stat budget."],
+        ["Reach", "Proposed only — not settled, and NOT one of the ten stats."],
         ["", "It is positional: never scales, never enters a damage formula."],
+        ["", "It does drive the TARGET column, which is a budgeting choice."],
         [],
         ["Regenerating", "tools/build-hero-stats.py rebuilds this file and OVERWRITES it."],
         ["", "Do not run it once real stat values have been entered."],
