@@ -57,21 +57,184 @@ The order below is the contract. Any power that deviates must say so explicitly.
 | # | Step | Resolves | Stats |
 |---|---|---|---|
 | 1 | **Act** | Whose turn it is and how often it comes around | `Speed` |
-| 2 | **Land** | Hit or miss | `Perception` (att) vs `Agility` (def) |
-| 3 | **Base** | Raw damage before any modifier | `Might` × the power's multiplier |
-| 4 | **Type** | Bane / Fault / resisted / neutral | *no stat* — from the derivation rule |
-| 5 | **Crit** | Whether this one spikes | `Luck` |
-| 6 | **Mitigate** | How much is absorbed | `Armor` **or** `Magic Resist` (def), reduced by `Penetration` (att) |
+| 2 | **Packet** | One attack value, built once for the whole attack | `Might`, `Luck` |
+| 3 | **Land** | Hit or miss, per target | `Perception` + `Luck` (att) vs `Agility` (def) |
+| 4 | **Crit** | Whether this one spikes, per target | `Luck` |
+| 5 | **Mitigate** | How much is absorbed | `Armor` **or** `Magic Resist` (def), reduced by `Penetration` (att) |
+| 6 | **Type** | Bane / Fault / resisted / neutral | *no stat* — from the derivation rule |
 | 7 | **Apply** | Subtract from the pool | pool size from `Toughness` |
 | 8 | **Status** | Does an attached effect stick | power potency vs `Resolve` |
 
-Step 4 draws on nothing but the attacker's type and the defender's
-primary/secondary — see the derivation rule in `../LORE-and-flavor.md`. The
-attacker's **type** decides which mitigation stat applies at step 6: a martial
-type is answered by `Armor`, an arcane type by `Magic Resist`.
+The attacker's **type** decides which mitigation stat applies at step 5: a
+martial type is answered by `Armor`, an arcane type by `Magic Resist`. Step 6
+draws on nothing but the attacker's type and the defender's primary/secondary —
+see the derivation rule in `../LORE-and-flavor.md`.
 
-A miss at step 2 ends resolution — no chip damage, no status. A power may
+A miss at step 3 ends resolution — no chip damage, no status. A power may
 still carry an on-miss rider, but it has to declare one.
+
+---
+
+## The formulas
+
+### The packet
+
+**One attack value is computed once and spent against every target.** Steps 3–6
+then run separately per target, so an area power can miss one hero, be resisted
+by a second and land a Bane crit on a third — but it only ever does one damage
+calculation.
+
+```
+packet = (Might × power.multiplier) + Luck
+```
+
+Riders ride along in the packet, staged and not yet applied (`04-turns.md`).
+
+### Hit points
+
+```
+HP = Toughness × 50
+```
+
+There is no separate HP stat; `Toughness` *is* the pool. At ×50 a Toughness-25
+hero has 1250 and a Toughness-40 hero 2000.
+
+**The multiplier is load-bearing, not cosmetic.** At an average of ~2.5× `Might`
+per turn, a focused hero dies in 5.6 turns at ×50 but **2.2 turns at ×20** — and
+tier 4 and 5 powers are gated to turns 3 and 5 (`03-powers.md`). Anything below
+about ×35 means the entire 54-power unique layer never fires in a battle decided
+by focus fire. If battles need shortening, move the tier-5 gate earlier rather
+than cutting HP.
+
+### Landing a blow
+
+```
+attack  = d100 + Perception + Luck
+defense = d100 + Agility
+hit if attack > defense          # ties go to the defender
+```
+
+**Ties go to the defender.** That resolves the contest unambiguously and quietly
+favours the side that isn't choosing.
+
+`Agility` alone answers accuracy — **no mitigation stat appears here.** An
+earlier sketch had "defense + Agility" opposing the roll; if "defense" meant
+`Armor`/`Magic Resist`, that stat would be doing two jobs, and worse, the
+contest deadlocked: attacker modifiers span 45–75 and defender modifiers would
+too, leaving **52% of all 729 attacker/defender pairs unable to ever land a
+hit.** With `Agility` alone, hit chances land between roughly 60% and 90%.
+
+### Critical hits
+
+```
+crit chance = Luck × 0.5   (percent)      # Luck 15 -> 7.5%, Luck 40 -> 20%
+crit damage = packet × 2                  # unless a passive raises it
+```
+
+**Rolled per target, not per packet.** The packet carries base damage; the crit
+roll happens in each target's Defense phase. Rolling once for the whole packet
+would mean an area power crits on everyone or no one, making the widest powers
+the highest-variance thing in the game.
+
+At half of `Luck`, every hero crits at least once in a typical battle. At the
+20% coefficient first considered, three heroes were more likely than not to crit
+**zero** times across an entire battle — which would have left Boldrek's *No
+Warning* and the Slash House passive *The Cut Reopens* as lottery tickets rather
+than passives.
+
+### Mitigation — bounded, not linear
+
+`Armor` and `Magic Resist` reduce damage by a **percentage**, and `Penetration`
+subtracts from whichever applies before it does anything:
+
+```
+E = (Armor or Magic Resist) − Penetration        # effective resistance
+K = 75
+
+E ≥ 0:   factor = 1 − E / (E + K)                # reduction, bounded
+E < 0:   factor = 1 + (−E) / (−E + K)            # amplification, bounded
+```
+
+**The curve is the single most important defensive decision in the game.** A
+flat "reduction equals the stat value" scheme gives *accelerating* returns,
+because effective HP is `1/(1−r)`:
+
+| | Flat scheme | This curve |
+|---|---|---|
+| E = 25 | 25% · 1.33× eHP | 25% · 1.33× eHP |
+| E = 50 | 50% · 2× eHP | 40% · 1.67× eHP |
+| E = 90 | 90% · **10× eHP** | 55% · 2.2× eHP |
+| E = 150 | — | 67% · 3× eHP |
+
+`K = 75` is chosen so the curve **matches the flat scheme almost exactly through
+the range the roster currently occupies** (E ≤ 25) and only bends above it. Play
+today is unchanged; the top end simply cannot run away.
+
+That matters specifically because **runic equipment is a planned fast-follower**
+— gear that adds stats and stacks with buffs. Under a flat scheme, stacked Armor
+converges on invulnerability and the only counter is stacked Penetration; under
+this curve, every additional point is worth less than the last, so stacking is
+self-limiting and gear can be generous without breaking anything.
+
+Penetration **overshoot amplifies** rather than being wasted: an attacker whose
+`Penetration` exceeds the defender's resistance deals *more* than base, bounded
+below ×2 by the same curve. Across the current roster, mean net mitigation is
+**−0.1%** — penetration exactly cancels resistance on average, so the whole
+mitigation layer currently nets to zero. That is a numbers problem for the stat
+pass, not a formula problem.
+
+### Type effectiveness, last
+
+```
+final = mitigated × typeMultiplier      # Bane ×1.5; Fault and resisted TBD
+```
+
+Applying doors and banes **after** mitigation rather than before is free:
+both are multiplicative, so they commute and the final number is identical
+either way. It is purely a presentation choice — and it closes the "how do
+steps 4–6 compose" question this file carried as open.
+
+> One caveat that makes it stop being free: **any clamp or minimum-damage floor
+> between the two steps breaks the commutation.** If a floor is ever added, the
+> order becomes real and has to be re-decided.
+
+### Worked example
+
+Bramwen (`Might` 45, `Luck` 35, `Penetration` 30) uses a tier-3 power (×2.5)
+against a defender with `Magic Resist` 40:
+
+```
+packet = 45 × 2.5 + 35            = 147.5
+crit?    17.5% chance             -> assume no
+E      = 40 − 30 = 10
+factor = 1 − 10/85                = 0.882
+        147.5 × 0.882             = 130.1
+Bane   × 1.5                      = 195.2
+        against HP 2000           = 9.8% of the pool
+```
+
+---
+
+## One stat still doing four jobs
+
+`Luck` now contributes **flat damage, accuracy, crit chance and crit damage**.
+The opening rule of this file is that every stat has exactly one job and every
+axis of conflict has exactly one counter; `Luck` is the only stat with four
+roles and the only one with no counter at all.
+
+**This is recorded as an open decision, not applied.** The damage formula above
+is as specified. The recommended trim is to **drop `Luck` from the damage
+formula**, leaving `packet = Might × multiplier`, for two reasons:
+
+- **It compresses the roster.** At tier 0, Luck is 44–62% of a hit. Bramwen
+  (`Might` 45) deals 80 and Ossic (`Might` 25) deals 65 — a 45-vs-25 Might gap
+  collapses to 80-vs-65 damage, and `Might` barely matters at low tiers.
+- **Equipment makes it worse.** With runes able to raise stats, a `Luck`-stacking
+  build would gain on four axes per point while every other stat gains on one.
+  That is the classic single-dominant-stat trap, and it arrives with the gear.
+
+Dropping it leaves `Luck` as a clean "the rolls go my way" stat — accuracy and
+crits — which is what the table at the top of this file already claims it is.
 
 **Where these steps happen** is [`04-turns.md`](04-turns.md): steps 2–8 are the
 Attack, Defense and Additional Effects phases of a hero's turn, and step 1 sits

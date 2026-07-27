@@ -102,9 +102,17 @@ single-target power of the same tier to pay for the breadth.
 | The Wide Reaping | one row | 5 | 2.5 |
 
 The alternative — dividing one multiplier among the targets hit — was rejected
-because **mitigation is subtractive**. A ×4 split six ways is ×0.67 each, which
-against Armor 40 floors at 1 damage; splitting would also make an area power
-*stronger* as enemies died. Per-target keeps every hit meaningful.
+for two reasons. It makes an area power *stronger* as enemies die, which is
+backwards; and a per-head number that shrinks with the target count makes the
+multiplier column unreadable, since the same figure would mean something
+different on every row.
+
+> **A correction.** This decision was originally argued on the grounds that
+> mitigation is *subtractive*, so each split fragment would floor at minimum
+> damage. Mitigation is now **percentage-based** (`01-stats.md`), and that
+> argument no longer holds — a split fragment would scale down cleanly rather
+> than flooring. The decision stands on the two reasons above; the original
+> reasoning was superseded.
 
 Total output lands around 1.4× a single-target power of the same tier. Note that
 a per-target multiplier makes a hero like Grieve look weak in a

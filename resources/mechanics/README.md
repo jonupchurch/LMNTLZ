@@ -20,6 +20,29 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three event teams of up to 8 | **Drafted** — membership settled, competition format open |
+| 09 | *`09-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
+
+## The bounded-formula rule
+
+**Runic equipment is a deliberate fast-follower.** Gear that grants stat bonuses
+and allows heavier stacking of powers and buffs, so a hero can be genuinely
+customised and optimised — *more planning over paying*. It is explicitly not
+being built now, but it is coming, and that imposes one rule on everything
+written before it:
+
+> **Every formula must have diminishing returns in the stat it consumes.**
+> If a value scales linearly and gear can raise it, gear will eventually break
+> it.
+
+This is not hypothetical. Mitigation was originally specified as a flat
+percentage equal to the stat — under which `Armor` 90 gives **10× effective
+HP** and `Armor` 100 gives literal immunity. `01-stats.md` now uses a bounded
+curve that is indistinguishable from the flat scheme across the range the roster
+occupies today and simply cannot run away later. Apply the same test to any new
+formula: **ask what it does at three times the current stat values.**
+
+The same reasoning is why `Luck` doing four jobs is flagged there rather than
+left alone — a stat with four roles is the one gear would obviously stack.
 
 ## Parked, on purpose
 
