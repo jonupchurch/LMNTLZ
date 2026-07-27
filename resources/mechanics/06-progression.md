@@ -639,11 +639,13 @@ allocation and the 3.35× stops mattering. With one, everybody is competing on t
 axis that rewards reading the game — which is the entire thesis of a
 counter-building design.
 
-**It also makes the investment score safe to display.** Because spend does not
-reveal *quality*, showing a player's rune investment when scouting their Visible
-squad tells an opponent how committed they are without telling them whether the
-commitment was wise. The reading stays a skill rather than a number check —
-consistent with everything else about the Visible squad being open.
+**It also makes rune investment safe to display when scouting.** Because spend
+does not reveal *quality*, a scouted Visible squad shows **each hero's three
+slots, their elements, and how many stages each has reached** — and no stat
+values at all (`07-defense-ai.md`). An opponent learns how committed a player is
+without learning whether the commitment was wise, which keeps reading a squad a
+matter of judgement rather than arithmetic. It also means **bluffing works**:
+filling every slot cheaply and badly reads as a finished defense.
 
 ### The revenue curve runs backwards, deliberately
 

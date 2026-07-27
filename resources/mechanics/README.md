@@ -18,7 +18,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 04 | `04-turns.md` | The five-phase turn; the turn queue and action economy | **Settled** — phases, targeting, reactions and turn order all decided |
 | 05 | `05-status.md` | Crowd control and buff/debuff effects; what Resolve resists | **Drafted** — magnitudes, potency, stacking and the effect catalog all specified |
 | 06 | `06-progression.md` | Rune Shards, custom runes, the rating ladder | **Drafted** — the currency and the power model are settled; rates and the ladder are open |
-| 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started — **unblocked**, the action space is now complete |
+| 07 | `07-defense-ai.md` | How the engine plays a defense squad | **Drafted** — defender-set targeting priorities and what scouting reveals; power selection open |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three Wings of 8 | **Drafted** — membership settled, rewards blocked on 06 |
 | 09 | *`09-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
 
@@ -97,12 +97,13 @@ What is left has a much simpler shape:
   rather than by a player falling behind — which is what lets progression exist
   at all under a fixed, identical roster. `08-guilds.md` is still blocked on the
   *payout rate*, but no longer on the question of what a reward even is.
-- **`07-defense-ai.md` gates nothing, and is now unblocked.** It needed a
-  complete action space and it has one: the five phases, the four-stage targeting
-  pipeline, reactions on the attacker's turn, and the cooldown ladder. Worth
-  weighing that the engine plays **every** defense squad for every player and
-  the player never plays defense at all — so the AI's quality *is* the defensive
-  half of the game, not a fallback for when a human is absent.
+- **`07-defense-ai.md` is drafted and half-answered.** A defender now *configures*
+  the AI rather than watching it: each hero carries a **targeting priority** that
+  resolves at stage 4 of the targeting pipeline, behind reach, fade and taunt.
+  Priorities are **hidden from attackers** but derivable from stored replays, so
+  learning an opponent is worth something. **Power selection is the open half** —
+  until it is answered, a naive "highest available tier" rule collapses every
+  defense into one fixed rotation.
 - **`02-squads.md` has six open rules**, none blocking. The two with real
   strategic weight are *which zone deserves the stronger heroes* (which depends
   on the rating stakes attached to each, so it leans on 06) and *whether
