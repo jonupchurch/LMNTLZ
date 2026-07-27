@@ -103,6 +103,33 @@ Reach was also revised into a regular pattern — **every arcane type has one
 reach-1 and two reach-2 champions; every martial type the reverse.** Still 12/15
 overall, and every type still offers both, so no type is locked out of any row.
 
+### Damage lives in the front row
+
+`Might` tracks reach exactly. The roster uses only four values, with a hard gap
+in the middle and no hero anywhere between 30 and 40:
+
+| | Might | Count |
+|---|---|---|
+| **Reach 1** | 40 – 45 | 12 |
+| **Reach 2** | 25 – 30 | 15 |
+
+**Might ≥ 40 if and only if reach 1** — a strict biconditional across all 27
+heroes. Since a reach-1 hero can only strike an enemy from the front row, and the
+2/3/1 formation has just **two** front slots, the consequence is structural:
+
+> **A squad fields at most two real damage dealers.** The two front slots carry
+> Might 40–45; the other four are capped at 30, and the back seat cannot reach an
+> enemy at all while your own lines hold. Which two heroes take the front row is
+> therefore the single most consequential placement decision in a squad — and it
+> is also why the back seat reads as a support slot rather than a wasted one.
+
+Two things follow that are worth watching. The 12 reach-1 heroes are the scarce
+resource, since a player's five squads (two defense, up to three attack) consume
+ten front slots between them. And because a squad **gains** reach as its rows
+empty, a losing squad's Might 40–45 heroes come online from deeper positions —
+so the comeback dynamic in `02-squads.md` is sharper than the reach rule alone
+suggests.
+
 ### What powers are expected to absorb
 
 **Stats are not carrying hero identity, and are not meant to.** Only 10 distinct
@@ -117,13 +144,15 @@ so a template-per-role baseline is the right shape to build powers on top of, no
 a flattening to correct. Two of the observations below therefore resolve in
 `03-powers.md` rather than here.
 
-- **Arcane Strikers are the fragile half of the front line.** All six have reach
-  1, which demands the front row, but sit at Toughness 25 / Armor 15 — durability
-  50 against the martial Strikers' 73.3 beside them, at the same 300 cost, bought
-  with 5 Might and 15 Speed. *Expected to be answered by powers:* protective buffs
-  and shields are precisely what the Buffer role exists to provide, so the
-  question is really whether a Buffer can reach and cover the front row in time —
-  a reach and turn-order question, not a stat one.
+- **Arcane Strikers are the fragile half of the front line — and the hardest
+  hitting thing in the game.** All six have reach 1, which demands the front row,
+  and Toughness 25 / Armor 15 gives them durability 50 against the martial
+  Strikers' 73.3 at the same 300 cost. What they buy with it is **Might 45, the
+  highest value on the field**, plus double the Speed. That is a deliberate glass
+  cannon rather than a shortfall. *Further softened by powers:* shields and
+  protective buffs are what the Buffer role exists for, so the live question is
+  narrower — can a Buffer reach and cover the front row in time? That is a reach
+  and turn-order question, not a stat one.
 - **Buffers are not lighter than Ranged.** Both total 275, and buffers are the
   *more* durable of the two (56.7 vs 46.7) on Magic Resist 40 and Speed 35, against
   a stated intent of buffers being lightest. *Partly answered by powers:* if
