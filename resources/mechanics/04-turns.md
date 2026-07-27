@@ -15,9 +15,8 @@ asked. A defender dying mid-turn is an *event inside* the acting hero's turn,
 not something that can end it. The only death that stops the sequence is the
 acting hero's own, and the only place that can happen is Upkeep.
 
-This file covers what happens **within** a turn. It does **not** cover who acts
-next or how often — that is the `Speed` question, still open, and deliberately
-separated out below.
+This file covers what happens **within** a turn first, then who acts next and
+how often — `Speed`, settled at the end.
 
 ---
 
@@ -105,10 +104,11 @@ Everything already attached to this hero resolves **on this hero's own turn**,
 not on the turn of whoever applied it. A poison you inflict ticks when your
 victim acts.
 
-That has a consequence worth stating now, because it will matter when `Speed`
-is settled: **the more often a hero acts, the more damage-over-time it eats.**
-Turn frequency is not a pure benefit. If Speed ends up granting extra turns, it
-also multiplies the cost of every debuff on the board.
+Because durations tick on the same clock (phase 5), **a damage-over-time effect
+deals its full total no matter how fast its bearer is** — a 3-turn burn ticks
+exactly three times. What `Speed` changes is the rate: a fast hero takes it
+compressed into fewer rounds and is clean sooner. See *One clock per hero*
+below.
 
 Upkeep is also where a hero discovers it has lost the turn. Crowd control is
 *resolved* here — checked, applied, and this is where "you are stunned, you do
@@ -270,20 +270,40 @@ The five phases, their order, and:
 
 ---
 
-## Still parked: what Speed does
+## Between turns: what Speed does
 
-Phase 1 of the damage pipeline — **Act** — is the one step this document does
-not place, because it happens between turns rather than inside one. Whether
-`Speed` grants extra turns, only orders them, or drives cooldown ticks remains
-open (`01-stats.md`, open question 2), and remains **parked by decision**.
+Phase 1 of the damage pipeline — **Act** — is the one step that happens between
+turns rather than inside one. It is now settled:
 
-The useful thing is that it turns out to be separable. The five phases hold
-whatever the answer is: extra turns simply run the sequence again, and a pure
-ordering model changes nothing here at all. **Intra-turn structure was never
-actually blocked on Speed** — which is why this file exists ahead of it.
+> **`Speed` sets initiative order, and faster heroes act more often.**
+> Cooldowns are never touched directly by `Speed`; a cooldown counts **hero
+> turns**, ticking once per turn its owner takes.
 
-One hook is now in place for whenever that decision comes. Cooldowns ticking in
-Resolution means they tick **once per turn the hero takes**, so an extra-turns
-model makes `Speed` shorten cooldowns in real time without ever producing a
-fractional turn count. The rounding problem that made that option awkward in
-`01-stats.md` does not arise.
+Nothing above changes. Extra turns simply run the five phases again, which is
+why the intra-turn structure could be settled first.
+
+### One clock per hero
+
+Every timed quantity in the game counts the **bearer's own turns**: cooldowns
+tick in that hero's Resolution, durations tick in that hero's Resolution,
+damage-over-time ticks in that hero's Upkeep. Nothing counts rounds and nothing
+counts anybody else's turns.
+
+So `Speed` is not just "more actions" — **it is a rate multiplier on the whole
+timed layer for that hero.** A fast hero gets its powers back sooner, watches
+its own buffs expire sooner, shakes off control sooner, and burns through a
+poison sooner. A slow hero lives in slow motion in every one of those respects.
+
+Two things follow that are worth having before any tuning happens:
+
+- **A duration costs its bearer the same total, whatever its Speed.** A 3-turn
+  burn ticks exactly three times, because both the tick and the countdown are
+  driven by the same clock. `Speed` changes *when* that damage arrives, not how
+  much — fast heroes take it compressed into fewer rounds, slow heroes take it
+  strung out. This is a happier answer than the one sketched earlier in this
+  file: acting more often is **not** a damage-over-time penalty.
+- **Control is weaker against fast heroes, in the only units that matter.** A
+  3-turn stun costs any hero three actions, but the fast hero spends them over
+  far less of the battle and rejoins sooner. Combined with the cooldown effect,
+  `Speed` is plausibly the strongest of the ten stats — it should be priced as
+  one, and it is the first place to look if the roster reads as lopsided.

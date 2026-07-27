@@ -173,8 +173,9 @@ a flattening to correct. Two of the observations below therefore resolve in
 
 ## Open questions
 
-None of these block writing powers, but all four must be answered before any
-number in this file can be tuned.
+None of these block writing powers, but they must be answered before any number
+in this file can be tuned. Question 2 is kept in place, struck through, because
+what it settled to is load-bearing for the other three.
 
 ### 1. Magic Resist covers twice the ground Armor does
 
@@ -188,27 +189,21 @@ or leave the values equal and let hero stat budgets account for it, so
 Armor-heavy heroes get more total budget. **Decide before assigning any hero
 its numbers,** because it changes what a "high defense" hero costs.
 
-### 2. Speed vs. whole-turn cooldowns — *parked*
+### ~~2. Speed vs. whole-turn cooldowns~~ — **settled**
 
-**Deferred by decision**, to be taken up once the battle system is being worked
-on properly. The three options below are recorded so the discussion starts from
-somewhere; none is chosen, and this is the keystone question for the whole
-battle system — turn order, cooldown pacing and Speed's value all hang on it.
+`Speed` sets **initiative order**, and **faster heroes act more often**. It
+never touches cooldowns directly: a cooldown counts **hero turns**, ticking once
+per turn its owner takes.
 
-Cooldowns are counted in whole turns (settled). If `Speed` shortens cooldowns,
-it produces fractions — and a small Speed buff does nothing at all until it
-crosses a rounding threshold, which reads as a broken buff to the player who
-just spent a turn applying it.
+This is the *extra actions* option, and it dissolves the problem rather than
+answering it. Because a cooldown ticks per turn taken, a fast hero's 3-turn
+power genuinely comes back sooner in real time — but the counter is still an
+integer and there is never a fraction to round. A Speed buff also can't land
+dead: it changes how often the hero acts, which is visible immediately.
 
-Three clean ways out:
-
-- **Extra actions** — `Speed` grants additional turns; cooldowns tick per turn
-  taken, so acting more often naturally means powers come back sooner.
-- **Sub-turn ticks** — cooldowns are tracked in finer units and each turn
-  advances a variable number of them based on `Speed`.
-- **Order only** — `Speed` decides who goes first and never touches cooldowns.
-
-This properly belongs to `04-turns.md`, but it is a stat question first.
+Full consequences in [`04-turns.md`](04-turns.md) — including the one that
+matters most for tuning here, that **Speed multiplies the rate of everything
+counted in turns**, not just actions.
 
 ### 3. What Luck actually rolls
 

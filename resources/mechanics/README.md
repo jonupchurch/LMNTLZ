@@ -12,10 +12,10 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 
 | # | File | Covers | State |
 |---|------|--------|-------|
-| 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Drafted** — core settled, four tuning questions open |
+| 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Drafted** — core settled, three tuning questions open |
 | 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, rules open |
 | 03 | *`03-powers.md`* | Up to 5 powers per hero, cooldowns, targeting, costs | Not started |
-| 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — the turn is settled, *between*-turn order still open |
+| 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — turn, phase order and Speed all settled; reactions open |
 | 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started |
 | 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
@@ -29,11 +29,6 @@ questions or keep raising them:
 - **Hero numbers.** The ten stats' tuning values *and* the per-hero reach
   assignment are one pass, to be done together later. `02-squads.md` keeps a
   starting proposal for reach; it is not a decision.
-- **What `Speed` does.** Whether Speed grants extra turns, only decides order, or
-  drives cooldown ticks — `01-stats.md` open question 2. Turn order, cooldown
-  pacing and Speed's whole value hang on it. Three options are on file; none is
-  chosen. It gates *between*-turn behaviour only — the turn's own five phases
-  are settled in `04-turns.md`, which holds regardless of the answer.
 - **Event specifics.** Which metrics an event tallies, reward tiers, and the
   shape of a season. The *structure* of guild events is settled in
   `08-guilds.md`; the content of them is for much later.
@@ -44,7 +39,12 @@ Some of these can't be finished out of order:
 
 - **Powers gate almost everything.** Status effects can't be specified until
   powers define what crowd control is, which means `Resolve` can't be tuned
-  until then either. Cooldown pacing in `04-turns.md` has the same problem.
+  until then either.
+- **Turns no longer gate powers.** `04-turns.md` now answers everything a power
+  needs in order to be written down: which phase each part of it resolves in,
+  that cooldowns count the owner's own turns and tick in Resolution, and that
+  riders stage then contest. **`03-powers.md` is unblocked and is the next
+  thing to write.**
 - **Stats gate powers.** Every power will reference stats to compute its
   effect, so `01-stats.md` needs to be stable first — which is why it's the
   one that exists.
