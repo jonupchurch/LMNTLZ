@@ -178,18 +178,27 @@ it.
 > reachable rows is wrong.** The reach window is computed, never bounded by a
 > constant.
 
-It still does not earn a menu entry. The band is live only for a **reach-2**
-champion (reach 1 + 1 is still two rows), in a front seat, holding that one
-effect of the three in the Air pool, on a **25%** roll — and a defender wanting
-the middle row has better tools anyway, since it is the three-champion rank and
-therefore where role and state rules already tend to land.
+**So the menu carries three distance entries, and *middle* degrades to
+*furthest*** whenever fewer than three rows are reachable. Priority is a sort
+rather than a filter, so the degradation needs no special case — it falls out of
+the same mechanism everything else uses.
 
-Absolute row entries — *front row first*, *middle row first*, *back row first* —
-do not rescue it either. **Priority is a sort, not a filter**, so with reach
-bounding the candidates, "back row first" and "furthest first" return the same
-champion in every configuration. They would be longer names for the same two
-options, on a menu this document requires to stay short enough to read on a
-squad-builder row.
+**Degrading to furthest rather than nearest is the point.** A defender choosing
+*middle* is asking to get **past the front line**; dropping them onto the front
+row when the window narrows would invert the instruction rather than approximate
+it.
+
+The two are not near-duplicates when all three rows *are* in range: the 2/3/1
+formation puts **three champions in the middle rank and one in the back**, so
+*middle* takes the fattest rank while *furthest* takes the back seat. And pairing
+*middle* with `Further Than It Looks` is a coherent build in its own right — the
+rune buys the extra row, the priority says what to spend it on.
+
+Absolute row entries — *front row first*, *back row first* — are still not worth
+adding. With reach bounding the candidates they return the same champion as
+*nearest* and *furthest* in every configuration, so they would be longer names
+for options already present, on a menu this document requires to stay short
+enough to read on a squad-builder row.
 
 **An unconfigured defense should be competent, not incoherent.** Randomness is a
 tiebreak of last resort, never a default strategy.
