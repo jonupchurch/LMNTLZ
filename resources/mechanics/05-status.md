@@ -12,24 +12,40 @@ Rule for this document: *no adjective without a number.* If a power says
 
 ## The magnitude scale
 
-Three bands, indexed off the tier of the power applying the effect. A power that
-needs to deviate says so explicitly, per the convention in `01-stats.md`.
+**Indexed per tier, not banded.** A power that needs to deviate says so
+explicitly, per the convention in `01-stats.md`.
 
-| Band | Tiers | Stat change | Shield | DoT tick | Duration |
-|---|---|---|---|---|---|
-| **small** — *"small", "slightly", "briefly"* | 1–2 | **±10** | Might × 1.0 | Might × 0.25 | **2 turns** |
-| **moderate** — *"a few turns", unqualified* | 3 | **±15** | Might × 1.5 | Might × 0.35 | **3 turns** |
-| **large** — *"larger", "stronger", "longer"* | 4–5 | **±20** | Might × 2.0 | Might × 0.50 | **3 turns** |
+| Tier | Stat change | Duration | DoT tick | Shield |
+|---|---|---|---|---|
+| **1** | **±10** | **1 turn** | Might × 0.25 | Might × 1.0 |
+| **2** | **±15** | **2 turns** | Might × 0.35 | Might × 1.5 |
+| **3** | ±15 | **3 turns** | Might × 0.40 | Might × 1.5 |
+| **4** | **±20** | 3 turns | Might × 0.50 | Might × 2.0 |
+| **5** | **±25** | **4 turns** | Might × 0.60 | Might × 2.5 |
+
+**Every tier strictly beats the one below on at least one axis**, alternating
+between magnitude and duration. That is not decoration — the authored prompts
+depend on it. Tier 2 powers are written as escalations of their tier-1
+counterpart in the same House:
+
+> *"the slow from **Root and Hold**, extended to 2 turns"* · *"a stronger
+> accuracy penalty than **Thin the Air**, lasting 2 turns"* · *"the burning tick
+> from **Feed the Bloom**, now ticking twice"*
+
+Those only make sense if tier 1 lasts **one** turn. An earlier draft of this
+table grouped tiers 1–2 into a single "small" band at 2 turns, which silently
+made every tier-2 rider identical to its tier-1 original. The per-tier table
+above is what the sheet was actually written against.
 
 *"…lasts one turn longer"* — Cindara's **Banked Coals**, Marisel's **Wears
-Through**, the Water House rider — adds **+1 turn** to the duration, not to the
-magnitude.
+Through**, the Water House rider — adds **+1 turn** on top, not magnitude.
 
-**Why ±10 / ±15 / ±20.** Base stats sit between 15 and 45 against a cap of 75,
-so headroom above a typical stat is about 35 points. A large buff spends roughly
-half of it — enough to feel decisive, not enough to make one buff the whole
-build. A small buff at ±10 moves a 30-point stat by a third, which is visible
-without being a swing.
+**Why ±10 through ±25.** Base stats sit between 15 and 45 against a cap of 75,
+so headroom above a typical stat is around 35 points. A tier-5 buff spends most
+of it and a tier-1 buff moves a 30-point stat by a third — visible without being
+a swing. Note that a 1-turn effect is still felt for a full turn: Resolution
+ticks *last*, so an effect applied in phase 4 survives that turn and expires at
+the end of the bearer's next one.
 
 **Crowd control is priced separately**, because losing a turn is worth far more
 than any stat change:
@@ -207,6 +223,41 @@ cannot be cleansed) and **Umbriel's `Written in Pencil`** (her debuffs cannot be
 cleansed). Both can still expire — they cannot be removed early.
 
 ---
+
+## Findings from the balance review
+
+Four things the review surfaced. None is fixed here — they are roster and power
+decisions, recorded so they are not rediscovered later.
+
+**`Magic Resist` receives no buffs at all, while `Armor` receives ten.** Of the
+27 self-buff riders across tier 3 and the uniques, `Armor` is by far the most
+common and `Magic Resist` appears **zero** times. That runs directly against
+open question 1 in `01-stats.md`: six of the nine types are arcane, so `Magic
+Resist` is the relevant mitigation stat **two-thirds of the time**. The buff
+distribution actively favours the stat that matters less.
+
+**Buffs are overwhelmingly defensive** — ten `Armor` against a single `Might`.
+`Luck` receives none at all, which may be deliberate now that it drives damage,
+accuracy and crit, and would be the obvious stat for gear to stack.
+
+**Vantric's mitigation-ignoring stacks with itself into nothing.** He has four
+separate sources: the Pierce House passive (`Penetration` rises against a repeat
+target), his own passive `Seams Everywhere` (ignores 20%), and both uniques
+(ignore 40%). But his `Penetration` 40 against a martial `Armor` 40 already
+gives `E = 0` — **mitigation cannot be reduced below zero**, so three of the
+four do nothing in his most common matchup. He needs one of them converted into
+something else.
+
+**Boldrek has no mechanical identity.** *All At Once* and *Avalanche* are both
+featureless single hits — the only hero whose entire unique kit is "big number,
+no rider." His passive *No Warning* (crits deal extra) is his sole distinguishing
+trait. Compare Marisel, who has a three-part stack system across passive, tier 4
+and tier 5.
+
+**Grieve's `Room to Swing` overcaps.** It grants `Armor` per enemy in reach;
+against six enemies at any sensible per-enemy value it exceeds the 75 cap and
+the excess is silently discarded. It needs a per-enemy figure chosen against the
+cap, or an explicit maximum.
 
 ## Open
 
