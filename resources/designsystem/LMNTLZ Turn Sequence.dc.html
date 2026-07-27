@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;min-height:100vh;padding:0 0 90px">
+
+  <div style="position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 40px;background:rgba(14,12,23,0.92);backdrop-filter:blur(12px);border-bottom:1px solid #241F38">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;color:#141221;font-size:17px;line-height:1">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.2em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:18px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">THE TURN SEQUENCE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8E87A8">
+      <span>One champion's turn · five phases</span>
+      <span style="color:#F2C744">Server-authoritative</span>
+    </div>
+  </div>
+
+  <div style="max-width:1560px;margin:0 auto;padding:0 40px">
+
+    <section style="padding:44px 0 30px;border-bottom:1px solid #241F38">
+      <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:56px;align-items:end">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#F2C744;margin-bottom:16px">Combat resolution</div>
+          <h1 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:58px;line-height:0.98;margin:0 0 16px;color:#F4EFE4;text-wrap:balance">Every turn runs the same five phases, in order.</h1>
+          <p style="font-size:17px;line-height:1.6;color:#B4AECB;max-width:64ch;margin:0;text-wrap:pretty">Initiative hands the turn to one champion. Upkeep resolves what was already on them, the attack is declared and calculated, the defender answers it, riders land, and then the clock ticks on everything that expires. The Court resolves all five before the client is told anything.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">ORDER IS FIXED</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">No phase is skipped — an empty phase resolves as a no-op, not a jump.</div></div>
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">STAGE, THEN APPLY</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">Attack stages its riders; defense decides whether they stick.</div></div>
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">A TURN CAN END EARLY</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">Stun in upkeep, a KO, or a miss all short-circuit to resolution.</div></div>
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">DURATIONS TICK LAST</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">A 1-turn buff cast this turn survives to be used next turn.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:34px 0 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px">
+        <div style="display:flex;align-items:baseline;gap:16px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">01</div>
+          <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;margin:0;color:#F4EFE4">The sequence</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:3px;background:#F2C744"></div><span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;color:#8E87A8">MAIN PATH</span></div>
+          <div style="display:flex;align-items:center;gap:7px"><div style="width:22px;height:3px;background:repeating-linear-gradient(90deg,#C0313A 0 5px,transparent 5px 9px)"></div><span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;color:#8E87A8">EARLY EXIT</span></div>
+          <div style="display:flex;align-items:center;gap:7px"><div style="width:12px;height:12px;background:#241F38;border:1px solid #3B5BD1;transform:rotate(45deg)"></div><span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;color:#8E87A8">DECISION</span></div>
+          <div style="display:flex;align-items:center;gap:7px"><div style="width:12px;height:12px;border-radius:3px;background:#1C1930;border:1px dashed #57507A"></div><span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;color:#8E87A8">STAGED, NOT APPLIED</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0;align-items:stretch;overflow-x:auto;padding-bottom:8px">
+        <sc-for list="{{ phases }}" as="p" hint-placeholder-count="5">
+          <div style="display:flex;align-items:stretch;flex:0 0 auto">
+            <div onClick="{{ p.select }}" style="width:264px;border:1px solid {{ p.border }};border-top:4px solid {{ p.core }};border-radius:12px;background:{{ p.bg }};padding:18px;cursor:pointer;box-shadow:{{ p.shadow }};display:flex;flex-direction:column" style-hover="border-color:{{ p.core }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <div style="width:26px;height:26px;border-radius:7px;background:{{ p.core }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:#0E0C17">{{ p.n }}</div>
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.08em;color:#F4EFE4">{{ p.title }}</div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:{{ p.actorColor }};border:1px solid {{ p.actorColor }};border-radius:4px;padding:3px 6px">{{ p.actor }}</div>
+              </div>
+              <div style="font-size:13px;line-height:1.55;color:#B4AECB;margin-bottom:14px">{{ p.summary }}</div>
+              <div style="display:grid;gap:6px;margin-top:auto">
+                <sc-for list="{{ p.steps }}" as="st" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:7px;background:{{ st.bg }};border:1px {{ st.style }} {{ st.border }}">
+                    <div style="width:5px;height:5px;border-radius:50%;background:{{ st.dot }};margin-top:6px;flex:0 0 auto"></div>
+                    <div style="min-width:0">
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.04em;color:#F4EFE4;line-height:1.2">{{ st.label }}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8E87A8;margin-top:3px;line-height:1.4">{{ st.note }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ p.exit }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:12px;padding-top:11px;border-top:1px dashed #57507A;display:flex;align-items:flex-start;gap:8px">
+                  <div style="width:14px;height:14px;border:1px solid #C0313A;transform:rotate(45deg);flex:0 0 auto;margin-top:2px"></div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.6;color:#F06A72">{{ p.exit }}</div>
+                </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{ p.arrow }}" hint-placeholder-val="{{ true }}">
+              <div style="width:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 auto">
+                <div style="width:100%;height:2px;background:linear-gradient(90deg,{{ p.core }},{{ p.nextCore }})"></div>
+                <div style="margin-top:-6px;margin-left:16px;width:9px;height:9px;border-top:2px solid {{ p.nextCore }};border-right:2px solid {{ p.nextCore }};transform:rotate(45deg)"></div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;margin-top:14px;padding:12px 18px;border:1px dashed #3A3357;border-radius:10px;background:rgba(28,25,48,0.4)">
+        <div style="width:9px;height:9px;border-radius:50%;background:#F2C744;flex:0 0 auto"></div>
+        <div style="font-size:13.5px;line-height:1.55;color:#B4AECB">After resolution the turn passes to the next champion in initiative order. When every living champion on both sides has taken a turn, the <strong style="color:#F4EFE4">round</strong> advances and cooldown rings step down by one.</div>
+      </div>
+    </section>
+
+    <section style="padding:44px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">02</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;margin:0;color:#F4EFE4">{{ detail.title }} — in detail</h2>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:{{ detail.core }};border:1px solid {{ detail.core }};border-radius:5px;padding:4px 9px">PHASE {{ detail.n }} OF 5</div>
+      </div>
+      <p style="font-size:15px;color:#8E87A8;margin:0 0 22px;max-width:88ch;text-wrap:pretty">{{ detail.lede }}</p>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px">
+        <div style="border:1px solid #241F38;background:#141221;padding:22px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:16px">RESOLUTION ORDER</div>
+          <div style="display:grid;gap:0">
+            <sc-for list="{{ detail.flow }}" as="f" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:38px 1fr;gap:14px">
+                <div style="display:flex;flex-direction:column;align-items:center">
+                  <div style="width:26px;height:26px;border-radius:{{ f.radius }};background:{{ f.nodeBg }};border:2px solid {{ f.nodeBorder }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:{{ f.nodeColor }};transform:{{ f.rotate }};flex:0 0 auto"><span style="transform:{{ f.counterRotate }}">{{ f.tick }}</span></div>
+                  <div style="width:2px;flex:1;background:{{ f.rail }};min-height:14px"></div>
+                </div>
+                <div style="padding-bottom:16px;min-width:0">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">{{ f.label }}</div>
+                    <sc-if value="{{ f.tag }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:{{ f.tagColor }};border:1px solid {{ f.tagColor }};border-radius:4px;padding:2px 6px">{{ f.tag }}</div>
+                    </sc-if>
+                  </div>
+                  <div style="font-size:13.5px;line-height:1.55;color:#B4AECB;margin-top:5px">{{ f.body }}</div>
+                  <sc-if value="{{ f.formula }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:#8E87A8;background:#1C1930;border-left:2px solid {{ detail.core }};padding:9px 12px;margin-top:8px">{{ f.formula }}</div>
+                  </sc-if>
+                  <sc-if value="{{ f.branch }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:flex-start;gap:9px;margin-top:8px;padding:8px 11px;border-radius:7px;background:rgba(192,49,58,0.1);border:1px dashed #C0313A">
+                      <div style="width:12px;height:12px;border:1px solid #C0313A;transform:rotate(45deg);flex:0 0 auto;margin-top:3px"></div>
+                      <div style="font-size:12.5px;line-height:1.5;color:#F06A72">{{ f.branch }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:18px;align-content:start">
+          <div style="border:1px solid #241F38;background:#141221;padding:20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">STATS IN PLAY</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+              <sc-for list="{{ detail.stats }}" as="s" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:7px;background:#1C1930;border:1px solid #3A3357;border-radius:6px;padding:7px 11px">
+                  <div style="width:7px;height:7px;border-radius:50%;background:{{ detail.core }}"></div>
+                  <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.06em;color:#F4EFE4">{{ s.name }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">{{ s.role }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ detail.noStats }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13px;color:#8E87A8;line-height:1.5">No stat is rolled in this phase — it is bookkeeping the Court performs on the state it already holds.</div>
+            </sc-if>
+          </div>
+
+          <div style="border:1px solid #241F38;background:#141221;padding:20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">WHAT THE PLAYER SEES</div>
+            <div style="display:grid;gap:9px">
+              <sc-for list="{{ detail.ui }}" as="u" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:9px">
+                  <div style="width:5px;height:5px;border-radius:50%;background:{{ detail.core }};margin-top:7px;flex:0 0 auto"></div>
+                  <div style="font-size:13.5px;line-height:1.55;color:#B4AECB">{{ u.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border-left:3px solid {{ detail.edgeColor }};background:#141221;padding:16px 18px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:{{ detail.edgeColor }};margin-bottom:7px">{{ detail.edgeLabel }}</div>
+            <div style="font-size:13.5px;line-height:1.6;color:#B4AECB">{{ detail.edge }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:44px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">03</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;margin:0;color:#F4EFE4">Worked example — one turn</h2>
+      </div>
+      <p style="font-size:15px;color:#8E87A8;margin:0 0 20px;max-width:88ch">Nyxara (Dark / Water, reach 2, burning) opens with Veilstep on Auriel Dawnkeep (Light / Water). Light is not her Bane — but Dark is Auriel's, so the strike lands on an open door.</p>
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+        <sc-for list="{{ example }}" as="e" hint-placeholder-count="5">
+          <div style="border:1px solid #241F38;border-top:3px solid {{ e.core }};background:#141221;display:flex;flex-direction:column">
+            <div style="padding:12px 14px;border-bottom:1px solid #241F38;display:flex;align-items:center;gap:9px">
+              <div style="width:22px;height:22px;border-radius:6px;background:{{ e.core }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#0E0C17">{{ e.n }}</div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.06em;color:#F4EFE4">{{ e.title }}</div>
+            </div>
+            <div style="padding:14px;display:grid;gap:9px;flex:1">
+              <sc-for list="{{ e.lines }}" as="l" hint-placeholder-count="3">
+                <div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#6E6690;margin-bottom:3px">{{ l.k }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:{{ l.color }}">{{ l.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:11px 14px;border-top:1px solid #241F38;font-size:12px;line-height:1.5;color:#8E87A8">{{ e.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="margin-top:60px;padding-top:24px;border-top:1px solid #241F38;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690;text-transform:uppercase">Turn sequence · upkeep ▸ attack ▸ defense ▸ effects ▸ resolution</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690;text-transform:uppercase">All five resolve server-side before the client is told</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1000}}">
+const PHASES = [
+  {
+    key:"upkeep", n:"1", title:"UPKEEP", core:"#4E7C3A", actor:"THE COURT", actorColor:"#8E87A8",
+    summary:"Everything already riding on this champion resolves before they may act.",
+    steps:[
+      {label:"Tick damage over time",note:"burn, bleed, drown — applied at the start, not the end",kind:"solid"},
+      {label:"Resolve control",note:"stun, root, silence — may cancel the turn outright",kind:"solid"},
+      {label:"Apply regeneration & shields",note:"heal-over-time and ward refresh land here",kind:"solid"},
+      {label:"Recheck cooldowns",note:"any power that came off cooldown becomes selectable",kind:"solid"}
+    ],
+    exit:"STUNNED OR KILLED HERE → SKIP TO PHASE 5",
+    lede:"Upkeep is the Court settling accounts before the champion is allowed a choice. Anything applied on a previous turn — damage over time, control, regeneration, shields — resolves now, in a fixed order, so a champion can die to a burn before ever acting.",
+    flow:[
+      {tick:"A",label:"Damage over time",body:"Every stacking damage effect resolves against the pool. Type effectiveness was locked in when the effect was applied — it is not recalculated here.",formula:"pool −= Σ( tick_damage of each active DoT )",tag:"ORDERED",tagColor:"#4E7C3A"},
+      {tick:"B",label:"Death check",body:"If the pool reached zero, the champion is returned to the shard immediately. The turn ends and its row may now be empty — which changes reach for everyone.",branch:"KILLED BY UPKEEP → skip Attack, Defense and Effects. Go straight to Resolution.",tag:"BRANCH",tagColor:"#C0313A"},
+      {tick:"C",label:"Regeneration & shields",body:"Heal-over-time restores to the pool, capped at maximum. Shields refresh or decay to their per-turn value."},
+      {tick:"D",label:"Control effects",body:"Stun, root and silence are evaluated against the champion's current state. Stun forfeits the action entirely; silence blocks powers but not a basic strike; root has no effect here because champions never move.",branch:"STUNNED → skip Attack, Defense and Effects. Go straight to Resolution."},
+      {tick:"E",label:"Cooldown availability",body:"Powers whose rings emptied on the last round advance become selectable. This is availability only — the countdown itself steps in Resolution."}
+    ],
+    stats:[{name:"Toughness",role:"pool"},{name:"Resolve",role:"control"},{name:"Magic Resist",role:"arcane DoT"},{name:"Armor",role:"martial DoT"}],
+    ui:[{text:"Status chips on the champion's card flash as they tick, with the amount floating above the portrait."},
+        {text:"A stunned champion's power bar greys out and the turn indicator moves on without waiting for input."},
+        {text:"The battle log records each tick separately — “Pyrrhic burns for 90” — so no damage is unexplained."}],
+    edgeLabel:"EDGE CASE", edgeColor:"#B5732E",
+    edge:"A champion killed in their own upkeep never had a turn. The initiative rail must skip them without appearing to hang, and their row empties before the next champion calculates reach."
+  },
+  {
+    key:"attack", n:"2", title:"ATTACK", core:"#F2C744", actor:"THE ACTOR", actorColor:"#F2C744",
+    summary:"The champion chooses a power and a target, and the outgoing value is calculated.",
+    steps:[
+      {label:"Choose a power",note:"any of five not on cooldown and not silenced",kind:"solid"},
+      {label:"Choose a target in reach",note:"reach measured in occupied rows, allies included",kind:"solid"},
+      {label:"Calculate the attack value",note:"Might × multiplier, then type effectiveness, then crit",kind:"solid"},
+      {label:"Stage the riders",note:"carry-on effects are held, not applied",kind:"dashed"}
+    ],
+    exit:"NO LEGAL TARGET IN REACH → PASS, SKIP TO PHASE 5",
+    lede:"The attack phase is the only place a decision is made. The power and target are declared, the outgoing value is built up, and any effects the power carries are staged — held in escrow until the defender has had their say.",
+    flow:[
+      {tick:"A",label:"Power selection",body:"One of up to five powers, provided its ring is empty and the champion is not silenced. A power declares whether it wants allies or enemies; the client only offers legal choices.",tag:"PLAYER INPUT",tagColor:"#F2C744"},
+      {tick:"B",label:"Target selection",body:"Distance is the count of occupied rows crossed to reach the target, counting the target's row and not the actor's. Reach 1 or 2 caps it. Empty rows are free, so range widens as champions fall.",formula:"legal ⇔ occupied_rows_between( actor.row, target.row ) ≤ actor.reach",branch:"NOTHING IN REACH → the champion passes. Skip to Resolution."},
+      {tick:"C",label:"Base value",body:"Raw output before anyone defends. Might scales it; the power's own multiplier shapes it.",formula:"base = Might × power.multiplier"},
+      {tick:"D",label:"Type effectiveness",body:"The attacking Force is compared against the target's derived doors. Bane ×1.5, Fault ×1.2, either of the target's own Forces ×0.5, otherwise ×1.0. Derived, never authored.",formula:"outgoing = base × { 1.5 Bane | 1.2 Fault | 0.5 resisted | 1.0 }",tag:"SETTLED",tagColor:"#4E7C3A"},
+      {tick:"E",label:"Critical roll",body:"Luck decides whether this one spikes. The roll happens on the attacking side so the defender cannot mitigate the chance itself, only the damage."},
+      {tick:"F",label:"Stage riders",body:"Burns, slows, marks, cleanses — everything the power carries beyond damage is written into a staging list attached to this attack. Nothing is applied yet.",tag:"STAGED",tagColor:"#57507A"}
+    ],
+    stats:[{name:"Might",role:"base"},{name:"Luck",role:"crit"},{name:"Perception",role:"staged for defense"},{name:"Penetration",role:"staged for defense"}],
+    ui:[{text:"Selecting a power lights every legal target and hatches the rest as OUT OF REACH with the row distance shown."},
+        {text:"Hovering a target shows the effectiveness read and the approximate damage before you commit."},
+        {text:"On commit the control enters its pending state — the click landed, the Court has not answered."}],
+    edgeLabel:"WHY STAGE", edgeColor:"#F2C744",
+    edge:"Riders are staged rather than applied so the defender's Resolve and evasion can refuse them independently of the damage. A hit that lands can still fail to burn."
+  },
+  {
+    key:"defense", n:"3", title:"DEFENSE", core:"#2A7FB8", actor:"THE TARGET", actorColor:"#4FC3D6",
+    summary:"The target answers: evade, mitigate, absorb — then damage is applied.",
+    steps:[
+      {label:"Evasion check",note:"Perception vs Agility — a miss ends resolution",kind:"solid"},
+      {label:"Mitigation",note:"Armor or Magic Resist, less the attacker's Penetration",kind:"solid"},
+      {label:"Shields absorb first",note:"wards deplete before the health pool is touched",kind:"solid"},
+      {label:"Damage applied · death check",note:"the pool moves; a KO empties the row",kind:"solid"}
+    ],
+    exit:"EVADED → NO DAMAGE, NO RIDERS. SKIP TO PHASE 5",
+    lede:"The defense phase is where the outgoing value becomes real damage. It runs once per target — an area power resolves the whole phase separately for each champion caught in it, so one may evade while another is crushed.",
+    flow:[
+      {tick:"A",label:"Evasion",body:"A contested roll: the attacker's Perception against the target's Agility. A miss ends resolution here — no chip damage, no riders, nothing staged survives.",formula:"landed ⇔ roll( Perception ) > roll( Agility )",branch:"EVADED → this target takes nothing and their staged riders are discarded. Skip to Resolution."},
+      {tick:"B",label:"Mitigation",body:"Martial damage meets Armor; arcane damage meets Magic Resist. The attacker's Penetration is subtracted from whichever applies before it reduces anything.",formula:"effective_mitigation = max( 0, defense_stat − Penetration )",tag:"CONTESTED",tagColor:"#4FC3D6"},
+      {tick:"C",label:"Shields",body:"Any ward absorbs before the pool is touched, and depletes as it does. A shield that breaks mid-hit passes the remainder through in the same step — it never eats a whole strike for free."},
+      {tick:"D",label:"Apply to the pool",body:"What remains is subtracted from the health pool, whose size comes from Toughness.",formula:"pool −= max( 1, outgoing − effective_mitigation − shield_absorbed )"},
+      {tick:"E",label:"Death check",body:"A champion reduced to zero is returned to the shard. Their row may now be empty, which immediately changes reach for both sides — including for the rest of this same turn.",tag:"BRANCH",tagColor:"#C0313A"},
+      {tick:"F",label:"Rider resistance",body:"Each staged rider is tested separately against the target's Resolve. Resisting a burn does not resist a slow; each door is its own roll.",formula:"rider sticks ⇔ roll( potency ) > roll( Resolve )",tag:"PER RIDER",tagColor:"#4FC3D6"}
+    ],
+    stats:[{name:"Agility",role:"evasion"},{name:"Armor",role:"martial"},{name:"Magic Resist",role:"arcane"},{name:"Toughness",role:"pool"},{name:"Resolve",role:"riders"}],
+    ui:[{text:"Damage floats over the target: gold and large for a Bane hit, cyan and small for resisted, plain for neutral."},
+        {text:"A miss reads MISSED rather than showing a zero — zero implies mitigation, which is a different story."},
+        {text:"Shield absorption shows as a separate lighter number so players learn the ward did its job."}],
+    edgeLabel:"PER TARGET", edgeColor:"#4FC3D6",
+    edge:"Every step here runs once per target. An area power can be evaded by one champion, resisted by a second, and land a Bane crit on a third — all inside one attack."
+  },
+  {
+    key:"effects", n:"4", title:"ADDITIONAL EFFECTS", core:"#7A3FA0", actor:"BOTH SIDES", actorColor:"#C64BB0",
+    summary:"Riders that survived, plus anything the strike itself triggered, are enacted.",
+    steps:[
+      {label:"Apply surviving riders",note:"only those not resisted in the defense phase",kind:"solid"},
+      {label:"Fire on-hit triggers",note:"lifesteal, chain effects, execute thresholds",kind:"solid"},
+      {label:"Fire reactive powers",note:"counters and retaliations owned by the defender",kind:"solid"},
+      {label:"Apply self effects",note:"the attacker's own buffs and costs land last",kind:"solid"}
+    ],
+    exit:null,
+    lede:"Everything that is not the strike itself happens here, in a fixed order: what the attack put on the target, what the strike triggered, what the defender fires back, and what it cost the attacker. Nothing in this phase can start a new attack — it would recurse.",
+    flow:[
+      {tick:"A",label:"Riders land",body:"Each rider that survived the Resolve check in phase 3 is written onto the target with its full duration. A stack that already exists refreshes rather than doubling, unless the power says otherwise.",tag:"FROM PHASE 3",tagColor:"#C64BB0"},
+      {tick:"B",label:"On-hit triggers",body:"Effects conditional on the strike having landed: lifesteal returning to the attacker, chains jumping to a second target, execute thresholds checking the target's remaining pool.",formula:"if landed and pool ≤ threshold → execute"},
+      {tick:"C",label:"Reactive powers",body:"The defender's counters and retaliations fire now, not on their own turn. A riposte deals its damage immediately and resolves through mitigation, but cannot itself trigger another reaction."},
+      {tick:"D",label:"Attacker self-effects",body:"The attacker's own buffs, self-damage, and recoil apply last so their new state is what carries into Resolution. A champion who buffs their own Armor is protected from the next turn onward, not retroactively."},
+      {tick:"E",label:"Second death check",body:"Reactions and recoil can kill. Anyone reduced to zero here is returned to the shard before durations tick, so an expiring effect on a dead champion simply vanishes.",tag:"BRANCH",tagColor:"#C0313A"}
+    ],
+    stats:[{name:"Resolve",role:"already rolled"},{name:"Might",role:"reactions"},{name:"Luck",role:"trigger rolls"}],
+    ui:[{text:"Riders appear as status chips on the target card the instant they land, with their turn count visible."},
+        {text:"A reactive power flashes its own frame on the defender so the player sees the counter came from them."},
+        {text:"Lifesteal and recoil animate on the attacker after the target's number, never at the same time."}],
+    edgeLabel:"NO RECURSION", edgeColor:"#C64BB0",
+    edge:"A reaction cannot trigger a reaction. The phase resolves one layer deep and stops — otherwise two counter-built squads could loop forever on a single strike."
+  },
+  {
+    key:"resolution", n:"5", title:"RESOLUTION", core:"#B5732E", actor:"THE COURT", actorColor:"#8E87A8",
+    summary:"Durations tick, expiries fire, and the turn is committed and broadcast.",
+    steps:[
+      {label:"Tick every duration",note:"buffs, debuffs and control all count down by one",kind:"solid"},
+      {label:"Expire what reached zero",note:"expiry effects fire as the effect leaves",kind:"solid"},
+      {label:"Step the actor's cooldowns",note:"the used power's ring begins its countdown",kind:"solid"},
+      {label:"Commit and broadcast",note:"one authoritative state goes to both clients",kind:"solid"}
+    ],
+    exit:null,
+    lede:"Resolution is bookkeeping, and it is the reason durations behave predictably. Everything counts down exactly once per turn, at the very end — so an effect applied this turn always gets its full first turn of life.",
+    flow:[
+      {tick:"A",label:"Durations tick",body:"Every timed effect in play — on the actor, the target, and everyone else — decrements by one. This is the only place durations move.",formula:"for each effect: effect.turns −= 1"},
+      {tick:"B",label:"Expiry",body:"Effects that reached zero are removed. Anything that fires on expiry — a delayed detonation, a shield collapsing into a heal — resolves as it leaves.",tag:"ORDERED",tagColor:"#B5732E"},
+      {tick:"C",label:"Late resistance",body:"Long control effects may be re-tested against Resolve as they tick, letting a high-Resolve champion shake off a stun early rather than only refusing it at the moment of application.",tag:"OPEN",tagColor:"#B5732E"},
+      {tick:"D",label:"Cooldowns step",body:"The power used this turn begins its countdown; every other ring on the actor steps down by one. Cooldowns are whole turns, never seconds.",formula:"used.ring = used.max ; others.ring −= 1"},
+      {tick:"E",label:"Commit and broadcast",body:"The Court writes one authoritative state and sends it to both clients. Only now does the attacker's pending control clear and the numbers appear. If the connection dropped before this point, the turn never happened."},
+      {tick:"F",label:"Pass initiative",body:"The turn moves to the next living champion in Speed order. When all have acted, the round advances."}
+    ],
+    stats:[{name:"Resolve",role:"late resistance"},{name:"Speed",role:"initiative"}],
+    ui:[{text:"Status chips lose a turn from their counter with a single step — never a smooth drain, because turns are discrete."},
+        {text:"The pending state on the attacker's power bar clears only when the broadcast arrives."},
+        {text:"An interrupted turn shows BATTLE DISCARDED: nothing was lost, no cooldowns spent, no result recorded."}],
+    edgeLabel:"WHY LAST", edgeColor:"#B5732E",
+    edge:"Ticking at the end is what makes a 1-turn buff useful. Cast in phase 4, it survives resolution at 1, protects through the opponent's turn, and expires in your next resolution."
+  }
+];
+const EXAMPLE = [
+  { n:"1", title:"UPKEEP", core:"#4E7C3A", note:"Nyxara is not burning; Pyrrhic elsewhere is. Nothing cancels her turn.",
+    lines:[{k:"DOT TICKS",v:"NONE",color:"#8E87A8"},{k:"CONTROL",v:"CLEAR",color:"#4E7C3A"},{k:"POOL",v:"1 402 / 1 840",color:"#F4EFE4"}] },
+  { n:"2", title:"ATTACK", core:"#F2C744", note:"Auriel is two occupied rows away — inside reach 2. Dark is Auriel's Bane.",
+    lines:[{k:"POWER",v:"VEILSTEP",color:"#C64BB0"},{k:"BASE",v:"320",color:"#F4EFE4"},{k:"EFFECTIVENESS",v:"×1.5 BANE",color:"#F2C744"},{k:"OUTGOING",v:"480",color:"#F2C744"},{k:"STAGED",v:"VEILED −20% ACC",color:"#57507A"}] },
+  { n:"3", title:"DEFENSE", core:"#2A7FB8", note:"Landed. Magic Resist 210 less Penetration 90 leaves 120 absorbed.",
+    lines:[{k:"EVASION",v:"LANDED",color:"#4E7C3A"},{k:"MITIGATION",v:"−120",color:"#4FC3D6"},{k:"APPLIED",v:"−360",color:"#F2C744"},{k:"POOL",v:"1 250 / 2 180",color:"#F4EFE4"},{k:"RIDER",v:"RESOLVE FAILED",color:"#F06A72"}] },
+  { n:"4", title:"EFFECTS", core:"#7A3FA0", note:"Veiled sticks for 2 turns. No reaction — Auriel has no riposte ready.",
+    lines:[{k:"RIDER LANDED",v:"VEILED · 2T",color:"#C64BB0"},{k:"ON-HIT",v:"NONE",color:"#8E87A8"},{k:"REACTION",v:"NONE",color:"#8E87A8"}] },
+  { n:"5", title:"RESOLUTION", core:"#B5732E", note:"Veilstep starts its 3-turn ring. State committed and broadcast.",
+    lines:[{k:"DURATIONS",v:"ALL −1",color:"#E0A15A"},{k:"EXPIRED",v:"MOTH WARD",color:"#8E87A8"},{k:"COOLDOWN",v:"VEILSTEP 3",color:"#C64BB0"},{k:"NEXT",v:"KAELLIS · SPD 102",color:"#F4EFE4"}] }
+];
+
+class Component extends DCLogic {
+  state = { phase: "attack" };
+  renderVals() {
+    const s = this.state, self = this;
+    const d = PHASES.filter(p => p.key === s.phase)[0] || PHASES[0];
+    return {
+      phases: PHASES.map((p, i) => ({
+        n: p.n, title: p.title, core: p.core, summary: p.summary,
+        actor: p.actor, actorColor: p.actorColor,
+        border: p.key === s.phase ? p.core : "#241F38",
+        bg: p.key === s.phase ? "#1C1930" : "#141221",
+        shadow: p.key === s.phase ? "0 0 26px " + p.core + "3d" : "none",
+        steps: p.steps.map(st => ({
+          label: st.label, note: st.note,
+          bg: st.kind === "dashed" ? "rgba(28,25,48,0.5)" : "#1C1930",
+          border: st.kind === "dashed" ? "#57507A" : "#241F38",
+          style: st.kind === "dashed" ? "dashed" : "solid",
+          dot: st.kind === "dashed" ? "#57507A" : p.core
+        })),
+        exit: p.exit,
+        arrow: i < PHASES.length - 1,
+        nextCore: i < PHASES.length - 1 ? PHASES[i + 1].core : p.core,
+        select: () => self.setState({ phase: p.key })
+      })),
+      detail: {
+        n: d.n, title: d.title, core: d.core, lede: d.lede,
+        flow: d.flow.map((f, i) => ({
+          tick: f.tick, label: f.label, body: f.body,
+          formula: f.formula || null, branch: f.branch || null,
+          tag: f.tag || null, tagColor: f.tagColor || d.core,
+          nodeBg: f.branch ? "#241F38" : d.core,
+          nodeBorder: f.branch ? "#C0313A" : d.core,
+          nodeColor: f.branch ? "#F06A72" : "#0E0C17",
+          radius: f.branch ? "4px" : "50%",
+          rotate: f.branch ? "rotate(45deg)" : "none",
+          counterRotate: f.branch ? "rotate(-45deg)" : "none",
+          rail: i === d.flow.length - 1 ? "transparent" : "#241F38"
+        })),
+        stats: d.stats, noStats: d.stats.length === 0,
+        ui: d.ui,
+        edge: d.edge, edgeLabel: d.edgeLabel, edgeColor: d.edgeColor
+      },
+      example: EXAMPLE
+    };
+  }
+}
+</script>
+</body>
+</html>

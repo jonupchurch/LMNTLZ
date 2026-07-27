@@ -1,9 +1,13 @@
 # LMNTLZ · Mechanics 04 — The Turn
 
 A turn belongs to **one hero** — the *acting* hero. Everything below happens
-inside that hero's turn, in this order, every time. There are no interrupts and
-no reactions: a defender never takes an action out of sequence, it only
-contributes its stats when the Defense phase asks for them.
+inside that hero's turn, in this order, every time. **There are no interrupts:**
+nothing a defender does can pause, reorder or pre-empt the sequence. In the
+Defense phase a defender contributes its stats and nothing more.
+
+Whether a defender may ever *act* — a counter or riposte, resolved inside the
+attacker's phase 4 rather than out of sequence — is an open question, not a
+settled no. See *Open* below.
 
 **The phase order is the attacker's.** This is the single most useful thing to
 hold onto, because it answers most questions about edge cases before they get
@@ -85,6 +89,12 @@ chosen:
 - **A target dying never ends the sequence.** It is the attacker's turn. The
   corpse stops receiving things; the turn carries on.
 
+There is also a **third way to lose the action**, which falls out of the reach
+rule rather than from anything here: a hero with **no legal target in reach**
+passes. At full formation the back-row hero cannot touch an enemy at all
+(`02-squads.md`), so this is an ordinary occurrence, not an edge case — and a
+pass still reaches Resolution, so it still recharges.
+
 ---
 
 ## What each phase does
@@ -164,6 +174,18 @@ Durations tick in the same phase, and anything that has run out expires. One
 phase, one place where time passes, and it is unconditional. That is what makes
 timed effects trustworthy.
 
+**Both tick only for the hero whose turn it is.** A duration counts down on its
+**bearer's** turn, exactly as damage-over-time ticks on its bearer's turn in
+Upkeep — the two must use the same clock or they desynchronise. If every effect
+on the board ticked on every hero's turn, a 3-turn burn facing a full 12-hero
+board would expire after a quarter of a round having dealt damage once. "Turns"
+in a duration always means *the bearer's own turns*.
+
+A consequence, and the reason Resolution ticking **last** matters: an effect
+applied during this turn is applied in phase 4, survives this turn's Resolution
+at full duration, and only starts counting on its bearer's next turn. **A
+1-turn buff is always usable once.**
+
 ### Powers that skip Defense
 
 A power that deals no direct damage and no healing — a pure buff, a pure
@@ -234,6 +256,12 @@ The five phases, their order, and:
 
 ## Open
 
+- **Reactive powers.** Whether a defender may fire a counter or riposte inside
+  the attacker's phase 4. The Turn Sequence screen proposes yes, resolved one
+  layer deep and explicitly forbidden from triggering another reaction —
+  otherwise two counter-built squads loop forever on a single strike. It fits
+  the phase structure without disturbing it, and it is a real addition to the
+  action space rather than a restatement. **Not adopted; awaiting a decision.**
 - **Once-per-cast riders.** Phase 4 running per target means a power needing a
   single flat self-buff has to say so. Whether that is a per-power flag, a
   separate rider category, or simply a rule that self-targeted riders always
