@@ -73,6 +73,13 @@ type is answered by `Armor`, an arcane type by `Magic Resist`.
 A miss at step 2 ends resolution — no chip damage, no status. A power may
 still carry an on-miss rider, but it has to declare one.
 
+**Where these steps happen** is [`04-turns.md`](04-turns.md): steps 2–8 are the
+Attack, Defense and Additional Effects phases of a hero's turn, and step 1 sits
+between turns. One placement differs from the order above — **step 2 (Land) is
+resolved in the Defense phase, after the attack value is fully computed**, so an
+on-miss rider has a number to scale from. Identical outcome for an ordinary
+attack; the phase structure is authoritative where they diverge.
+
 ---
 
 ## The base stat pass
