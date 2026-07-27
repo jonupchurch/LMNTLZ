@@ -99,10 +99,17 @@ buys.
 
 | Tier | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|
-| **Potency** | 20 | 30 | 40 | 55 | 70 |
+| **Potency** | 20 | 28 | 36 | 44 | 52 |
 
-Against `Resolve` 25 that runs from about 46% to 78%; against `Resolve` 40, from
-40% to 75%.
+Across all 729 pairs that gives an average stick rate of **31% at tier 1 rising
+to 87% at tier 5**, with nothing deterministic in either direction.
+
+> **The ladder is tuned to the die, and breaks outside it.** An earlier version
+> ran 20–70, which was fitted to a `d100`. Against a Luck-sized die of 22–60 a
+> potency of 70 is unbridgeable: a tier-5 rider landed **automatically against
+> 243 of 729 pairs**. The usable band is roughly **20 to 60** — below it, low
+> tiers can never land; above it, high tiers can never be resisted. Any future
+> change to the die multiplier has to refit this table.
 
 Two rules sit on top:
 
