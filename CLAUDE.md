@@ -137,12 +137,21 @@ out again:
 ```
 packet  = Might × power.multiplier          # Luck is NOT in this
 HP      = Toughness × 50
-attack  = Perception + rand(1 .. Luck × 1.5)     # Luck IS the die; no d100
-defense = Agility    + rand(1 .. Luck × 1.5)     # ties to the defender
+attack  = Perception + 20 + rand(1 .. Luck × 1.5) # +20 is the attacker's edge
+defense = Agility    +      rand(1 .. Luck × 1.5) # ties to the defender
+P(hit)  clamped to 65% .. 95%                    # one draw, not two
 crit    = Luck × 0.5 percent, for packet × 2
 E       = (Armor or Magic Resist) − Penetration ; K = 75
 final   = max(packet × 0.25, mitigated × typeMultiplier)
 ```
+
+- **Accuracy has a base edge and a clamp, and both are load-bearing.** The
+  symmetric contest was a coin flip — median miss **45.2%** across all 729 pairs.
+  `+20` takes that to 9.4% and shortens battles from ~155 to ~102 hero-turns.
+  The clamp is what survives runes: `Agility` + `Luck` maxed on a defender is a
+  **98.2% miss rate** unclamped, a literal invincibility build. **Reducing
+  `Luck`'s die multiplier is the wrong lever** — it compresses rather than shifts,
+  and at `× 0.5` it creates 158 pairs that can never hit each other at all.
 
 - **Turn order is a bounded accumulator.** Every hero gains `50 + Speed` per
   tick and acts at 100, so Speed 45 acts 1.46× as often as Speed 15 and the

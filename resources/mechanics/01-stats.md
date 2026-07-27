@@ -151,10 +151,25 @@ than cutting HP.
 ### Landing a blow — `Luck` is the die
 
 ```
-attack  = Perception + rand(1 .. Luck × 1.5)
-defense = Agility    + rand(1 .. Luck × 1.5)
-hit if attack > defense                      # ties go to the defender
+attack  = Perception + 20 + rand(1 .. Luck × 1.5)   # 20 is the attacker's base edge
+defense = Agility         + rand(1 .. Luck × 1.5)
+hit if attack > defense                             # ties go to the defender
+
+P(hit) is then clamped to 65% .. 95%                # nothing is unhittable,
+                                                    # nothing is unmissable
 ```
+
+**The `+20` is a base constant, in the same family as `K = 75` in the mitigation
+curve and the `50` in the turn accumulator** — a fixed term that sets where a
+contest sits before either stat speaks. Without it the contest is symmetric and
+lands almost exactly on a coin flip; see *Why the attacker gets a base edge*
+below for the 729-pair derivation.
+
+**The clamp means the contest resolves as a probability, not as two rolls.** The
+two distributions give an exact `P(hit)`; that value is clamped, and a single
+draw decides. Inside the band this is *identical* to rolling both dice — and it
+is cheaper for the server, which spends one RNG draw per attack instead of two.
+Outside the band it is the whole point: see *The clamp is what makes runes safe*.
 
 **There is no separate die.** The randomness in the game *is* the `Luck` stat —
 a hero with `Luck` 40 rolls 1–60, a hero with `Luck` 15 rolls 1–22. That single
@@ -626,51 +641,136 @@ a flattening to correct. Two of the observations below therefore resolve in
   the back row." *Not something powers fix* — this one is structural, and stays
   open until reach is settled.
 
-## The hit rate was never computed — and it is 45%
+## Why the attacker gets a base edge
 
-**Raised 2026-07-27, undecided.** The accuracy contest was designed
-structurally — `Perception` against `Agility`, `Luck` as the die — and its
-*output* was never derived. Resolved exactly over all 729 attacker/defender
-pairs on the current roster:
+**Settled 2026-07-27.** The accuracy contest was designed structurally —
+`Perception` against `Agility`, `Luck` as the die — and its *output* was never
+derived. Resolved exactly over all 729 attacker/defender pairs, the symmetric
+contest lands on a coin flip:
 
-| | Miss rate |
-|---|---|
-| min | 6.8% |
-| p10 | 19.5% |
-| **median** | **45.2%** |
-| mean | 42.6% |
-| p90 | 70.2% |
-| max | 82.5% |
+| | Symmetric | **With `+20`** |
+|---|---|---|
+| min | 6.8% | 0.0% |
+| p10 | 19.5% | 0.3% |
+| **median** | **45.2%** | **9.4%** |
+| mean | 42.6% | 13.1% |
+| p90 | 70.2% | 28.9% |
+| max | 82.5% | **45.2%** |
+| pairs missing >50% | **315 of 729** | **0** |
 
-**465 of 729 pairs miss more than 30% of the time; 315 miss more than half.**
+**The cause was a scale mismatch, not a bad stat spread.** `Luck` runs 15–40, so
+the die is **1..22 to 1..60** — up to three times the entire `Perception` spread
+of 20 points. Mean `Perception` 32.0 against mean `Agility` 26.9 is a 5.2-point
+edge against a die averaging ~22, so accuracy was a coin flip that stats barely
+nudged.
 
-The cause is a scale mismatch rather than a bad stat spread. `Luck` runs 15–40,
-so the die is **1..22 to 1..60** — up to three times the entire `Perception`
-spread of 20 points. Mean `Perception` 32.0 against mean `Agility` 26.9 is a
-5.2-point attacker edge against a die averaging ~22, so **accuracy is close to a
-coin flip that stats barely nudge.**
+### Why not shrink the die
 
-Three consequences, in order of how much they cost:
+The obvious lever — reduce `Luck`'s multiplier — **makes it worse.** It does not
+shift the distribution, it compresses it, so the stat gap starts deciding
+outcomes outright and the tail collapses:
 
-- **Single-target ultimates are punished; multi-target ones are insured.** Phase
-  3 resolves per target, so a three-target power rolls three times and cannot
-  whiff entirely. Silka's `Quicker Than Told` — tier 5, ×5, **6-turn cooldown,
-  single-target** — is worth ×2.75 in expectation, and its kill-chain never fires
-  on a miss. Boldrek's `Avalanche` waits 8 turns for one roll. Nothing priced
-  that asymmetry, and it runs opposite to the multi-target `+1` cooldown penalty
-  in `03-powers.md`, which assumes multi-target is the stronger shape.
-- **`Perception` is not a stat a player can invest in.** Twenty points of spread
-  against a sixty-point die is the same failure as `Magic Resist` sitting flat at
-  30: the outcome is dominated by something nobody chooses.
-- **Battle length may be understated.** The ~155 hero-turn figure has to be
-  re-checked against whether that simulation modelled accuracy at all. If it did
-  not, real battles run close to **1.8× longer**, against a genre norm the design
-  already exceeds by 2–3×.
+| Change | median | p90 | **deterministic pairs** |
+|---|---|---|---|
+| `Luck × 1.5` (baseline) | 45.2% | 70.2% | 0 |
+| `Luck × 1.0` | 37.1% | 72.0% | 0 |
+| `Luck × 0.75` | 29.1% | **81.6%** | 0 |
+| `Luck × 0.5` | 16.7% | **94.4%** | **158** |
+| `Luck × 0.25` | 1.9% | **100%** | **494** |
 
-The lever is the die multiplier rather than the stats: `Luck × 1.5` is what
-swamps `Perception`. Any change to it **must refit the potency ladder**, which
-`05-status.md` warns is tuned to this exact die and broke once already when the
-die changed underneath it.
+At `× 0.5` the median looks healthy while 158 pairs become **auto-misses** — a
+champion that cannot hit another at all. That is the exact failure `05-status.md`
+records for the potency ladder, arriving through a different door.
+
+A flat term shifts rather than compresses, so **`+20` produces 42 auto-*hits* and
+zero auto-misses** — the harmless direction.
+
+### Two things that follow
+
+- **The die is untouched, so the potency ladder needs no refit.** `05-status.md`
+  warns that ladder is tuned to this exact die and broke once when the die moved
+  underneath it. Rider landing contests `potency` against `Resolve` and never
+  reads `Perception`, so it is entirely unaffected by this change.
+- **Battle length falls out of it.** Hit rate goes 57.4% → 86.9%, which is
+  **1.51× damage throughput**, so a 6v6 drops from about **155 hero-turns to
+  ~102** — much closer to genre norm without touching HP, multipliers or
+  cooldowns. The standing note that battle length was inherited rather than
+  chosen is substantially answered by this.
+
+### The cost: `Luck` is a better dodge stat than `Agility`
+
+This change makes an existing inversion **more visible rather than less**, and it
+is left standing for the hero-numbers pass:
+
+| Defender | `Agility` | `Luck` | Miss vs an average attacker |
+|---|---|---|---|
+| Ossic | **20** | 40 | 44.2% → 15.4% |
+| Cirrolan | **30** | 15 | 21.7% → **0.0%** |
+
+Cirrolan carries *ten more* `Agility` than Ossic and dodges half as often,
+because `Luck` 40 rolls 1..60 against `Luck` 15's 1..22. At `+20` he stops
+dodging entirely.
+
+**This is the same failure as `Magic Resist`: the stat named for the job is not
+the one doing it.** The fix is compressing the `Luck` range — a roster data
+change with no formula movement — but `Luck` also drives crit rate and every
+rider contest, so it is a coupled change belonging to the hero-numbers pass and
+needs a sim to verify.
+
+### The clamp is what makes runes safe
+
+**Everything above was computed on base stats.** With runes in the picture the
+`+20` alone is not enough, because a flat term is scale-dependent and the die
+grows linearly with `Luck`. Same 729 pairs, `+20` applied throughout:
+
+| Rune investment | median miss | max | pairs >50% |
+|---|---|---|---|
+| none, or spent on damage/tank | 9.4% | 45.2% | 0 |
+| both sides, **one rune into `Luck`** | **29.2%** | 48.1% | 0 |
+| both sides, `Luck` maxed to 75 | 30.5% | 46.1% | 0 |
+| both sides, `Perception`/`Agility`/`Luck` maxed | **34.1%** | 34.1% | 0 |
+| **defender maxes `Luck` only** | **59.4%** | 79.0% | **586** |
+| **defender maxes `Agility` + `Luck`** | **98.2%** | **100%** | **729** |
+| attacker maxes `Perception` + `Luck` | **0.0%** | 0.0% | 0 |
+
+Three separate failures, all of which the clamp answers:
+
+- **The fix decayed with progression.** One rune of `Luck` on each side returned
+  the median to 29.2% — an endgame battle looked like a pre-fix battle.
+- **At full investment the contest stopped existing.** Both sides maxed produced
+  **34.1% on all 729 pairs**, identical, with zero variance.
+- **One-sided investment was catastrophic.** `Agility` + `Luck` maxed on a
+  defender — reachable with three runes — is a literal invincibility build at
+  98.2% median and 100% at p90. The mirror never misses anything, ever.
+
+> **Accuracy was the last formula in the game that broke the bounded-formula
+> rule.** `README.md` requires diminishing returns in any stat gear can raise,
+> and asks *"what does it do at three times the current stat values?"* Mitigation
+> was given the `75/(75+E)` curve **and** the 25% damage floor for exactly this
+> reason. Accuracy had neither — and it is strictly more powerful than mitigation
+> can ever be, because mitigation caps at 50% reduction and the floor guarantees
+> 25% gets through, so **nothing can fully negate a hit except a miss, which
+> negates 100%.**
+
+The clamp is deliberately the same shape as the damage floor — the guarantee that
+`final = max(packet × 0.25, …)` provides against mitigation, `P(hit) ≥ 65%`
+provides against evasion. **The band is a tuning constant, not a principle**: 65
+and 95 hold the base roster entirely inside it while cutting the worst runed case
+from 98.2% to 35%.
+
+It is a wall rather than a curve, which `README.md` notes is the weaker shape.
+Replacing the contested roll with a genuinely bounded curve stays open for the
+hero-numbers pass, when there is a sim to verify one against.
+
+### One asymmetry this does not fix
+
+Phase 3 resolves **per target**, so a multi-target power rolls once per target
+and cannot whiff entirely, while a single-target ultimate lives or dies on one
+roll. Silka's `Quicker Than Told` is tier 5, ×5, **6-turn cooldown,
+single-target** — at the old rate it was worth ×2.75 in expectation and its
+kill-chain never fired on a miss. `+20` shrinks the gap without closing it, and
+it still runs opposite to the multi-target `+1` cooldown penalty in
+`03-powers.md`, which prices multi-target as the *stronger* shape.
 
 ---
 
