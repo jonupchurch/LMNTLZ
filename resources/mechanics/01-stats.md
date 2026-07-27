@@ -58,7 +58,7 @@ The order below is the contract. Any power that deviates must say so explicitly.
 |---|---|---|---|
 | 1 | **Act** | Whose turn it is and how often it comes around | `Speed` |
 | 2 | **Packet** | One attack value, built once for the whole attack | `Might`, `Luck` |
-| 3 | **Land** | Hit or miss, per target | `Perception` + `Luck` (att) vs `Agility` (def) |
+| 3 | **Land** | Hit or miss, per target | `Perception` vs `Agility`, with `Luck` as the die |
 | 4 | **Crit** | Whether this one spikes — once per packet | `Luck` |
 | 5 | **Mitigate** | How much is absorbed | `Armor` **or** `Magic Resist` (def), reduced by `Penetration` (att) |
 | 6 | **Type** | Bane / Fault / resisted / neutral | *no stat* — from the derivation rule |
@@ -143,23 +143,49 @@ about ×35 means the entire 54-power unique layer never fires in a battle decide
 by focus fire. If battles need shortening, move the tier-5 gate earlier rather
 than cutting HP.
 
-### Landing a blow
+### Landing a blow — `Luck` is the die
 
 ```
-attack  = d100 + Perception + Luck
-defense = d100 + Agility
-hit if attack > defense          # ties go to the defender
+attack  = Perception + rand(1 .. Luck × 1.5)
+defense = Agility    + rand(1 .. Luck × 1.5)
+hit if attack > defense                      # ties go to the defender
 ```
 
-**Ties go to the defender.** That resolves the contest unambiguously and quietly
+**There is no separate die.** The randomness in the game *is* the `Luck` stat —
+a hero with `Luck` 40 rolls 1–60, a hero with `Luck` 15 rolls 1–22. That single
+choice does three things a fixed `d100` could not:
+
+- **Low `Luck` is consistent; high `Luck` is volatile.** A Luck-15 hero swings
+  22 points and is predictable to play around. A Luck-40 hero swings 60 and can
+  steal an exchange it had no business winning. That is a real build decision
+  rather than a number that is simply better.
+- **It halves `Luck`'s accuracy value.** As a flat bonus, Luck 15 vs 40 was a
+  25-point accuracy gap. As a die it averages +11.8 against +30.5 — a gap of
+  18.8, roughly three-quarters of what an equal investment in `Perception`
+  buys. `Luck` supports accuracy; it no longer rivals it.
+- **It removes an arbitrary constant.** Nothing has to justify why the die has
+  100 faces.
+
+Across all 729 attacker/defender pairs this gives hit chances from **17% to
+93%, with no matchup deterministic in either direction.**
+
+**Ties go to the defender**, which resolves the contest unambiguously and quietly
 favours the side that isn't choosing.
 
-`Agility` alone answers accuracy — **no mitigation stat appears here.** An
-earlier sketch had "defense + Agility" opposing the roll; if "defense" meant
-`Armor`/`Magic Resist`, that stat would be doing two jobs, and worse, the
-contest deadlocked: attacker modifiers span 45–75 and defender modifiers would
-too, leaving **52% of all 729 attacker/defender pairs unable to ever land a
-hit.** With `Agility` alone, hit chances land between roughly 60% and 90%.
+`Agility` alone answers accuracy — **no mitigation stat appears here**, and that
+is now a hard constraint rather than a preference. Putting `Armor` into the
+defense roll adds up to 40 points, which a Luck-sized die cannot span: **28% of
+all matchups become literally impossible**, and even halving Armor's
+contribution leaves 10% unwinnable. A `d100` is large enough to absorb it, but
+only by drowning out the stats it is meant to compare.
+
+> **Correction.** An earlier draft justified excluding `Armor` by claiming a
+> deterministic comparison left 52% of pairs unable to hit. That figure assumed
+> no die at all. The reason above is the real one, and it is stronger.
+
+The same contest and the same die resolve whether a rider sticks
+(`05-status.md`): `potency + rand(1..Luck×1.5)` against
+`Resolve + rand(1..Luck×1.5)`.
 
 ### Critical hits
 
@@ -347,12 +373,16 @@ Bane   × 1.5                      = 195.2
 
 ---
 
-## One stat still doing four jobs
+## One stat still doing three jobs
 
-`Luck` now contributes **flat damage, accuracy, crit chance and crit damage**.
-The opening rule of this file is that every stat has exactly one job and every
-axis of conflict has exactly one counter; `Luck` is the only stat with four
-roles and the only one with no counter at all.
+`Luck` contributes **flat damage, the size of every die it rolls, and crit
+chance**. The opening rule of this file is that every stat has exactly one job
+and every axis of conflict has exactly one counter; `Luck` is the only stat with
+three roles and the only one with no counter at all.
+
+Making `Luck` the die was itself a trim — it merged what used to be a flat
+accuracy bonus *and* a separate `d100` into one thing, and halved the accuracy
+advantage a high-`Luck` hero gets. What remains is one job too many.
 
 **This is recorded as an open decision, not applied.** The damage formula above
 is as specified. The recommended trim is to **drop `Luck` from the damage

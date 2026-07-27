@@ -85,8 +85,12 @@ A rider is **staged** in the Attack phase, **contested** in the Defense phase,
 and **enacted** in Additional Effects (`04-turns.md`).
 
 ```
-sticks if   d100 + potency  >  d100 + Resolve      # ties go to the defender
+sticks if   potency + rand(1..Luck×1.5)  >  Resolve + rand(1..Luck×1.5)
+                                                   # ties go to the defender
 ```
+
+Same contest and same die as accuracy (`01-stats.md`) — `Luck` is the
+randomness in this game, and a lucky hero lands its riders as well as its blows.
 
 **Potency is derived from the tier of the power applying it.** No per-power
 authoring, and it self-balances — a rider on an ultimate is genuinely harder to
