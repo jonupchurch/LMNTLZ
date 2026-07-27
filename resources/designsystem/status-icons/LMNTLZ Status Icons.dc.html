@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes s-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;min-height:100vh;padding:0 0 90px">
+
+  <div style="position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 40px;background:rgba(14,12,23,0.92);backdrop-filter:blur(12px);border-bottom:1px solid #241F38">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;color:#141221;font-size:17px;line-height:1">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.2em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:18px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">STATUS EFFECT ICONS</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8E87A8">
+      <span>16 new glyphs · 10 stat pips × 2</span>
+      <span style="color:#F2C744">Reads at 16px</span>
+    </div>
+  </div>
+
+  <div style="max-width:1560px;margin:0 auto;padding:0 40px">
+
+    <section style="padding:44px 0 30px;border-bottom:1px solid #241F38">
+      <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:56px;align-items:end">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#F2C744;margin-bottom:16px">Pip-scale icon set</div>
+          <h1 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:58px;line-height:0.98;margin:0 0 16px;color:#F4EFE4;text-wrap:balance">Sixteen glyphs, because three multipliers do the rest.</h1>
+          <p style="font-size:17px;line-height:1.6;color:#B4AECB;max-width:66ch;margin:0;text-wrap:pretty">Stat icons carry a polarity rather than being drawn twice. One damage-over-time glyph is tinted by the nine type colors. And several mechanics collapse onto icons that already exist — <strong style="color:#F4EFE4">Slow is a −10 Speed debuff</strong> and <strong style="color:#F4EFE4">shred is Armor or Magic Resist going down</strong>, so neither gets a drawing of its own.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">READ AT 16PX</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">Twelve chips on screen. If it needs two glances it has failed.</div></div>
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">FOUR PIPS, THEN +N</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">Priority: crowd control → damage over time → everything else.</div></div>
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">POLARITY BEFORE GLYPH</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">Ring colour and corner marker read before the shape does.</div></div>
+          <div style="border:1px solid #241F38;background:#141221;padding:13px 15px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#F2C744;margin-bottom:5px">3.5PX KEYLINE</div><div style="font-size:12.5px;line-height:1.5;color:#8E87A8">#14121F under every stroke — survives portrait art and light panels.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:38px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">00</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.04em;margin:0;color:#F4EFE4">Three duration treatments</h2>
+      </div>
+      <p style="font-size:14.5px;color:#8E87A8;margin:0 0 18px;max-width:88ch">Rune effects introduced a persistence class the power system does not have, so the pip has to say which clock it is on. Durations tick on the <strong style="color:#B4AECB">bearer's own turn</strong> — not rounds, and not anybody else's turns.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <div style="border:1px solid #241F38;border-top:3px solid #F2C744;background:#141221;padding:18px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:13px">
+            <div style="position:relative;width:46px;height:46px;flex:0 0 auto">
+              <div style="width:46px;height:46px;background-image:url('status-icons/pip-dot-fire.svg');background-size:contain;background-repeat:no-repeat"></div>
+              <div style="position:absolute;top:-4px;right:-6px;min-width:19px;height:19px;border-radius:6px;background:#141221;border:2px solid #F4EFE4;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#F4EFE4;padding:0 3px">3</div>
+            </div>
+            <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">TIMED</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:4px">1–4 TURNS · JETBRAINS MONO</div></div>
+          </div>
+          <div style="font-size:13px;line-height:1.55;color:#B4AECB">A numeral for the turns remaining. Every power-applied effect uses this.</div>
+        </div>
+        <div style="border:1px solid #241F38;border-top:3px solid #C64BB0;background:#141221;padding:18px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:13px">
+            <div style="position:relative;width:46px;height:46px;flex:0 0 auto">
+              <div style="width:46px;height:46px;background-image:url('status-icons/pip-reprisal.svg');background-size:contain;background-repeat:no-repeat"></div>
+              <div style="position:absolute;top:-4px;right:-6px;width:19px;height:19px;border-radius:50%;background:#141221;border:2px solid #C64BB0;display:flex;align-items:center;justify-content:center"><div style="width:7px;height:7px;border-radius:50%;background:#C64BB0"></div></div>
+            </div>
+            <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">REST OF BATTLE</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:4px">PERMANENCE MARKER · NO NUMERAL</div></div>
+          </div>
+          <div style="font-size:13px;line-height:1.55;color:#B4AECB">A sealed ring instead of a number — never a numeral, so it can't be misread as a long timer. Rune trigger effects.</div>
+        </div>
+        <div style="border:1px solid #241F38;border-top:3px solid #4FC3D6;background:#141221;padding:18px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:13px">
+            <div style="position:relative;width:46px;height:46px;flex:0 0 auto">
+              <div style="width:46px;height:46px;background-image:url('status-icons/pip-warded.svg');background-size:contain;background-repeat:no-repeat"></div>
+              <div style="position:absolute;top:-4px;right:-6px;width:19px;height:19px;border-radius:50%;background:#141221;border:2px solid #4FC3D6;display:flex;align-items:center;justify-content:center;animation:s-pulse 1600ms ease-in-out infinite"><div style="width:8px;height:8px;border-radius:50%;background:#4FC3D6"></div></div>
+            </div>
+            <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">CHARGE</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:4px">SHOWN UNSPENT · VANISHES WHEN USED</div></div>
+          </div>
+          <div style="font-size:13px;line-height:1.55;color:#B4AECB">A live charge that will negate the next qualifying effect. It disappears the moment it is consumed. Rune wards.</div>
+        </div>
+      </div>
+    </section>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+      <section style="padding:38px 0 0">
+        <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px;flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">{{ g.num }}</div>
+          <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.04em;margin:0;color:#F4EFE4">{{ g.title }}</h2>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:{{ g.color }};border:1px solid {{ g.color }};border-radius:5px;padding:4px 9px">{{ g.count }}</div>
+        </div>
+        <p style="font-size:14.5px;color:#8E87A8;margin:0 0 18px;max-width:92ch;text-wrap:pretty">{{ g.lede }}</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px">
+          <sc-for list="{{ g.icons }}" as="i" hint-placeholder-count="4">
+            <div style="border:1px solid #241F38;border-top:3px solid {{ i.ring }};background:#141221;padding:16px;display:flex;flex-direction:column">
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+                <div style="width:48px;height:48px;background-image:{{ i.pip }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+                <div style="min-width:0;flex:1">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.04em;color:#F4EFE4;line-height:1.15">{{ i.name }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ i.file }}</div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;color:{{ i.ring }};border:1px solid {{ i.ring }};border-radius:4px;padding:3px 5px;flex:0 0 auto">{{ i.pol }}</div>
+              </div>
+              <div style="font-size:12.5px;line-height:1.5;color:#B4AECB;margin-bottom:12px;flex:1">{{ i.text }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:11px;border-top:1px solid #241F38">
+                <div style="display:flex;align-items:flex-end;gap:10px">
+                  <div style="width:48px;height:48px;background-image:{{ i.pip }};background-size:contain;background-repeat:no-repeat"></div>
+                  <div style="width:24px;height:24px;background-image:{{ i.pip }};background-size:contain;background-repeat:no-repeat"></div>
+                  <div style="width:16px;height:16px;background-image:{{ i.pip }};background-size:contain;background-repeat:no-repeat"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:26px;height:26px;background-image:{{ i.bare }};background-size:contain;background-repeat:no-repeat"></div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.08em;color:#57507A;text-align:right;line-height:1.5">BARE<br />GLYPH</div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <section style="padding:38px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">05</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.04em;margin:0;color:#F4EFE4">Stat modifiers · 10 glyphs, 2 polarities</h2>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#B4AECB;border:1px solid #3A3357;border-radius:5px;padding:4px 9px">20 PIPS</div>
+      </div>
+      <p style="font-size:14.5px;color:#8E87A8;margin:0 0 18px;max-width:92ch">One drawing per stat, lifted from the hero card, with polarity carried by the ring and the corner marker rather than a second glyph. Magnitudes run ±10 / ±15 / ±20 / ±25 by tier — the pip shows the stat and the direction; the number belongs in the expanded tooltip.</p>
+      <div style="border:1px solid #241F38;background:#141221">
+        <div style="display:grid;grid-template-columns:170px 88px 88px 1fr 150px;gap:14px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.16em;color:#6E6690;padding:12px 18px;border-bottom:1px solid #241F38">
+          <div>STAT</div><div style="text-align:center">BUFF</div><div style="text-align:center">DEBUFF</div><div>WHAT IT DOES</div><div>FOLDS IN</div>
+        </div>
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:170px 88px 88px 1fr 150px;gap:14px;align-items:center;padding:10px 18px;border-bottom:1px solid #1C1930">
+            <div style="display:flex;align-items:center;gap:11px;min-width:0">
+              <div style="width:26px;height:26px;background-image:{{ s.bare }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+              <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.05em;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.name }}</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:7px"><div style="width:32px;height:32px;background-image:{{ s.up }};background-size:contain;background-repeat:no-repeat"></div><div style="width:16px;height:16px;background-image:{{ s.up }};background-size:contain;background-repeat:no-repeat"></div></div>
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:7px"><div style="width:32px;height:32px;background-image:{{ s.down }};background-size:contain;background-repeat:no-repeat"></div><div style="width:16px;height:16px;background-image:{{ s.down }};background-size:contain;background-repeat:no-repeat"></div></div>
+            <div style="font-size:13px;color:#B4AECB;line-height:1.45">{{ s.text }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ s.foldColor }};line-height:1.5">{{ s.fold }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div style="border-left:3px solid #B5732E;background:#141221;padding:14px 16px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:6px">NO ICON OF ITS OWN</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Slow</strong> is defined as −10 Speed, so it draws as a Speed debuff. A separate glyph would teach a distinction the rules do not make.</div></div>
+        <div style="border-left:3px solid #B5732E;background:#141221;padding:14px 16px"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:6px">NO ICON OF ITS OWN</div><div style="font-size:13.5px;line-height:1.6;color:#B4AECB"><strong style="color:#F4EFE4">Mitigation shred</strong> removes a percentage of Armor or Magic Resist — it draws as those stats going down, at −20 / −30 / −40%.</div></div>
+      </div>
+    </section>
+
+    <section style="padding:38px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">06</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.04em;margin:0;color:#F4EFE4">Two overlay modifiers</h2>
+      </div>
+      <p style="font-size:14.5px;color:#8E87A8;margin:0 0 18px;max-width:92ch">Neither is a standalone icon — both compose over any pip. The stack numeral sits bottom-left and the seal top-right, so they never collide with each other or with the duration numeral.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="border:1px solid #241F38;background:#141221;padding:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:34px;height:34px;background-image:url('status-icons/overlay-stack.svg');background-size:contain;background-repeat:no-repeat"></div>
+            <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">STACK COUNT</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:3px">overlay-stack.svg · BOTTOM-LEFT</div></div>
+          </div>
+          <div style="display:flex;gap:22px;margin-bottom:14px">
+            <sc-for list="{{ stackDemo }}" as="d" hint-placeholder-count="3">
+              <div style="text-align:center">
+                <div style="position:relative;width:52px;height:52px">
+                  <div style="width:52px;height:52px;background-image:{{ d.pip }};background-size:contain;background-repeat:no-repeat"></div>
+                  <div style="position:absolute;bottom:-4px;left:-6px;min-width:20px;height:20px;border-radius:6px;background:#241F38;border:2px solid #F4EFE4;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#F4EFE4;padding:0 3px">×{{ d.n }}</div>
+                  <div style="position:absolute;top:-4px;right:-6px;min-width:19px;height:19px;border-radius:50%;background:#141221;border:2px solid #8E87A8;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#B4AECB;padding:0 3px">{{ d.t }}</div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690;margin-top:8px">{{ d.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:13px;line-height:1.55;color:#8E87A8">A squared badge with an <code style="font-family:'JetBrains Mono',monospace;color:#8FCFE0">×</code> so it can never be confused with the round duration badge, even when both sit on the same pip. Damage over time stacks to 3 per target; two rune effects stack to 3.</div>
+        </div>
+        <div style="border:1px solid #241F38;background:#141221;padding:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:34px;height:34px;background-image:url('status-icons/overlay-sealed.svg');background-size:contain;background-repeat:no-repeat"></div>
+            <div><div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">CANNOT BE CLEANSED</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:3px">overlay-sealed.svg · TOP-RIGHT</div></div>
+          </div>
+          <div style="display:flex;gap:22px;margin-bottom:14px">
+            <sc-for list="{{ sealDemo }}" as="d" hint-placeholder-count="3">
+              <div style="text-align:center">
+                <div style="position:relative;width:52px;height:52px">
+                  <div style="width:52px;height:52px;background-image:{{ d.pip }};background-size:contain;background-repeat:no-repeat"></div>
+                  <div style="position:absolute;top:-6px;right:-8px;width:24px;height:24px;background-image:url('status-icons/overlay-sealed.svg');background-size:contain;background-repeat:no-repeat"></div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690;margin-top:8px">{{ d.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:13px;line-height:1.55;color:#8E87A8">Four sources produce it — Ember Saelith's <em>Never Quite Out</em>, Umbriel's <em>Written in Pencil</em> and two rune effects — so it composes over any pip rather than being drawn into one. All of them still expire; they cannot be removed early.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:38px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">07</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.04em;margin:0;color:#F4EFE4">In place — a chip carrying four pips and an overflow</h2>
+      </div>
+      <p style="font-size:14.5px;color:#8E87A8;margin:0 0 18px;max-width:92ch">The whole constraint in one object. Four pips maximum in crowd control → damage over time → everything else order, then a <code style="font-family:'JetBrains Mono',monospace;color:#8FCFE0">+N</code> that expands on hover.</p>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+        <div style="border:1px solid #241F38;background:#141221;padding:22px">
+          <div style="border:1px solid #E8552B;border-radius:9px;background:#1C1930;padding:10px;display:flex;align-items:center;gap:11px;box-shadow:0 0 16px rgba(232,85,43,.22)">
+            <div style="width:48px;height:48px;border-radius:6px;background-image:url('portraits/08-fire-pyrrhic.png');background-size:cover;background-position:50% 6%;background-color:#241F38;flex:0 0 auto"></div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;letter-spacing:0.05em;color:#F4EFE4">PYRRHIC</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:#B4AECB;margin-left:auto">980 / 1 720</div>
+              </div>
+              <div style="height:6px;border-radius:99px;background:#0E0C17;overflow:hidden;margin-bottom:8px"><div style="width:57%;height:6px;background:linear-gradient(90deg,#8C2A12,#E8552B)"></div></div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <sc-for list="{{ chipPips }}" as="c" hint-placeholder-count="4">
+                  <div style="position:relative;width:22px;height:22px;flex:0 0 auto">
+                    <div style="width:22px;height:22px;background-image:{{ c.pip }};background-size:contain;background-repeat:no-repeat"></div>
+                    <sc-if value="{{ c.badge }}" hint-placeholder-val="{{ true }}">
+                      <div style="position:absolute;top:-5px;right:-6px;min-width:14px;height:14px;border-radius:{{ c.badgeRadius }};background:#141221;border:1.5px solid {{ c.badgeColor }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;color:{{ c.badgeColor }};padding:0 2px">{{ c.badge }}</div>
+                    </sc-if>
+                    <sc-if value="{{ c.stack }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;bottom:-5px;left:-6px;min-width:14px;height:14px;border-radius:4px;background:#241F38;border:1.5px solid #F4EFE4;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;color:#F4EFE4;padding:0 2px">{{ c.stack }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <div style="min-width:24px;height:22px;border-radius:6px;background:#241F38;border:1.5px solid #57507A;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:9.5px;color:#B4AECB;padding:0 4px;cursor:pointer" style-hover="border-color:#F2C744;color:#F2C744">+2</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px;border:1px solid #3A3357;border-radius:9px;background:#241F38;box-shadow:0 10px 28px rgba(0,0,0,.55);padding:13px 15px;max-width:330px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.14em;color:#6E6690;margin-bottom:10px">OVERFLOW EXPANDED ON HOVER</div>
+            <div style="display:grid;gap:8px">
+              <sc-for list="{{ overflow }}" as="o" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:24px;height:24px;background-image:{{ o.pip }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+                  <div style="font-size:12.5px;color:#EDEAF6;flex:1;min-width:0">{{ o.name }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:{{ o.color }}">{{ o.dur }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;margin-top:14px">Stun sorts first because losing a turn outranks everything. The burn carries both badges at once — a round duration top-right, a squared stack count bottom-left.</div>
+        </div>
+        <div style="border:1px solid #241F38;background:#141221;padding:22px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:14px">16PX SILHOUETTE CHECK · EVERY PIP</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ all }}" as="a" hint-placeholder-count="43">
+              <div style="width:16px;height:16px;background-image:{{ a.pip }};background-size:contain;background-repeat:no-repeat"></div>
+            </sc-for>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin:22px 0 14px">SAME SET AT 24PX</div>
+          <div style="display:flex;flex-wrap:wrap;gap:9px">
+            <sc-for list="{{ all }}" as="a" hint-placeholder-count="43">
+              <div style="width:24px;height:24px;background-image:{{ a.pip }};background-size:contain;background-repeat:no-repeat"></div>
+            </sc-for>
+          </div>
+          <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;margin-top:16px;padding-top:14px;border-top:1px solid #241F38">Polarity survives the size drop even where the glyph does not: the ring colour and the corner marker are the first read, the shape the second.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:38px 0 0">
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6E6690">08</div>
+        <h2 style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.04em;margin:0;color:#F4EFE4">What deliberately gets no icon</h2>
+      </div>
+      <p style="font-size:14.5px;color:#8E87A8;margin:0 0 16px;max-width:92ch">Rune effects that are permanently true from the first moment of a battle and never change belong on the champion's detail panel. Putting them in the pip row would burn the overflow budget on information that never updates.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ noIcon }}" as="x" hint-placeholder-count="8">
+          <div style="display:flex;align-items:center;gap:9px;border:1px dashed #3A3357;border-radius:99px;padding:8px 14px">
+            <div style="width:6px;height:6px;border-radius:50%;background:#3A3357"></div>
+            <span style="font-size:13px;color:#8E87A8">{{ x.name }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#57507A">{{ x.note }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="margin-top:56px;padding-top:24px;border-top:1px solid #241F38;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690;text-transform:uppercase">status-icons/ · 26 status-*.svg · 43 pip-*.svg · 2 overlay-*.svg</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690;text-transform:uppercase">Built to resources/status-icons.md</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1560,&quot;height&quot;:1000}}">
+const RING = { good:"#4E7C3A", bad:"#C0313A", control:"#F2C744", neutral:"#8E87A8" };
+const POL_LABEL = { good:"GOOD", bad:"BAD", control:"CTRL", neutral:"PAIR" };
+const TYPES = [["fire","FIRE","#E8552B"],["water","WATER","#2A7FB8"],["dark","DARK","#7A3FA0"],["slash","SLASH","#C0313A"],["earth","EARTH","#4E7C3A"],["air","AIR","#8FCFE0"],["light","LIGHT","#F2C744"],["pierce","PIERCE","#3B5BD1"],["crush","CRUSH","#B5732E"]];
+
+const GROUPS = [
+  { num:"01", title:"Damage over time · one glyph, nine tints", color:"#E8552B",
+    lede:"A burn, a bleed and a drowning are the same mechanic — snapshotted at application, ticking in the bearer's Upkeep before it acts, stacking to 3 per target. One glyph, tinted by whichever of the nine types applied it, using the existing type colour tokens. It has to compose with the stack numeral, the duration numeral and the cannot-be-cleansed seal.",
+    icons: TYPES.map(t => ["dot-" + t[0], "Damage over time · " + t[1], "bad",
+      "Tinted " + t[1].toLowerCase() + " " + t[2] + ". Tick is Might × 0.25 at tier 1 rising to × 0.60 at tier 5.", "dot"]) },
+  { num:"02", title:"Crowd control", color:"#F2C744",
+    lede:"The most important pips in the set and the first thing a player should see — one turn of stun is the strongest single effect in the game. The distinction has to be visible at a glance: stunned means nothing happens, silenced means something small still happens.",
+    icons:[
+      ["stun","Stun","control","Loses the action entirely — skips the Attack, Defense and Additional Effects phases. Never stacks; duration refreshes only.","stun"],
+      ["silence","Silence","control","Powers are blocked. The tier-0 auto-attack still works, which is why the glyph keeps a sound arc rather than going dark.","silence"]
+    ]},
+  { num:"03", title:"Absorb and targeting", color:"#4FC3D6",
+    lede:"Taunt and fade cancel on the same champion and are each other's counter — they are permanent role passives for the Tank and Buffer roles, so they will frequently be seen adjacent. Drawn as an opposed pair: arrows pulled inward against an outline half dissolved.",
+    icons:[
+      ["shield","Shield","good","An absorb layer depleted before the health pool. The only thing that can fully negate a landed hit — mitigation caps at 50% and the floor lets 25% through.","shield"],
+      ["taunt","Taunt","neutral","Compels attackers to target this champion, where the targeting pipeline allows it.","taunt"],
+      ["fade","Fade","neutral","Filters this champion out of enemy targeting while a legal alternative exists.","fade"]
+    ]},
+  { num:"04", title:"Rune states", color:"#C64BB0",
+    lede:"From the 33-effect utility catalog, and these need icons more urgently than the power effects do. Scouting shows an opponent only which rune slots are filled and their elements — never what the effects are — so an attacker meets these blind. The pip is the only announcement that something unexpected just happened.",
+    icons:[
+      ["extended-reach","Extended reach","good","+1 reach for this turn only. Rolled at turn start and shown before the player picks a power, so it is a prompt to act rather than a report — the highest-stakes pip in the set, and arguably a treatment on the reach indicator rather than a pip at all. · Further Than It Looks","extended-reach"],
+      ["warded","Warded","good","An unspent charge that will negate the next qualifying effect. Vanishes when consumed. · Not This Time · It Passes Through · Turned Aside","warded"],
+      ["unbreakable","Unbreakable","good","Cannot be critically hit. · All One Piece","unbreakable"],
+      ["reprisal","Reprisal","good","Attackers take damage for striking this champion. · Too Close · Both Ways","reprisal"],
+      ["renewed","Renewed","good","Incoming healing increased. Drawn as the opposite of Withered. · Draws It Up","renewed"],
+      ["unseen","Unseen","good","Untargetable until this champion's next turn. The direct counter to Exposed. · No One Saw","unseen"],
+      ["rooted","Rooted","bad","Cannot be moved from its row. · Weight Tells","rooted"],
+      ["withered","Withered","bad","Incoming healing reduced. Drawn as the opposite of Renewed. · Runs Dry","withered"],
+      ["exposed","Exposed","bad","Cannot dodge — the contested accuracy roll is skipped entirely. The direct counter to Unseen. · Held in the Light","exposed"]
+    ]}
+];
+const STATS = [
+  ["might","Might","How hard the champion hits","—"],
+  ["perception","Perception","How accurately it lands a blow","—"],
+  ["agility","Agility","How well it avoids being hit","—"],
+  ["penetration","Penetration","How well it pierces mitigation","—"],
+  ["armor","Armor","Absorbs martial damage","shred −20/30/40%"],
+  ["resist","Magic Resist","Absorbs arcane damage","shred −20/30/40%"],
+  ["toughness","Toughness","The size of the health pool","—"],
+  ["speed","Speed","How quickly and how often it acts","Slow = −10"],
+  ["resolve","Resolve","Resists crowd control","—"],
+  ["luck","Luck","Shifts the random rolls","—"]
+];
+const NO_ICON = [
+  ["On the Same Breath","ALWAYS TRUE"],["The Draft","ALWAYS TRUE"],["It Lingers","ALWAYS TRUE"],["Straight Past","ALWAYS TRUE"],
+  ["Before It Knew","ALWAYS TRUE"],["Take It Back","ALWAYS TRUE"],["Nowhere to Stand","ALWAYS TRUE"],["Again, There","SHOWS AS A STACK NUMERAL"]
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    const pipUrl = k => "url('status-icons/pip-" + k + ".svg')";
+    const bareUrl = k => "url('status-icons/status-" + k + ".svg')";
+    const groups = GROUPS.map(g => ({
+      num: g.num, title: g.title, color: g.color, lede: g.lede,
+      count: g.icons.length + " PIPS",
+      icons: g.icons.map(i => ({
+        name: i[1], text: i[3], ring: RING[i[2]], pol: POL_LABEL[i[2]],
+        file: "pip-" + i[0] + ".svg", pip: pipUrl(i[0]), bare: bareUrl(i[4])
+      }))
+    }));
+    const all = [];
+    GROUPS.forEach(g => g.icons.forEach(i => all.push({ pip: pipUrl(i[0]) })));
+    STATS.forEach(s => { all.push({ pip: pipUrl("stat-" + s[0] + "-up") }); all.push({ pip: pipUrl("stat-" + s[0] + "-down") }); });
+    return {
+      groups: groups, all: all,
+      stats: STATS.map(s => ({
+        name: s[1], text: s[2], fold: s[3],
+        foldColor: s[3] === "\u2014" ? "#57507A" : "#B5732E",
+        bare: bareUrl("stat-" + s[0]), up: pipUrl("stat-" + s[0] + "-up"), down: pipUrl("stat-" + s[0] + "-down")
+      })),
+      stackDemo: [
+        { pip: pipUrl("dot-fire"), n: "3", t: "2", label: "BURN ×3" },
+        { pip: pipUrl("dot-water"), n: "2", t: "3", label: "DROWN ×2" },
+        { pip: pipUrl("warded"), n: "3", t: "\u25CF", label: "WARD ×3" }
+      ],
+      sealDemo: [
+        { pip: pipUrl("dot-fire"), label: "NEVER QUITE OUT" },
+        { pip: pipUrl("stat-agility-down"), label: "WRITTEN IN PENCIL" },
+        { pip: pipUrl("rooted"), label: "WEIGHT TELLS" }
+      ],
+      chipPips: [
+        { pip: pipUrl("stun"), badge: "1", badgeColor: "#F2C744", badgeRadius: "50%", stack: null },
+        { pip: pipUrl("dot-fire"), badge: "2", badgeColor: "#E8552B", badgeRadius: "50%", stack: "\u00D73" },
+        { pip: pipUrl("stat-armor-down"), badge: "3", badgeColor: "#C0313A", badgeRadius: "50%", stack: null },
+        { pip: pipUrl("warded"), badge: null, badgeColor: "#4FC3D6", badgeRadius: "50%", stack: null }
+      ],
+      overflow: [
+        { pip: pipUrl("stat-might-up"), name: "Might +15", dur: "2 TURNS", color: "#4E7C3A" },
+        { pip: pipUrl("exposed"), name: "Exposed — cannot dodge", dur: "REST OF BATTLE", color: "#C64BB0" }
+      ],
+      noIcon: NO_ICON.map(x => ({ name: x[0], note: x[1] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

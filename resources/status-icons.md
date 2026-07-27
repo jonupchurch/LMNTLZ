@@ -52,6 +52,12 @@ that the power system does not have.
 | **Timed** | numeral, **1–4** turns remaining, JetBrains Mono | every power-applied effect |
 | **Rest of battle** | a permanence marker instead of a numeral — no number, ever | rune trigger effects |
 | **Charge** | shown while unspent, vanishes when consumed | rune wards |
+| **Conditional** | no timer at all, and it can **turn off again** | effects that hold only while something is true |
+
+> **Conditional is not the same as permanent, and the difference is visible.**
+> `Exposed` comes from `Held in the Light`, which stops enemies *below half HP*
+> from dodging — heal that champion above half and the pip goes away. Drawing it
+> with the rest-of-battle marker would promise something the rule does not.
 
 Durations tick on the **bearer's own turn**, so the numeral counts that
 champion's turns, not rounds and not anybody else's turns.
