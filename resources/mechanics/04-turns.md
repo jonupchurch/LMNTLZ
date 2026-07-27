@@ -1,9 +1,15 @@
 # LMNTLZ · Mechanics 04 — The Turn
 
-A turn belongs to **one hero**. Everything below happens inside that hero's
-turn, in this order, every time. There are no interrupts and no reactions — a
-defender never takes an action out of sequence, it only contributes its stats
-when the Defense phase asks for them.
+A turn belongs to **one hero** — the *acting* hero. Everything below happens
+inside that hero's turn, in this order, every time. There are no interrupts and
+no reactions: a defender never takes an action out of sequence, it only
+contributes its stats when the Defense phase asks for them.
+
+**The phase order is the attacker's.** This is the single most useful thing to
+hold onto, because it answers most questions about edge cases before they get
+asked. A defender dying mid-turn is an *event inside* the acting hero's turn,
+not something that can end it. The only death that stops the sequence is the
+acting hero's own, and the only place that can happen is Upkeep.
 
 This file covers what happens **within** a turn. It does **not** cover who acts
 next or how often — that is the `Speed` question, still open, and deliberately
@@ -13,17 +19,18 @@ separated out below.
 
 ## The five phases
 
-| # | Phase | Resolves | Acting hero's role |
+| # | Phase | Resolves | Runs |
 |---|---|---|---|
-| 1 | **Upkeep** | Effects already on the hero — damage over time, crowd control, anything ticking | Passive; may lose the turn here |
-| 2 | **Attack** | Power choice, target choice, attack value. Riders are *staged*, not applied | Acts |
-| 3 | **Defense** | Evasion, mitigation, resistance. Damage lands here | Passive; the **target** resolves |
-| 4 | **Additional effects** | Riders that survived the Defense phase now enact | — |
-| 5 | **Resolution** | Durations tick. Buffs, debuffs and timed effects expire | — |
+| 1 | **Upkeep** | Effects already on the acting hero — damage over time, crowd control, anything ticking | Always |
+| 2 | **Attack** | Power choice, target choice, attack value. Riders are *staged*, not applied | Unless the hero cannot act |
+| 3 | **Defense** | Evasion, mitigation, resistance. Damage or healing lands here | Per target — **skipped** if the power does neither |
+| 4 | **Additional effects** | Riders enact. For a power with no damage or healing, they are contested here too | Per target |
+| 5 | **Resolution** | Cooldowns tick. Durations tick. Timed effects expire | Always |
 
-The split that matters: **phase 2 computes, phase 3 decides.** The attacker
-never knows what it dealt until the defender has had its say. Riders are the
-same — staged in Attack, contested in Defense, enacted in Additional Effects.
+The split that carries the design: **phase 2 computes, phase 3 decides.** The
+attacker never knows what it dealt until the defender has had its say. Riders
+work the same way — staged in Attack, contested in Defense, enacted in
+Additional Effects.
 
 ---
 
@@ -31,41 +38,52 @@ same — staged in Attack, contested in Defense, enacted in Additional Effects.
 
 ```mermaid
 flowchart TD
-    A([Hero's turn begins]) --> B[1 · UPKEEP<br/>resolve effects already on this hero]
+    A([Acting hero's turn begins]) --> B[1 · UPKEEP<br/>resolve effects on the acting hero]
     B --> B1[Damage-over-time and regeneration tick]
-    B1 --> B2{Still alive?}
+    B1 --> B2{Acting hero still alive?}
     B2 -- no --> Z([Turn ends])
     B2 -- yes --> B3{Able to act?<br/>stun, freeze, incapacitate}
-    B3 -- no --> E
+    B3 -- no --> F
     B3 -- yes --> C[2 · ATTACK<br/>the hero acts]
 
     C --> C1[Choose a power<br/>player commands offense · engine runs defense]
-    C1 --> C2[Choose a target within reach]
+    C1 --> C2[Choose target or targets within reach]
     C2 --> C3[Compute attack value<br/>Might × multiplier → type effectiveness → crit]
     C3 --> C4[Stage riders<br/>declared, not yet applied]
+    C4 --> Q{Does the power deal<br/>damage or healing?}
 
-    C4 --> D[3 · DEFENSE<br/>resolved by each target]
+    Q -- no --> E
+    Q -- yes --> D[3 · DEFENSE<br/>per target]
     D --> D1{Lands?<br/>Perception vs Agility}
-    D1 -- miss --> D9[No damage, staged riders drop]
+    D1 -- miss --> D9[Nothing lands<br/>staged riders drop]
     D1 -- hit --> D2[Mitigate<br/>Armor or Magic Resist, reduced by Penetration]
-    D2 --> D3[Subtract from the pool set by Toughness]
+    D2 --> D3[Apply to the pool set by Toughness]
     D3 --> D4{Riders resisted?<br/>power potency vs Resolve}
-    D4 -- resisted --> D9
-    D4 -- sticks --> E
 
-    D9 --> E[4 · ADDITIONAL EFFECTS<br/>surviving riders enact]
-    E --> F[5 · RESOLUTION<br/>durations tick down]
-    F --> F1[Expire finished buffs, debuffs and timed effects]
-    F1 --> Z
+    D9 --> E
+    D4 --> E[4 · ADDITIONAL EFFECTS<br/>per target]
+    E --> E1{Target still alive?}
+    E1 -- no --> E3
+    E1 -- yes --> E2[Surviving riders enact on the target]
+    E2 --> E3[Attacker-side and on-kill effects fire regardless]
+
+    E3 --> F[5 · RESOLUTION<br/>the clocks move]
+    F --> F1[Cooldowns tick]
+    F1 --> F2[Durations tick · finished effects expire]
+    F2 --> Z
 ```
 
-Two branches deserve calling out, because both are forced rather than chosen:
+Three branches deserve calling out, because all three are forced rather than
+chosen:
 
 - **A hero that cannot act still reaches Resolution.** Otherwise a stun would
   tick down only on turns where the victim was already free to act, and no
   crowd control would ever expire. Losing the turn skips phases 2–4, never 5.
 - **Death in Upkeep ends the turn immediately.** A hero killed by its own
-  damage-over-time never acts, so there is nothing for phases 2–4 to do.
+  damage-over-time never acts, so there is nothing for phases 2–4 to do. This
+  is the *only* way the sequence terminates early.
+- **A target dying never ends the sequence.** It is the attacker's turn. The
+  corpse stops receiving things; the turn carries on.
 
 ---
 
@@ -79,8 +97,8 @@ victim acts.
 
 That has a consequence worth stating now, because it will matter when `Speed`
 is settled: **the more often a hero acts, the more damage-over-time it eats.**
-Turn frequency is not a pure benefit. If Speed ends up granting extra turns,
-it also multiplies the cost of every debuff on the board.
+Turn frequency is not a pure benefit. If Speed ends up granting extra turns, it
+also multiplies the cost of every debuff on the board.
 
 Upkeep is also where a hero discovers it has lost the turn. Crowd control is
 *resolved* here — checked, applied, and this is where "you are stunned, you do
@@ -101,28 +119,70 @@ capable of being refused.
 
 ### 3 · Defense — the target answers
 
-Per target, in order: does it land, how much is absorbed, apply the remainder,
-then contest each staged rider.
+**Phase 3 exists to move a number against a health pool.** If a power deals
+neither damage nor healing, there is nothing here for it to do and the phase is
+skipped entirely — see *Powers that skip Defense* below.
+
+Otherwise, per target, in order: does it land, how much is absorbed, apply the
+remainder, then contest each staged rider.
 
 `Perception` vs `Agility` decides landing. A miss ends resolution for that
 target and its staged riders drop with it. Mitigation is `Armor` for the three
 martial types and `Magic Resist` for the six arcane ones, both reduced by the
 attacker's `Penetration`. What survives comes off the pool that `Toughness`
-sets.
+sets. Healing runs the same phase — it is the same operation with the sign
+reversed, and it is reach-limited exactly as an attack is.
 
 Riders are contested separately from the damage — power potency against
 `Resolve` — so a hit can land its damage and still fail to land its debuff.
 
 ### 4 · Additional effects — riders enact
 
-Whatever survived phase 3 now happens: applied debuffs, buffs on the attacker,
-lifesteal, chained or splash effects, anything the power promised beyond its
-damage number.
+Whatever survived phase 3 now happens: applied debuffs, buffs, lifesteal,
+chained or splash effects, anything the power promised beyond its number.
 
-### 5 · Resolution — the clock moves
+**Dead targets receive nothing.** A rider never lands on a corpse. But the
+phase still runs — **attacker-side and on-kill effects fire regardless**,
+because the target's death is an event inside the attacker's turn, not a stop
+condition for it. Lifesteal from the killing blow pays out; poison applied to
+the body does not.
 
-Durations tick and anything that has run out expires. This is the only phase
-that runs unconditionally, and that is what makes timed effects trustworthy.
+**The phase runs per target.** A power that hits three enemies resolves its
+riders three times, once against each. A rider that should happen **once per
+cast** rather than once per target — a flat self-buff, say — is therefore a
+property the *power* has to declare, following the existing convention in
+`01-stats.md` that any deviation from the pipeline must be stated explicitly.
+
+### 5 · Resolution — the clocks move
+
+**Cooldowns tick here.** Powers recharge in whole turns, and Resolution is
+where that counter moves. Resolution is also the only phase that always runs,
+which means a hero that loses its turn to a stun still recharges — the stun
+costs it the action, not the recovery.
+
+Durations tick in the same phase, and anything that has run out expires. One
+phase, one place where time passes, and it is unconditional. That is what makes
+timed effects trustworthy.
+
+### Powers that skip Defense
+
+A power that deals no direct damage and no healing — a pure buff, a pure
+debuff, a reposition — has nothing for phase 3 to mitigate, so **phase 3 is
+skipped and the whole effect resolves in phase 4**, including its `Resolve`
+contest.
+
+The asymmetry is deliberate rather than an oversight. Phase 3 is where the
+target physically answers an incoming blow; with no blow, the only question
+left is whether the effect sticks, and that is asked at the moment it tries to
+land. The practical rule:
+
+> **Damage or healing → contested in phase 3, enacted in phase 4.**
+> **Neither → contested and enacted together in phase 4.**
+
+Note that a pure debuff cannot be *evaded* — skipping phase 3 skips the
+`Perception` vs `Agility` roll along with everything else. Dodging is a defense
+against blows, not against curses; `Resolve` is the only thing standing between
+a hero and a pure debuff.
 
 ---
 
@@ -151,48 +211,34 @@ value available to scale from. The phase structure wins; `01-stats.md` step 2
 should be read as "resolved in the Defense phase."
 
 Pipeline step 8 is the only one that splits across two phases, and that split
-is the point: **contested in Defense, enacted in Additional Effects.**
+is the point: **contested in Defense, enacted in Additional Effects** — except
+for a power that skips Defense, where both happen in phase 4.
 
 ---
 
-## What this settles, and what it doesn't
+## Settled
 
-**Settled:** the five phases, their order, that they are per-hero, that Upkeep
-resolves effects on the acting hero, that riders stage in Attack and contest in
-Defense, and that Resolution always runs.
+The five phases, their order, and:
 
-**Not settled, and not blocked by Speed** — these are intra-turn and can be
-answered now:
+- A turn belongs to the **acting** hero; the phase order is the attacker's.
+- Upkeep resolves effects **on the acting hero**, on its own turn.
+- Losing the turn to crowd control skips phases 2–4 but **always** reaches 5.
+- The acting hero dying in Upkeep is the **only** early termination.
+- Riders **stage** in Attack and are **contested** in Defense.
+- Phase 3 is **skipped** when a power deals neither damage nor healing; that
+  power's effect is contested and enacted together in phase 4.
+- Phases 3 and 4 both run **per target**.
+- **Dead targets receive no follow-on effects**, but the phase still runs and
+  attacker-side effects still fire.
+- **Cooldowns tick in Resolution**, unconditionally.
 
-### 1. Where do cooldowns tick?
+## Open
 
-Cooldowns are counted in whole turns (settled). Nothing yet says *when* the
-counter moves. Upkeep and Resolution are both defensible, and they differ by
-exactly one turn of availability — so **every cooldown number in
-`03-powers.md` is ambiguous until this is answered.** Resolution is the natural
-home, since it is already the phase that moves clocks and the only one that
-always runs; Upkeep would mean a hero that loses its turn to a stun still gets
-its cooldowns back, which may be the more forgiving choice.
-
-### 2. Does a dead target still resolve phases 4 and 5?
-
-If damage in phase 3 kills the target, it is unclear whether a rider still
-enacts on it. It matters concretely: lifesteal on the attacker probably should
-fire, a poison applied to a corpse probably should not, and a kill that
-triggers an on-death effect needs a defined moment to do it in.
-
-### 3. Multi-target: how many times does each phase run?
-
-The Defense phase is stated as per-target and that is unambiguous. Additional
-Effects is not — a power that hits three targets and buffs its caster should
-buff once, not three times, so phase 4 likely needs splitting into per-target
-riders and per-cast riders.
-
-### 4. Can a rider be applied by a power that deals no damage?
-
-A pure buff or a pure debuff has nothing for phase 3 to mitigate. It presumably
-still runs the phase for the `Resolve` contest and skips the damage steps —
-worth writing down rather than leaving to implementation.
+- **Once-per-cast riders.** Phase 4 running per target means a power needing a
+  single flat self-buff has to say so. Whether that is a per-power flag, a
+  separate rider category, or simply a rule that self-targeted riders always
+  resolve once, is a `03-powers.md` decision — named here so it isn't lost.
+- **Turn order and action economy.** Below.
 
 ---
 
@@ -207,3 +253,9 @@ The useful thing is that it turns out to be separable. The five phases hold
 whatever the answer is: extra turns simply run the sequence again, and a pure
 ordering model changes nothing here at all. **Intra-turn structure was never
 actually blocked on Speed** — which is why this file exists ahead of it.
+
+One hook is now in place for whenever that decision comes. Cooldowns ticking in
+Resolution means they tick **once per turn the hero takes**, so an extra-turns
+model makes `Speed` shorten cooldowns in real time without ever producing a
+fractional turn count. The rounding problem that made that option awkward in
+`01-stats.md` does not arise.
