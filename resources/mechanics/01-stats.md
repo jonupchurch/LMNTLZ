@@ -75,6 +75,66 @@ still carry an on-miss rider, but it has to declare one.
 
 ---
 
+## The base stat pass
+
+First pass is entered in [`../characters/hero-stats.xlsx`](../characters/hero-stats.xlsx)
+— all 27 heroes, all ten stats. **Balance is explicitly unfinished**; what
+follows is the reasoning behind the numbers, recorded so the next pass doesn't
+start by guessing at intent.
+
+It introduced a **Role** per hero, which is not one of the ten stats and had not
+existed before: **Striker ×12 · Tank ×7 · Ranged ×5 · Buffer ×3** (Buffer covers
+debuffers too).
+
+Budgets follow position and role rather than a flat total:
+
+| | Reasoning | Total |
+|---|---|---|
+| **Melee** | Has to stand at the front, so it is paid for the exposure | 300 |
+| **Tanks** | Same reasoning — they are the ones being hit | 300 martial / 275 arcane |
+| **Strikers** | Meant to be strong | 300 |
+| **Ranged** | At least 2 rows away, so slightly weaker | 275 |
+| **Buffers** | Deliberately lightest | 275 |
+
+Which reduces to one rule: **275 if a hero is arcane and not a Striker; 300
+otherwise.** 15 heroes at 300, 12 at 275, no outliers.
+
+Reach was also revised into a regular pattern — **every arcane type has one
+reach-1 and two reach-2 champions; every martial type the reverse.** Still 12/15
+overall, and every type still offers both, so no type is locked out of any row.
+
+### What powers are expected to absorb
+
+**Stats are not carrying hero identity, and are not meant to.** Only 10 distinct
+stat lines exist across 27 heroes — five heroes share one line outright, and
+several stats are family constants rather than per-hero choices (Armor is 15 for
+every arcane hero and 40 for every martial one; martial heroes are uniformly
+Toughness 40, Magic Resist 30, Luck 25).
+
+That is deliberate. **Powers and buffs are the differentiation layer** — up to 5
+per hero against 10 shared stat lines is far more room than the stat block has —
+so a template-per-role baseline is the right shape to build powers on top of, not
+a flattening to correct. Two of the observations below therefore resolve in
+`03-powers.md` rather than here.
+
+- **Arcane Strikers are the fragile half of the front line.** All six have reach
+  1, which demands the front row, but sit at Toughness 25 / Armor 15 — durability
+  50 against the martial Strikers' 73.3 beside them, at the same 300 cost, bought
+  with 5 Might and 15 Speed. *Expected to be answered by powers:* protective buffs
+  and shields are precisely what the Buffer role exists to provide, so the
+  question is really whether a Buffer can reach and cover the front row in time —
+  a reach and turn-order question, not a stat one.
+- **Buffers are not lighter than Ranged.** Both total 275, and buffers are the
+  *more* durable of the two (56.7 vs 46.7) on Magic Resist 40 and Speed 35, against
+  a stated intent of buffers being lightest. *Partly answered by powers:* if
+  buffer powers are strong, the durability edge is a cost paid elsewhere. Worth a
+  second look once their powers exist and the total contribution can be compared.
+- **Reach is redundant with Role.** All 12 reach-1 heroes are Strikers and all 15
+  reach-2 are not, so reach carries no information Role does not already, and
+  "never put a reach-1 hero in the back row" has become "never put a Striker in
+  the back row." *Not something powers fix* — this one is structural, and stays
+  open until reach is settled.
+
 ## Open questions
 
 None of these block writing powers, but all four must be answered before any
