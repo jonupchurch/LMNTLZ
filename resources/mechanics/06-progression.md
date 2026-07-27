@@ -349,6 +349,26 @@ Four sources, and they deliberately reward different things:
 | **Guild events** | placement | A Wing's finish, rolled up per guild — `08-guilds.md` |
 | **Weekly / monthly ladder** | rating placement | Rewards sustained standing rather than volume |
 
+### An ambush pays double a chosen door
+
+> **A Hidden battle rewards 2× what a battle you scouted and chose would pay** —
+> for **either side**, on a victory.
+
+`02-squads.md` calls the ambush *"the only door into a Hidden battle"*, and this
+is the reward side of that: a **chosen door** is a Visible squad you scouted and
+picked, while an ambush is one neither player elected. Doubling it quantifies the
+rule `../../CLAUDE.md` already states — *Hidden battles pay more* — and it is a
+**base property of the game, not something bought.**
+
+It cannot be farmed, which is what lets the multiplier be large. Entering a
+Hidden battle requires a consecutive-win streak, the chance rises 2% per win and
+caps at 90%, and **the attacker does not choose it** — so the volume is bounded
+by the game's own rules. On the defending side it is rarer still, since a Hidden
+squad is never selectable.
+
+This is also what makes the purchased boost able to be a flat 2× with no
+exceptions in it — see *Monetization* below.
+
 **Holds paying is the one that fills a hole.** `08-guilds.md` already notes that
 hold streaks are tracked, public and per-zone, and that **nothing else in the
 design rewards being good at defense.** Without it, the 12 heroes locked into
@@ -377,21 +397,36 @@ every player reaches, selling *time to reach it* is a categorically different
 thing from selling power. A paying player and a free player who are both fully
 kitted are exactly equal.
 
-Two boosts, both cheap, both daily, both **capped**:
+**Exactly two products, and neither has a special case in it:**
 
 | SKU | Effect | Cap |
 |---|---|---|
-| **Attack boost** | 2× shards from attack victories | first **20 battles** that day |
-| **Defense boost** | 2× shards from defensive holds | first **20 holds** that day |
-| *bundle* | both of the above | — |
+| **Attack boost** | **2×** shards from attacking | first **20 battles** that day |
+| **Defense boost** | **2×** shards from defending | first **20 battles** that day |
 
-**Ambush battles pay 4× instead of 2×** under whichever boost is active — an
-ambusher with the attack boost, a Hidden defender with the defense boost.
+That is the whole of it. A flat 2×, capped at 20 battles, on each side of the
+game. Both may be held at once; there is no third tier.
 
-> **The 4× replaces the 2×; it does not multiply with it**, and it sits on top of
-> whatever base premium Hidden battles already carry.
+### The 4× on an ambush is arithmetic, not a rule
 
-### Why the caps, and why ambush can carry 4×
+**An ambush already pays 2× what a chosen door pays** — that is a base property
+of the game (see *Where shards come from*), not something bought. So a player
+holding the relevant boost lands on **4× a chosen battle**, for either side of an
+ambush, on a victory:
+
+```
+chosen door,  no boost    ×1
+chosen door,  boosted     ×2
+ambush,       no boost    ×2
+ambush,       boosted     ×4      ← emerges; nothing special-cases it
+```
+
+An earlier draft wrote the 4× into the boost as an exception. Moving it into the
+base ambush reward is strictly better: **the boost becomes a uniform multiplier
+with no rules inside it**, which is easier to price, easier to explain, and
+impossible to get wrong in the resolver.
+
+### Why the caps
 
 **Caps turn the boost into a convenience purchase.** Uncapped, a multiplier's
 value scales with how much a player already plays, so it pays out most to the
@@ -399,12 +434,6 @@ people who need it least. Capped at 20, a player with thirty minutes gets roughl
 what an hour would have paid, while someone already grinding all evening gets the
 same fixed bonus as everyone else. That monetizes time-poverty rather than
 competitiveness.
-
-**Ambush battles can carry a much larger multiplier because they cannot be
-farmed.** Entering one requires a consecutive-win streak, the chance is capped at
-90%, and the *attacker does not choose it* — the engine does. The volume is
-bounded by the game's own rules rather than by a purchase limit, so a big number
-there rewards a streak the player genuinely earned.
 
 Note that the **defense cap will rarely bind**, since a player does not control
 how often they are attacked. That is fine and by design: the defense boost is the
@@ -420,9 +449,9 @@ addressable population, deliver its entire value to exactly the group whose
 advantage the design is trying not to sell, and carry the full perception cost of
 "they sell an unlimited multiplier."
 
-**The higher price point is the bundle**: attack and defense together. Same caps,
-no new mechanic, no pay-to-win surface, and it is the purchase most players
-actually want.
+**There is no third SKU.** If a higher price point is ever wanted, the two boosts
+sold together is the only version that adds no mechanic and no pay-to-win
+surface.
 
 ### The revenue curve runs backwards, deliberately
 
