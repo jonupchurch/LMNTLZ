@@ -214,10 +214,13 @@ later.
   the odd one out. An ordered chain — *Buffers, then lowest HP, then nearest* —
   would be consistent and more expressive, at the cost of a second ranking widget
   on every squad row. The fallback rule above works either way.
-- **Whether reactive powers are configurable.** `04-turns.md` leaves open whether
-  "reactive" is a power property or a stance a hero adopts. If it is a stance, it
-  is a **defender's** decision and belongs here — and it would be the second
-  defensive choice a player makes, after priority.
+- ~~**Whether reactive powers are configurable.**~~ **Settled — they are not.**
+  `04-turns.md` makes "reactive" a **property of the power**, so nothing here
+  configures it. The stance version was rejected because the obvious cost is
+  already spent — a reactive power carries a normal cooldown ticking in its
+  owner's turns — so a stance with no additional cost is a property wearing a
+  costume, plus a third ranking widget on every squad row. It remains available
+  as a config field once `packages/sim` can price one.
 - **Whether the two zones behave differently.** `02-squads.md` question 6 asks
   whether a defending formation follows different combat rules at all. Nothing so
   far requires it, and the Visible/Hidden distinction is currently about

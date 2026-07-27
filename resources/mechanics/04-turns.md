@@ -513,8 +513,10 @@ The five phases, their order, and:
 
 ## Open
 
-- **Reaction details.** Whether a reaction fires on an evaded attack, and
-  whether "reactive" is a power property or a stance — both above.
+- ~~**Reaction details.**~~ **Settled** — see *Reactions* above. A reaction
+  **fires on an evaded attack**, and **"reactive" is a power property**, not a
+  stance. Both currently govern nothing: there is no reactive power in the
+  roster, which leaves two unique passives dead.
 - ~~**Once-per-cast riders.**~~ **Settled** — `03-powers.md` → *Payload and
   rider*. A rider whose target is the **caster** resolves once per cast; riders
   aimed at whoever the payload struck still resolve per target. Phase 4 is
