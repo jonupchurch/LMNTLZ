@@ -59,7 +59,7 @@ The order below is the contract. Any power that deviates must say so explicitly.
 | 1 | **Act** | Whose turn it is and how often it comes around | `Speed` |
 | 2 | **Packet** | One attack value, built once for the whole attack | `Might`, `Luck` |
 | 3 | **Land** | Hit or miss, per target | `Perception` + `Luck` (att) vs `Agility` (def) |
-| 4 | **Crit** | Whether this one spikes, per target | `Luck` |
+| 4 | **Crit** | Whether this one spikes — once per packet | `Luck` |
 | 5 | **Mitigate** | How much is absorbed | `Armor` **or** `Magic Resist` (def), reduced by `Penetration` (att) |
 | 6 | **Type** | Bane / Fault / resisted / neutral | *no stat* — from the derivation rule |
 | 7 | **Apply** | Subtract from the pool | pool size from `Toughness` |
@@ -72,6 +72,43 @@ see the derivation rule in `../LORE-and-flavor.md`.
 
 A miss at step 3 ends resolution — no chip damage, no status. A power may
 still carry an on-miss rider, but it has to declare one.
+
+---
+
+## Caps
+
+**Every stat is capped at 75. Anything past it is ignored.**
+
+Base values are authored well below that — the highest anywhere on the roster is
+45 — so a fully equipped hero has real room to grow without the cap ever being
+decorative:
+
+| Cap | Headroom above the roster's highest stat | Growth |
+|---|---|---|
+| 50 | 5 points | +11% |
+| **75** | **30 points** | **+67%** |
+
+50 was considered and rejected: `Might` and `Speed` already sit at **90% of it**
+at base, so runic equipment would have been a rounding error. At 75 the per-hero
+stat total can reach 750 against today's 300 — a 2.5× ceiling for gear to fill.
+
+Three things follow, and all three are load-bearing:
+
+- **Overcapping is waste**, so gear has to be *spread* rather than piled. That
+  turns equipment into an allocation puzzle rather than a power ladder, which is
+  the whole point of **planning over paying**. It falls out of the cap; it needs
+  no system of its own.
+- **Maximum mitigation is exactly 50%**, because the largest possible `E` is the
+  cap and `K` is also 75. "At the highest possible resistance, damage is halved"
+  is the rule, not an arbitrary constant.
+- **Damage and HP scale together, so battles keep their shape.** Everything at
+  75 gives 262 damage per turn against 3750 HP, versus 112 against 1583 today —
+  ×2.34 and ×2.37. Solo time-to-kill moves **1%**. Full gear makes battles
+  bigger, not faster.
+
+> Compound values still stack past a single stat's cap. `Might` 75 and `Luck` 75
+> both contribute, so a tier-0 packet reaches 150. The cap binds each stat, not
+> the sum of their contributions.
 
 ---
 
@@ -127,14 +164,18 @@ hit.** With `Agility` alone, hit chances land between roughly 60% and 90%.
 ### Critical hits
 
 ```
-crit chance = Luck × 0.5   (percent)      # Luck 15 -> 7.5%, Luck 40 -> 20%
+crit chance = Luck × 0.5   (percent)      # Luck 15 -> 7.5%, cap 75 -> 37.5%
 crit damage = packet × 2                  # unless a passive raises it
 ```
 
-**Rolled per target, not per packet.** The packet carries base damage; the crit
-roll happens in each target's Defense phase. Rolling once for the whole packet
-would mean an area power crits on everyone or no one, making the widest powers
-the highest-variance thing in the game.
+**Rolled once per packet, not per target.** An area power therefore crits
+against everyone it hits, or nobody.
+
+That is deliberate. A row-hitter like Grieve doubling against a whole line is
+the most memorable thing that can happen in a battle, and at up to 37.5% crit it
+is a real possibility rather than a curiosity — **an occasional big hit is worth
+more to the game than smooth output.** The alternative, rolling per target,
+averages that spike away precisely on the powers best placed to deliver it.
 
 At half of `Luck`, every hero crits at least once in a typical battle. At the
 20% coefficient first considered, three heroes were more likely than not to crit
@@ -178,10 +219,35 @@ self-limiting and gear can be generous without breaking anything.
 
 Penetration **overshoot amplifies** rather than being wasted: an attacker whose
 `Penetration` exceeds the defender's resistance deals *more* than base, bounded
-below ×2 by the same curve. Across the current roster, mean net mitigation is
-**−0.1%** — penetration exactly cancels resistance on average, so the whole
-mitigation layer currently nets to zero. That is a numbers problem for the stat
-pass, not a formula problem.
+below ×2 by the same curve (at the cap, ×1.5). Across the current roster, mean
+net mitigation is **−0.1%** — penetration exactly cancels resistance on average,
+so the whole mitigation layer currently nets to zero. That is a numbers problem
+for the stat pass, not a formula problem.
+
+### Penetration can negate, but never overpower an equal
+
+Because every stat shares the same cap, `Penetration` 75 against `Armor` 75
+gives `E = 0` — **full negation and nothing more.** An attacker who has invested
+everything into piercing meets a defender who has invested everything into
+resisting, and the result is neither reduction nor amplification. Mitigation
+disappears in that matchup, and that is correct rather than a hole:
+
+> **Penetration's ceiling against any defender is exactly that defender's
+> resistance.** Beating them requires *out-investing* them, not merely maxing
+> out.
+
+Amplification is therefore never free. It only appears when the attacker's
+`Penetration` genuinely exceeds what the defender put into the matching
+resistance — Penetration 75 against Armor 40 gives ×1.32, while Penetration 75
+against Armor 75 gives ×1.00. Spending your whole budget on piercing erases an
+armored target and costs you the points you did not put into `Might` or `Luck`,
+which is the counter-building loop working as intended.
+
+This is the reason to keep **one cap for every stat.** An asymmetric cap —
+`Penetration` held to 50 while resistances reach 75 — would guarantee mitigation
+always did *something*, but it would also mean a defender could out-invest an
+attacker who had already maxed out, which is the same unanswerable-stat problem
+in the other direction.
 
 ### Type effectiveness, last
 

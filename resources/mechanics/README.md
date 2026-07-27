@@ -41,6 +41,14 @@ curve that is indistinguishable from the flat scheme across the range the roster
 occupies today and simply cannot run away later. Apply the same test to any new
 formula: **ask what it does at three times the current stat values.**
 
+**A hard cap of 75 per stat does half this work on its own** — it is what keeps
+maximum mitigation at exactly 50% and holds full-gear time-to-kill within 1% of
+today's. Be honest about which of the two is carrying a given formula: the flat
+scheme would have been *survivable* under a 75 cap, topping out at 4× effective
+HP rather than infinity. The curve is still the better shape, because
+accelerating returns reward stacking one stat and the curve does not. But the
+cap, not the curve, is what makes the endgame safe.
+
 The same reasoning is why `Luck` doing four jobs is flagged there rather than
 left alone — a stat with four roles is the one gear would obviously stack.
 
