@@ -225,7 +225,16 @@ later.
   whether a defending formation follows different combat rules at all. Nothing so
   far requires it, and the Visible/Hidden distinction is currently about
   visibility and reward rather than behaviour.
-- **Whether the AI ever declines to act.** A Buffer with nothing to heal, or a
-  hero whose only reachable target is one its priority ranks last — is passing
-  ever correct? `04-turns.md` already establishes that a champion with no legal
-  target in reach passes.
+- ~~**Whether the AI ever declines to act.**~~ **Settled: only when it has
+  nothing legal.** A champion passes if and only if **no power it owns has a
+  legal target in reach** — never as a tactical choice, never because its
+  priority ranks the only available target last. Priority is a sort, not a
+  filter, so a disliked target is still taken.
+
+  In practice this almost never fires, because the **tier-0 auto-attack has no
+  cooldown and no gate** — so any reachable enemy means a legal action exists. The
+  case that does occur is positional: a **reach-1 champion in the back seat**
+  reaches only its own middle row (`02-squads.md`), so it has no enemy to strike,
+  and it passes unless it owns a friendly power to spend on the allies it *can*
+  reach. That is the seat the squad builder already warns about, behaving as
+  documented rather than as a bug.

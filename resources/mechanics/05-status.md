@@ -366,15 +366,41 @@ running. `Clear the Room` (tier 4) and `The Wide Reaping` (tier 5) both granted
 > silently discarded. `Clear the Room` keeps its `Armor` buff — with the passive
 > capped at +30, one tier-4 buff fits inside what is left.
 
+## Effect visibility — you see your own numbers
+
+**Settled 2026-07-27.**
+
+> **Exact remaining duration is visible on every effect *you* caused, and on
+> every effect sitting on *your own* champions. The only thing hidden is what the
+> enemy put on itself** — those show as a pip with no numeral.
+
+So a burn you applied to an enemy counts down in the open, because you applied
+it. A stun on one of your own champions counts down in the open, because you need
+to know when that champion comes back — it is your squad's state, whoever caused
+it. An enemy's self-buff, shield, or rune trigger shows only that it is *there*.
+
+**That last case is the one that carries weight**, and it lines up with a
+restriction already made elsewhere. Scouting shows an opponent only which rune
+slots are filled and their elements, never what the effects do
+(`07-defense-ai.md`), so an attacker meets rune effects blind. Hiding their
+durations keeps that consistent instead of leaking through the status row.
+
+It also costs the icon set nothing: `../status-icons.md` already gives
+rest-of-battle rune effects a **permanence marker rather than a numeral**, so an
+enemy pip with no number is what the design already draws.
+
+---
+
 ## Open
 
 - **Late resistance.** The Turn Sequence screen proposed re-testing long control
   against `Resolve` as it ticks, letting a high-`Resolve` hero shake a stun off
   early rather than only refusing it on application. Tagged OPEN there too. With
   stun at 1 turn it currently has nothing to bite on.
-- **Whether shields have a type.** A shield that absorbs only martial or only
-  arcane damage would be a sharper counter-building tool than a flat one, at the
-  cost of another thing to read on a status chip.
-- **Effect visibility.** Whether a player can see an enemy's exact remaining
-  durations, or only that an effect is present. This is a scouting question as
-  much as a UI one, and it interacts with the Visible/Hidden squad split.
+- ~~**Whether shields have a type.**~~ **Settled: no.** Shields absorb any
+  damage. A martial-only or arcane-only shield would sharpen counter-building,
+  but it costs another variant to read on a chip that already carries up to four
+  pips from a 16-glyph set, and *Shields* above already earns its place as **the
+  only thing that can fully negate a landed hit**. Typing it would trade a clean
+  rule for a marginal one.
+- ~~**Effect visibility.**~~ **Settled** — see below.
