@@ -1,13 +1,13 @@
 # LMNTLZ · Mechanics 04 — The Turn
 
 A turn belongs to **one hero** — the *acting* hero. Everything below happens
-inside that hero's turn, in this order, every time. **There are no interrupts:**
-nothing a defender does can pause, reorder or pre-empt the sequence. In the
-Defense phase a defender contributes its stats and nothing more.
+inside that hero's turn, in this order, every time.
 
-Whether a defender may ever *act* — a counter or riposte, resolved inside the
-attacker's phase 4 rather than out of sequence — is an open question, not a
-settled no. See *Open* below.
+**There are no interrupts.** Nothing a defender does can pause, reorder or
+pre-empt the sequence. A defender *can* act — a counter or riposte — but only
+inside the attacker's phase 4, at a fixed point, one layer deep, and never in a
+way that changes what comes next. Reaction is a step in the attacker's turn, not
+a turn of its own.
 
 **The phase order is the attacker's.** This is the single most useful thing to
 hold onto, because it answers most questions about edge cases before they get
@@ -66,11 +66,12 @@ flowchart TD
     D9 --> E
     D4 --> E[4 · ADDITIONAL EFFECTS<br/>per target]
     E --> E1{Target still alive?}
-    E1 -- no --> E3
-    E1 -- yes --> E2[Surviving riders enact on the target]
-    E2 --> E3[Attacker-side and on-kill effects fire regardless]
+    E1 -- no --> E4
+    E1 -- yes --> E2[A · riders land<br/>B · on-hit triggers]
+    E2 --> E3[C · defender's reactive power fires<br/>one layer deep — cannot trigger another]
+    E3 --> E4[D · attacker self-effects<br/>E · second death check]
 
-    E3 --> F[5 · RESOLUTION<br/>the clocks move]
+    E4 --> F[5 · RESOLUTION<br/>the clocks move]
     F --> F1[Cooldowns tick]
     F1 --> F2[Durations tick · finished effects expire]
     F2 --> Z
@@ -146,10 +147,22 @@ reversed, and it is reach-limited exactly as an attack is.
 Riders are contested separately from the damage — power potency against
 `Resolve` — so a hit can land its damage and still fail to land its debuff.
 
-### 4 · Additional effects — riders enact
+### 4 · Additional effects — everything that isn't the strike
 
-Whatever survived phase 3 now happens: applied debuffs, buffs, lifesteal,
-chained or splash effects, anything the power promised beyond its number.
+Five sub-steps, in this order:
+
+| | Step | What happens |
+|---|---|---|
+| A | **Riders land** | Each rider that survived phase 3 is written on with its full duration. An existing stack refreshes rather than doubling, unless the power says otherwise |
+| B | **On-hit triggers** | Conditional on the strike landing: lifesteal, chains, execute thresholds |
+| C | **Reactive powers** | The defender's counters and retaliations fire |
+| D | **Attacker self-effects** | The attacker's own buffs, costs and recoil |
+| E | **Second death check** | Reactions and recoil can kill |
+
+The order is doing work at both ends. **Riders before triggers** so an execute
+threshold reads a pool the strike has already moved. **Attacker self-effects
+last** so the attacker's new state is what carries into Resolution — a hero that
+buffs its own Armor is protected from the next turn onward, never retroactively.
 
 **Dead targets receive nothing.** A rider never lands on a corpse. But the
 phase still runs — **attacker-side and on-kill effects fire regardless**,
@@ -158,10 +171,44 @@ condition for it. Lifesteal from the killing blow pays out; poison applied to
 the body does not.
 
 **The phase runs per target.** A power that hits three enemies resolves its
-riders three times, once against each. A rider that should happen **once per
-cast** rather than once per target — a flat self-buff, say — is therefore a
-property the *power* has to declare, following the existing convention in
-`01-stats.md` that any deviation from the pipeline must be stated explicitly.
+riders three times, once against each — and can be countered three times, once
+by each survivor. A rider that should happen **once per cast** rather than once
+per target — a flat self-buff, say — is therefore a property the *power* has to
+declare, following the existing convention in `01-stats.md` that any deviation
+from the pipeline must be stated explicitly.
+
+### Reactions
+
+A defender may own a **reactive power** — a counter, a riposte, a retaliation —
+which fires at step C of the attacker's phase 4. It is the only way a hero acts
+outside its own turn, and it is fenced tightly:
+
+> **A reaction cannot trigger a reaction.** Phase 4 resolves exactly one layer
+> deep and stops. Nothing in the phase may begin a new attack.
+
+That fence is not fussiness. Both squads are counter-built by design, so two
+squads full of reactive powers would otherwise ping-pong forever on a single
+strike — an infinite loop reachable through ordinary play, on a server that
+resolves the whole turn before answering the client.
+
+Three things follow from rules already settled, rather than needing their own:
+
+- **A reaction respects reach.** `02-squads.md` states one reach rule with no
+  exceptions; a defender that cannot reach its attacker cannot counter it.
+- **A dead defender cannot react.** It was removed in phase 3, and phase 4
+  gives nothing to corpses.
+- **A reactive power has a cooldown like any other**, counted in its *owner's*
+  turns and ticking in its owner's Resolution — not the attacker's. So a
+  defender under fire from a fast attacker counters at most once per its own
+  turn cycle, however many times it is hit.
+
+Still open, and left for `03-powers.md`:
+
+- **Does a reaction fire on an evaded attack?** A riposte-on-dodge is a natural
+  fantasy, but phase 3 currently ends resolution for an evaded target entirely.
+- **Is "reactive" a property of the power or a stance the hero adopts?** The
+  first is simpler; the second gives the player a decision on defense, which is
+  otherwise engine-run.
 
 ### 5 · Resolution — the clocks move
 
@@ -252,16 +299,17 @@ The five phases, their order, and:
 - Phases 3 and 4 both run **per target**.
 - **Dead targets receive no follow-on effects**, but the phase still runs and
   attacker-side effects still fire.
+- Phase 4 resolves in a fixed order: riders → on-hit triggers → **reactions** →
+  attacker self-effects → second death check.
+- **A defender may fire a reactive power** at step C, respecting reach, never
+  while dead, on its own cooldown — and **a reaction can never trigger another
+  reaction**.
 - **Cooldowns tick in Resolution**, unconditionally.
 
 ## Open
 
-- **Reactive powers.** Whether a defender may fire a counter or riposte inside
-  the attacker's phase 4. The Turn Sequence screen proposes yes, resolved one
-  layer deep and explicitly forbidden from triggering another reaction —
-  otherwise two counter-built squads loop forever on a single strike. It fits
-  the phase structure without disturbing it, and it is a real addition to the
-  action space rather than a restatement. **Not adopted; awaiting a decision.**
+- **Reaction details.** Whether a reaction fires on an evaded attack, and
+  whether "reactive" is a power property or a stance — both above.
 - **Once-per-cast riders.** Phase 4 running per target means a power needing a
   single flat self-buff has to say so. Whether that is a per-power flag, a
   separate rider category, or simply a rule that self-targeted riders always

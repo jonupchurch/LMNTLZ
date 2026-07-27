@@ -15,7 +15,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Drafted** — core settled, three tuning questions open |
 | 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, rules open |
 | 03 | *`03-powers.md`* | Up to 5 powers per hero, cooldowns, targeting, costs | Not started |
-| 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — turn, phase order and Speed all settled; reactions open |
+| 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — turn, phase order, Speed and reactions all settled |
 | 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started |
 | 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
@@ -53,7 +53,9 @@ Some of these can't be finished out of order:
   `02-squads.md` names the row-reach question; `03-powers.md` is where each
   power answers it. Neither finishes alone.
 - **Defense AI gates nothing but needs everything.** It can only be written
-  once there's a full action space to choose from.
+  once there's a full action space to choose from — and that space just grew:
+  reactions mean an engine-run squad now makes choices on the *attacker's* turn
+  as well as its own.
 - **Guilds gate nothing and block on progression.** The membership and team
   arithmetic is settled and needs nothing else, but rewards can't be specified
   until `06-progression.md` defines a currency to pay them in. Safe to design
