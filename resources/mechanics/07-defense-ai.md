@@ -82,16 +82,48 @@ is exactly why it should be the defender's decision rather than a hidden default
 > fallback gives 72 × 240 = 17,280 and ~10²⁴. Nobody exhausts either. The reason
 > is that the old rule was **under-specified**, not that it was too small.
 
-Anything still tied after both rules is broken by the engine, in a fixed order
-that never varies — a server-authoritative sim re-derived from an action log
-**must** produce identical output from identical input:
+**Anything still valid after both rules is decided by the engine.** The defender
+configures intent; the engine always produces an answer:
 
-| # | Tiebreak |
-|---|---|
-| 1 | the champion's **primary** rule |
-| 2 | the champion's **fallback** rule |
-| 3 | nearest row |
-| 4 | squad slot |
+| # | Tiebreak | Whose decision |
+|---|---|---|
+| 1 | the champion's **primary** rule | defender |
+| 2 | the champion's **fallback** rule | defender |
+| 3 | **nearest row** | defender, indirectly |
+| 4 | **seeded random** among what remains | engine |
+
+**Step 3 stays tactical on purpose.** Row placement is a deliberate choice a
+defender already makes, so breaking a tie on proximity honors the build rather
+than leaking from it — and hitting what is closest is a defensible default in its
+own right.
+
+> **Step 4 is random rather than squad slot, and that is the point.** Ordering by
+> slot would make a defense behave differently depending on the order its
+> champions happened to be added — a decision surface the defender never knew
+> they were using, and one a competitive player would eventually find and farm.
+> Randomizing removes it.
+
+**Random here means the server's seeded stream**, the same one behind accuracy,
+crits and rider contests. The seed never leaves the server (`docs/tech-stack.md`)
+and in-progress state is re-derived from the append-only action log, so the draw
+must be reproducible from seed plus draw order — which it is, exactly as every
+other roll in the game is. Replays are stored event logs and never re-simulated,
+so nothing there is affected either.
+
+**One architectural consequence.** `packages/sim` splits into *rules* — pure,
+shared, no RNG — and *resolver* — RNG, server only. Targeting therefore splits
+with it: **stages 1–3 and tiebreaks 1–3 are rules**, computable on the client for
+a preview; **tiebreak 4 is resolver**. The client can show which champions are
+legal targets and which one the configuration prefers, and cannot always predict
+which is struck.
+
+### When nothing is configured at all
+
+A squad saved without targeting rules — a new account, or a player who never
+opened the control — **must not fall straight to random.** It defaults to
+**lowest current HP, then nearest row**, which is focus-fire and is the correct
+generic plan. An unconfigured defense should be competent and predictable, not
+incoherent; randomness is a tiebreak of last resort, never a default strategy.
 
 **Two dropdowns, not a ranking widget.** A full ordered ranking of the whole menu
 was considered — it matches how power preference works and would be internally
