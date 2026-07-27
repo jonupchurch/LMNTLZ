@@ -53,6 +53,190 @@ a rune badly is a real, permanent cost paid in the same currency as everything
 else. The decision has weight because it cannot be undone cheaply, which is
 exactly what makes it a decision.
 
+---
+
+## What a rune is
+
+Every rune has the same four components, and each is bought separately:
+
+| Component | Grants | Cost |
+|---|---|---|
+| Major boost | **+20** to one stat | 150 shards |
+| Minor boost | **+10** to one stat | 150 shards |
+| Trace boost | **+5** to one stat | 150 shards |
+| **Utility slot** | one effect from the shared menu | **200 shards** |
+| | **35 stat points + 1 effect** | **650 shards** |
+
+**Three runes per hero**, which is a deliberately conservative starting point —
+see *Room left over* below.
+
+- **The three boosts must target distinct stats.** 20 + 10 + 5 on a single stat
+  is 35 points, which overflows the tightest headroom on the roster.
+- **A rune is built in stages, in order** — major, then minor, then trace, then
+  utility. Each stage is bought separately and is permanent once placed.
+- **The utility slot is gated behind all three stat boosts.** An effect is what
+  *completing* a rune buys.
+
+### Design is free; committing is what costs
+
+Each stage is assembled in a builder — pick the stat, or pick the utility — and
+the player sees exactly what it does to that hero, computed by the shared rules
+half of `packages/sim` with no server round trip. **Nothing is spent and nothing
+is permanent until the player commits that stage.**
+
+That is *planning over paying* as literal interface: **planning is free and
+unlimited, paying happens once and is final.**
+
+**Destruction is per rune, not per component.** Replacing a rune destroys
+everything placed in it, whatever stage it had reached.
+
+### Why staged rather than all-or-nothing
+
+An earlier draft made a rune **atomic** — all four components for 650 or nothing
+— on the reasoning that staged building would be exploited. Because every stage
+costs a flat 150 regardless of size, the major boost is far and away the best
+value at **7.5 shards per point against 12.9 for a complete rune**, so the
+efficient play is to buy *only* majors across every slot on every hero and never
+finish one.
+
+**That reasoning was wrong, and staged building is better.** Breadth-first is not
+an exploit to be designed out — it is a legitimate path, and gating the utility
+slot turns it into a progression arc: spread wide, then deepen, then unlock
+effects. Two things fall out that atomic runes cannot deliver.
+
+**It creates a real strategic axis.** The same budget goes two ways:
+
+| 7,800 shards on… | Result |
+|---|---|
+| **Breadth** — 52 major boosts | ~18 heroes at **+60 points each**, no effects |
+| **Depth** — 12 complete runes | 4 heroes at **+105 with 3 utility effects each**, the rest bare |
+
+A six-hero squad built breadth-first fields 360 stat points spread evenly. Built
+depth-first it fields 420 points on four heroes plus twelve utility effects, with
+two heroes contributing nothing. **Neither is obviously correct.** Atomicity
+deletes the choice — every purchase becomes all-or-nothing and there is only one
+way to spend.
+
+> **Utility effect power is the dial that balances the two paths.** It is the
+> only thing deciding whether depth beats breadth, so the menu's power level is
+> a balance decision rather than a flavor one. Write it knowing that.
+
+**It makes early mistakes cheap.** A new player who commits twelve major boosts
+and then learns the game has **1,800 shards** at risk; under atomic runes the
+same twelve misplacements cost **7,800**. The decisions made while a player
+understands least are the ones that cost least — the right shape for a system
+where every placement is permanent.
+
+### The pricing is a diminishing-returns curve in disguise
+
+Charging a flat 150 for each of three unequal boosts means the marginal cost of a
+stat point rises steeply:
+
+| Boost | Cost | **Shards per point** |
+|---|---|---|
+| +20 | 150 | **7.5** |
+| +10 | 150 | 15.0 |
+| +5 | 150 | **30.0** |
+| *full rune, 35 points* | *450* | *12.9* |
+
+That is the same shape as the mitigation curve and the turn accumulator — the
+`README.md` bounded-formula rule applied to the **economy** rather than to
+combat. Squeezing out the last few points costs four times what the first twenty
+did, so a player spreads across heroes rather than perfecting one.
+
+### The 20-point boost is sized exactly against the cap
+
+The tightest stat anywhere on the roster has **30 points of headroom** — `Might`
+and `Speed` on a handful of heroes. So:
+
+> **A single +20 boost can never overflow. Two of them on the same stat always
+> can.**
+
+The 75 cap therefore creates spreading pressure without ever forcing a player to
+waste a purchase they have already made. That is the good version of a cap: it
+shapes the decision rather than punishing it after the fact.
+
+### Room left over
+
+| | Stat total |
+|---|---|
+| Mean hero base | 289 |
+| After 3 runes (+105) | **394** — a 36% gain |
+| Theoretical maximum (10 × 75) | 750 |
+
+Three runes reaches **53%** of the ceiling and leaves **356 points** unclaimed,
+so a fourth or fifth slot remains available as a later lever without any formula
+moving. Starting at 3 is cheap to expand and expensive to walk back.
+
+### Utility slots are a shared menu
+
+**One menu of roughly 8–12 generic effects, and any hero may take any of them** —
+`+1 reach`, open the battle with a shield, first strike cannot miss, ignore the
+first control effect, and so on. The exact list is open.
+
+The alternative — authoring utility options per hero, tied to that hero's own
+powers — was rejected on scope and on principle. On scope, 27 heroes × ~3 options
+is **81 new effects**, a fourth passive layer roughly the size of the 40 passives
+already written. On principle:
+
+> **Hero identity already has a home**: 6 powers and 3 passives each, 127 in
+> total. Runes should be where the **player** expresses themselves, not where
+> more of the hero gets authored.
+
+Two things to watch when the menu is written:
+
+- **Volume.** Three runes × six heroes is **18 utility effects per squad**, and
+  both sides field them — so up to 36 are live in a battle, on top of 36 powers
+  and 36 passives. "Significant" has to be weighed against a battle screen that
+  already carries twelve hero chips.
+- **Pricing.** A utility slot costs 200 against 150 for twenty stat points. If
+  the effects really are significant, that is cheap, and every player buys
+  utility first on every rune. The price and the power level have to be set
+  together.
+
+---
+
+## The rune shop
+
+The whole system is reached through one screen. A player picks a **hero**, then
+picks one of that hero's **three rune slots**, and from there a slot offers
+exactly two actions.
+
+A slot is always in one of five states, and the shop is the state machine:
+
+| Slot state | Holds | Advance | Replace |
+|---|---|---|---|
+| **Empty** | — | buy major, 150 | — |
+| **Stage 1** | +20 | buy minor, 150 | destroy, restart at stage 1 |
+| **Stage 2** | +20 +10 | buy trace, 150 | destroy, restart at stage 1 |
+| **Stage 3** | +20 +10 +5 | buy utility, **200** | destroy, restart at stage 1 |
+| **Stage 4** | +20 +10 +5 + effect | — *complete* | destroy, restart at stage 1 |
+
+- **Advance** buys the next stage of the rune already there. Cheap, incremental,
+  and it never destroys anything.
+- **Replace** discards everything in the slot and starts a new rune. This is the
+  meta-shift sink — a player answering a match-up they keep losing to burns a
+  complete rune to do it.
+
+**Rebuilding to the same stage should be one transaction**, not four. Replacing a
+complete rune with a different complete rune costs the same 650 either way;
+making the player click through four stages to get back where they were is
+friction without meaning.
+
+**Nothing is charged until the player commits a stage.** The builder shows the
+stat, the resulting hero line, and — at stage 4 — what the utility effect does,
+all computed locally by the rules half of `packages/sim`. Selecting is free and
+reversible; committing is neither.
+
+> **This is a screen that does not exist yet.** The fourteen generated designs in
+> `../designsystem/` cover roster, hero card, battle, matchmaking, guilds, chat,
+> profile and news — there is no rune shop among them. It needs a design prompt
+> of its own, and it is arguably the most mechanically demanding screen in the
+> game: a live build preview, a permanent commitment, and a destructive action
+> that has to be unmistakable without being obnoxious.
+
+---
+
 ### The kit is much bigger than one squad
 
 Defense is **12 heroes** across two zones, and those 12 **cannot attack**. Attack
@@ -81,14 +265,27 @@ fixed roster removed.
 **Settled: a starter allotment, a front-loaded early curve, and rating for the
 rest.**
 
-- A new player begins with **enough shards to fully rune one squad** — they are
-  never fielding bare heroes against equipped ones.
-- The early earn rate is **front-loaded**, so a first full *defense* (12 heroes)
-  is a matter of weeks rather than months. After that the rate flattens and the
-  remaining sink is breadth plus re-speccing.
+- A new player begins with **7,800 shards — twelve heroes carrying one complete
+  rune each.** That covers a full defense squad *and* a full attack squad, so
+  nothing they field is ever bare.
+- The early earn rate is **front-loaded**, so filling the remaining slots on
+  those twelve is a matter of weeks rather than months. After that the rate
+  flattens and the remaining sink is breadth plus re-speccing.
 - **Rating does the rest.** A newcomer enters at the bottom of the ladder and
   meets other newcomers, so the widest gaps are rarely fielded against each
   other at all.
+
+**Twelve heroes rather than six**, because defense is the exposed surface. A
+player's defense squads are attacked whether or not they are logged in, so a
+fully-runed attack squad backed by a bare defense means being farmed overnight —
+the first thing a new player would see every morning. A thin defense at least
+holds sometimes.
+
+**Complete runes rather than loose major boosts**, even though 7,800 would buy 52
+of the latter. Handing over twelve *finished* runes means a new player sees all
+four components — including a **utility effect** — on day one rather than
+discovering the most interesting part of the system months later. They still have
+two empty slots per hero to make their own calls in.
 
 ### Why not bracket matchmaking on rune investment
 
@@ -155,12 +352,22 @@ point of writing it that way.
 
 ## Open
 
-- **What a rune actually is.** Slots per hero, the stat budget a rune carries,
-  whether runes have tiers or a single quality. The sizing above assumes 3 slots
-  purely as an illustration — it is not a decision.
+- **The utility menu.** Roughly 8–12 shared effects, and their power level is the
+  dial that balances breadth against depth — so it is a balance decision, not a
+  flavor pass. Also unresolved: **volume.** Three runes × six heroes is 18 utility
+  effects per squad and up to 36 live in a battle, on top of 36 powers and 36
+  passives.
+- **Utility pricing against its power.** 200 shards buys an effect where 150 buys
+  twenty stat points. If the effects are genuinely significant that is cheap, and
+  every player completes every rune before starting a new one. Price and power
+  have to be set together.
 - **Earn rate and shard sources.** What a battle pays, whether a *hold* pays
   differently from an attack win, what the front-loaded curve looks like
-  concretely, and how long a full 27-hero kit takes at a flat rate.
+  concretely, and how long a full 27-hero kit takes at a flat rate. For scale, a
+  complete kit is **52,650 shards** and the starter grant is 7,800.
+- **Whether 3 slots stays 3.** Three runes reaches 53% of the theoretical stat
+  ceiling and leaves 356 points unclaimed, so a fourth slot is available later
+  without any formula moving. Cheap to add, expensive to take back.
 - **The rating ladder.** Placement for a new account, how much a Visible loss
   costs against a Hidden one, and whether rating is the only ladder or whether
   hold streaks rank separately. `02-squads.md` question 0 — *which squad deserves
