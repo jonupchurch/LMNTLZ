@@ -17,7 +17,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 03 | `03-powers.md` | 6 active powers + 3 passives per hero; multipliers, cooldowns, healing | **Drafted** — 127 powers authored and costed, magnitudes now supplied by 05 |
 | 04 | `04-turns.md` | The five-phase turn; the turn queue and action economy | **Settled** — phases, targeting, reactions and turn order all decided |
 | 05 | `05-status.md` | Crowd control and buff/debuff effects; what Resolve resists | **Drafted** — magnitudes, potency, stacking and the effect catalog all specified |
-| 06 | *`06-progression.md`* | What a player earns, the currency, the rating ladder | Not started — **the blocker**, see below |
+| 06 | `06-progression.md` | Rune Shards, custom runes, the rating ladder | **Drafted** — the currency and the power model are settled; rates and the ladder are open |
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started — **unblocked**, the action space is now complete |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three Wings of 8 | **Drafted** — membership settled, rewards blocked on 06 |
 | 09 | *`09-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
@@ -90,14 +90,13 @@ the powers' riders in return. All four are now written and mutually consistent.
 
 What is left has a much simpler shape:
 
-- **`06-progression.md` is the single blocker in the project.** `08-guilds.md`
-  cannot specify a reward until there is a currency to pay it in, and
-  `09-equipment.md` cannot say what a rune costs. It is also the only document
-  that has to answer a question the rest of the design has deliberately made
-  hard: **all 27 heroes are unlocked from the start and identical for every
-  player**, so progression cannot be roster power. What a player earns instead —
-  and whether it converts into strength at all — is the open question, not a
-  detail of it.
+- **`06-progression.md` answered the hard one and now blocks less.** The
+  currency is **Rune Shards**, spent to build custom runes that are placed
+  permanently on a chosen hero and destroyed if replaced. That gives a **bounded
+  power ceiling with an unbounded sink** — demand is driven by the meta moving
+  rather than by a player falling behind — which is what lets progression exist
+  at all under a fixed, identical roster. `08-guilds.md` is still blocked on the
+  *payout rate*, but no longer on the question of what a reward even is.
 - **`07-defense-ai.md` gates nothing, and is now unblocked.** It needed a
   complete action space and it has one: the five phases, the four-stage targeting
   pipeline, reactions on the attacker's turn, and the cooldown ladder. Worth
