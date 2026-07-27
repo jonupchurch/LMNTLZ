@@ -57,7 +57,7 @@ The order below is the contract. Any power that deviates must say so explicitly.
 | # | Step | Resolves | Stats |
 |---|---|---|---|
 | 1 | **Act** | Whose turn it is and how often it comes around | `Speed` |
-| 2 | **Packet** | One attack value, built once for the whole attack | `Might`, `Luck` |
+| 2 | **Packet** | One attack value, built once for the whole attack | `Might` |
 | 3 | **Land** | Hit or miss, per target | `Perception` vs `Agility`, with `Luck` as the die |
 | 4 | **Crit** | Whether this one spikes — once per packet | `Luck` |
 | 5 | **Mitigate** | How much is absorbed | `Armor` **or** `Magic Resist` (def), reduced by `Penetration` (att) |
@@ -106,9 +106,9 @@ Three things follow, and all three are load-bearing:
   ×2.34 and ×2.37. Solo time-to-kill moves **1%**. Full gear makes battles
   bigger, not faster.
 
-> Compound values still stack past a single stat's cap. `Might` 75 and `Luck` 75
-> both contribute, so a tier-0 packet reaches 150. The cap binds each stat, not
-> the sum of their contributions.
+> Compound values still stack past a single stat's cap: a `Might` 75 hero firing
+> a ×5.0 tier-5 power produces a packet of 375. The cap binds each stat, not what
+> a multiplier does with it.
 
 ---
 
@@ -122,8 +122,12 @@ by a second and land a Bane crit on a third — but it only ever does one damage
 calculation.
 
 ```
-packet = (Might × power.multiplier) + Luck
+packet = Might × power.multiplier
 ```
+
+**`Might` is the only stat in it.** `Luck` used to contribute a flat term and no
+longer does — see [One stat, one job](#one-stat-one-job-luck-leaves-the-damage-formula)
+below for why, and for what it cost.
 
 Riders ride along in the packet, staged and not yet applied (`04-turns.md`).
 
@@ -266,8 +270,8 @@ Amplification is therefore never free. It only appears when the attacker's
 `Penetration` genuinely exceeds what the defender put into the matching
 resistance — Penetration 75 against Armor 40 gives ×1.32, while Penetration 75
 against Armor 75 gives ×1.00. Spending your whole budget on piercing erases an
-armored target and costs you the points you did not put into `Might` or `Luck`,
-which is the counter-building loop working as intended.
+armored target and costs you the points you did not put into `Might` or
+`Perception`, which is the counter-building loop working as intended.
 
 This is the reason to keep **one cap for every stat.** An asymmetric cap —
 `Penetration` held to 50 while resistances reach 75 — would guarantee mitigation
@@ -362,41 +366,80 @@ Bramwen (`Might` 45, `Luck` 35, `Penetration` 30) uses a tier-3 power (×2.5)
 against a defender with `Magic Resist` 40:
 
 ```
-packet = 45 × 2.5 + 35            = 147.5
+packet = 45 × 2.5                 = 112.5
 crit?    17.5% chance             -> assume no
 E      = 40 − 30 = 10
 factor = 1 − 10/85                = 0.882
-        147.5 × 0.882             = 130.1
-Bane   × 1.5                      = 195.2
-        against HP 2000           = 9.8% of the pool
+        112.5 × 0.882             = 99.3
+Bane   × 1.5                      = 148.9
+        against HP 2000           = 7.4% of the pool
 ```
 
 ---
 
-## One stat still doing three jobs
+## One stat, one job — `Luck` leaves the damage formula
 
-`Luck` contributes **flat damage, the size of every die it rolls, and crit
-chance**. The opening rule of this file is that every stat has exactly one job
-and every axis of conflict has exactly one counter; `Luck` is the only stat with
-three roles and the only one with no counter at all.
+`Luck` used to contribute **flat damage, the size of every die it rolls, and crit
+chance**. The opening rule of this file is that every stat has exactly one job;
+`Luck` had three and no counter at all. **The damage term is now removed** —
+`packet = Might × multiplier` — leaving `Luck` as the clean "the rolls go my way"
+stat the table at the top of this file already claims it is.
 
-Making `Luck` the die was itself a trim — it merged what used to be a flat
-accuracy bonus *and* a separate `d100` into one thing, and halved the accuracy
-advantage a high-`Luck` hero gets. What remains is one job too many.
+Two things forced it.
 
-**This is recorded as an open decision, not applied.** The damage formula above
-is as specified. The recommended trim is to **drop `Luck` from the damage
-formula**, leaving `packet = Might × multiplier`, for two reasons:
+**`Luck` was overriding `Might`.** At tier 0 it was 47% of a packet on average
+and up to 62%, which is enough to invert the stat it sits beside: **Auriel
+Dawnkeep at `Might` 30 dealt less than Ossic and Vael at `Might` 25**, seven such
+pairs in all. A stat whose stated job is "how hard the unit hits" cannot lose to
+a stat whose job is randomness.
 
-- **It compresses the roster.** At tier 0, Luck is 44–62% of a hit. Bramwen
-  (`Might` 45) deals 80 and Ossic (`Might` 25) deals 65 — a 45-vs-25 Might gap
-  collapses to 80-vs-65 damage, and `Might` barely matters at low tiers.
-- **Equipment makes it worse.** With runes able to raise stats, a `Luck`-stacking
-  build would gain on four axes per point while every other stat gains on one.
-  That is the classic single-dominant-stat trap, and it arrives with the gear.
+**No partial weight fixes the gear problem.** `Luck` multiplies three separate
+factors — die size, crit rate and damage — so its value *compounds* while every
+other stat is linear. Ten points of runic budget on a Striker at `Might` 45 /
+`Luck` 25, measured as effective output:
 
-Dropping it leaves `Luck` as a clean "the rolls go my way" stat — accuracy and
-crits — which is what the table at the top of this file already claims it is.
+| `Luck`'s damage weight | +10 `Might` | +10 `Luck` | +10 `Perception` | Best buy |
+|---|---|---|---|---|
+| ×1.0 — as written | +14.3% | **+34.5%** | +16.9% | `Luck`, by **2.41×** |
+| ×0.5 | +17.4% | **+27.9%** | +16.9% | `Luck`, by 1.60× |
+| ×0.25 | +19.5% | **+23.4%** | +16.9% | `Luck`, by 1.20× |
+| **×0 — chosen** | **+22.2%** | +17.7% | +16.9% | **`Might`** |
+
+**The coefficient has to be zero.** Halving it only slows the trap down; at any
+nonzero weight a damage dealer's correct purchase is `Luck` forever, and runic
+equipment is a planned fast-follower rather than a hypothetical. At zero, the
+three stats land within six points of each other and `Might` is correctly the
+best buy for a hero whose job is damage.
+
+### What it cost
+
+Everyone's tier-0 auto-attack shrinks, and the high-`Luck` heroes shrink most:
+
+| | `Might` | `Luck` | Tier-0 before | After | Loss |
+|---|---|---|---|---|---|
+| weakest Striker | 40 | 25 | 65 | 40 | 38% |
+| **weakest Tank** | 25 | **40** | 65 | **25** | **62%** |
+| weakest Ranged | 25 | 35 | 60 | 25 | 58% |
+| weakest Buffer | 25 | 15 | 40 | 25 | 38% |
+
+Support heroes are not relatively worse off — the Striker-to-Buffer damage ratio
+*narrows*, 1.81× to 1.70×. What changes is that a Tank no longer chips in 65 a
+turn. **That is a question for the stat pass**, not for the formula: if Tanks and
+Ranged should contribute damage, it has to come from `Might`, where it can be
+seen and priced.
+
+Battle length was the other worry and it did not materialise. Simulated 6v6 with
+the accumulator turn order, the cooldown rotation and the tier gates:
+
+| | Length | Reach tier 4 | Reach tier 5 | Tier-5 powers fired |
+|---|---|---|---|---|
+| before | 18 ticks | 12 of 12 | 10 of 12 | 16 |
+| **after** | 23 ticks | 12 of 12 | 10 of 12 | **17** |
+
+Battles run about 28% longer and fire *more* of the unique layer, which is the
+direction this file already wanted. Cutting HP to `Toughness × 37` to hold the
+old pacing was considered and rejected: it shortened battles below today's *and*
+fired fewer tier-5 powers, so it lost on the metric it existed to protect.
 
 **Where these steps happen** is [`04-turns.md`](04-turns.md): steps 2–8 are the
 Attack, Defense and Additional Effects phases of a hero's turn, and step 1 sits
@@ -581,26 +624,36 @@ range with **irregular** values, so a buff lands a hero *between* rungs and
 ordering actually changes. Silka is the only hero currently priced off-template,
 at Speed 45 paid for with 15 Toughness and 15 Armor.
 
-### 3. What Luck actually rolls
+### ~~3. What Luck actually rolls~~ — **settled**
 
-"Affects RNG" needs a list. Candidates: crit **rate**, crit **damage**, status
-application chance, and post-battle drops. Whether `Luck` touches rewards as
-well as combat is a meaningful call — it changes whether the stat is a combat
-stat or a meta stat, and whether it belongs on the hero card at all.
+Two jobs, both in combat: `Luck` **is the die** — `rand(1 .. Luck × 1.5)`, rolled
+for accuracy and again for every rider contest — and it sets the **crit rate** at
+`Luck × 0.5` percent. It does **not** touch crit *damage*, which is a flat ×2
+unless a passive says otherwise, and it no longer touches damage at all.
 
-### 4. Resolve is defined against a system that doesn't exist
+**Post-battle drops are the one part still open**, and they are now a separable
+question rather than a stat-design one: nothing in combat depends on the answer,
+so it can be decided with progression.
 
-There is no crowd control yet. `Resolve` can be named now but cannot be
-specified — "resists manipulation" needs `05-status.md` to say what
-manipulation *is* (stun, taunt, silence, damage-over-time, stat debuffs) and
-whether resisting means **prevented**, **shortened**, or **weakened**.
+### ~~4. Resolve is defined against a system that doesn't exist~~ — **settled**
 
-### Also undecided: how steps 4–6 compose
+`05-status.md` now specifies it. Manipulation is stun, silence, slow, stat
+debuffs, damage-over-time, strips and targeting effects; resisting means
+**prevented**, decided once on application by `potency + rand(1..Luck×1.5)`
+against `Resolve + rand(1..Luck×1.5)`, ties to the defender. Each rider is
+contested separately, and friendly powers are never contested at all.
 
-Whether type effectiveness and mitigation are both multiplicative, or
-effectiveness multiplies and mitigation subtracts, changes the final number
-substantially — and changes whether stacking mitigation is ever a dead end.
-Worth settling alongside the actual formulas.
+Whether a long control effect should be *re-tested* as it ticks — shortened
+rather than only prevented — stays open in `05-status.md`, but with stun at one
+turn it currently has nothing to bite on.
+
+### ~~Also undecided: how steps 4–6 compose~~ — **settled**
+
+**Both are multiplicative, and type effectiveness is applied last.** Because they
+commute, the ordering is free and purely a presentation choice; the 25% floor is
+applied after both, which is what keeps it free. Stacking mitigation is not a
+dead end — the `75/(75+E)` curve gives diminishing returns rather than a wall,
+and `Penetration` answers it. Worked through in *Type effectiveness, last* above.
 
 ---
 

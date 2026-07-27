@@ -264,10 +264,11 @@ one thing that generates it, stated on the generator.
   cooldown tick, no upkeep — and chains to a maximum of two, so up to three
   attacks in one turn. The cap is arbitrary and has to be learnable from
   somewhere.
-- **Rider magnitudes are unwritten.** Every tier 1–3 rider says "slows",
-  "worsens accuracy", "shreds mitigation" without a number. They cannot be
-  specified until `05-status.md` defines what those effects *are*.
-- **The pool formula.** At an average of ~2.5× `Might` per turn, a Toughness-40
-  hero needs a pool of roughly `Toughness × 14` to survive five turns of a single
-  attacker. The multipliers have effectively already chosen it; `01-stats.md`
-  still has to write it down.
+- ~~**Rider magnitudes are unwritten.**~~ **Written** — `05-status.md` indexes
+  every magnitude, duration and potency per tier.
+- ~~**The pool formula.**~~ **Written** — `HP = Toughness × 50` in `01-stats.md`.
+  Note the packet it was fitted against has since changed: `Luck` has been
+  removed from the damage formula, so a packet is now `Might × multiplier` alone
+  and battles run about 28% longer. That was checked against the tier-4 and
+  tier-5 gates below and they still fire — more often, in fact — but any future
+  change to the curve has to be re-checked the same way.

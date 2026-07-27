@@ -49,8 +49,12 @@ HP rather than infinity. The curve is still the better shape, because
 accelerating returns reward stacking one stat and the curve does not. But the
 cap, not the curve, is what makes the endgame safe.
 
-The same reasoning is why `Luck` doing four jobs is flagged there rather than
-left alone — a stat with four roles is the one gear would obviously stack.
+The same reasoning is why **`Luck` no longer contributes to damage.** It was the
+one stat gear would obviously stack, because it multiplied three factors at once
+while every other stat was linear — so a runic point spent on it was worth 2.4×
+a point of `Might`. No partial weight fixed that; only removing the damage term
+did. `Luck` now has two jobs, the die and the crit rate, and the arithmetic is
+in `01-stats.md`.
 
 ## Parked, on purpose
 

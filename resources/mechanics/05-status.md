@@ -252,8 +252,10 @@ Resist` is the relevant mitigation stat **two-thirds of the time**. The buff
 distribution actively favours the stat that matters less.
 
 **Buffs are overwhelmingly defensive** — ten `Armor` against a single `Might`.
-`Luck` receives none at all, which may be deliberate now that it drives damage,
-accuracy and crit, and would be the obvious stat for gear to stack.
+`Luck` receives none at all. That is now less alarming than it was — `Luck` has
+been removed from the damage formula (`01-stats.md`) and drives only the die and
+the crit rate — but it is still the obvious stat for gear to stack, so it is
+worth deciding rather than leaving to fall out.
 
 **Vantric's mitigation-ignoring stacks with itself into nothing.** He has four
 separate sources: the Pierce House passive (`Penetration` rises against a repeat
