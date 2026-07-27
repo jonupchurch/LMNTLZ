@@ -493,6 +493,75 @@ which is a unit a player can picture, and a season is short enough that a bad on
 is not punishing. A two-week season halves every figure; an eight-week season
 doubles them.
 
+### What launch actually ships — a weekly tournament
+
+**Decided 2026-07-27.** The seasonal ladder above stays as the calibration
+reference, but v1 runs **one weekly event with smaller payouts**, adding cadence
+and event types as the population grows.
+
+#### The bracket count grows with the population
+
+> **Every bracket is a percentile. None is an absolute count.**
+
+The calibration ladder mixes the two — Elite is *top 1%*, Apex is *top 10
+Wings* — and that inverts at any realistic launch size. Wings are guilds × 3:
+
+| Full guilds | Wings | "Top 10 Wings" is really | "Top 1%" is |
+|---|---|---|---|
+| 10 | 30 | **top 33%** | 0.3 Wings — nobody |
+| 20 | 60 | **top 17%** | 0.6 Wings — nobody |
+| 50 | 150 | top 6.7% | 1.5 Wings |
+| 100 | 300 | top 3.3% | 3 Wings |
+| **334** | **1,002** | top 1.0% | 10 Wings |
+
+Below roughly **334 full guilds — about 8,000 players — Apex is easier to reach
+than Elite**, so the 9,000-shard bracket pays out more often than the 4,000 one
+and the ladder runs backwards. At launch it would reach one Wing in three.
+
+Percentiles alone break at the other end too, since top 1% of 30 Wings is nobody.
+So the ladder **adds brackets as the population supports them**:
+
+| Population | Brackets live |
+|---|---|
+| Launch — under ~150 Wings | **Floor · Placed (top 35%) · High (top 10%)** |
+| ~150–1,000 Wings | + Elite (top 1%) |
+| Above ~1,000 Wings | + Apex (top 0.1%) |
+
+#### The weekly ladder
+
+**A straight quarter of the seasonal figures does not work.** Weekly ordinary
+earnings are 2,310 shards (9,240 ÷ 4), and 300 ÷ 4 is a **75-shard floor** —
+0.12 of a rune, barely above the 50-shard figure the sanity check above calls too
+small to feel. Percentages scale linearly; *"feels like a reward"* does not.
+
+| Bracket | Reaches | Per filled slot | In runes | Share of a week's ordinary earnings |
+|---|---|---|---|---|
+| **Floor** | any Wing that posts a score | **150** | 0.23 | 6.5% |
+| Placed | top 35% | 400 | 0.62 | 17% |
+| **High** | top 10% | **900** | 1.4 | 39% |
+
+A 6× spread with nobody at zero — the same deep-floor, steep-top shape, and the
+floor alone puts about **one rune a month** in a participating player's hands.
+
+#### Two things this removes from v1
+
+- **The always-on ladder is deferred.** *Two competitions, not one* justifies it
+  because "a Wing is inert except during an event, which is most of the time."
+  With a weekly cadence that is no longer true, so the ladder — and the seasonal
+  reset it requires — can wait.
+- **The launch event may simply count attack victories.** The constraint that
+  events must avoid this exists only so they do not duplicate the ladder. With no
+  ladder, the simplest possible metric is available, and the metric menu becomes
+  what it should be: the reason to add a *second* event type later.
+
+#### The lock needs a weekly window
+
+Assignments freeze at event start, so a weekly event means a weekly freeze.
+**The event runs 6 days and Wings unlock for 1**, on a fixed weekday. That gives
+officers a real reassignment window rather than a few minutes, and it satisfies
+the pre-lock publication requirement in *One scheduling consequence* without
+needing a separate announcement channel.
+
 ### Two competitions, not one
 
 | | Cadence | Metric | Purpose |
