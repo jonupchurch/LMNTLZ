@@ -440,6 +440,37 @@ That gives two dials pulling in opposite directions, each doing one job:
 - **Steepness serves ambition** — a full guild still has a real reason to load
   its strongest players into one Wing rather than balancing.
 
+### Sizing, proposed
+
+Payout sizes are not settled, but they have to be read against the earn rate or
+they mean nothing. Against a **4-week season**, a typical player earns **9,240
+shards** — about **14 complete runes** — from ordinary play (`06-progression.md`).
+
+| Bracket | Reaches | Per filled slot | In runes | Share of a season's earnings |
+|---|---|---|---|---|
+| **Participation floor** | any Wing that posts a score | **300** | 0.5 | 3% |
+| Placed | top 35% | 700 | 1.1 | 8% |
+| High | top 10% | 1,600 | 2.5 | 17% |
+| Elite | top 1% | 4,000 | 6.2 | 43% |
+| **Apex** | top 10 Wings | **9,000** | 13.8 | 97% |
+
+Worked through for one member over one season: a slot in a **top-10% Wing inside
+a placing guild** takes 1,600 plus a ~400 guild share, so **2,000**; a slot in a
+**bottom Wing whose guild places nowhere** takes the floor, **300**. A **6.7×
+spread with nobody at zero** — which is the deep-floor, steep-top shape this
+section is built around.
+
+> **A useful sanity check for any proposed figure:** 50 shards a slot — a
+> plausible-sounding number — is **0.5% of a season's earnings**, or about a
+> fourteenth of one rune. Guild rewards have to be denominated in runes to be
+> felt at all.
+
+**Season length is the free variable, and it scales everything above.** Four
+weeks is proposed: the top bracket then pays roughly *one hero fully runed*,
+which is a unit a player can picture, and a season is short enough that a bad one
+is not punishing. A two-week season halves every figure; an eight-week season
+doubles them.
+
 ### Two competitions, not one
 
 | | Cadence | Metric | Purpose |
