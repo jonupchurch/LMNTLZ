@@ -230,7 +230,32 @@ def build() -> Workbook:
     return wb
 
 
+def has_data(path: Path) -> bool:
+    """True if any stat cell in an existing workbook holds a value."""
+    try:
+        from openpyxl import load_workbook
+        ws = load_workbook(path)[Path(path).stem and "Hero Stats"]
+    except Exception:
+        return True  # unreadable or restructured: refuse rather than guess
+    head = [c.value for c in ws[1]]
+    cols = [i + 1 for i, h in enumerate(head) if h in STATS]
+    if not cols:
+        return True
+    return any(ws.cell(r, c).value is not None
+               for r in range(2, ws.max_row + 1) for c in cols)
+
+
 if __name__ == "__main__":
+    import sys
+
     dest = Path(__file__).resolve().parent.parent / "resources" / "characters" / "hero-stats.xlsx"
+    force = "--force" in sys.argv
+
+    if dest.exists() and has_data(dest) and not force:
+        print(f"REFUSING to overwrite {dest.name}: it already contains stat values.")
+        print("This script rebuilds the workbook from scratch and would discard them.")
+        print("Re-run with --force only if you truly want a blank sheet.")
+        raise SystemExit(1)
+
     build().save(dest)
     print(f"wrote {len(HEROES)} heroes and {len(STATS)} stat columns -> {dest}")
