@@ -16,7 +16,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, rules open |
 | 03 | *`03-powers.md`* | Up to 5 powers per hero, cooldowns, targeting, costs | Not started |
 | 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — turn, phase order, Speed and reactions all settled |
-| 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started |
+| 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started — **taunt** and **fade** are named, and their targeting behaviour is settled in `04-turns.md` |
 | 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
 | 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three event teams of up to 8 | **Drafted** — membership settled, competition format open |

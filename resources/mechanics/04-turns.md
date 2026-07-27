@@ -117,16 +117,94 @@ not act" is decided.
 
 ### 2 · Attack — declare, don't apply
 
-The acting hero picks a power and a target. **The player commands offense; the
-engine commands every defense squad** — so on defense this is where the AI
-chooses, which is why `07-defense-ai.md` is a turn-phase problem and not a
-separate system.
+The acting hero picks a power and a target.
+
+**Who is choosing depends only on which squad the acting hero belongs to.** The
+attacking player commands every hero in the attack squad; the engine commands
+every hero in the defense squad. **The AI never plays an attack squad** — there
+is no battle in which offense is engine-run, in either direction. That is why
+`07-defense-ai.md` is a turn-phase problem rather than a separate system: it is
+this phase, for half the heroes on the board.
 
 The attack value is computed here in full: base damage from `Might` and the
 power's multiplier, then type effectiveness from the Bane/Fault derivation,
 then crit. What is **not** done here is anything to the target — no damage, no
 status. Riders are *staged*: declared, carried into the next phase, and still
 capable of being refused.
+
+#### Target eligibility
+
+Reach decides who a hero *can* physically touch. It is the first stage of
+choosing a target, not the whole of it — effects can narrow the field further
+or force a choice within it. Resolving them in a fixed order:
+
+| | Stage | What it does |
+|---|---|---|
+| 1 | **Reach** | Build the candidate set: every hero at row distance ≤ reach, on the side the power wants |
+| 2 | **Filters** | Effects that *remove* candidates — **fade**, and anything else that hides a hero |
+| 3 | **Compulsion** | Effects that *force* a choice among what survives — **taunt** |
+| 4 | **Choice** | The player, or the engine, picks from what remains |
+
+Two invariants hold the whole thing together, and both exist to make an
+unresolvable board impossible:
+
+> **A filter that would empty the candidate set is ignored.**
+> **A compulsion naming a hero outside the candidate set does not apply.**
+
+**Taunt** compels: while it holds, an attacker that can reach the taunter must
+target the taunter. If it *cannot* reach the taunter, the taunt simply does not
+bind it — the second invariant. Without that, a taunter parked in the enemy back
+row would blank the opposing front line's turns without ever being touchable.
+
+**Fade** filters: a faded hero cannot be targeted while a non-faded ally is
+available to be targeted instead. It is not invulnerability — it is a queue
+position. Once the attacker has nothing else it can hit, the first invariant
+fires and the faded hero is targetable like anyone else.
+
+That first invariant is what keeps fade honest, and it produces a property worth
+designing around: **fade is only ever as strong as the heroes standing in front
+of it.** A squad where *every* hero is faded gets nothing at all — the filter
+would empty every candidate set, so it is ignored every time. Fade is a
+protection effect that must be paid for by an unfaded body.
+
+The invariants also foreclose the degenerate case. Without them a squad could
+make itself collectively untargetable and the battle would never end, on a
+server that resolves turns without a clock to time out against.
+
+**Taunt and fade cancel.** They are opposites — one demands attention, the
+other avoids it — and **no hero should ever carry both**. If one somehow does,
+neither applies: the hero is targeted exactly as if it were clean, neither
+filtered out nor compelling anyone. No precedence rule, no stacking, no
+ordering to remember.
+
+Cancellation is *per hero*, not global. A faded hero standing behind a taunting
+ally is the ordinary case and works as expected — the taunt compels, the fade
+hides, and they never meet. It is only the two of them landing on the **same**
+hero that voids both.
+
+The stage order still matters for effects other than these two. A compelling
+hero that some future filter removes from the candidate set cannot bind anyone,
+by the second invariant — a hero has to be targetable before it can demand to be
+targeted.
+
+Three consequences that fall out rather than needing their own rules:
+
+- **These modify hostile targeting only.** Reach is one rule for allies and
+  enemies alike (`02-squads.md`), but taunt is not — a taunt that redirected
+  your healer would be nonsense. Any effect in stages 2–3 declares which side's
+  targeting it touches.
+- **A power that makes no choice ignores compulsion.** Taunt binds the *choice*
+  at stage 4. A power that hits everything eligible has no choice to bind, so it
+  hits the taunter along with everyone else.
+- **They are ordinary status effects.** Taunt and fade are applied as riders in
+  phase 4, contested against `Resolve` in phase 3, and tick down on their
+  bearer's own turns like anything else. What they *are* belongs in
+  `05-status.md`; only their effect on targeting belongs here.
+
+This is also the first mechanic that constrains the **player's** choice rather
+than the engine's. Reach limits what you can reach; taunt tells you what you
+must hit. Worth watching in playtest — compulsion is the kind of thing that
+reads as depth when it is rare and as a straitjacket when it is common.
 
 ### 3 · Defense — the target answers
 
@@ -305,6 +383,11 @@ The five phases, their order, and:
   while dead, on its own cooldown — and **a reaction can never trigger another
   reaction**.
 - **Cooldowns tick in Resolution**, unconditionally.
+- Targeting resolves in four stages — **reach → filters → compulsion → choice**
+  — under two invariants: a filter that would empty the candidate set is
+  ignored, and a compulsion naming a hero outside that set does not apply.
+- **Taunt** compels, **fade** filters, and **the two cancel on the same hero.**
+- The **AI plays defense squads only**, never an attack squad.
 
 ## Open
 

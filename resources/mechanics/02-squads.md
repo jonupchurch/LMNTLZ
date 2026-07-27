@@ -29,7 +29,14 @@ How many squads a player keeps, and which heroes may fill them, is the
 ## Reach
 
 Every hero has a **reach of 1 or 2**. Reach is a distance budget measured in
-rows along the 1–6 axis, and it is what determines who that hero can target.
+rows along the 1–6 axis, and it is what determines who that hero can *physically*
+target.
+
+> **Reach is the first stage of targeting, not the whole of it.** Effects can
+> narrow the field further (**fade**) or force a choice within it (**taunt**).
+> The four-stage pipeline and the invariants that keep it resolvable are in
+> [`04-turns.md`](04-turns.md) → *Target eligibility*. Everything in this
+> section describes stage 1.
 
 > **Distance from row *R* to row *T* = the number of _occupied_ rows you cross
 > to get there,** counting the target's row and not your own. A hero may target
