@@ -545,17 +545,50 @@ None of these block writing powers, but they must be answered before any number
 in this file can be tuned. Question 2 is kept in place, struck through, because
 what it settled to is load-bearing for the other three.
 
-### 1. Magic Resist covers twice the ground Armor does
+### ~~1. Magic Resist covers twice the ground Armor does~~ — **settled: left unpriced, deliberately**
 
-Six of the nine types are arcane. On a random incoming attack, `Magic Resist`
-is the relevant mitigation stat **two-thirds of the time**; `Armor` only a
-third. Point-for-point, MR is therefore worth roughly double.
+Six of the nine types are arcane, and the asymmetry survives every honest
+weighting — it is not an artifact of counting heads:
 
-That's not automatically wrong — it's only wrong if it goes unpriced. Options:
-make a point of `Armor` numerically larger than a point of `Magic Resist`;
-or leave the values equal and let hero stat budgets account for it, so
-Armor-heavy heroes get more total budget. **Decide before assigning any hero
-its numbers,** because it changes what a "high defense" hero costs.
+| Weighting | Arcane share | MR worth |
+|---|---|---|
+| headcount (18 vs 9) | 66.7% | 2.00× |
+| by `Might` | 64.6% | 1.83× |
+| by `Might` × action rate | 66.9% | **2.02×** |
+
+Measured on the curve itself, one point of `Magic Resist` delivers **0.762%**
+expected damage reduction against one point of `Armor`'s **0.323%** — a **2.36×**
+gap. Nor can it be dodged by squad-building: across random 6-hero squads the
+arcane share of damage output runs 44% at the 10th percentile and 87% at the
+90th, only 7% of squads fall below 40% arcane, and an all-martial squad occurs
+**0.01%** of the time. **There is essentially no opponent you can face where
+`Armor` is the more important stat.**
+
+**Decision: leave both stats priced identically and let MR simply be the better
+one.** Six arcane forces against three martial ones is the world; the mitigation
+stats inherit that shape rather than correcting for it. `Armor` is insurance
+against a third of the field — and specifically against the martial half of the
+twelve reach-1 heroes, who are the `Might` 40–45 hitters that must occupy a front
+slot, so its value concentrates on the largest single blows even though it
+answers the fewest attackers.
+
+Both alternatives were tested and rejected:
+
+- **Budget pricing** — charge 2 points for a point of MR. Costs nothing
+  mechanically, but it means a hero card showing `Armor` 40 / `MR` 20 describes a
+  hero who is *equally* defended, which no player will read correctly.
+- **A separate curve constant for `Armor`** — `K` 37.5 rather than 75. Closes the
+  gap only to 1.51× (and 25 only reaches 1.23×), while raising `Armor`'s maximum
+  reduction to 67% against MR's 50%. That breaks the agreement that makes the 25%
+  damage floor exactly tie the ×0.50 type multiplier, which this file relies on,
+  and it makes `Armor` 40 and `MR` 40 mean different things.
+
+> **The consequence to hold onto:** the roster is currently invested the wrong
+> way round. Mean `Armor` is 22.8 against mean `Magic Resist` 30.2, and MR is a
+> flat 30 for **every** hero — so the valuable stat is a constant nobody chooses
+> and the cheap stat is the variable one. Under this decision the stat pass
+> should make **`Magic Resist` the stat that varies**, since it is the one worth
+> deciding about.
 
 ### ~~2. Speed vs. whole-turn cooldowns~~ — **settled**
 
