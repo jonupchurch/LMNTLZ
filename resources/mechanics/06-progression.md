@@ -70,8 +70,8 @@ Every rune has the same four components, and each is bought separately:
 **Three runes per hero**, which is a deliberately conservative starting point —
 see *Room left over* below.
 
-- **The three boosts must target distinct stats.** 20 + 10 + 5 on a single stat
-  is 35 points, which overflows the tightest headroom on the roster.
+- **The three boosts may target any stats, including the same one.** There is no
+  distinctness rule — the 75 cap is the only constraint. See below.
 - **A rune is built in stages, in order** — major, then minor, then trace, then
   utility. Each stage is bought separately and is permanent once placed.
 - **The utility slot is gated behind all three stat boosts.** An effect is what
@@ -168,31 +168,103 @@ Three runes reaches **53%** of the ceiling and leaves **356 points** unclaimed,
 so a fourth or fifth slot remains available as a later lever without any formula
 moving. Starting at 3 is cheap to expand and expensive to walk back.
 
-### Utility slots are a shared menu
+### The boosts may stack on one stat — the cap is the only rule
 
-**One menu of roughly 8–12 generic effects, and any hero may take any of them** —
-`+1 reach`, open the battle with a shield, first strike cannot miss, ignore the
-first control effect, and so on. The exact list is open.
+There is **no distinctness requirement**. All three boosts may target the same
+stat, and that is a feature rather than a tolerated case.
 
-The alternative — authoring utility options per hero, tied to that hero's own
-powers — was rejected on scope and on principle. On scope, 27 heroes × ~3 options
-is **81 new effects**, a fourth passive layer roughly the size of the 40 passives
-already written. On principle:
+**It cannot be abused, because the cap binds first.** Mean headroom is 46 points
+per hero-stat, so a single stat absorbs about **1.3 runes' worth** before waste —
+0.86 at the tightest, 1.71 at the loosest. Pouring three runes into `Might` is
+physically impossible. The 75 cap does the limiting, which `01-stats.md` says is
+its job.
 
-> **Hero identity already has a home**: 6 powers and 3 passives each, 127 in
-> total. Runes should be where the **player** expresses themselves, not where
-> more of the hero gets authored.
+**And stacking creates exact fills, which are the most satisfying thing a rune
+can do:**
 
-Two things to watch when the menu is written:
+| Stack | Lands precisely on 75 for | Examples |
+|---|---|---|
+| **20+10+5 = 35** | **50 of 270 hero-stat pairs** | Bramwen `Perception`, Ossic `Toughness`, Ossic `Luck` |
+| **20+10 = 30** | **7 pairs** | Bramwen, Zephyrine, Ember Saelith `Might` |
+
+Those 7 at 30 are precisely the tightest stats on the roster, so every one of
+them has a perfect 20+10 answer. A distinctness rule would forbid all **57**
+exact fills and force a player to spend two runes' slots to max a single stat.
+
+It also **rescues the trace boost.** At 30 shards per point the +5 is the worst
+value in the game, and under a distinctness rule it is a throwaway third stat.
+Allowing stacking makes it frequently the component that *completes* an exact
+fill — the worst-value component earning the best moment.
+
+A full 35-point stack fits **263 of 270** pairs; the 7 that overflow are the
+player's informed choice, shown by the live preview before they commit.
+
+### Utility: one pool per slot, typed by element
+
+**A hero's three rune slots are not interchangeable.** Each is bound to a
+different pool of utility effects:
+
+| Slot | Pool | Every hero gets |
+|---|---|---|
+| 1 | the hero's **primary** element | one elemental effect, always |
+| 2 | the hero's **secondary** element | one elemental effect, always |
+| 3 | **common** | one universal effect, always |
+
+Ten pools in total — nine elemental plus one common — at roughly 3–4 effects
+each, so about **35 effects to author**.
+
+**All 27 heroes have a distinct `(primary, secondary)` pairing**, so this gives
+every hero a **unique rune signature at no authoring cost**: Bramwen is
+Earth/Fire/Common, Vantric is Pierce/Air/Common, Boldrek is Crush/Light/Common,
+and no two read alike.
+
+Two alternatives were worked through and dropped:
+
+- **Per-hero utility options**, tied to each hero's own powers. Rejected on scope
+  — 27 heroes × ~3 is **81 effects**, a fourth passive layer the size of the 40
+  passives already written — and on principle: hero identity already has a home
+  in 6 powers and 3 passives each.
+- **One shared menu available in every slot**, with elemental effects layered
+  alongside. Rejected because it makes elemental identity *opt-in*: a player who
+  rates the shared effects highly fills all three slots from the shared menu and
+  never touches an element. Giving the common pool **one dedicated slot** instead
+  guarantees engagement with both elements *and* a universal baseline, and no
+  element pairing can leave a hero without a floor.
+
+#### The martial pools are under-used, and that is fine
+
+No martial type is ever anyone's *secondary* — the derivation rule forbids
+melee+melee pairings — so the three martial pools are only ever reached through a
+primary slot:
+
+| Pool | As primary | As secondary | Slots across the roster |
+|---|---|---|---|
+| Light, Dark | 3 | 6 | **9** |
+| Earth, Air, Water | 3 | 4 | 7 |
+| Fire | 3 | 3 | 6 |
+| **Slash, Pierce, Crush** | 3 | **0** | **3** |
+
+That is a 3× spread, and it is **content reuse rather than fairness** — every
+hero gets exactly one primary-pool effect regardless. A Slash effect is simply
+seen in three places on the roster where a Dark effect is seen in nine. The
+practical consequence when the pools get written: **the martial pools can be
+smaller than the arcane ones without anyone noticing.**
+
+*(A 2-primary / 1-secondary split was considered, which halves this to a 2×
+spread and mirrors the type chart's own weighting of primary over secondary. It
+was dropped in favour of guaranteeing every hero a common slot.)*
+
+#### Two things to watch when the pools are written
 
 - **Volume.** Three runes × six heroes is **18 utility effects per squad**, and
   both sides field them — so up to 36 are live in a battle, on top of 36 powers
   and 36 passives. "Significant" has to be weighed against a battle screen that
   already carries twelve hero chips.
 - **Pricing.** A utility slot costs 200 against 150 for twenty stat points. If
-  the effects really are significant, that is cheap, and every player buys
-  utility first on every rune. The price and the power level have to be set
-  together.
+  the effects really are significant that is cheap, and every player completes
+  every rune before starting a new one. Price and power level have to be set
+  together — and utility power is also the dial that balances breadth against
+  depth (see above), so it is doing two jobs at once.
 
 ---
 
@@ -211,6 +283,11 @@ A slot is always in one of five states, and the shop is the state machine:
 | **Stage 2** | +20 +10 | buy trace, 150 | destroy, restart at stage 1 |
 | **Stage 3** | +20 +10 +5 | buy utility, **200** | destroy, restart at stage 1 |
 | **Stage 4** | +20 +10 +5 + effect | — *complete* | destroy, restart at stage 1 |
+
+The utility offered at stage 4 depends on **which slot** is being filled — the
+hero's primary element pool, its secondary element pool, or the common pool. The
+three slots are not interchangeable, so the shop should make clear which is which
+before a player starts spending on one.
 
 - **Advance** buys the next stage of the rune already there. Cheap, incremental,
   and it never destroys anything.
@@ -253,6 +330,38 @@ Two things follow. The sink is **healthy without being artificial** — breadth 
 the grind, not a per-hero treadmill. And **runes on defense heroes are never dead
 weight**: the engine fields those squads continuously against every attacker, so
 a defensive rune works around the clock whether the player is online or not.
+
+---
+
+## Where shards come from
+
+Four sources, and they deliberately reward different things:
+
+| Source | Pays | Notes |
+|---|---|---|
+| **Attack victories** | active income | The player's own play, entirely under their control |
+| **Defensive holds** | passive income | Accrues while offline, per zone |
+| **Guild events** | placement | A Wing's finish, rolled up per guild — `08-guilds.md` |
+| **Weekly / monthly ladder** | rating placement | Rewards sustained standing rather than volume |
+
+**Holds paying is the one that fills a hole.** `08-guilds.md` already notes that
+hold streaks are tracked, public and per-zone, and that **nothing else in the
+design rewards being good at defense.** Without it, the 12 heroes locked into
+defense — nearly half the roster, and heroes that *cannot attack* — are an
+investment that never returns anything but a number. With it, runing a defense
+squad pays for itself, and the engine collects while the player is asleep.
+
+> **The risk that comes with it: passive income means logging off can be
+> profitable.** A hold has to pay clearly less per battle than an attack win, or
+> the optimal play is to stop playing. Attacking is the active loop and must stay
+> the better rate.
+
+**The ladder payouts do a different job from the other three.** Attack wins,
+holds and event tallies all reward *volume* — more play, more shards. A weekly or
+monthly payout keyed to **rating placement** rewards standing instead, so a
+skilled player with limited time is not simply out-earned by someone with more
+hours. Given that the whole design is built so nobody can out-roster anyone, it
+would be odd for the economy to let people out-*grind* each other without limit.
 
 ---
 
@@ -352,19 +461,14 @@ point of writing it that way.
 
 ## Open
 
-- **The utility menu.** Roughly 8–12 shared effects, and their power level is the
-  dial that balances breadth against depth — so it is a balance decision, not a
-  flavor pass. Also unresolved: **volume.** Three runes × six heroes is 18 utility
-  effects per squad and up to 36 live in a battle, on top of 36 powers and 36
-  passives.
-- **Utility pricing against its power.** 200 shards buys an effect where 150 buys
-  twenty stat points. If the effects are genuinely significant that is cheap, and
-  every player completes every rune before starting a new one. Price and power
-  have to be set together.
-- **Earn rate and shard sources.** What a battle pays, whether a *hold* pays
-  differently from an attack win, what the front-loaded curve looks like
-  concretely, and how long a full 27-hero kit takes at a flat rate. For scale, a
-  complete kit is **52,650 shards** and the starter grant is 7,800.
+- **The ten utility pools.** Nine elemental plus one common, ~3–4 effects each,
+  about 35 in total. Their power level is doing two jobs at once — it balances
+  breadth against depth, *and* it sets whether a utility slot is worth 200
+  shards. Martial pools can be smaller than arcane ones.
+- **Earn rates.** What an attack win pays, what a hold pays (**less than an
+  attack**, per above), what event placement and ladder finishes pay, and what
+  the front-loaded early curve looks like concretely. For scale, a complete
+  27-hero kit is **52,650 shards** against a starter grant of 7,800.
 - **Whether 3 slots stays 3.** Three runes reaches 53% of the theoretical stat
   ceiling and leaves 356 points unclaimed, so a fourth slot is available later
   without any formula moving. Cheap to add, expensive to take back.
