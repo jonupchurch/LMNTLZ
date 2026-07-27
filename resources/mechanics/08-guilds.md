@@ -386,9 +386,12 @@ Paid in **Rune Shards** (`06-progression.md`), on a **seasonal** cadence.
 
 | Layer | Who | Scales with |
 |---|---|---|
-| **Participation floor** | every member of a Wing that posted a score | nothing — flat, per member |
-| **Bracket** | members of Wings that place | steeply, toward the top |
-| **Guild share** | every member, on top | the guild's rolled-up standing |
+| **Participation floor** | every filled slot in a Wing that posted a score | nothing — flat |
+| **Bracket** | every filled slot in a Wing that places | steeply, toward the top |
+| **Guild share** | every filled slot, on top | the guild's rolled-up standing |
+
+> **Every layer pays per filled slot.** Not per Wing, not per guild, and never as
+> a fixed pot divided among whoever is present.
 
 **Everyone who participates gets something.** Any Wing that posts a non-zero
 score earns the floor. There is no cut line, no "did we make it", and no season
@@ -403,9 +406,25 @@ in which a member played and received nothing.
 
 **"Filled slots" also settles the vacated-seat case for free.** A Wing that drops
 to seven because an officer removed someone mid-event has **seven** filled slots,
-so it collects seven floor units for the rest of the season. Kicking is therefore
-self-harming at the floor as well as in the tally — the same incentive shape the
-lock already relies on, arriving without a rule of its own.
+so it collects seven units at every layer for the rest of the season. Kicking is
+therefore self-harming in the floor, the bracket *and* the tally — the same
+incentive shape the lock already relies on, arriving without a rule of its own.
+
+### The inverse exploit, and why per-slot closes it too
+
+Paying a **fixed pot per Wing, divided among whoever is present**, looks fairer
+and is worse. A seven-member Wing would take a larger share each than an
+eight-member one, so **short Wings would pay more per head** — the same 8×
+small-guild advantage as a per-Wing floor, arriving from the opposite direction.
+Officers would have a live incentive to run thin Wings, and the assignment lock
+would be protecting a decision that was already corrupted.
+
+Per filled slot closes both doors with one rule.
+
+> **What this does *not* do is penalise a member for their guild being
+> short-handed.** An individual receives the same per-slot amount whether their
+> Wing holds seven or eight; what shrinks is the Wing's aggregate. Nobody is paid
+> less because a teammate left, and nobody is paid more either.
 
 **Steep above the floor.** The floor is deliberately small relative to the top
 brackets. It exists so nobody is shut out, not so nobody needs to compete —
