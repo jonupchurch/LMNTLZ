@@ -151,10 +151,21 @@ unresolvable board impossible:
 > **A filter that would empty the candidate set is ignored.**
 > **A compulsion naming a hero outside the candidate set does not apply.**
 
-**Taunt** compels: while it holds, an attacker that can reach the taunter must
-target the taunter. If it *cannot* reach the taunter, the taunt simply does not
-bind it — the second invariant. Without that, a taunter parked in the enemy back
-row would blank the opposing front line's turns without ever being touchable.
+**Taunt** compels, and it compels **only within reach**:
+
+> An attacker that **can** reach the taunter must target the taunter.
+> An attacker that **cannot** reach the taunter chooses normally, as though the
+> taunt did not exist.
+
+Taunt narrows a candidate set; it never extends one. It cannot pull a hero into
+range, cannot override the reach rule, and cannot make an unreachable hero the
+only legal target. Every attacker on the board evaluates it separately, against
+its own reach and its own row — so the same taunt can bind the enemy front line
+and leave their back line entirely free.
+
+That is the second invariant, and it exists for a concrete reason: without it, a
+taunter parked in the enemy back row would blank the opposing front line's turns
+while never being touchable itself.
 
 **Fade** filters: a faded hero cannot be targeted while a non-faded ally is
 available to be targeted instead. It is not invulnerability — it is a queue
