@@ -15,6 +15,7 @@ Run them in order — later prompts reuse the tokens the earlier ones establish.
 | 5th | `03-squad-builder.md` | Pick-6 builder in the 2/3/1 formation, for attack and auto-run defense squads |
 | 6th | `04-battle-screen.md` | Battle UI + combat feedback (player offense vs. engine defense) |
 | 7th | `05-matchmaking-results.md` | Opponent scouting + post-battle results |
+| 8th | `status-icons.md` | In-battle status pips — 16 new glyphs plus pip-scale variants of the ten stat icons |
 
 ## Generated design output
 
