@@ -205,6 +205,38 @@ Full consequences in [`04-turns.md`](04-turns.md) — including the one that
 matters most for tuning here, that **Speed multiplies the rate of everything
 counted in turns**, not just actions.
 
+#### Speed buffs are a percentage, and the range is too narrow for them
+
+A power that grants Speed grants a **percentage**, never flat points. A flat
++10 would be worth +67% to a Speed-15 hero and +29% to a Speed-35 one, which
+matters concretely: the tier-3 Air power is a *self*-buff and its four owners sit
+almost across the whole range, so identical text would have been worth wildly
+different amounts.
+
+But the roster gives a percentage very little to work with, and this is a
+**problem for the stat pass to fix**:
+
+| Speed | Heroes |
+|---|---|
+| 15 | 6 — every martial Striker |
+| 25 | 12 — **every** Tank and **every** Ranged |
+| 30 | 6 — every arcane Striker |
+| 35 | 3 — **every** Buffer |
+| 45 | 1 — Silka Pinquick |
+
+Two things are wrong here. **Speed is almost entirely a function of Role** — it
+carries essentially no per-hero information. And the values sit on a **10-point
+grid**, so a buff of +10% on a Speed-25 hero is +2.5 and **can never cross a
+gap**. A small percentage buff therefore changes how often a hero acts but can
+never change *where it sits in initiative order* — it moves pace, never
+priority.
+
+That may be the right behaviour, but it should be a decision rather than an
+artifact of the grid. If Speed buffs are meant to let a hero seize initiative,
+the roster needs spreading across a wider range with irregular values so the
+gaps are crossable. Silka is the only hero currently priced off-template, at
+Speed 45 paid for with 15 Toughness and 15 Armor.
+
 ### 3. What Luck actually rolls
 
 "Affects RNG" needs a list. Candidates: crit **rate**, crit **damage**, status

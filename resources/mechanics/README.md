@@ -14,7 +14,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 |---|------|--------|-------|
 | 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Drafted** — core settled, three tuning questions open |
 | 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, rules open |
-| 03 | *`03-powers.md`* | Up to 5 powers per hero, cooldowns, targeting, costs | Not started |
+| 03 | `03-powers.md` | 6 active powers + 3 passives per hero; multipliers, cooldowns, healing | **Drafted** — 127 powers authored and costed; rider magnitudes blocked on 05 |
 | 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — turn, phase order, Speed and reactions all settled |
 | 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started — **taunt** and **fade** are named, and their targeting behaviour is settled in `04-turns.md` |
 | 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
@@ -37,9 +37,12 @@ questions or keep raising them:
 
 Some of these can't be finished out of order:
 
-- **Powers gate almost everything.** Status effects can't be specified until
-  powers define what crowd control is, which means `Resolve` can't be tuned
-  until then either.
+- **Powers now gate only `05-status.md`, and are gated by it in return.**
+  `03-powers.md` names every rider — slows, burns, mitigation shreds, silence,
+  taunt, fade — but none of them has a magnitude or a duration, because
+  `05-status.md` has not said what those effects *are*. Powers can't be finished
+  without it and it can't start without them. **`05-status.md` is the next thing
+  to write**, and `Resolve` can't be tuned until it exists.
 - **Turns no longer gate powers.** `04-turns.md` now answers everything a power
   needs in order to be written down: which phase each part of it resolves in,
   that cooldowns count the owner's own turns and tick in Resolution, and that
