@@ -349,6 +349,53 @@ Four sources, and they deliberately reward different things:
 | **Guild events** | placement | A Wing's finish, rolled up per guild — `08-guilds.md` |
 | **Weekly / monthly ladder** | rating placement | Rewards sustained standing rather than volume |
 
+### The rates
+
+**Rewards only. Nothing ever costs shards** — a loss pays nothing, but it never
+takes anything away either. The sting of losing lives in the rating ladder, not
+in the economy. *(Event scoring is the one place a penalty exists; see
+`08-guilds.md`.)*
+
+| Outcome | Shards |
+|---|---|
+| **Attack victory**, chosen door | **20** |
+| **Attack victory**, ambush | **40** |
+| **Defensive hold**, Visible | **10** |
+| **Defensive hold**, Hidden | **20** |
+| Any loss | 0 |
+
+Ambush doubles either side, per the rule below. A hold pays **half** what an
+attack victory does, and that ratio is load-bearing rather than arbitrary:
+
+| Hold pays | Passive share of a typical player's income |
+|---|---|
+| 20 — same as a win | **47%** |
+| **10 — half a win** | **30%** |
+| 5 | 18% |
+
+At parity nearly half a player's shards would arrive **for doing nothing**, which
+is exactly the failure this file warns about — passive income large enough that
+logging off competes with playing. At half, defence is a meaningful supplement
+that still cannot rival attacking.
+
+### What that pace produces
+
+| Play level | Shards/day | 12 heroes complete | Competitive 18 | Full 27 |
+|---|---|---|---|---|
+| Light — 10 attacks, 5 holds | 165 | 3.1 mo | 5.4 mo | **8.9 mo** |
+| **Typical — 20 attacks, 10 holds** | **330** | **1.6 mo** | **2.7 mo** | **4.5 mo** |
+| Heavy — 30 attacks, 20 holds | 545 | 0.9 mo | 1.6 mo | 2.7 mo |
+
+*(50% win rate, 15% of victories being ambushes, starting from the 7,800 grant.)*
+
+A typical player finishes the twelve heroes they were given inside two months,
+reaches the competitive eighteen before three, and completes the roster around
+four and a half. **After that, shards fund re-speccing forever** — the ceiling is
+reached and the currency changes job rather than losing its value.
+
+Against that, the **800-shard weekly purchase is about +35%** for a typical
+player. Meaningful, and short of decisive — which is the band it was aimed at.
+
 ### An ambush pays double a chosen door
 
 > **A Hidden battle rewards 2× what a battle you scouted and chose would pay** —
@@ -387,6 +434,61 @@ monthly payout keyed to **rating placement** rewards standing instead, so a
 skilled player with limited time is not simply out-earned by someone with more
 hours. Given that the whole design is built so nobody can out-roster anyone, it
 would be odd for the economy to let people out-*grind* each other without limit.
+
+---
+
+## The rating ladder
+
+**Two numbers, doing two different jobs.**
+
+| | Visible? | Decides |
+|---|---|---|
+| **Matchmaking rating** | **no** | which defenses a player is offered to attack |
+| **Ladder points** | **yes** | weekly and monthly shard payouts, and standing |
+
+The matchmaking rating is skill-convergent — it moves toward a player's real level
+and stops, regardless of how much they play — and it is what makes the
+new-player design work: a newcomer meets other newcomers, so the widest kit gaps
+are rarely fielded against each other. Ladder points accumulate from results and
+are what a player actually sees, competes on, and is paid against.
+
+**The honest cost:** the number shown to the player is not the number the game
+acts on. That sits awkwardly beside a design that is otherwise unusually open —
+the entire Visible squad is scoutable, hold streaks are public per zone, and the
+ambush chance is always displayed. This is the one place LMNTLZ keeps something
+back, and it was chosen deliberately for the accuracy it buys in matchmaking.
+Worth being upfront about it in the UI rather than letting players discover it.
+
+### Points must scale with the opponent, or the economy contradicts itself
+
+`Where shards come from` above says ladder payouts *"reward sustained standing
+rather than volume"*, and that was written when rating was going to be a single
+skill number. **Raw accumulating points reward volume instead** — at equal skill,
+more hours means a higher placement — which would make the ladder the one part of
+the economy that pays for grinding, in a game whose whole thesis is that nobody
+can out-roster anyone and whose storefront caps what money can buy.
+
+The reconciliation, proposed rather than settled: **a win's point value scales
+with the defeated opponent's matchmaking rating.** Volume still accumulates, but
+skill multiplies the rate, so a strong player with limited time is not simply
+out-ground by a weaker one with more. It also gives the hidden number a visible
+consequence, which softens the transparency problem — players can *feel* the
+rating even though they cannot read it.
+
+### Open inside this
+
+- **Whether points reset seasonally.** A reset gives the monthly payout a rhythm
+  and a reason to return; a permanent total rewards long-term investment. The
+  matchmaking rating should almost certainly *not* reset either way — it is a
+  measurement, not a score.
+- **Placement for a new account.** The starter-grant design depends on newcomers
+  being sorted away from veterans quickly, so how fast the matchmaking rating
+  converges early is load-bearing rather than cosmetic.
+- **What each zone costs.** `02-squads.md` question 0 — *which squad deserves the
+  stronger heroes* — cannot be answered until the stakes are set, and there are
+  now **two currencies** to set them in. Whether a Hidden loss costs matchmaking
+  rating, ladder points, or both, and at what weight relative to a Visible loss,
+  is the decision that makes the two zones feel genuinely different to defend.
 
 ---
 
@@ -627,10 +729,13 @@ point of writing it that way.
   about 35 in total. Their power level is doing two jobs at once — it balances
   breadth against depth, *and* it sets whether a utility slot is worth 200
   shards. Martial pools can be smaller than arcane ones.
-- **Earn rates.** What an attack win pays, what a hold pays (**less than an
-  attack**, per above), what event placement and ladder finishes pay, and what
-  the front-loaded early curve looks like concretely. For scale, a complete
-  27-hero kit is **52,650 shards** against a starter grant of 7,800.
+- **Event and ladder payouts.** Battle and hold rates are set (20/40/10/20);
+  what a guild event placement and a weekly or monthly ladder finish pay is not.
+  Both are the levers that reward *standing* rather than volume, so they matter
+  more than their size suggests.
+- **Whether the early curve is front-loaded at all.** The new-player section
+  assumes it is, but at 20 a win a typical player already completes their twelve
+  granted heroes in under two months. A separate early bonus may be unnecessary.
 - **Whether 3 slots stays 3.** Three runes reaches 53% of the theoretical stat
   ceiling and leaves 356 points unclaimed, so a fourth slot is available later
   without any formula moving. Cheap to add, expensive to take back.
