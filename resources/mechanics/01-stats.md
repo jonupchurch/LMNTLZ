@@ -626,6 +626,54 @@ a flattening to correct. Two of the observations below therefore resolve in
   the back row." *Not something powers fix* — this one is structural, and stays
   open until reach is settled.
 
+## The hit rate was never computed — and it is 45%
+
+**Raised 2026-07-27, undecided.** The accuracy contest was designed
+structurally — `Perception` against `Agility`, `Luck` as the die — and its
+*output* was never derived. Resolved exactly over all 729 attacker/defender
+pairs on the current roster:
+
+| | Miss rate |
+|---|---|
+| min | 6.8% |
+| p10 | 19.5% |
+| **median** | **45.2%** |
+| mean | 42.6% |
+| p90 | 70.2% |
+| max | 82.5% |
+
+**465 of 729 pairs miss more than 30% of the time; 315 miss more than half.**
+
+The cause is a scale mismatch rather than a bad stat spread. `Luck` runs 15–40,
+so the die is **1..22 to 1..60** — up to three times the entire `Perception`
+spread of 20 points. Mean `Perception` 32.0 against mean `Agility` 26.9 is a
+5.2-point attacker edge against a die averaging ~22, so **accuracy is close to a
+coin flip that stats barely nudge.**
+
+Three consequences, in order of how much they cost:
+
+- **Single-target ultimates are punished; multi-target ones are insured.** Phase
+  3 resolves per target, so a three-target power rolls three times and cannot
+  whiff entirely. Silka's `Quicker Than Told` — tier 5, ×5, **6-turn cooldown,
+  single-target** — is worth ×2.75 in expectation, and its kill-chain never fires
+  on a miss. Boldrek's `Avalanche` waits 8 turns for one roll. Nothing priced
+  that asymmetry, and it runs opposite to the multi-target `+1` cooldown penalty
+  in `03-powers.md`, which assumes multi-target is the stronger shape.
+- **`Perception` is not a stat a player can invest in.** Twenty points of spread
+  against a sixty-point die is the same failure as `Magic Resist` sitting flat at
+  30: the outcome is dominated by something nobody chooses.
+- **Battle length may be understated.** The ~155 hero-turn figure has to be
+  re-checked against whether that simulation modelled accuracy at all. If it did
+  not, real battles run close to **1.8× longer**, against a genre norm the design
+  already exceeds by 2–3×.
+
+The lever is the die multiplier rather than the stats: `Luck × 1.5` is what
+swamps `Perception`. Any change to it **must refit the potency ladder**, which
+`05-status.md` warns is tuned to this exact die and broke once already when the
+die changed underneath it.
+
+---
+
 ## Open questions
 
 None of these block writing powers, but they must be answered before any number

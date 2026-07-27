@@ -291,13 +291,38 @@ Three things follow from rules already settled, rather than needing their own:
   defender under fire from a fast attacker counters at most once per its own
   turn cycle, however many times it is hit.
 
-Still open, and left for `03-powers.md`:
+Two more, **settled 2026-07-27**:
 
-- **Does a reaction fire on an evaded attack?** A riposte-on-dodge is a natural
-  fantasy, but phase 3 currently ends resolution for an evaded target entirely.
-- **Is "reactive" a property of the power or a stance the hero adopts?** The
-  first is simpler; the second gives the player a decision on defense, which is
-  otherwise engine-run.
+- **A reaction fires on an evaded attack.** Phase 3 previously ended resolution
+  for an evaded target entirely; it must now run far enough to reach step C.
+  Otherwise `Agility` — the defender's own defensive stat — suppresses the
+  defender's own counter, so the better your defense the less you retaliate,
+  which nobody designs on purpose. This also resolves a tension already present:
+  *How this maps to the damage pipeline* contemplates an **on-miss rider** with
+  "a fully-computed attack value available to scale from", which the old wording
+  forbade.
+- **"Reactive" is a property of the power, not a stance.** A stance could not be
+  an in-battle choice anyway — the engine runs defense — so it would be a
+  squad-builder toggle like targeting priority. But the obvious cost is already
+  spent: a reactive power carries a normal cooldown ticking in its *owner's*
+  turns, which already limits a defender to one counter per its own turn cycle.
+  A stance with no additional cost is a property wearing a costume, and it would
+  be a third configuration layer on every squad row. It stays available as a
+  config field once `packages/sim` can price one.
+
+> **Both rules currently govern nothing — there is not a single reactive power in
+> the roster.** Searching all 127 powers returns four reaction-flavored entries
+> and none of them is one: `Redouble` is a plain tier-1 strike *renamed from
+> "Riposte"* for exactly this reason, `One Clean Stroke` references it in flavor
+> only, and the other two are **Silka's `Already Gone`** (immunity to being
+> targeted by a reactive power) and **Hettamar's `Nothing to Discuss`** (denies
+> reactions to anyone he damages).
+>
+> **So two of the 27 unique passives are dead** — one grants immunity to nothing,
+> the other denies nothing. `03-powers.md` makes the unique layer the carrier of
+> hero identity, so this is a real gap rather than a curiosity. Either the
+> reactive powers those passives answer get authored, or both passives need
+> replacing.
 
 ### 5 · Resolution — the clocks move
 
