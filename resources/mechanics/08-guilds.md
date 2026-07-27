@@ -440,11 +440,33 @@ That gives two dials pulling in opposite directions, each doing one job:
 - **Steepness serves ambition** — a full guild still has a real reason to load
   its strongest players into one Wing rather than balancing.
 
-### Sizing, proposed
+### Sizing is per event; the shape is not
 
-Payout sizes are not settled, but they have to be read against the earn rate or
-they mean nothing. Against a **4-week season**, a typical player earns **9,240
-shards** — about **14 complete runes** — from ordinary play (`06-progression.md`).
+> **Magnitudes are configured per event. The structure is fixed.**
+
+| Fixed for every event | Configured per event |
+|---|---|
+| Paid **per filled slot**, at every layer | The size of the floor |
+| A **participation floor** reaching any Wing that scores | The bracket values and how many brackets |
+| Brackets climbing **steeply** above it | Where the bracket cut-offs fall |
+| A **guild share** on top | The metric tallied, and the duration |
+| Scores **reset** when winnings are paid | |
+
+So an event is **data** — `{metric, duration, payout ladder}` — rather than code,
+and a small weekly event and a headline seasonal one differ only in their
+numbers. That is worth knowing before the schema is written.
+
+**Two invariants should survive any tuning.** The floor has to stay large enough
+to be felt — see the sanity check below — and the spread has to stay
+*deep-floor, steep-top*, since that is what makes participation safe without
+making ambition pointless.
+
+### A calibration example
+
+Numbers mean nothing without the earn rate beside them. Against a **4-week
+season**, a typical player earns **9,240 shards** — about **14 complete runes** —
+from ordinary play (`06-progression.md`). A ladder that lands correctly against
+that:
 
 | Bracket | Reaches | Per filled slot | In runes | Share of a season's earnings |
 |---|---|---|---|---|
