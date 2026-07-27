@@ -89,10 +89,36 @@ configures intent; the engine always produces an answer:
 |---|---|---|
 | 1 | the champion's **primary** rule | defender |
 | 2 | the champion's **fallback** rule | defender |
-| 3 | **nearest row** | defender, indirectly |
-| 4 | **seeded random** among what remains | engine |
+| 3 | **best type matchup** | engine |
+| 4 | **nearest row** | defender, indirectly |
+| 5 | **seeded random** among what remains | engine |
 
-**Step 3 stays tactical on purpose.** Row placement is a deliberate choice a
+**Step 3 keeps the engine from making obvious mistakes.** Type effectiveness runs
+×1.50 Bane · ×1.25 Fault · ×1.00 · ×0.80 · ×0.50, so a champion that swings into
+a resist when a Bane was available deals **three times less damage** for no
+reason. That is not a strategic choice a defender might want, it is an error —
+and an engine that visibly errs undermines the premise that it plays every
+defense in the game.
+
+**It sits *below* both configured rules on purpose.** A defender who says
+*"Buffers first"* still gets a Buffer; type matchup only chooses *which* Buffer,
+or steps in once the configured rules run out. The plan always wins over the
+optimizer. **"Best type matchup" is also on the menu** for a defender who wants
+it as their stated plan rather than as a tiebreak.
+
+> **This fixes the evaluation order, which was undefined.** Type effectiveness
+> depends on the *power* — a dual-typed power takes the better of its two types
+> (`01-stats.md`) — so the power must be known before the target can be scored.
+> **Power preference resolves first, then targeting.**
+>
+> **The engine deliberately does not re-rank powers to chase a matchup.** It could
+> notice that a lower-ranked power would be super-effective and fire that instead
+> — and it must not, because the power ranking is the defender's lever and the
+> source of the 240 rotations below. An optimizer that overrides it would collapse
+> every defense toward the same choice, which is the greedy failure wearing a
+> smarter hat.
+
+**Step 4 stays tactical on purpose.** Row placement is a deliberate choice a
 defender already makes, so breaking a tie on proximity honors the build rather
 than leaking from it — and hitting what is closest is a defensible default in its
 own right.
@@ -117,13 +143,121 @@ a preview; **tiebreak 4 is resolver**. The client can show which champions are
 legal targets and which one the configuration prefers, and cannot always predict
 which is struck.
 
-### When nothing is configured at all
+### Defaults come from the role
 
 A squad saved without targeting rules — a new account, or a player who never
-opened the control — **must not fall straight to random.** It defaults to
-**lowest current HP, then nearest row**, which is focus-fire and is the correct
-generic plan. An unconfigured defense should be competent and predictable, not
-incoherent; randomness is a tiebreak of last resort, never a default strategy.
+opened the control — **must not fall straight to random.** Each role carries its
+own default pair, **which any explicit selection overrides.**
+
+The defaults are not invented: three of the four role passives already name the
+rule their role should want.
+
+| Role | Role passive rewards | Default primary | Default fallback |
+|---|---|---|---|
+| **Striker** | `Finish It` — bonus damage below half pool | **Lowest current HP** | nearest row |
+| **Tank** | `Hold the Line` — row-scoped taunt, it holds a line | **Highest `Might`** | nearest row |
+| **Ranged** | `Measured Shot` — bonus damage at **distance 2** | **Furthest reachable** | least Armor / Magic Resist |
+| **Buffer** | `Behind the Line` — permanent fade, survives to support | Lowest current HP | nearest row |
+
+> **`Measured Shot` requires a menu entry that did not exist.** It pays Ranged for
+> striking at the far edge of its reach, and *every* option on the current menu
+> would push a Ranged champion toward something else. **Add "furthest reachable"
+> and "nearest reachable"** — distance is a question a defender can obviously ask,
+> and one role is already built around the answer.
+
+**Two distance entries, not three.** At base reach a middle band cannot occur:
+reach caps at 2 and counts a champion's own rows, so from any seat a champion
+sees **at most two enemy rows** — rows 4–5 from the front at reach 2, or rows 5–6
+once the enemy front falls. Empty-row skipping shifts the window without widening
+it.
+
+> **The Air rune breaks that ceiling, and code must not assume it holds.**
+> `Further Than It Looks` (`06-progression.md`) grants **+1 reach for a turn**, so
+> a reach-2 champion in the front seat reaches rows 4, 5 *and* 6 — three enemy
+> rows, with a genuine middle. **Any implementation that assumes at most two
+> reachable rows is wrong.** The reach window is computed, never bounded by a
+> constant.
+
+It still does not earn a menu entry. The band is live only for a **reach-2**
+champion (reach 1 + 1 is still two rows), in a front seat, holding that one
+effect of the three in the Air pool, on a **25%** roll — and a defender wanting
+the middle row has better tools anyway, since it is the three-champion rank and
+therefore where role and state rules already tend to land.
+
+Absolute row entries — *front row first*, *middle row first*, *back row first* —
+do not rescue it either. **Priority is a sort, not a filter**, so with reach
+bounding the candidates, "back row first" and "furthest first" return the same
+champion in every configuration. They would be longer names for the same two
+options, on a menu this document requires to stay short enough to read on a
+squad-builder row.
+
+**An unconfigured defense should be competent, not incoherent.** Randomness is a
+tiebreak of last resort, never a default strategy.
+
+#### On publishing the defaults
+
+Documenting them means some players will never change them, and those defenses
+become predictable. **That is a skill floor rather than a repeat of the greedy
+problem**, and the difference is worth stating because the two look alike:
+
+- Greedy was a defect because **nobody had a lever** — every defense behaved
+  identically regardless of how much thought went into it, and one learned
+  opening covered 63% of the roster.
+- Role defaults leave the lever in place. A player who configures beats one who
+  does not, which is the pressure that makes the control worth opening.
+
+An unconfigured squad also shows **up to four distinct behaviours** rather than
+one, since the defaults are per role and a squad of six typically spans three or
+four roles.
+
+> **The same reasoning obliges power preference to declare a default, and it must
+> not be greedy.** *Why ranking beats firing the biggest thing available* measures
+> greedy at **4 distinct rotations across 27 heroes**, with seventeen sharing one.
+> A greedy default would hand every unconfigured defense in the game the same
+> opening — reintroducing precisely the failure the ranking exists to prevent.
+> **Open**: what the default ranking should be instead.
+
+---
+
+## Targeting an ally
+
+**A friendly power needs a target choice exactly as an attack does**, and until
+now nothing described one — stage 1 above reads *"which **enemies** this hero can
+legally hit."* A Buffer deciding who to heal is the single targeting decision
+that most determines whether a defense survives.
+
+> **A champion that owns at least one friendly power carries one additional
+> rule: who to help.** It is a single choice, not a pair — the ally menu
+> discriminates far better than the enemy one, so a fallback earns much less.
+
+**The control appears only when the champion owns a friendly power.** Most squad
+rows show two dropdowns; a few show three. That keeps the interface honest about
+which champions actually face the decision.
+
+Reach applies unchanged — `02-squads.md` states one reach rule with no
+exceptions, so **a heal is range-limited exactly as an attack is.** Taunt and
+fade do not apply, being properties of enemy targeting, so friendly selection is
+stage 1 and stage 4 only.
+
+### The menu, and the trap in it
+
+| Option | Asks |
+|---|---|
+| **Lowest HP percentage** | who is most hurt |
+| Lowest current HP | who has the smallest pool left |
+| Tanks first · Strikers first · Ranged first · Buffers first | which role is worth keeping alive |
+| Most damaged | who has lost the most absolute HP |
+
+> **Lowest HP *percentage* and lowest *current* HP are not the same question, and
+> confusing them is a live trap.** `HP = Toughness × 50` with `Toughness` from 25
+> to 40, so maximum pools run **1,250 to 2,000**. A Tank at 1,300 of 2,000 — 65%
+> and in real trouble — holds *more* current HP than an untouched Buffer at
+> 1,250 of 1,250. A "lowest current HP" heal would pass over the wounded Tank to
+> top up a Buffer at full health.
+
+**The default is lowest HP percentage**, for every role, because it is the only
+entry that means *"whoever is most hurt"* — which is what a player assumes a
+healer does.
 
 **Two dropdowns, not a ranking widget.** A full ordered ranking of the whole menu
 was considered — it matches how power preference works and would be internally
