@@ -611,6 +611,40 @@ advantage the design is trying not to sell, and carry the full perception cost o
 sold together is the only version that adds no mechanic and no pay-to-win
 surface.
 
+### Spending is not effectiveness, and that is the point
+
+Shards spent measures **investment**, never **effectiveness** — a player can
+overcap, stack a stat their hero cannot use, or take a weak utility. That gap is
+the design's best feature rather than a rough edge.
+
+Measured on Bramwen at an identical spend of **1,950 shards** — three complete
+runes, 105 points, same slots, same hero — the best allocation found scored
+**3.35× the worst**. Same money, same everything, triple the result.
+
+> *(That figure is a proxy: it models damage dealt, accuracy and damage taken
+> only. The worst allocation poured everything into `Luck`, `Speed` and
+> `Resolve`, which the proxy does not value but which genuinely matter. The true
+> spread is smaller than 3.35×; the direction and rough magnitude hold.)*
+
+**But the claim has to be stated precisely, because the looser version is false.**
+A badly-allocated 1,950 shards still beats a well-allocated 650 — three times the
+spend wins even when misspent. So this is not "skill beats money":
+
+> **Skill dominates *within* a spending band. The weekly cap is what keeps every
+> player inside one.**
+
+That is the real argument for capping purchases, and it is stronger than the
+fairness argument. Without a cap, spending bands diverge until money outruns
+allocation and the 3.35× stops mattering. With one, everybody is competing on the
+axis that rewards reading the game — which is the entire thesis of a
+counter-building design.
+
+**It also makes the investment score safe to display.** Because spend does not
+reveal *quality*, showing a player's rune investment when scouting their Visible
+squad tells an opponent how committed they are without telling them whether the
+commitment was wise. The reading stays a skill rather than a number check —
+consistent with everything else about the Visible squad being open.
+
 ### The revenue curve runs backwards, deliberately
 
 Once a player is fully kitted, shards buy only **adaptation** — re-speccing to
