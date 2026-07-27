@@ -129,12 +129,23 @@ without it, "concentrate into two strong Wings" has nowhere to put the leftovers
 
 The useful part is what the scoring model does to that choice:
 
-> **Under a tally, concentrating is never actually better.** Scores are totals,
-> nothing is averaged, and a low-placing Wing does not drag the guild's reward
-> down — the guild's cut sits *on top of* whatever its Wings earn. So a third
-> Wing of four costs nothing to field and might place; grounding those four
-> guarantees they contribute nothing. The competitive answer is almost always
-> **fill all three**.
+> **Under a tally, concentrating is never actually better — *provided a thin Wing
+> still places somewhere*.** Scores are totals, nothing is averaged, and a
+> low-placing Wing does not drag the guild's reward down: the guild's cut sits
+> *on top of* whatever its Wings earn. So a third Wing of four costs nothing to
+> field and might place; grounding those four guarantees they contribute nothing.
+> The competitive answer is **fill all three**.
+
+> **That proviso is load-bearing, and an earlier draft stated the claim without
+> it.** Simulated against a field dominated by full Wings of eight, a guild of
+> twelve running `4 / 4 / 4` earns **nothing at any tier steepness** if the lowest
+> paying bracket sits around the 35th percentile — all three Wings fall below it
+> — while `8 / 4 / 0` places one and pays. Concentrating wins exactly when a
+> half-strength Wing cannot reach the board.
+>
+> **The participation floor below is what makes the proviso hold unconditionally**
+> rather than by tuning. Every Wing that posts a score is paid, so a thin Wing
+> always places, so filling all three is always right.
 
 That is a good property rather than a disappointing one. **Grounding has no
 competitive upside, so it cannot be weaponised** — no officer can improve a
@@ -366,9 +377,85 @@ balance, steepen it to make a hero Wing worth building. Setting it needs
 
 ---
 
+## Rewards
+
+Paid in **Rune Shards** (`06-progression.md`), on a **seasonal** cadence.
+
+### The shape
+
+| Layer | Who | Scales with |
+|---|---|---|
+| **Participation floor** | every member of a Wing that posted a score | nothing — flat, per member |
+| **Bracket** | members of Wings that place | steeply, toward the top |
+| **Guild share** | every member, on top | the guild's rolled-up standing |
+
+**Everyone who participates gets something.** Any Wing that posts a non-zero
+score earns the floor. There is no cut line, no "did we make it", and no season
+in which a member played and received nothing.
+
+> **The floor pays per member, never per Wing.** This is not a detail. A flat
+> per-Wing floor would let a three-person guild run `1 / 1 / 1`, collect three
+> full floors between three people, and out-earn a full guild — which splits the
+> same three floors among 24 — by **8× per head**. Paying per member removes the
+> incentive entirely: a Wing of eight collects eight floor units, a Wing of one
+> collects one.
+
+**Steep above the floor.** The floor is deliberately small relative to the top
+brackets. It exists so nobody is shut out, not so nobody needs to compete —
+`The reward curve is the dial that makes the split matter` above explains why
+steepness is the only thing tying three non-interacting Wings together.
+
+That gives two dials pulling in opposite directions, each doing one job:
+
+- **The floor serves participation** — a guild of twelve fielding three thin
+  Wings earns from all three, which makes *fill all three* unconditionally
+  correct and keeps `Grounded` an administrative tool rather than a competitive
+  one.
+- **Steepness serves ambition** — a full guild still has a real reason to load
+  its strongest players into one Wing rather than balancing.
+
+### Two competitions, not one
+
+| | Cadence | Metric | Purpose |
+|---|---|---|---|
+| **The ladder** | continuous, paid **per season** | ladder points, rolled up per Wing then per guild | the always-on general competition |
+| **Events** | time-boxed | an unusual metric — holds, super-effective hits, wins under a restriction | themed, occasional |
+
+**The ladder gives Wings a purpose between events.** Without it a Wing is inert
+except during an event, which is most of the time. With it, a Wing is a standing
+competitive unit whose members' ordinary ladder results accumulate continuously.
+
+**Events must therefore not simply count attack victories**, or they become a
+slower, worse ladder measuring the same thing twice. The metric menu in
+*Which metrics do events tally* is where an event earns its place — and the
+defence-flavoured one is the most valuable, since holds are already tracked and
+nothing else rewards being good at defense.
+
+### The season resets everything
+
+**Once a season's winnings are paid, scores reset to zero** — Wing tallies, guild
+standings, and the ladder points behind them.
+
+That is not optional under a seasonal payout. On a permanent total, a Wing two
+years old holds an unreachable score and no new Wing can ever place; the
+competition would be decided by age rather than by play. **A seasonal competition
+requires a seasonal reset**, and this closes the question `06-progression.md`
+carried open about whether ladder points reset.
+
+The **matchmaking rating does not reset.** It is a measurement of skill rather
+than a score, so wiping it each season would scramble matchmaking for everyone
+and re-expose new players to veterans — which the starter-grant design in
+`06-progression.md` depends on not happening.
+
+---
+
 ## Still open
 
-### 0. Is a Wing's score a total or an average? — *less severe than it first looked*
+### ~~0. Is a Wing's score a total or an average?~~ — **settled: totals, with a participation floor**
+
+Totals, as argued below. The under-filled-guild problem it identifies is solved by the **per-member participation floor** in *Rewards* above rather than by top-K scoring: every Wing that posts a score is paid, so a short Wing always places and no member's contribution is ever discarded. Top-K was the previous recommendation and is no longer needed.
+
+The original reasoning, kept because it is what rules out averaging:
 
 **A tally is a total by nature.** "Count attack victories per Wing" is a sum, and
 the natural reading of the settled rules is that scores are totals. Two facts
@@ -457,7 +544,9 @@ but ambush is currently driven by the *attacker's personal* win streak, which
 does not obviously translate to a team. Whether a Wing has a collective streak
 is a real question and would be the first streak in the game that isn't personal.
 
-### 3. How deep does "top Wings" go, and what is the split inside one?
+### ~~3. How deep does "top Wings" go?~~ — **settled**; the split inside a Wing is not
+
+Depth is answered in *Rewards*: a participation floor reaching every Wing that scores, with steep brackets above it. What remains is only the second half —
 
 The *shape* is settled — top Wings are paid directly, the guild gets a lesser
 reward on top. Two things inside that are not:
@@ -473,16 +562,17 @@ reward on top. Two things inside that are not:
   payout is proportional to contribution, a low-activity member is punished twice
   for the same thing.
 
-Both are blocked on `06-progression.md`, which does not exist yet: guild rewards
-are the first thing in the design that pays out to more than one player at once,
-and the currency they pay in has not been defined.
+The currency is settled — **Rune Shards** — so this is no longer blocked on
+`06-progression.md`. What is left is a genuine design choice about whether being
+*in* a good Wing or *carrying* one is the thing being paid for.
 
 ---
 
 ## Dependencies
 
-- **Blocked by `06-progression.md`** for rewards and currency — nothing here can
-  be tuned until there is an economy to tune against.
+- ~~**Blocked by `06-progression.md`**~~ — **unblocked.** Rewards pay in Rune
+  Shards, on a seasonal cadence, with a per-member participation floor and steep
+  brackets above it. Only the *sizes* remain to be tuned.
 - **Depends on `02-squads.md`** for the roster economy, the defense lock, the
   invalidation rule and hold streaks. All four already do real work above.
 - **Gates nothing.** No existing mechanic needs guilds to be finished. This can

@@ -477,10 +477,13 @@ rating even though they cannot read it.
 
 ### Open inside this
 
-- **Whether points reset seasonally.** A reset gives the monthly payout a rhythm
-  and a reason to return; a permanent total rewards long-term investment. The
-  matchmaking rating should almost certainly *not* reset either way — it is a
-  measurement, not a score.
+- ~~**Whether points reset seasonally.**~~ **Settled by `08-guilds.md`: they do.**
+  Guild and Wing rewards pay per season, and a seasonal competition on a permanent
+  total is decided by age rather than by play — a two-year-old Wing would hold an
+  unreachable score. Scores reset once winnings are paid. The **matchmaking rating
+  does not reset**: it is a measurement rather than a score, and wiping it would
+  re-expose new players to veterans, which the starter grant depends on not
+  happening.
 - **Placement for a new account.** The starter-grant design depends on newcomers
   being sorted away from veterans quickly, so how fast the matchmaking rating
   converges early is load-bearing rather than cosmetic.
