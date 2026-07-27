@@ -239,14 +239,17 @@ cleansed). Both can still expire — they cannot be removed early.
 
 ---
 
-## Findings from the balance review
+## Findings from the balance review — **all four applied**
 
-Four things the review surfaced. None is fixed here — they are roster and power
-decisions, recorded so they are not rediscovered later.
+Four things the review surfaced. **All four are now fixed in the workbook** by
+`tools/apply-roster-fixes.py`, which patches prompts in place and is idempotent.
+The reasoning is kept below because the numbers are what justify the values
+chosen, and a future rebalance needs them.
 
-**`Magic Resist` receives no buffs at all, while `Armor` receives ten.** Of the
-27 self-buff riders across tier 3 and the uniques, `Armor` is by far the most
-common and `Magic Resist` appears **zero** times.
+### 1. `Magic Resist` received no buffs at all, while `Armor` received thirteen
+
+Of the self-buff riders across tier 4, tier 5 and the unique passives, `Armor`
+was by far the most common and `Magic Resist` appeared **zero** times.
 
 `01-stats.md` has since settled that this asymmetry is *deliberate at the stat
 level* — MR is simply the better stat and is left unpriced. That decision makes
@@ -258,18 +261,29 @@ buffs is granting the **weak** stat:
 | +15 `Armor` | **5.1%** |
 | +15 `Magic Resist` | **10.4%** — 2.05× |
 
-So ten powers are delivering **less than half** the defensive value their tier
-implies, and no power anywhere improves the stat that answers two-thirds of
-incoming attacks. Either some should convert to `Magic Resist`, or `Armor` buffs
-should grant roughly double the tier magnitude to land on the same value.
+So thirteen powers were delivering **less than half** the defensive value their
+tier implies, and no power anywhere improved the stat that answers two-thirds of
+incoming attacks.
 
-**Buffs are overwhelmingly defensive** — ten `Armor` against a single `Might`.
-`Luck` receives none at all. That is now less alarming than it was — `Luck` has
-been removed from the damage formula (`01-stats.md`) and drives only the die and
-the crit rate — but it is still the obvious stat for gear to stack, so it is
-worth deciding rather than leaving to fall out.
+> **Applied.** The **six owned by arcane heroes** now grant `Magic Resist`:
+> Ossic's `Kneel and Raise`, `The God-Bone Wakes` and `The Bone Beneath`,
+> Tidewarden Coll's `Give Ground, Take Coast` and `The Bulwark Holds`, and
+> Terragosa's `The Green Crown Descends`.
+>
+> **The split is on the owner's family, not on flavor.** Every arcane hero sits
+> at `Armor` **15**, the roster minimum — so an Armor buff was improving the stat
+> they have least of *and* the one that answers fewest attacks. Martial owners
+> keep `Armor`: Grieve, Lord Aiguille and Mauless all have 40 to build on, and a
+> bulwark reads as plate rather than as ward. Mauless's two keep it for a second
+> reason — both also *strip* the target's Armor, which is the Crush identity.
 
-**Vantric carries four sources of one effect, with no stacking order defined.**
+**Buffs remain overwhelmingly defensive** — twelve mitigation buffs against a
+single `Might`. `Luck` receives none at all. That is now less alarming than it
+was — `Luck` has been removed from the damage formula (`01-stats.md`) and drives
+only the die and the crit rate — but it is still the obvious stat for gear to
+stack, so it is worth deciding rather than leaving to fall out.
+
+### 2. Vantric carried four sources of one effect, with no stacking order
 The Pierce House passive `Find the Seam` (`Penetration` rises against a repeat
 target), his own passive `Seams Everywhere` (ignores 30% before `Penetration`
 applies), and both uniques (`The One Gap` and `The Spear Finds It`, each ignoring
@@ -285,10 +299,23 @@ usually nothing to take.
 > is four sources of one effect with **undefined composition** and sharply
 > diminishing returns, not four sources of nothing.
 
-**Boldrek has no mechanical identity in his uniques — but his House layer hands
-him one.** *All At Once* (×3.5) and *Avalanche* (×5.0) are both featureless
-single hits, the only hero whose entire unique kit is "big number, no rider."
-His passive *No Warning* (crits deal extra) is his sole distinguishing trait.
+> **Applied.** A fixed order now lives on `Seams Everywhere`, and both uniques
+> point at it:
+>
+> 1. `Seams Everywhere` multiplies the mitigation stat by **0.70**
+> 2. a unique, if used, multiplies the result by **0.60**
+> 3. `Penetration` is subtracted, including any bonus from `Find the Seam`
+> 4. the result feeds the mitigation curve, where a negative value amplifies
+>
+> Fixing the order is what stops the four double-counting. Against `Armor` 40
+> that runs 40 → 28 → 16.8 → `E` = −8.2, so a unique amplifies rather than merely
+> negating — which is the payoff his whole kit is built toward.
+
+### 3. Boldrek had no mechanical identity in his uniques — his House layer hands him one
+
+*All At Once* (×3.5) and *Avalanche* (×5.0) were both featureless single hits,
+the only hero whose entire unique kit was "big number, no rider." His passive
+*No Warning* (crits deal extra) was his sole distinguishing trait.
 
 The fix is already sitting in his own kit. Every shared Crush power he owns is
 about **removing armor rather than piercing it**:
@@ -299,17 +326,27 @@ about **removing armor rather than piercing it**:
 | `The Sky Falls` (t2) | Primary | −30% target `Armor`, plus vulnerability |
 | `Nothing Holds` (House) | House | shaves `Armor` on every attack, **and it stacks** |
 
-So Boldrek spends the whole early game stripping a target's guard and then
-his uniques ignore that entirely. **Making the uniques cash in the shred** — one
-that scales with how much `Armor` has already been removed, one that consumes the
-stack outright — gives him the same passive-banks / tier-4-reads / tier-5-spends
-shape Marisel has, without inventing a new mechanic. Crush's stated identity is
-*"does not go through the guard — it removes the guard"*, and his two biggest
-powers are the only ones that don't.
+So Boldrek spent the whole early game stripping a target's guard, and then his
+uniques ignored that entirely — while Crush's stated identity is *"does not go
+through the guard — it removes the guard."*
 
-**Grieve's `Room to Swing` overcaps, and it is not alone on his sheet.** He sits
-at `Armor` 40 against the 75 cap, so he has **35 points of headroom** — and three
-separate powers spend it:
+> **Applied.** The uniques now cash in the shred, using nothing his kit did not
+> already have:
+>
+> - **`All At Once`** *reads* the stack — **+10% damage per 10% of `Armor`
+>   already stripped, to a maximum of +40%**, leaving the shred in place.
+> - **`Avalanche`** *spends* it — **consumes every stack, converting each 10%
+>   removed into +15% damage, to a maximum of +60%**, after which the target's
+>   `Armor` returns to full.
+>
+> That gives him the same **passive banks → tier 4 reads → tier 5 spends** shape
+> Marisel has, which `03-powers.md` names as the template any stacking resource
+> should follow.
+
+### 4. Grieve's `Room to Swing` overcapped, and it was not alone on his sheet
+
+He sits at `Armor` 40 against the 75 cap, so he has **35 points of headroom** —
+and three separate powers were spending it:
 
 | Per enemy | 1 enemy | 3 enemies | 6 enemies |
 |---|---|---|---|
@@ -319,11 +356,15 @@ separate powers spend it:
 | +15 | 55 | 85 | 130 — overcaps |
 
 **+5 per enemy is the only value that fits**, and it fits only if nothing else is
-running. `Clear the Room` (tier 4) and `The Wide Reaping` (tier 5) both grant
-`Armor` on top, so in practice even +5 overcaps whenever a unique is active. He
-needs either a lower per-enemy figure, an explicit maximum, or one of the three
-converted to `Toughness` — which raises maximum HP and grants the same amount as
-current HP (see *Stacking* above), so it is never wasted.
+running. `Clear the Room` (tier 4) and `The Wide Reaping` (tier 5) both granted
+`Armor` on top, so in practice even +5 overcapped whenever a unique was active.
+
+> **Applied.** `Room to Swing` is now **+5 `Armor` per enemy in reach, maximum
+> +30**, and `The Wide Reaping` grants **`Toughness` instead of `Armor`**. A
+> `Toughness` buff raises maximum HP *and* grants the same amount as current HP
+> (see *Stacking* above), so unlike an overcapped `Armor` buff it is never
+> silently discarded. `Clear the Room` keeps its `Armor` buff — with the passive
+> capped at +30, one tier-4 buff fits inside what is left.
 
 ## Open
 
