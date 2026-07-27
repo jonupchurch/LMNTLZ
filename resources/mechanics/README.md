@@ -12,15 +12,20 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 
 | # | File | Covers | State |
 |---|------|--------|-------|
-| 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Drafted** — core settled, three tuning questions open |
-| 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, rules open |
-| 03 | `03-powers.md` | 6 active powers + 3 passives per hero; multipliers, cooldowns, healing | **Drafted** — 127 powers authored and costed; rider magnitudes blocked on 05 |
-| 04 | `04-turns.md` | The five-phase turn; turn order and action economy | **Drafted** — turn, phase order, Speed and reactions all settled |
-| 05 | *`05-status.md`* | Crowd control and buff/debuff effects; what Resolve resists | Not started — **taunt** and **fade** are named, and their targeting behaviour is settled in `04-turns.md` |
-| 06 | *`06-progression.md`* | Levels, rarity, shards, currency, the rating ladder | Not started |
-| 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started |
-| 08 | `08-guilds.md` | Guilds of up to 24, split into three event teams of up to 8 | **Drafted** — membership settled, competition format open |
+| 01 | `01-stats.md` | The ten hero stats and the damage resolution pipeline | **Settled** — every formula specified; the roster's *values* are the stat pass's problem |
+| 02 | `02-squads.md` | Squad size, the 2/3/1 formation, row rules and reach | **Drafted** — shape settled, six rules open |
+| 03 | `03-powers.md` | 6 active powers + 3 passives per hero; multipliers, cooldowns, healing | **Drafted** — 127 powers authored and costed, magnitudes now supplied by 05 |
+| 04 | `04-turns.md` | The five-phase turn; the turn queue and action economy | **Settled** — phases, targeting, reactions and turn order all decided |
+| 05 | `05-status.md` | Crowd control and buff/debuff effects; what Resolve resists | **Drafted** — magnitudes, potency, stacking and the effect catalog all specified |
+| 06 | *`06-progression.md`* | What a player earns, the currency, the rating ladder | Not started — **the blocker**, see below |
+| 07 | *`07-defense-ai.md`* | How the engine plays a defense squad | Not started — **unblocked**, the action space is now complete |
+| 08 | `08-guilds.md` | Guilds of up to 24, split into three Wings of 8 | **Drafted** — membership settled, rewards blocked on 06 |
 | 09 | *`09-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
+
+**Combat is done.** 01, 03, 04 and 05 together specify a battle end to end: who
+acts when, what a hit does, how two types combine, and what every adjective in a
+power's text means. Nothing in the combat layer is waiting on a decision. What
+remains there is **numbers**, not mechanisms.
 
 ## The bounded-formula rule
 
@@ -64,40 +69,49 @@ questions or keep raising them:
 - **Hero numbers.** The ten stats' tuning values *and* the per-hero reach
   assignment are one pass, to be done together later. `02-squads.md` keeps a
   starting proposal for reach; it is not a decision.
+
+  Three separate decisions now point at that pass, and they all say the same
+  thing — **the formulas are fine and the inputs are a template**:
+
+  | Symptom | Where it was found |
+  |---|---|
+  | `Speed` sits on a Role-determined 10-point grid, so a buff either changes nothing or promotes a hero a whole rung | `01-stats.md` |
+  | `Magic Resist` is a flat **30 for all 27 heroes** — and it is the stat the pricing decision says should be the one that *varies* | `01-stats.md` |
+  | Only **7 distinct `(Armor, MR, Penetration)` profiles** exist across the roster, five of them sharing `Armor` 15 | `01-stats.md` |
 - **Event specifics.** Which metrics an event tallies, reward tiers, and the
   shape of a season. The *structure* of guild events is settled in
   `08-guilds.md`; the content of them is for much later.
 
 ## Dependencies between them
 
-Some of these can't be finished out of order:
+The combat chain — 01 → 04 → 03 → 05 — is **resolved and closed.** Stats gated
+powers, turns gated powers, and powers gated status magnitudes while status gated
+the powers' riders in return. All four are now written and mutually consistent.
 
-- **Powers now gate only `05-status.md`, and are gated by it in return.**
-  `03-powers.md` names every rider — slows, burns, mitigation shreds, silence,
-  taunt, fade — but none of them has a magnitude or a duration, because
-  `05-status.md` has not said what those effects *are*. Powers can't be finished
-  without it and it can't start without them. **`05-status.md` is the next thing
-  to write**, and `Resolve` can't be tuned until it exists.
-- **Turns no longer gate powers.** `04-turns.md` now answers everything a power
-  needs in order to be written down: which phase each part of it resolves in,
-  that cooldowns count the owner's own turns and tick in Resolution, and that
-  riders stage then contest. **`03-powers.md` is unblocked and is the next
-  thing to write.**
-- **Stats gate powers.** Every power will reference stats to compute its
-  effect, so `01-stats.md` needs to be stable first — which is why it's the
-  one that exists.
-- **Squads and powers gate each other.** Whether a power can reach the back
-  row is a power property, but *what the rows mean* is a squad property.
-  `02-squads.md` names the row-reach question; `03-powers.md` is where each
-  power answers it. Neither finishes alone.
-- **Defense AI gates nothing but needs everything.** It can only be written
-  once there's a full action space to choose from — and that space just grew:
-  reactions mean an engine-run squad now makes choices on the *attacker's* turn
-  as well as its own.
-- **Guilds gate nothing and block on progression.** The membership and team
-  arithmetic is settled and needs nothing else, but rewards can't be specified
-  until `06-progression.md` defines a currency to pay them in. Safe to design
-  in parallel with powers and turns.
+What is left has a much simpler shape:
+
+- **`06-progression.md` is the single blocker in the project.** `08-guilds.md`
+  cannot specify a reward until there is a currency to pay it in, and
+  `09-equipment.md` cannot say what a rune costs. It is also the only document
+  that has to answer a question the rest of the design has deliberately made
+  hard: **all 27 heroes are unlocked from the start and identical for every
+  player**, so progression cannot be roster power. What a player earns instead —
+  and whether it converts into strength at all — is the open question, not a
+  detail of it.
+- **`07-defense-ai.md` gates nothing, and is now unblocked.** It needed a
+  complete action space and it has one: the five phases, the four-stage targeting
+  pipeline, reactions on the attacker's turn, and the cooldown ladder. Worth
+  weighing that the engine plays **every** defense squad for every player and
+  the player never plays defense at all — so the AI's quality *is* the defensive
+  half of the game, not a fallback for when a human is absent.
+- **`02-squads.md` has six open rules**, none blocking. The two with real
+  strategic weight are *which zone deserves the stronger heroes* (which depends
+  on the rating stakes attached to each, so it leans on 06) and *whether
+  anything besides reach depends on row* (which belongs to 07).
+- **`09-equipment.md` is deliberately last**, and everything above has been
+  written to accommodate it — see the bounded-formula rule.
+- **The hero-numbers pass is orthogonal to all of it.** Every formula is
+  specified; the values feeding them are a template. See *Parked* below.
 
 ## Settled elsewhere, assumed here
 

@@ -128,11 +128,45 @@ re-litigated.
 > `ai-tools` toolkit; Next.js was considered and explicitly rejected — Steam
 > requires a static bundle, so its server half is unusable. Don't follow it.
 
+## Combat is specified; don't re-derive it
+
+`resources/mechanics/01`, `03`, `04` and `05` together resolve a battle end to
+end. The formulas below are decided — read them there rather than reasoning them
+out again:
+
+```
+packet  = Might × power.multiplier          # Luck is NOT in this
+HP      = Toughness × 50
+attack  = Perception + rand(1 .. Luck × 1.5)     # Luck IS the die; no d100
+defense = Agility    + rand(1 .. Luck × 1.5)     # ties to the defender
+crit    = Luck × 0.5 percent, for packet × 2
+E       = (Armor or Magic Resist) − Penetration ; K = 75
+final   = max(packet × 0.25, mitigated × typeMultiplier)
+```
+
+- **Turn order is a bounded accumulator.** Every hero gains `50 + Speed` per
+  tick and acts at 100, so Speed 45 acts 1.46× as often as Speed 15 and the
+  geared ceiling is 1.92×. Drain the accumulator in a loop, never test it once.
+  A **tick is internal** — the player sees a projected turn queue.
+- **Type effectiveness** is ×1.50 Bane · ×1.25 Fault · ×1.00 · ×0.80 secondary ·
+  ×0.50 primary. A **dual-typed power takes the better of its two types**, and a
+  mixed martial/arcane one answers the defender's *lower* mitigation stat. The
+  consequence is deliberate: **no tier-4 or tier-5 power is ever resisted.**
+- **`Magic Resist` is worth ~2× `Armor` and is deliberately left unpriced.**
+- **Stat buffs are flat points, including `Speed`** — the accumulator's base
+  constant already normalizes them, so a percentage would favour the fastest.
+
 ## Deliberately undecided
 
-- Powers, damage multipliers beyond the Bane's +50%, turn order, the defense AI,
-  and progression. See `resources/mechanics/README.md` for the index and what
-  blocks what.
+- **`06-progression.md` is the one real blocker.** Guild rewards and equipment
+  costs both wait on it, and it has to answer something the design made hard on
+  purpose: all 27 heroes are unlocked from the start, so progression cannot be
+  roster power.
+- **`07-defense-ai.md`** — unblocked now that the action space is complete. The
+  engine plays *every* defense squad, so this is the defensive half of the game.
+- **The hero-numbers pass** — every formula is specified; the values are still a
+  Role-shaped template. See `resources/mechanics/README.md` for the index, the
+  dependency read, and what each remaining document is waiting on.
 
 ## Toolkit available in this repo
 
