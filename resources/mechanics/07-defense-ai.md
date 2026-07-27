@@ -47,9 +47,57 @@ set is ignored, and a compulsion naming a hero outside that set does not apply.
 **A taunt beats a priority**, always: compulsion resolves first, so a taunting
 Tank pulls a defender off its preferred target exactly as it pulls a player.
 
-**If no candidate matches the priority, the next-best does.** Priority is a sort
-over the survivors of stages 1–3, never a filter — so it can never produce "no
-legal target" where one exists, and it needs no special-case rule.
+**Priority is a sort over the survivors of stages 1–3, never a filter** — so it
+can never produce "no legal target" where one exists, and it needs no
+special-case rule.
+
+### A primary and a fallback, not one choice
+
+> **Each champion carries two targeting rules in order — a primary and a
+> fallback.** *"Buffers first, then lowest HP."* Anything still tied after both
+> is resolved by the engine.
+
+**Settled 2026-07-27.** This exists because a single rule decides nothing most of
+the time. There are only **3 Buffers among 27 heroes** — 12 Strikers, 7 Tanks, 5
+Ranged, 3 Buffers — and a defending champion chooses from 2 candidates at reach 1
+or 5 at reach 2. Simulated over 200,000 random squads:
+
+| Priority | Candidates | No match | Exactly one | Tie (2+) | **Undefined** |
+|---|---|---|---|---|---|
+| Buffers first | 2 | **78.7%** | 20.4% | 0.9% | **79.6%** |
+| Tanks first | 2 | 54.1% | 40.0% | 6.0% | 60.0% |
+| Ranged first | 2 | 66.0% | 31.2% | 2.8% | 68.8% |
+| Buffers first | 5 | 52.6% | 39.6% | 7.8% | **60.4%** |
+| Tanks first | 5 | 19.3% | 42.0% | 38.7% | 58.0% |
+| Strikers first | 5 | 3.8% | 20.3% | **75.9%** | **79.7%** |
+
+**A single role priority leaves the choice undefined 49–80% of the time** —
+either nothing matches, or several do and nothing says which. *"Buffers first"*
+on a reach-1 defender finds no Buffer at all in **four turns out of five**. The
+fallback is therefore not an edge case; it is the rule that usually fires, which
+is exactly why it should be the defender's decision rather than a hidden default.
+
+> **This is not an argument about variety.** A single choice already gives
+> 9 × 240 = 2,160 configurations per champion and ~10²⁰ per squad; a primary plus
+> fallback gives 72 × 240 = 17,280 and ~10²⁴. Nobody exhausts either. The reason
+> is that the old rule was **under-specified**, not that it was too small.
+
+Anything still tied after both rules is broken by the engine, in a fixed order
+that never varies — a server-authoritative sim re-derived from an action log
+**must** produce identical output from identical input:
+
+| # | Tiebreak |
+|---|---|
+| 1 | the champion's **primary** rule |
+| 2 | the champion's **fallback** rule |
+| 3 | nearest row |
+| 4 | squad slot |
+
+**Two dropdowns, not a ranking widget.** A full ordered ranking of the whole menu
+was considered — it matches how power preference works and would be internally
+consistent — but it puts a nine-item ranking on each of twelve defense champions
+alongside the six-item power ranking already there. Two rules cover the case that
+actually fires, and the third and fourth tiebreaks cost the player nothing.
 
 ### The menu
 
@@ -84,7 +132,8 @@ cooldown of 0 and no gate, so a legal choice always exists and no fallback rule
 is needed.
 
 That is the whole algorithm. **The defender's entire interface is two ordered
-lists per hero** — who to hit, which power to use — and nothing else.
+lists per champion** — a **pair** of targeting rules and a **ranking** of all six
+powers, who to hit and which power to use — and nothing else.
 
 ### Why ranking beats firing the biggest thing available
 
@@ -209,11 +258,11 @@ later.
 
 ## Open
 
-- **Whether targeting is a single choice or an ordered list too.** Power
-  preference is an ordered ranking, so a single-choice targeting priority is now
-  the odd one out. An ordered chain — *Buffers, then lowest HP, then nearest* —
-  would be consistent and more expressive, at the cost of a second ranking widget
-  on every squad row. The fallback rule above works either way.
+- ~~**Whether targeting is a single choice or an ordered list too.**~~
+  **Settled: a primary and a fallback**, two dropdowns rather than a ranking
+  widget. See *A primary and a fallback, not one choice* — a single rule leaves
+  the target undefined 49–80% of the time, so the fallback is the rule that
+  usually fires.
 - ~~**Whether reactive powers are configurable.**~~ **Settled — they are not.**
   `04-turns.md` makes "reactive" a **property of the power**, so nothing here
   configures it. The stance version was rejected because the obvious cost is
