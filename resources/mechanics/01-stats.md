@@ -697,10 +697,10 @@ zero auto-misses** — the harmless direction.
   cooldowns. The standing note that battle length was inherited rather than
   chosen is substantially answered by this.
 
-### The cost: `Luck` is a better dodge stat than `Agility`
+### `Luck` is a better dodge stat than `Agility` — **accepted, parked 2026-07-27**
 
 This change makes an existing inversion **more visible rather than less**, and it
-is left standing for the hero-numbers pass:
+is deliberately left standing:
 
 | Defender | `Agility` | `Luck` | Miss vs an average attacker |
 |---|---|---|---|
@@ -711,11 +711,22 @@ Cirrolan carries *ten more* `Agility` than Ossic and dodges half as often,
 because `Luck` 40 rolls 1..60 against `Luck` 15's 1..22. At `+20` he stops
 dodging entirely.
 
-**This is the same failure as `Magic Resist`: the stat named for the job is not
-the one doing it.** The fix is compressing the `Luck` range — a roster data
-change with no formula movement — but `Luck` also drives crit rate and every
-rider contest, so it is a coupled change belonging to the hero-numbers pass and
-needs a sim to verify.
+Structurally this is the same shape as `Magic Resist` — the stat named for the
+job is not the one doing it. **It is being kept anyway**, for two reasons:
+
+- **It is defensible on `Luck`'s own terms.** *Landing a blow* frames `Luck` as
+  "low is consistent, high is volatile — a real build decision rather than a
+  number that is simply better." A volatile champion being harder to pin down is
+  that identity working, not contradicting it.
+- **The clamp already bounds the damage it can do.** Unbounded it produced a
+  98.2% miss rate; inside the band the worst case is 35%, which is a strong
+  defensive build rather than a broken one.
+
+> **Parked as a possible later tweak, not queued as a fix.** If it is ever
+> revisited, the lever is compressing the `Luck` range — a roster data change
+> with no formula movement. But `Luck` also drives crit rate and every rider
+> contest, so it is coupled, belongs to the hero-numbers pass, and needs a sim to
+> verify. Do not re-raise it before then.
 
 ### The clamp is what makes runes safe
 
