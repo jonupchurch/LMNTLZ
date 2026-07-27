@@ -301,15 +301,67 @@ assumption nobody wrote down.
 
 ---
 
+## Acting outside your own turn
+
+Two mechanics let a champion act when it is not its turn. Both are now bounded by
+rules that already exist rather than by numbers chosen for the purpose.
+
+### Reactions — **settled**, see `04-turns.md`
+
+A reaction **fires on an evaded attack**, and **"reactive" is a property of the
+power, not a stance a champion adopts**. Full reasoning in `04-turns.md` →
+*Reactions*, along with the finding that **no reactive power exists in the
+roster**, which leaves Silka's `Already Gone` and Hettamar's `Nothing to Discuss`
+as two dead unique passives.
+
+### Silka's bonus action — bounded by reach
+
+> **`Quicker Than Told` chains as many times as there are enemies in reach.**
+
+Settled 2026-07-27, replacing an arbitrary cap of two. The bonus action still
+runs phases 2–4 only — no cooldown tick, no Upkeep — and still requires the kill:
+*"Silka acts again immediately if the target is defeated."*
+
+**The bound derives the old number instead of asserting it.** Silka is `Might` 40
+and therefore **reach 1**, so she must occupy a front slot — from the middle seat
+a reach-1 champion reaches only its own front line and cannot attack at all. At
+full formation she reaches exactly one row, and the 2/3/1 formation makes that
+two champions:
+
+| Board state | What she reaches | Chain cap |
+|---|---|---|
+| Full formation | enemy front row | **2** |
+| Enemy front row wiped | enemy middle row | **3** |
+| Front and middle gone | enemy back seat | **1** |
+
+So the cap is two at the opening — exactly the figure it replaces — and *grows*
+as the enemy line collapses, because `02-squads.md` skips fully empty rows. It
+rides the *a squad gains reach as it loses heroes* dynamic rather than needing a
+rule of its own, and it is learnable in one sentence: **as many times as there
+are enemies you can reach.**
+
+**It rarely binds.** The bonus action does not tick cooldowns, so
+`Quicker Than Told` itself is never available on it — links two and three run on
+whatever else is off cooldown, realistically `Seamfinder` at ×1, which is 40 raw
+damage before mitigation. Killing twice more with that needs two enemies already
+at execution range and in reach. This is a legibility fix, not a balance one.
+
+> **A multi-target version was considered and rejected.** Giving the power an
+> independent hit roll per target in reach would insure it against a single bad
+> accuracy roll — a real problem, since phase 3 resolves per target and
+> multi-target powers therefore cannot whiff entirely. But the roster prices
+> multi-target *below* single-target: `The Current Takes All` is **×2.5 for three
+> targets**, so a ×5 across three would be 600 raw against its 200 and the
+> multiplier would have to fall to about ×2.5. Losing the kill trigger and the
+> burst on top of that converts Silka from an assassin into a cleaver, which sits
+> badly with Pierce and with a kit built on `Thread the Guard`, `Already Behind
+> You` and `Seamfinder`. **The variance asymmetry is roster-wide** — it hits
+> `Avalanche` and every other long-cooldown single-target ultimate — so it
+> belongs to the hero-numbers pass rather than being fixed on one hero.
+
+---
+
 ## Open
-- **Reaction details.** Whether a reaction fires on an *evaded* attack, and
-  whether "reactive" is a power property or a stance a hero adopts. The second is
-  the more interesting: defense is otherwise entirely engine-run, so a reactive
-  stance would be the first defensive decision a player makes.
-- **Silka's bonus action needs a UI story.** It runs phases 2–4 only — no
-  cooldown tick, no upkeep — and chains to a maximum of two, so up to three
-  attacks in one turn. The cap is arbitrary and has to be learnable from
-  somewhere.
 - ~~**Rider magnitudes are unwritten.**~~ **Written** — `05-status.md` indexes
   every magnitude, duration and potency per tier.
 - ~~**The pool formula.**~~ **Written** — `HP = Toughness × 50` in `01-stats.md`.
