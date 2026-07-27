@@ -252,13 +252,42 @@ in the other direction.
 ### Type effectiveness, last
 
 ```
-typed = mitigated × typeMultiplier      # Bane ×1.5; Fault and resisted TBD
+typed = mitigated × typeMultiplier
 ```
+
+**Five levels, mirroring the derivation.** Every hero has two strengths and two
+weaknesses, and the weaknesses already split into major and minor — so the
+strengths do too:
+
+| Attacker's type is… | Multiplier | |
+|---|---|---|
+| the defender's **Bane** | **×1.50** | `counter(primary)` — major weakness |
+| the defender's **Fault** | **×1.25** | `counter(secondary)` — minor weakness |
+| unrelated | ×1.00 | |
+| the defender's **secondary** | **×0.80** | minor strength |
+| the defender's **primary** | **×0.50** | major strength |
+
+Best-to-worst swing is **3×**, which is what makes reading an enemy's profile
+worth doing. The ×0.50 exactly ties the 25% damage floor at maximum mitigation,
+so the two limits agree rather than fighting.
 
 Applying doors and banes **after** mitigation rather than before is free:
 both are multiplicative, so they commute and the final number is identical
 either way. It is purely a presentation choice — and it closes the "how do
 steps 4–6 compose" question this file carried as open.
+
+> **Friendly powers are never resisted.** A power aimed at an ally skips type
+> effectiveness entirely and skips the `Resolve` contest for its riders. You do
+> not shrug off your own healer, and a Fire ally's buff is not blunted by your
+> Fire primary. Reach still applies — one rule, no exceptions (`02-squads.md`).
+
+### Rounding
+
+**Full precision through the whole pipeline; round once, at the end, to the
+nearest whole number.** Rounding at each step compounds error and makes the same
+attack produce different totals depending on how the steps are grouped. Replays
+are stored event logs rather than re-simulations (`../../docs/tech-stack.md`),
+so only the final figure is ever persisted.
 
 ### The damage floor
 

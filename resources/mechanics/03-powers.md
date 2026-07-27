@@ -126,9 +126,27 @@ one head.
 **Healing scales off `Might`,** like everything else. `Might` is deliberately
 type-agnostic and is the only offense stat, so a heal has no other anchor.
 
-A heal runs the **Defense phase** exactly as an attack does — it is the same
-operation with the sign reversed — and is **reach-limited exactly as an attack
-is**, per the single reach rule in `02-squads.md`.
+### How a heal resolves
+
+A heal moves a number against a pool, and that is *all* it shares with an
+attack. It runs a short path of its own:
+
+| Step | Applies to a heal? |
+|---|---|
+| **Reach** | **Yes** — one rule, no exceptions (`02-squads.md`) |
+| Evasion roll | **No** — an ally never dodges a heal |
+| Mitigation | **No** — the target's own Armor never blunts it |
+| Type effectiveness | **No** — friendly powers are never resisted |
+| `Resolve` contest | **No** — same reason |
+| Crit | **Yes** — a heal can spike, at the healer's own `Luck` |
+| The 25% floor | **No** — the floor is a guarantee about hits |
+
+> An earlier draft of this file said a heal *"runs the Defense phase exactly as
+> an attack does."* Read literally that meant a heal rolled against the ally's
+> `Agility` to land and was then reduced by that ally's own `Armor` — both
+> absurd. The table above is what was meant.
+
+Healing is capped at the target's maximum HP; overheal is simply lost.
 
 All healing in the game sits in the three Buffers' tier-4 slot, one at each
 scale:
