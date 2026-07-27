@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes f-pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:820px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px;min-width:0">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">RUNE FORGE</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;color:#6E6690;border-left:1px solid #241F38;padding-left:16px;white-space:nowrap">PLANNING IS FREE · COMMITTING IS PERMANENT</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;flex:0 0 auto">
+      <div style="display:flex;align-items:center;gap:10px;background:#1C1930;border:1px solid #F2C744;border-radius:8px;padding:7px 14px;box-shadow:0 0 18px rgba(242,199,68,0.16)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:15px;color:#F2C744">◈</div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:#F2C744;line-height:1">{{ shardsText }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8;margin-top:2px">RUNE SHARDS</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690">SLOTS FILLED</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#F4EFE4;margin-top:2px">{{ kitText }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding-left:16px;border-left:1px solid #241F38"><div style="width:26px;height:26px;border-radius:7px;background:#241F38;border:1px solid #3A3357"></div><span style="font-size:12.5px;color:#B4AECB">jonupchurch</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="width:238px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:14px 14px 12px;border-bottom:1px solid #241F38">
+        <div style="display:flex;align-items:center;gap:9px;height:34px;border-radius:7px;background:#1C1930;border:1px solid #3A3357;padding:0 11px;margin-bottom:10px" style-hover="border-color:#57507A">
+          <div style="width:11px;height:11px;border:2px solid #8E87A8;border-radius:50%;flex:0 0 auto"></div>
+          <input type="text" placeholder="Find a champion" value="{{ query }}" onInput="{{ onQuery }}" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:13px" />
+        </div>
+        <div style="display:flex;gap:5px">
+          <div onClick="{{ filterAll }}" style="flex:1;text-align:center;padding:6px 0;border-radius:6px;border:1px solid {{ fAllBorder }};background:{{ fAllBg }};cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.06em;color:#EDEAF6">ALL 27</div>
+          <div onClick="{{ filterOpen }}" style="flex:1;text-align:center;padding:6px 0;border-radius:6px;border:1px solid {{ fOpenBorder }};background:{{ fOpenBg }};cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.06em;color:#EDEAF6">OPEN</div>
+          <div onClick="{{ filterBare }}" style="flex:1;text-align:center;padding:6px 0;border-radius:6px;border:1px solid {{ fBareBorder }};background:{{ fBareBg }};cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.06em;color:#EDEAF6">BARE</div>
+        </div>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px;min-height:0">
+        <sc-for list="{{ heroes }}" as="h" hint-placeholder-count="14">
+          <div onClick="{{ h.select }}" style="display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:8px;background:{{ h.bg }};border:1px solid {{ h.border }};cursor:pointer" style-hover="border-color:#57507A">
+            <div style="width:30px;height:30px;background-image:{{ h.emblemUrl }};background-size:contain;background-repeat:no-repeat;background-position:center;flex:0 0 auto"></div>
+            <div style="min-width:0;flex:1">
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.03em;color:{{ h.nameColor }};line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ h.name }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ h.core }};margin-top:3px">{{ h.typeLine }}</div>
+            </div>
+            <div style="display:flex;gap:3px;flex:0 0 auto">
+              <sc-for list="{{ h.pips }}" as="p" hint-placeholder-count="3">
+                <div style="width:6px;height:22px;border-radius:2px;background:{{ p.bg }};box-shadow:{{ p.ring }}"></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex:1 1 auto;min-width:900px;overflow-y:auto;min-height:0">
+      <div style="position:relative;height:128px;background-image:{{ hero.img }};background-size:cover;background-position:50% 14%;background-color:#241F38">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,23,.4) 0%,rgba(14,12,23,.1) 34%,rgba(20,18,33,.97) 100%)"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:0 22px 12px;display:flex;align-items:flex-end;gap:14px">
+          <div style="width:44px;height:44px;background-image:{{ hero.emblemUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto;filter:drop-shadow(0 2px 8px rgba(14,12,23,.9))"></div>
+          <div style="min-width:0;flex:1">
+            <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:26px;letter-spacing:0.02em;color:#F4EFE4;line-height:1.05;text-shadow:0 2px 14px rgba(14,12,23,.9)">{{ hero.name }}</div>
+            <div style="font-size:13px;color:#D6CBE8;margin-top:3px">{{ hero.epithet }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex:0 0 auto">
+            <div style="display:flex;align-items:center;gap:6px;background:{{ hero.core }};border:1px solid {{ hero.accent }};border-radius:6px;padding:5px 10px 5px 7px"><div style="width:20px;height:20px;background-image:{{ hero.typeBadgeUrl }};background-size:contain;background-repeat:no-repeat"></div><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.1em;color:#F4EFE4">{{ hero.typeName }}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(14,12,23,.8);border:1px solid #3A3357;border-radius:6px;padding:5px 10px 5px 7px"><div style="width:20px;height:20px;background-image:{{ hero.secondBadgeUrl }};background-size:contain;background-repeat:no-repeat"></div><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.1em;color:#B4AECB">{{ hero.secondName }}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:18px 22px 40px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:14px;flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">THREE SLOTS · ONE PRIMARY, ONE SECONDARY, ONE COMMON</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E87A8">{{ hero.investedText }}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <sc-for list="{{ slots }}" as="s" hint-placeholder-count="3">
+            <div onClick="{{ s.select }}" style="border:2px solid {{ s.border }};border-radius:11px;background:{{ s.bg }};cursor:pointer;box-shadow:{{ s.shadow }};overflow:hidden" style-hover="border-color:{{ s.hoverBorder }}">
+              <div style="display:flex;align-items:center;gap:9px;padding:11px 12px;border-bottom:1px solid #241F38;background:{{ s.headBg }}">
+                <div style="width:26px;height:26px;background-image:{{ s.badgeUrl }};background-size:contain;background-repeat:no-repeat;background-position:center;background-color:{{ s.badgeBg }};border-radius:7px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ s.glyphColor }}">{{ s.fallbackGlyph }}</div>
+                <div style="min-width:74px;flex:1">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.08em;color:#F4EFE4;line-height:1.15;white-space:nowrap">{{ s.tierLabel }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:{{ s.elColor }};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.elLabel }}</div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:{{ s.stateColor }};border:1px solid {{ s.stateColor }};border-radius:4px;padding:3px 6px;flex:0 0 auto">{{ s.stateLabel }}</div>
+              </div>
+              <div style="padding:11px 12px;display:grid;gap:5px">
+                <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:{{ r.bg }};border:1px {{ r.style }} {{ r.border }}">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:#6E6690;width:32px;flex:0 0 auto">{{ r.kind }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:{{ r.valColor }};width:24px;flex:0 0 auto">{{ r.val }}</div>
+                    <div style="font-size:11px;color:{{ r.labelColor }};min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:0 12px 11px">
+                <div style="height:4px;border-radius:99px;background:#0E0C17;overflow:hidden"><div style="width:{{ s.progress }};height:4px;background:{{ s.progressFill }}"></div></div>
+                <div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#6E6690">{{ s.stageText }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#8E87A8">{{ s.spentText }}</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 0 11px;gap:14px;flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">STAT LINE · CAP 75 PER STAT</div>
+          <div style="display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:8px;border-radius:2px;background:#3A3357"></div><span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8E87A8">BASE</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:8px;border-radius:2px;background:#C64BB0"></div><span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8E87A8">PLACED</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:8px;border-radius:2px;background:#F2C744"></div><span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#F2C744">DRAFT</span></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#B4AECB;border-left:1px solid #241F38;padding-left:13px">TOTAL {{ hero.totalText }}</div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #241F38;background:#141221">
+          <sc-for list="{{ statRows }}" as="r" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:118px 1fr 128px;align-items:center;gap:13px;padding:8px 15px;border-bottom:1px solid #1C1930;background:{{ r.rowBg }}">
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:{{ r.nameColor }}">{{ r.name }}</div>
+              <div style="height:11px;border-radius:3px;background:#1C1930;overflow:hidden;display:flex">
+                <div style="width:{{ r.baseW }};height:11px;background:#3A3357"></div>
+                <div style="width:{{ r.runeW }};height:11px;background:#C64BB0"></div>
+                <div style="width:{{ r.draftW }};height:11px;background:{{ r.draftColor }}"></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8E87A8">{{ r.base }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ r.deltaColor }};width:34px;text-align:right">{{ r.delta }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:{{ r.totalColor }};width:24px;text-align:right">{{ r.total }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ hasEffects }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:18px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">PASSIVES FROM COMPLETED RUNES</div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <sc-for list="{{ effectList }}" as="e" hint-placeholder-count="2">
+                <div style="display:flex;align-items:flex-start;gap:10px;border:1px solid {{ e.border }};border-left:3px solid {{ e.border }};border-radius:8px;background:#141221;padding:11px 13px;max-width:320px">
+                  <div style="width:22px;height:22px;border-radius:6px;background:{{ e.chipBg }};background-image:{{ e.badgeUrl }};background-size:contain;background-repeat:no-repeat;background-position:center;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ e.chipColor }}">{{ e.fallbackGlyph }}</div>
+                  <div style="min-width:0">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:#F4EFE4">{{ e.name }}</div>
+                    <div style="font-size:12px;line-height:1.45;color:#8E87A8;margin-top:3px">{{ e.text }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:{{ e.border }};margin-top:5px">{{ e.source }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="width:412px;flex:0 0 auto;background:#141221;border-left:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:14px 16px 13px;border-bottom:1px solid #241F38">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px">
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4">{{ b.title }}</div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:22px;height:22px;border-radius:6px;background:{{ b.chipBg }};background-image:{{ b.badgeUrl }};background-size:contain;background-repeat:no-repeat;background-position:center;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ b.chipColor }}">{{ b.fallbackGlyph }}</div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:{{ b.elColor }}">{{ b.elLabel }}</span>
+          </div>
+        </div>
+        <div style="font-size:12.5px;line-height:1.5;color:#8E87A8">{{ b.sub }}</div>
+        <sc-if value="{{ b.showMode }}" hint-placeholder-val="{{ false }}">
+          <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:7px;padding:3px;gap:3px;margin-top:11px">
+            <div onClick="{{ b.setStage }}" style="padding:6px 12px;border-radius:5px;background:{{ b.stageBg }};color:{{ b.stageColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.08em">NEXT STAGE</div>
+            <div onClick="{{ b.setFull }}" style="padding:6px 12px;border-radius:5px;background:{{ b.fullBg }};color:{{ b.fullColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:10.5px;letter-spacing:0.08em">WHOLE RUNE · 650</div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:14px 16px 16px">
+        <sc-if value="{{ b.done }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #4E7C3A;border-radius:9px;background:rgba(78,124,58,0.08);padding:16px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#4E7C3A;margin-bottom:8px">RUNE COMPLETE</div>
+            <div style="font-size:13.5px;line-height:1.6;color:#B4AECB">All four components are placed. A fully-runed slot is fully runed — there is no further stage to buy. To change what it does, the rune must be destroyed and rebuilt from stage one.</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ b.showSteps }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;gap:5px;margin-bottom:14px">
+              <sc-for list="{{ b.steps }}" as="st" hint-placeholder-count="4">
+                <div style="flex:1;padding:7px 6px;border-radius:6px;border:1px {{ st.style }} {{ st.border }};background:{{ st.bg }};text-align:center">
+                  <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10.5px;color:{{ st.valColor }}">{{ st.val }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.06em;color:{{ st.labelColor }};margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ st.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ b.pickStat }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:10px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#F2C744">{{ b.pickTitle }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8E87A8">MUST BE A DISTINCT STAT</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                  <sc-for list="{{ b.statOptions }}" as="o" hint-placeholder-count="10">
+                    <div onClick="{{ o.pick }}" style="border:1px solid {{ o.border }};border-radius:7px;background:{{ o.bg }};padding:8px 9px;cursor:{{ o.cursor }}" style-hover="border-color:{{ o.hoverBorder }}">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+                        <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.04em;color:{{ o.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.name }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:{{ o.arrowColor }};flex:0 0 auto">{{ o.arrow }}</span>
+                      </div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ o.noteColor }};margin-top:4px">{{ o.note }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ b.pickUtil }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:10px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#F2C744">{{ b.pickTitle }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ b.elColor }}">{{ b.utilSourceLabel }}</div>
+                </div>
+                <div style="display:grid;gap:6px">
+                  <sc-for list="{{ b.utilOptions }}" as="u" hint-placeholder-count="5">
+                    <div onClick="{{ u.pick }}" style="border:1px solid {{ u.border }};border-radius:8px;background:{{ u.bg }};padding:10px 11px;cursor:pointer;display:flex;align-items:flex-start;gap:10px" style-hover="border-color:{{ u.hoverBorder }}">
+                      <div style="width:22px;height:22px;border-radius:6px;background:{{ u.chipBg }};background-image:{{ u.badgeUrl }};background-size:contain;background-repeat:no-repeat;background-position:center;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ u.chipColor }}">{{ u.fallbackGlyph }}</div>
+                      <div style="min-width:0">
+                        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:{{ u.nameColor }}">{{ u.name }}</div>
+                        <div style="font-size:12px;line-height:1.45;color:#8E87A8;margin-top:3px">{{ u.text }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="flex:0 0 auto;border-top:1px solid #241F38;padding:13px 16px 15px;background:#161327">
+        <sc-if value="{{ b.showLedger }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:5px;margin-bottom:11px">
+            <div style="display:flex;justify-content:space-between"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8">{{ b.ledgerLabel }}</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#F2C744">{{ b.ledgerCost }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8">SHARDS AFTER</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:{{ b.afterColor }}">{{ b.afterText }}</span></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ b.warn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:7px;background:rgba(192,49,58,.1);border:1px dashed #C0313A;margin-bottom:11px">
+            <div style="width:11px;height:11px;border:1px solid #C0313A;transform:rotate(45deg);flex:0 0 auto;margin-top:3px"></div>
+            <div style="font-size:12px;line-height:1.45;color:#F06A72">{{ b.warn }}</div>
+          </div>
+        </sc-if>
+        <div style="display:flex;gap:8px">
+          <div onClick="{{ b.commit }}" style="flex:1;height:42px;border-radius:8px;background:{{ b.commitBg }};border:1px solid {{ b.commitBorder }};display:flex;align-items:center;justify-content:center;gap:8px;cursor:{{ b.commitCursor }};font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.1em;color:{{ b.commitColor }}" style-hover="filter:brightness(1.08)">{{ b.commitText }}</div>
+          <div onClick="{{ b.askReplace }}" style="height:42px;padding:0 15px;border-radius:8px;border:1px solid {{ b.replaceBorder }};display:flex;align-items:center;cursor:{{ b.replaceCursor }};font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.1em;color:{{ b.replaceColor }}" style-hover="border-color:#C0313A;color:#F06A72">REPLACE</div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#57507A;margin-top:9px;line-height:1.6">{{ b.foot }}</div>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(14,12,23,.88);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px">
+      <div style="width:min(520px,100%);border:1px solid {{ modal.border }};border-radius:12px;background:#1C1930;box-shadow:0 24px 70px rgba(0,0,0,.75);overflow:hidden">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #241F38">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:9px">
+            <div style="width:26px;height:26px;border-radius:{{ modal.iconRadius }};border:2px solid {{ modal.border }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:{{ modal.border }};transform:{{ modal.iconRotate }}"><span style="transform:{{ modal.iconCounter }}">{{ modal.icon }}</span></div>
+            <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.04em;color:#F4EFE4">{{ modal.title }}</div>
+          </div>
+          <div style="font-size:14px;line-height:1.6;color:#B4AECB">{{ modal.body }}</div>
+        </div>
+        <div style="padding:16px 22px">
+          <sc-if value="{{ modal.hasList }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:5px;margin-bottom:14px">
+              <sc-for list="{{ modal.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:6px;background:{{ l.bg }};border:1px {{ l.style }} {{ l.border }}">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.06em;color:#6E6690;width:38px;flex:0 0 auto">{{ l.kind }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:{{ l.valColor }};width:26px;flex:0 0 auto">{{ l.val }}</div>
+                  <div style="font-size:12.5px;color:#EDEAF6;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:7px;background:#141221;border:1px solid #241F38;margin-bottom:14px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#8E87A8">{{ modal.costLabel }}</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#F2C744">◈ {{ modal.cost }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6690">→ {{ modal.after }} LEFT</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:9px">
+            <div onClick="{{ modal.confirm }}" style="flex:1;height:42px;border-radius:8px;background:{{ modal.ctaBg }};display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.1em;color:{{ modal.ctaColor }}" style-hover="filter:brightness(1.1)">{{ modal.cta }}</div>
+            <div onClick="{{ closeModal }}" style="height:42px;padding:0 18px;border-radius:8px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:#B4AECB" style-hover="border-color:#57507A;color:#F4EFE4">KEEP PLANNING</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:940}}">
+const TYPES = {
+  earth:{name:"EARTH",core:"#4E7C3A",accent:"#C9922E",glyph:"\u25C6"},
+  air:{name:"AIR",core:"#8FCFE0",accent:"#DCE6EA",glyph:"\u2248"},
+  fire:{name:"FIRE",core:"#E8552B",accent:"#FFB347",glyph:"\u25B2"},
+  water:{name:"WATER",core:"#2A7FB8",accent:"#4FC3D6",glyph:"\u25D1"},
+  light:{name:"LIGHT",core:"#F2C744",accent:"#FFF6D6",glyph:"\u2733"},
+  dark:{name:"DARK",core:"#7A3FA0",accent:"#C64BB0",glyph:"\u25CF"},
+  slash:{name:"SLASH",core:"#C0313A",accent:"#F06A72",glyph:"\u2571"},
+  pierce:{name:"PIERCE",core:"#3B5BD1",accent:"#7B93F0",glyph:"\u2191"},
+  crush:{name:"CRUSH",core:"#B5732E",accent:"#E0A15A",glyph:"\u25AC"}
+};
+const STATS = [
+  ["might","Might"],["perception","Perception"],["agility","Agility"],["penetration","Penetration"],
+  ["armor","Armor"],["resist","Magic Resist"],["toughness","Toughness"],["speed","Speed"],
+  ["resolve","Resolve"],["luck","Luck"]
+];
+const CAP = 75;
+const ROSTER = [
+  ["01-earth-bramwen","Bramwen","the Slow Wrath","earth","fire",[58,26,18,30,44,32,55,22,38,20]],
+  ["02-earth-ossic","Ossic","Keeper of Bones","earth","dark",[36,30,16,24,52,44,58,18,42,22]],
+  ["03-earth-terragosa","Terragosa","the Green Crown","earth","light",[40,34,26,26,40,46,50,28,44,24]],
+  ["04-air-zephyrine","Zephyrine","Thin Blade of Wind","air","light",[46,52,58,38,20,26,30,54,26,30]],
+  ["05-air-cirrolan","Cirrolan","Whisper of the High Reach","air","water",[38,48,54,30,22,34,32,50,30,34]],
+  ["06-air-vael","Vael","the Falling Sky","air","dark",[52,46,56,34,18,22,26,58,22,28]],
+  ["07-fire-ember-saelith","Ember Saelith","the First Spark","fire","air",[56,42,40,44,22,28,32,44,24,32]],
+  ["08-fire-pyrrhic","Pyrrhic","the Glad Ruin",  "fire","light",[62,38,32,48,20,24,36,40,20,26]],
+  ["09-fire-cindara","Cindara","of the Long Burn","fire","earth",[50,36,28,40,32,34,42,34,30,28]],
+  ["10-water-marisel","Marisel","the Deep Remembering","water","dark",[40,44,34,32,30,48,44,36,46,30]],
+  ["11-water-tidewarden-coll","Tidewarden Coll","the Bulwark","water","earth",[34,28,18,22,58,46,62,16,50,20]],
+  ["12-water-nix","Nix","of the Still Pool","water","air",[44,50,44,36,26,38,36,44,34,32]],
+  ["13-light-seraphel","Seraphel","the Verdict","light","fire",[58,40,26,42,44,38,52,30,42,22]],
+  ["14-light-lucen","Lucen","the Unhidden","light","air",[42,54,38,46,24,36,34,42,38,30]],
+  ["15-light-auriel-dawnkeep","Auriel Dawnkeep","the Last Lantern","light","water",[32,34,20,24,50,52,58,20,52,24]],
+  ["16-dark-nyxara","Nyxara","the Kind Veil","dark","water",[48,46,40,38,28,42,44,40,36,30]],
+  ["17-dark-umbriel","Umbriel","the Undoing","dark","fire",[56,42,34,50,22,30,38,38,26,28]],
+  ["18-dark-corvane","Corvane","Shepherd of Endings","dark","earth",[42,40,30,34,36,44,48,32,44,26]],
+  ["19-slash-kaellis","Kaellis","the Duelist Immaculate","slash","light",[60,52,46,40,34,22,46,46,30,26]],
+  ["20-slash-reyna","Reyna Two-Rivers","the Current","slash","water",[54,48,50,36,30,26,44,50,28,30]],
+  ["21-slash-grieve","Grieve","the Wide Reaper","slash","dark",[64,38,30,42,32,24,48,36,26,22]],
+  ["22-pierce-vantric","Vantric","the Threading Spear","pierce","air",[56,54,40,58,26,24,42,44,28,26]],
+  ["23-pierce-silka","Silka Pinquick","the Quick","pierce","dark",[44,56,54,50,20,22,32,60,24,34]],
+  ["24-pierce-aiguille","Lord Aiguille","the Long Point","pierce","light",[58,50,38,56,24,26,38,42,26,28]],
+  ["25-crush-boldrek","Boldrek","the Avalanche","crush","light",[66,30,16,44,46,24,58,18,32,20]],
+  ["26-crush-hettamar","Hettamar Ironfall","End of Argument","crush","dark",[62,32,18,46,50,26,60,20,36,18]],
+  ["27-crush-mauless","Mauless","the Undenied","crush","earth",[60,34,22,52,44,28,56,24,34,22]]
+];
+const HEROES = ROSTER.map(r => {
+  const base = {};
+  STATS.forEach((s, i) => { base[s[0]] = r[5][i]; });
+  return { slug:r[0], name:r[1], epithet:r[2], type:r[3], second:r[4], base:base,
+    emblem:"hero-icons/" + r[0].replace(/^\d+-/,"") + ".svg", img:"portraits/" + r[0] + ".png" };
+});
+// Utility menus. common = shared menu (any hero); element menus keyed by force.
+const COMMON_UTIL = [
+  {key:"reach",name:"The Longer Look",text:"+1 reach for this hero. Positional, and it does not scale.",glyph:"\u2194"},
+  {key:"ward",name:"Opening Ward",text:"Begins each battle with a shield worth 12% of the pool.",glyph:"\u25EF"},
+  {key:"first",name:"Certain Opening",text:"This hero's first strike of a battle cannot miss.",glyph:"\u2731"},
+  {key:"steady",name:"Unmoved Once",text:"Ignores the first control effect applied each battle.",glyph:"\u25A0"},
+  {key:"closer",name:"Last Word",text:"+15% damage against a target below a third of its pool.",glyph:"\u25BC"}
+];
+const ELEMENT_UTIL = {
+  earth:[{key:"e1",name:"Rooted",text:"Armor rises 10% while this hero has not yet been struck.",glyph:"\u25C6"},
+         {key:"e2",name:"The Slow Wrath",text:"+4% damage each round, to a maximum of +20%.",glyph:"\u25C7"}],
+  air:[{key:"a1",name:"Untethered",text:"Agility rises 15% in the round after being missed.",glyph:"\u2248"},
+       {key:"a2",name:"Second Breath",text:"On acting twice in a round, the second action gains +10%.",glyph:"\u2307"}],
+  fire:[{key:"f1",name:"It Catches",text:"Burns applied by this hero tick one extra turn.",glyph:"\u25B2"},
+        {key:"f2",name:"Nothing Left to Take",text:"+20% damage while below half the pool.",glyph:"\u25B3"}],
+  water:[{key:"w1",name:"Patient Tide",text:"Restores 4% of the pool at the start of each upkeep.",glyph:"\u25D1"},
+         {key:"w2",name:"It All Comes Back",text:"Repeat strikes on one target gain +6% each, resetting on a new target.",glyph:"\u25D0"}],
+  light:[{key:"l1",name:"Unhidden",text:"Ignores 20% of the target's mitigation on a Bane hit.",glyph:"\u2733"},
+         {key:"l2",name:"The Verdict",text:"+25% critical damage when striking an open door.",glyph:"\u2734"}],
+  dark:[{key:"d1",name:"The Kind Veil",text:"Enemies targeting this hero lose 10% Perception.",glyph:"\u25CF"},
+        {key:"d2",name:"The Undoing",text:"Strips one buff from the target on a Bane hit.",glyph:"\u25CB"}],
+  slash:[{key:"s1",name:"The Cut Reopens",text:"Critical strikes leave a bleed for two turns.",glyph:"\u2571"},
+         {key:"s2",name:"Open Line",text:"+12% damage when striking a target in the enemy front row.",glyph:"\u2572"}],
+  pierce:[{key:"p1",name:"Find the Seam",text:"Penetration rises 8% per consecutive strike on one target.",glyph:"\u2191"},
+          {key:"p2",name:"Single Truth",text:"Ignores 15% of Armor before Penetration is applied.",glyph:"\u2195"}],
+  crush:[{key:"c1",name:"Falling Weight",text:"Breaks 20% of any shield before damage is applied.",glyph:"\u25AC"},
+         {key:"c2",name:"The Undenied",text:"+10% damage against a target that gained Armor this round.",glyph:"\u25AD"}]
+};
+const UTIL_BY_KEY = {};
+COMMON_UTIL.forEach(u => { UTIL_BY_KEY[u.key] = u; });
+Object.keys(ELEMENT_UTIL).forEach(k => ELEMENT_UTIL[k].forEach(u => { UTIL_BY_KEY[u.key] = u; }));
+const STAT_NAME = {};
+STATS.forEach(s => { STAT_NAME[s[0]] = s[1]; });
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+const emptyRune = () => ({ stage:0, major:null, minor:null, trace:null, util:null });
+// Seeded placements: the starter grant — a handful of heroes carrying real runes.
+const SEED = {
+  "16-dark-nyxara":[{stage:4,major:"agility",minor:"resolve",trace:"speed",util:"d1"},{stage:2,major:"might",minor:"penetration",trace:null,util:null},{stage:0,major:null,minor:null,trace:null,util:null}],
+  "11-water-tidewarden-coll":[{stage:3,major:"armor",minor:"toughness",trace:"resolve",util:null},{stage:1,major:"resist",minor:null,trace:null,util:null},{stage:0,major:null,minor:null,trace:null,util:null}],
+  "19-slash-kaellis":[{stage:4,major:"might",minor:"perception",trace:"luck",util:"s1"},{stage:0,major:null,minor:null,trace:null,util:null},{stage:0,major:null,minor:null,trace:null,util:null}],
+  "25-crush-boldrek":[{stage:1,major:"toughness",minor:null,trace:null,util:null},{stage:0,major:null,minor:null,trace:null,util:null},{stage:0,major:null,minor:null,trace:null,util:null}],
+  "04-air-zephyrine":[{stage:2,major:"speed",minor:"agility",trace:null,util:null},{stage:2,major:"perception",minor:"might",trace:null,util:null},{stage:1,major:"luck",minor:null,trace:null,util:null}]
+};
+const STAGE_META = [
+  { kind:"MAJOR", val:"+20", amount:20, cost:150 },
+  { kind:"MINOR", val:"+10", amount:10, cost:150 },
+  { kind:"TRACE", val:"+5",  amount:5,  cost:150 },
+  { kind:"UTIL",  val:"EFF", amount:0,  cost:200 }
+];
+
+class Component extends DCLogic {
+  state = {
+    shards: 4260, query: "", filter: "all",
+    slug: "16-dark-nyxara", slotIdx: 1,
+    mode: "stage", draftStats: [], draftUtil: null,
+    confirm: null,
+    runes: (function () {
+      const out = {};
+      HEROES.forEach(h => { out[h.slug] = (SEED[h.slug] || [emptyRune(), emptyRune(), emptyRune()]).map(r => Object.assign({}, r)); });
+      return out;
+    })()
+  };
+
+  slotElement(hero, i) { return i === 0 ? hero.type : (i === 1 ? hero.second : null); }
+  runeBonus(rune) {
+    const out = {};
+    if (rune.major) out[rune.major] = (out[rune.major] || 0) + 20;
+    if (rune.minor) out[rune.minor] = (out[rune.minor] || 0) + 10;
+    if (rune.trace) out[rune.trace] = (out[rune.trace] || 0) + 5;
+    return out;
+  }
+  placedBonus(slug) {
+    const out = {};
+    this.state.runes[slug].forEach(r => {
+      const b = this.runeBonus(r);
+      Object.keys(b).forEach(k => { out[k] = (out[k] || 0) + b[k]; });
+    });
+    return out;
+  }
+  draftBonus() {
+    const s = this.state, out = {};
+    const start = s.mode === "full" ? 0 : this.state.runes[s.slug][s.slotIdx].stage;
+    s.draftStats.forEach((st, i) => {
+      const meta = STAGE_META[start + i];
+      if (meta) out[st] = (out[st] || 0) + meta.amount;
+    });
+    return out;
+  }
+  resetDraft(patch) { this.setState(Object.assign({ draftStats: [], draftUtil: null }, patch || {})); }
+
+  commitNow() {
+    const s = this.state, rune = s.runes[s.slug][s.slotIdx];
+    const full = s.mode === "full";
+    const start = full ? 0 : rune.stage;
+    const runes = {};
+    Object.keys(s.runes).forEach(k => { runes[k] = s.runes[k].map(r => Object.assign({}, r)); });
+    const target = full ? emptyRune() : Object.assign({}, rune);
+    s.draftStats.forEach((st, i) => {
+      const idx = start + i;
+      if (idx === 0) target.major = st;
+      if (idx === 1) target.minor = st;
+      if (idx === 2) target.trace = st;
+    });
+    if (s.draftUtil) target.util = s.draftUtil;
+    target.stage = start + s.draftStats.length + (s.draftUtil ? 1 : 0);
+    runes[s.slug][s.slotIdx] = target;
+    this.setState({ runes: runes, shards: s.shards - this.plannedCost(), draftStats: [], draftUtil: null, confirm: null, mode: "stage" });
+  }
+  plannedCost() {
+    const s = this.state, rune = s.runes[s.slug][s.slotIdx];
+    const start = s.mode === "full" ? 0 : rune.stage;
+    let c = 0;
+    for (let i = 0; i < s.draftStats.length; i++) { const m = STAGE_META[start + i]; if (m) c += m.cost; }
+    if (s.draftUtil) c += 200;
+    return c;
+  }
+
+  renderVals() {
+    const s = this.state, self = this;
+    const hero = HEROES.filter(h => h.slug === s.slug)[0] || HEROES[0];
+    const T = TYPES[hero.type], S = TYPES[hero.second];
+    const runes = s.runes[hero.slug];
+    const rune = runes[s.slotIdx];
+    const placed = this.placedBonus(hero.slug);
+    const draft = this.draftBonus();
+    const full = s.mode === "full";
+    const startStage = full ? 0 : rune.stage;
+    const stagesToBuy = full ? 4 : 1;
+    const el = this.slotElement(hero, s.slotIdx);
+    const stageCount = st => st;
+
+    const q = s.query.trim().toLowerCase();
+    const heroList = HEROES.filter(h => {
+      const rs = s.runes[h.slug], filled = rs.filter(r => r.stage === 4).length, any = rs.filter(r => r.stage > 0).length;
+      if (s.filter === "bare" && any > 0) return false;
+      if (s.filter === "open" && filled === 3) return false;
+      if (q && (h.name + " " + h.epithet).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    let filledSlots = 0, totalSlots = 0;
+    HEROES.forEach(h => { s.runes[h.slug].forEach(r => { totalSlots += 1; if (r.stage === 4) filledSlots += 1; }); });
+
+    const invested = runes.reduce((a, r) => a + (r.major ? 150 : 0) + (r.minor ? 150 : 0) + (r.trace ? 150 : 0) + (r.util ? 200 : 0), 0);
+    const baseTotal = STATS.reduce((a, st) => a + hero.base[st[0]], 0);
+    const placedTotal = STATS.reduce((a, st) => a + (placed[st[0]] || 0), 0);
+    const draftTotal = STATS.reduce((a, st) => a + (draft[st[0]] || 0), 0);
+
+    // taken stats: distinct-stat rule spans the rune being built
+    const takenSet = {};
+    if (!full) { [rune.major, rune.minor, rune.trace].forEach(x => { if (x) takenSet[x] = true; }); }
+    s.draftStats.forEach(x => { takenSet[x] = true; });
+
+    const nextIdx = startStage + s.draftStats.length;
+    const needStats = nextIdx < 3 && s.draftStats.length < stagesToBuy;
+    const needUtil = !needStats && nextIdx === 3 && (full ? true : rune.stage === 3) && !s.draftUtil;
+    const doneDrafting = full ? (s.draftStats.length === 3 && !!s.draftUtil) : (s.draftStats.length === 1 || !!s.draftUtil);
+    const runeDone = rune.stage === 4 && !full && s.draftStats.length === 0 && !s.draftUtil;
+
+    const utilMenu = el ? ELEMENT_UTIL[el].concat(COMMON_UTIL) : COMMON_UTIL;
+    const cost = this.plannedCost();
+    const afford = cost <= s.shards;
+
+    const slotVals = [0, 1, 2].map(i => {
+      const r = runes[i], e = self.slotElement(hero, i), ET = e ? TYPES[e] : null;
+      const sel = i === s.slotIdx;
+      const isDraftSlot = sel && (s.draftStats.length > 0 || s.draftUtil);
+      const rowFor = (k, idx) => {
+        const meta = STAGE_META[idx];
+        const placedStat = idx === 0 ? r.major : (idx === 1 ? r.minor : (idx === 2 ? r.trace : r.util));
+        const draftPos = idx - (full && sel ? 0 : r.stage);
+        const drafted = sel && draftPos >= 0 && draftPos < s.draftStats.length ? s.draftStats[draftPos] : null;
+        const draftedUtil = sel && idx === 3 && s.draftUtil ? s.draftUtil : null;
+        if (idx === 3) {
+          const key = (full && sel ? draftedUtil : (draftedUtil || placedStat));
+          const u = key ? UTIL_BY_KEY[key] : null;
+          const isD = !!draftedUtil;
+          return { kind: meta.kind, val: u ? "\u25C8" : "\u2014",
+            label: u ? u.name : "utility locked until stage 3",
+            bg: u ? (isD ? "rgba(242,199,68,.1)" : "#1C1930") : "rgba(28,25,48,.4)",
+            border: u ? (isD ? "#F2C744" : "#4E7C3A") : "#3A3357",
+            style: u ? "solid" : "dashed",
+            valColor: u ? (isD ? "#F2C744" : "#4E7C3A") : "#57507A",
+            labelColor: u ? "#EDEAF6" : "#57507A" };
+        }
+        const stat = (full && sel) ? drafted : (drafted || placedStat);
+        const isD = !!drafted;
+        return { kind: meta.kind, val: stat ? meta.val : "\u2014",
+          label: stat ? STAT_NAME[stat] : "not placed",
+          bg: stat ? (isD ? "rgba(242,199,68,.1)" : "#1C1930") : "rgba(28,25,48,.4)",
+          border: stat ? (isD ? "#F2C744" : "#241F38") : "#3A3357",
+          style: stat ? "solid" : "dashed",
+          valColor: stat ? (isD ? "#F2C744" : "#C64BB0") : "#57507A",
+          labelColor: stat ? "#EDEAF6" : "#57507A" };
+      };
+      const stageNow = (full && sel) ? s.draftStats.length + (s.draftUtil ? 1 : 0) : r.stage;
+      const stateLabel = r.stage === 0 ? "EMPTY" : (r.stage === 4 ? "COMPLETE" : "STAGE " + r.stage);
+      return {
+        n: String(i + 1),
+        tierLabel: i === 0 ? "PRIMARY RUNE" : (i === 1 ? "SECONDARY RUNE" : "COMMON RUNE"),
+        elLabel: e ? ET.name + " PASSIVES" : "SHARED MENU",
+        elColor: e ? ET.core : "#8E87A8",
+        fallbackGlyph: e ? "" : "\u25C8",
+        glyphColor: "#B4AECB",
+        badgeBg: e ? ET.core : "#3A3357",
+        badgeUrl: e ? "url('damage-types/badge-" + e + ".svg')" : "none",
+        border: sel ? "#F2C744" : (r.stage === 4 ? "#4E7C3A" : (r.stage > 0 ? "#3A3357" : "#241F38")),
+        hoverBorder: sel ? "#F2C744" : "#57507A",
+        bg: sel ? "#1C1930" : "#141221",
+        headBg: sel ? "rgba(242,199,68,.07)" : "transparent",
+        shadow: sel ? "0 0 24px rgba(242,199,68,.18)" : "none",
+        stateLabel: isDraftSlot ? "DRAFTING" : stateLabel,
+        stateColor: isDraftSlot ? "#F2C744" : (r.stage === 4 ? "#4E7C3A" : (r.stage > 0 ? "#B4AECB" : "#6E6690")),
+        rows: [rowFor(0, 0), rowFor(1, 1), rowFor(2, 2), rowFor(3, 3)],
+        progress: Math.round(stageNow / 4 * 100) + "%",
+        progressFill: isDraftSlot ? "#F2C744" : (r.stage === 4 ? "#4E7C3A" : "#C64BB0"),
+        stageText: "STAGE " + stageNow + " OF 4",
+        spentText: "\u25C8 " + ((r.major ? 150 : 0) + (r.minor ? 150 : 0) + (r.trace ? 150 : 0) + (r.util ? 200 : 0)),
+        select: () => self.resetDraft({ slotIdx: i, mode: "stage" })
+      };
+    });
+
+    const effects = [];
+    runes.forEach((r, i) => {
+      if (!r.util) return;
+      const u = UTIL_BY_KEY[r.util], e = self.slotElement(hero, i);
+      effects.push({ name: u.name, text: u.text,
+        fallbackGlyph: e ? "" : u.glyph,
+        badgeUrl: e ? "url('damage-types/badge-" + e + ".svg')" : "none",
+        border: e ? TYPES[e].core : "#8E87A8",
+        chipBg: e ? TYPES[e].core : "#3A3357",
+        chipColor: "#B4AECB",
+        source: (i === 0 ? "PRIMARY" : (i === 1 ? "SECONDARY" : "COMMON")) + " SLOT" });
+    });
+
+    const nextMeta = STAGE_META[nextIdx] || STAGE_META[3];
+    let title, sub, foot, commitText, warn = null;
+    if (runeDone) {
+      title = "SLOT " + (s.slotIdx + 1) + " · COMPLETE";
+      sub = "Nothing further to buy here. Replacing destroys all four components.";
+      commitText = "NOTHING TO COMMIT";
+    } else if (full) {
+      title = "REBUILD SLOT " + (s.slotIdx + 1);
+      sub = "One transaction back to a complete rune: three distinct stats, then a passive.";
+      commitText = doneDrafting ? "DESTROY & FORGE · \u25C8 650" : "CHOOSE " + (3 - s.draftStats.length > 0 ? (3 - s.draftStats.length) + " MORE STAT" + (3 - s.draftStats.length > 1 ? "S" : "") : "A PASSIVE");
+    } else {
+      title = "SLOT " + (s.slotIdx + 1) + " · BUY " + nextMeta.kind;
+      sub = nextIdx === 3
+        ? "The passive slot. Gated behind all three boosts — this is what completing a rune buys."
+        : "Stage " + (nextIdx + 1) + " of 4. " + nextMeta.val + " to one stat, permanent once committed.";
+      commitText = doneDrafting ? "COMMIT " + nextMeta.kind + " · \u25C8 " + nextMeta.cost : "CHOOSE A " + (nextIdx === 3 ? "PASSIVE" : "STAT");
+    }
+    if (!afford && doneDrafting) warn = "Not enough shards. You need " + fmt(cost - s.shards) + " more.";
+    if (rune.stage > 0 && rune.stage < 4 && !full && !doneDrafting) foot = "ADVANCE NEVER DESTROYS ANYTHING · REPLACE DESTROYS THE WHOLE SLOT";
+    else foot = "SELECTING IS FREE AND REVERSIBLE · COMMITTING IS NEITHER";
+
+    const modalLines = [];
+    if (s.confirm === "commit") {
+      const start2 = full ? 0 : rune.stage;
+      s.draftStats.forEach((st, i) => {
+        const m = STAGE_META[start2 + i];
+        modalLines.push({ kind: m.kind, val: m.val, label: STAT_NAME[st], bg: "#141221", border: "#241F38", style: "solid", valColor: "#F2C744" });
+      });
+      if (s.draftUtil) modalLines.push({ kind: "UTIL", val: "\u25C8", label: UTIL_BY_KEY[s.draftUtil].name, bg: "#141221", border: "#4E7C3A", style: "solid", valColor: "#4E7C3A" });
+    } else if (s.confirm === "replace") {
+      [["MAJOR", "+20", rune.major], ["MINOR", "+10", rune.minor], ["TRACE", "+5", rune.trace]].forEach(x => {
+        if (x[2]) modalLines.push({ kind: x[0], val: x[1], label: STAT_NAME[x[2]], bg: "rgba(192,49,58,.08)", border: "#C0313A", style: "dashed", valColor: "#F06A72" });
+      });
+      if (rune.util) modalLines.push({ kind: "UTIL", val: "\u25C8", label: UTIL_BY_KEY[rune.util].name, bg: "rgba(192,49,58,.08)", border: "#C0313A", style: "dashed", valColor: "#F06A72" });
+    }
+
+    return {
+      shardsText: fmt(s.shards), kitText: filledSlots + " / " + totalSlots,
+      query: s.query, onQuery: e => this.setState({ query: e.target.value }),
+      filterAll: () => this.setState({ filter: "all" }),
+      filterOpen: () => this.setState({ filter: "open" }),
+      filterBare: () => this.setState({ filter: "bare" }),
+      fAllBg: s.filter === "all" ? "rgba(242,199,68,.12)" : "transparent", fAllBorder: s.filter === "all" ? "#F2C744" : "#3A3357",
+      fOpenBg: s.filter === "open" ? "rgba(242,199,68,.12)" : "transparent", fOpenBorder: s.filter === "open" ? "#F2C744" : "#3A3357",
+      fBareBg: s.filter === "bare" ? "rgba(242,199,68,.12)" : "transparent", fBareBorder: s.filter === "bare" ? "#F2C744" : "#3A3357",
+
+      heroes: heroList.map(h => {
+        const rs = s.runes[h.slug];
+        return {
+          name: h.name.toUpperCase(), emblemUrl: "url('" + h.emblem + "')",
+          typeLine: TYPES[h.type].name + " · " + TYPES[h.second].name,
+          core: TYPES[h.type].core,
+          bg: h.slug === s.slug ? "#241F38" : "transparent",
+          border: h.slug === s.slug ? "#F2C744" : "#241F38",
+          nameColor: h.slug === s.slug ? "#F2C744" : "#F4EFE4",
+          pips: rs.map(r => ({
+            bg: r.stage === 4 ? "#4E7C3A" : (r.stage > 0 ? "#C64BB0" : "#241F38"),
+            ring: r.stage > 0 && r.stage < 4 ? "inset 0 0 0 1px #57507A" : "none"
+          })),
+          select: () => self.resetDraft({ slug: h.slug, slotIdx: 0, mode: "stage" })
+        };
+      }),
+
+      hero: {
+        name: hero.name.toUpperCase(), epithet: hero.epithet,
+        img: "url('" + hero.img + "')", emblemUrl: "url('" + hero.emblem + "')",
+        typeName: T.name, secondName: S.name, core: T.core, accent: T.accent,
+        typeBadgeUrl: "url('damage-types/badge-" + hero.type + ".svg')",
+        secondBadgeUrl: "url('damage-types/badge-" + hero.second + ".svg')",
+        investedText: "\u25C8 " + fmt(invested) + " INVESTED IN THIS CHAMPION",
+        totalText: fmt(baseTotal + placedTotal + draftTotal) + " / 750"
+      },
+      slots: slotVals,
+
+      statRows: STATS.map(st => {
+        const k = st[0], base = hero.base[k], pl = placed[k] || 0, dr = draft[k] || 0;
+        const total = base + pl + dr, over = total > CAP;
+        return {
+          name: st[1], base: base, total: Math.min(total, CAP),
+          delta: (pl + dr) > 0 ? "+" + (pl + dr) : "",
+          deltaColor: dr > 0 ? "#F2C744" : "#C64BB0",
+          baseW: Math.round(base / CAP * 100) + "%",
+          runeW: Math.round(Math.min(pl, Math.max(0, CAP - base)) / CAP * 100) + "%",
+          draftW: Math.round(Math.min(dr, Math.max(0, CAP - base - pl)) / CAP * 100) + "%",
+          draftColor: over ? "#C0313A" : "#F2C744",
+          nameColor: dr > 0 ? "#F2C744" : "#F4EFE4",
+          totalColor: over ? "#F06A72" : (dr > 0 ? "#F2C744" : "#F4EFE4"),
+          rowBg: dr > 0 ? "rgba(242,199,68,.05)" : "transparent"
+        };
+      }),
+      hasEffects: effects.length > 0, effectList: effects,
+
+      b: {
+        title: title, sub: sub, foot: foot,
+        fallbackGlyph: el ? "" : "\u25C8",
+        badgeUrl: el ? "url('damage-types/badge-" + el + ".svg')" : "none",
+        chipBg: el ? TYPES[el].core : "#3A3357",
+        chipColor: "#B4AECB",
+        elLabel: el ? TYPES[el].name + " TIER" : "COMMON TIER",
+        elColor: el ? TYPES[el].core : "#B4AECB",
+        showMode: rune.stage > 0 && !runeDone,
+        setStage: () => self.resetDraft({ mode: "stage" }),
+        setFull: () => self.resetDraft({ mode: "full" }),
+        stageBg: !full ? "#F2C744" : "transparent", stageColor: !full ? "#141221" : "#B4AECB",
+        fullBg: full ? "#C0313A" : "transparent", fullColor: full ? "#FFFFFF" : "#B4AECB",
+        done: runeDone,
+        showSteps: !runeDone,
+        steps: [0, 1, 2, 3].map(i => {
+          const meta = STAGE_META[i];
+          const placedStat = i === 0 ? rune.major : (i === 1 ? rune.minor : (i === 2 ? rune.trace : rune.util));
+          const dpos = i - startStage;
+          const drafted = dpos >= 0 && dpos < s.draftStats.length ? s.draftStats[dpos] : null;
+          const du = i === 3 && s.draftUtil ? s.draftUtil : null;
+          const showPlaced = !full && !!placedStat;
+          const isD = !!drafted || !!du;
+          const label = drafted ? STAT_NAME[drafted] : (du ? UTIL_BY_KEY[du].name : (showPlaced ? (i === 3 ? UTIL_BY_KEY[placedStat].name : STAT_NAME[placedStat]) : (i === nextIdx ? "choosing" : "—")));
+          return {
+            val: meta.val, label: label.toUpperCase(),
+            bg: isD ? "rgba(242,199,68,.12)" : (showPlaced ? "#1C1930" : (i === nextIdx ? "rgba(242,199,68,.05)" : "transparent")),
+            border: isD ? "#F2C744" : (showPlaced ? "#3A3357" : (i === nextIdx ? "#F2C744" : "#241F38")),
+            style: isD || showPlaced ? "solid" : "dashed",
+            valColor: isD ? "#F2C744" : (showPlaced ? "#C64BB0" : "#57507A"),
+            labelColor: isD ? "#F2C744" : (showPlaced ? "#B4AECB" : "#57507A")
+          };
+        }),
+        pickStat: needStats,
+        pickUtil: needUtil,
+        pickTitle: needStats
+          ? "PICK THE STAT FOR " + (STAGE_META[nextIdx] ? STAGE_META[nextIdx].kind + " " + STAGE_META[nextIdx].val : "")
+          : "PICK THE PASSIVE · \u25C8 200",
+        utilSourceLabel: el ? TYPES[el].name + " + SHARED" : "SHARED MENU ONLY",
+        statOptions: STATS.map(st => {
+          const k = st[0], taken = !!takenSet[k];
+          const cur = hero.base[k] + (placed[k] || 0) + (draft[k] || 0);
+          const amount = STAGE_META[nextIdx] ? STAGE_META[nextIdx].amount : 0;
+          const after = cur + amount, over = after > CAP;
+          return {
+            name: st[1],
+            border: taken ? "#241F38" : (over ? "#B5732E" : "#3A3357"),
+            hoverBorder: taken ? "#241F38" : "#F2C744",
+            bg: taken ? "rgba(28,25,48,.35)" : "#1C1930",
+            cursor: taken ? "not-allowed" : "pointer",
+            nameColor: taken ? "#57507A" : "#F4EFE4",
+            arrow: taken ? "USED" : (over ? "CAPS" : cur + "\u2192" + Math.min(after, CAP)),
+            arrowColor: taken ? "#57507A" : (over ? "#E0A15A" : "#F2C744"),
+            note: taken ? "already in this rune" : (over ? "wastes " + (after - CAP) + " over the 75 cap" : "headroom " + (CAP - cur)),
+            noteColor: over && !taken ? "#B5732E" : "#6E6690",
+            pick: () => { if (!taken) self.setState({ draftStats: s.draftStats.concat([k]) }); }
+          };
+        }),
+        utilOptions: utilMenu.map(u => {
+          const isEl = el && ELEMENT_UTIL[el].some(x => x.key === u.key);
+          const sel2 = s.draftUtil === u.key;
+          return {
+            name: u.name, text: u.text,
+            fallbackGlyph: isEl ? "" : u.glyph,
+            badgeUrl: isEl ? "url('damage-types/badge-" + el + ".svg')" : "none",
+            border: sel2 ? "#F2C744" : (isEl ? TYPES[el].core + "66" : "#3A3357"),
+            hoverBorder: "#F2C744",
+            bg: sel2 ? "rgba(242,199,68,.1)" : "#1C1930",
+            nameColor: sel2 ? "#F2C744" : "#F4EFE4",
+            chipBg: isEl ? TYPES[el].core : "#3A3357",
+            chipColor: "#B4AECB",
+            pick: () => self.setState({ draftUtil: u.key })
+          };
+        }),
+        showLedger: cost > 0,
+        ledgerLabel: full ? "REBUILD TO COMPLETE" : (STAGE_META[nextIdx] ? STAGE_META[nextIdx].kind + " STAGE" : "STAGE"),
+        ledgerCost: "\u25C8 " + fmt(cost),
+        afterText: "\u25C8 " + fmt(Math.max(0, s.shards - cost)),
+        afterColor: afford ? "#B4AECB" : "#F06A72",
+        warn: warn,
+        commitText: commitText,
+        commitBg: doneDrafting && afford ? "#F2C744" : "#1C1930",
+        commitBorder: doneDrafting && afford ? "#F2C744" : "#2A2640",
+        commitColor: doneDrafting && afford ? "#141221" : "#57507A",
+        commitCursor: doneDrafting && afford ? "pointer" : "not-allowed",
+        commit: () => { if (doneDrafting && afford) self.setState({ confirm: "commit" }); },
+        replaceBorder: rune.stage > 0 ? "#3A3357" : "#241F38",
+        replaceColor: rune.stage > 0 ? "#B4AECB" : "#3A3357",
+        replaceCursor: rune.stage > 0 ? "pointer" : "not-allowed",
+        askReplace: () => { if (rune.stage > 0) self.setState({ confirm: "replace" }); }
+      },
+
+      confirmOpen: !!s.confirm,
+      closeModal: () => this.setState({ confirm: null }),
+      modal: s.confirm === "replace" ? {
+        border: "#C0313A", icon: "!", iconRadius: "4px", iconRotate: "rotate(45deg)", iconCounter: "rotate(-45deg)",
+        title: "DESTROY THIS RUNE?",
+        body: "Everything placed in slot " + (s.slotIdx + 1) + " on " + hero.name + " is destroyed and the shards spent on it are gone. Destruction is per rune, not per component — the slot restarts empty.",
+        hasList: modalLines.length > 0, lines: modalLines,
+        costLabel: "SHARDS ALREADY SUNK HERE", cost: fmt((rune.major ? 150 : 0) + (rune.minor ? 150 : 0) + (rune.trace ? 150 : 0) + (rune.util ? 200 : 0)),
+        after: fmt(s.shards),
+        cta: "DESTROY & RESTART", ctaBg: "#C0313A", ctaColor: "#FFFFFF",
+        confirm: () => {
+          const rs = {};
+          Object.keys(s.runes).forEach(k => { rs[k] = s.runes[k].map(r => Object.assign({}, r)); });
+          rs[hero.slug][s.slotIdx] = emptyRune();
+          this.setState({ runes: rs, confirm: null, draftStats: [], draftUtil: null, mode: "stage" });
+        }
+      } : {
+        border: "#F2C744", icon: "\u25C8", iconRadius: "50%", iconRotate: "none", iconCounter: "none",
+        title: full ? "FORGE A COMPLETE RUNE?" : "COMMIT THIS STAGE?",
+        body: full
+          ? "This destroys what is in slot " + (s.slotIdx + 1) + " and forges the rune below in one transaction. Once placed it cannot be removed — only replaced, which destroys it again."
+          : "This is placed on " + hero.name + " permanently. It cannot be removed; replacing the rune later destroys everything in the slot.",
+        hasList: modalLines.length > 0, lines: modalLines,
+        costLabel: "COST", cost: fmt(cost), after: fmt(Math.max(0, s.shards - cost)),
+        cta: full ? "DESTROY & FORGE" : "COMMIT PERMANENTLY", ctaBg: "#F2C744", ctaColor: "#141221",
+        confirm: () => self.commitNow()
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
