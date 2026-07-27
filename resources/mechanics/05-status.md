@@ -246,10 +246,22 @@ decisions, recorded so they are not rediscovered later.
 
 **`Magic Resist` receives no buffs at all, while `Armor` receives ten.** Of the
 27 self-buff riders across tier 3 and the uniques, `Armor` is by far the most
-common and `Magic Resist` appears **zero** times. That runs directly against
-open question 1 in `01-stats.md`: six of the nine types are arcane, so `Magic
-Resist` is the relevant mitigation stat **two-thirds of the time**. The buff
-distribution actively favours the stat that matters less.
+common and `Magic Resist` appears **zero** times.
+
+`01-stats.md` has since settled that this asymmetry is *deliberate at the stat
+level* — MR is simply the better stat and is left unpriced. That decision makes
+this finding sharper rather than softer, because it means every one of those ten
+buffs is granting the **weak** stat:
+
+| Tier-3 self-buff | Overall damage reduction |
+|---|---|
+| +15 `Armor` | **5.1%** |
+| +15 `Magic Resist` | **10.4%** — 2.05× |
+
+So ten powers are delivering **less than half** the defensive value their tier
+implies, and no power anywhere improves the stat that answers two-thirds of
+incoming attacks. Either some should convert to `Magic Resist`, or `Armor` buffs
+should grant roughly double the tier magnitude to land on the same value.
 
 **Buffs are overwhelmingly defensive** — ten `Armor` against a single `Might`.
 `Luck` receives none at all. That is now less alarming than it was — `Luck` has
@@ -257,24 +269,61 @@ been removed from the damage formula (`01-stats.md`) and drives only the die and
 the crit rate — but it is still the obvious stat for gear to stack, so it is
 worth deciding rather than leaving to fall out.
 
-**Vantric's mitigation-ignoring stacks with itself into nothing.** He has four
-separate sources: the Pierce House passive (`Penetration` rises against a repeat
-target), his own passive `Seams Everywhere` (ignores 20%), and both uniques
-(ignore 40%). But his `Penetration` 40 against a martial `Armor` 40 already
-gives `E = 0` — **mitigation cannot be reduced below zero**, so three of the
-four do nothing in his most common matchup. He needs one of them converted into
-something else.
+**Vantric carries four sources of one effect, with no stacking order defined.**
+The Pierce House passive `Find the Seam` (`Penetration` rises against a repeat
+target), his own passive `Seams Everywhere` (ignores 30% before `Penetration`
+applies), and both uniques (`The One Gap` and `The Spear Finds It`, each ignoring
+40%). Nothing says whether the 40% is taken off the base stat or off what
+`Seams Everywhere` already left, and by the time all four have applied there is
+usually nothing to take.
 
-**Boldrek has no mechanical identity.** *All At Once* and *Avalanche* are both
-featureless single hits — the only hero whose entire unique kit is "big number,
-no rider." His passive *No Warning* (crits deal extra) is his sole distinguishing
-trait. Compare Marisel, who has a three-part stack system across passive, tier 4
-and tier 5.
+> **Correction.** An earlier version of this finding put Vantric's `Penetration`
+> at 40 and claimed three of the four sources do literally nothing. He has
+> `Penetration` **25**, and they are not worthless — `Seams Everywhere` alone is
+> worth +3.9% damage against `Armor` 15, +9.1% against 25 and +15.5% against 40,
+> which is correctly shaped for an effect called "find the seam." The real defect
+> is four sources of one effect with **undefined composition** and sharply
+> diminishing returns, not four sources of nothing.
 
-**Grieve's `Room to Swing` overcaps.** It grants `Armor` per enemy in reach;
-against six enemies at any sensible per-enemy value it exceeds the 75 cap and
-the excess is silently discarded. It needs a per-enemy figure chosen against the
-cap, or an explicit maximum.
+**Boldrek has no mechanical identity in his uniques — but his House layer hands
+him one.** *All At Once* (×3.5) and *Avalanche* (×5.0) are both featureless
+single hits, the only hero whose entire unique kit is "big number, no rider."
+His passive *No Warning* (crits deal extra) is his sole distinguishing trait.
+
+The fix is already sitting in his own kit. Every shared Crush power he owns is
+about **removing armor rather than piercing it**:
+
+| Power | Shared via | Does |
+|---|---|---|
+| `Make an Opening` (t1) | Primary | −20% target `Armor` |
+| `The Sky Falls` (t2) | Primary | −30% target `Armor`, plus vulnerability |
+| `Nothing Holds` (House) | House | shaves `Armor` on every attack, **and it stacks** |
+
+So Boldrek spends the whole early game stripping a target's guard and then
+his uniques ignore that entirely. **Making the uniques cash in the shred** — one
+that scales with how much `Armor` has already been removed, one that consumes the
+stack outright — gives him the same passive-banks / tier-4-reads / tier-5-spends
+shape Marisel has, without inventing a new mechanic. Crush's stated identity is
+*"does not go through the guard — it removes the guard"*, and his two biggest
+powers are the only ones that don't.
+
+**Grieve's `Room to Swing` overcaps, and it is not alone on his sheet.** He sits
+at `Armor` 40 against the 75 cap, so he has **35 points of headroom** — and three
+separate powers spend it:
+
+| Per enemy | 1 enemy | 3 enemies | 6 enemies |
+|---|---|---|---|
+| +5 | 45 | 55 | **70** — fits |
+| +8 | 48 | 64 | 88 — overcaps |
+| +10 | 50 | 70 | 100 — overcaps |
+| +15 | 55 | 85 | 130 — overcaps |
+
+**+5 per enemy is the only value that fits**, and it fits only if nothing else is
+running. `Clear the Room` (tier 4) and `The Wide Reaping` (tier 5) both grant
+`Armor` on top, so in practice even +5 overcaps whenever a unique is active. He
+needs either a lower per-enemy figure, an explicit maximum, or one of the three
+converted to `Toughness` — which raises maximum HP and grants the same amount as
+current HP (see *Stacking* above), so it is never wasted.
 
 ## Open
 

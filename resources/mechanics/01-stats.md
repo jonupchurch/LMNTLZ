@@ -66,7 +66,8 @@ The order below is the contract. Any power that deviates must say so explicitly.
 | 8 | **Status** | Does an attached effect stick | power potency vs `Resolve` |
 
 The attacker's **type** decides which mitigation stat applies at step 5: a
-martial type is answered by `Armor`, an arcane type by `Magic Resist`. Step 6
+martial type is answered by `Armor`, an arcane type by `Magic Resist`, and a
+power carrying **both** is answered by the defender's *lower* of the two. Step 6
 draws on nothing but the attacker's type and the defender's primary/secondary —
 see the derivation rule in `../LORE-and-flavor.md`.
 
@@ -344,6 +345,48 @@ strengths do too:
 Best-to-worst swing is **3×**, which is what makes reading an enemy's profile
 worth doing. The ×0.50 exactly ties the 25% damage floor at maximum mitigation,
 so the two limits agree rather than fighting.
+
+#### Dual-typed powers take the better of their two types
+
+**81 of the 127 powers carry two types** — every tier 4, every tier 5 and every
+unique passive is the hero's `primary · secondary` pair. Such a power resolves
+on **whichever of its two types gives the attacker the better multiplier**, and
+for the nine heroes whose pair mixes families, mitigation follows the same logic
+and uses the defender's **lower** of `Armor` and `Magic Resist`.
+
+| Rule | Range | Spread | Bane-or-better | Resisted |
+|---|---|---|---|---|
+| multiply both | 0.40 – 1.88 | 4.69× | 18.8% | 15.0% |
+| **take the better** | **0.80 – 1.50** | **1.88×** | **23.1%** | **0.0%** |
+| take the worse | 0.50 – 1.25 | 2.50× | 0.0% | 19.2% |
+| average | 0.65 – 1.38 | 2.12× | 0.0% | 0.0% |
+| primary only | 0.50 – 1.50 | 3.00× | 11.5% | 7.7% |
+| *single-typed, tiers 0–3* | *0.50 – 1.50* | *3.00×* | | |
+
+*Take the worse* and *average* were eliminated outright: both make it
+**impossible for a tier-5 power to land a Bane hit**, which removes the largest
+payoff in the game.
+
+**The consequence, stated plainly: no tier-4 or tier-5 power is ever resisted.**
+The floor is ×0.80 and a defender can never blunt an enemy ultimate by having the
+right primary. That is the trade, and it is deliberate rather than an oversight.
+
+It makes the two halves of the power list do different jobs:
+
+- **Tiers 0–3 are the counter-building layer.** Single-typed, full 3× swing,
+  fired on most turns. This is where reading an enemy's profile pays, and it is
+  most of the damage in a battle.
+- **Tiers 4–5 are the reliability payoff.** They cost 6 and 8 turns of cooldown
+  and are gated to turns 3 and 5, and what that buys is a hit that **cannot be
+  walled by a matchup**. A power a player waits five turns for should not be
+  answered by the defender having happened to pick the right primary.
+
+The counters to the unique layer are therefore mitigation, `Agility` and
+`Resolve` — not the type chart. Worth knowing when tuning those three, because
+they now carry the whole defensive answer to the biggest powers in the game.
+Mixed martial/arcane uniques resolving against the defender's lower mitigation
+stat runs at a mean damage factor of **1.082**, so they are net *amplified* by
+about 8% on top.
 
 Applying doors and banes **after** mitigation rather than before is free:
 both are multiplicative, so they commute and the final number is identical
