@@ -249,10 +249,54 @@ self-limiting and gear can be generous without breaking anything.
 
 Penetration **overshoot amplifies** rather than being wasted: an attacker whose
 `Penetration` exceeds the defender's resistance deals *more* than base, bounded
-below ×2 by the same curve (at the cap, ×1.5). Across the current roster, mean
-net mitigation is **−0.1%** — penetration exactly cancels resistance on average,
-so the whole mitigation layer currently nets to zero. That is a numbers problem
-for the stat pass, not a formula problem.
+below ×2 by the same curve (at the cap, ×1.5).
+
+#### The layer is centered on neutral, and that is what buys its spread
+
+Across all 702 ordered pairs on the current roster, mean net mitigation is
+**−0.4%** — `Penetration` almost exactly cancels resistance on average. 42% of
+pairs are reduced, 42% amplified, 16% exactly neutral. The layer changes nobody's
+damage on average; it only redistributes.
+
+**That is correct rather than broken.** Lowering `Penetration` to make the layer
+net-reducing does not make it more meaningful — it makes it *flatter*:
+
+| | Mean mitigation | Range | Spread |
+|---|---|---|---|
+| **as written** | −0.4% | 0.75 – 1.17 | **1.56×** |
+| `Penetration` ×0.8 | +5.7% | 0.73 – 1.11 | 1.52× |
+| `Penetration` ×0.6 | +11.7% | 0.71 – 1.04 | 1.47× |
+| no `Penetration` at all | +26.4% | 0.65 – 0.83 | 1.28× |
+
+`Penetration` is what *creates* the variance. A net-reducing layer would just be
+a constant that HP tuning cancels out, and it would cost a third of the spread to
+get. Centered-on-neutral is the same principle as *Penetration can negate, but
+never overpower an equal*, applied to the roster as a whole.
+
+For scale: mitigation's 1.56× best-to-worst sits deliberately below the type
+chart's 3×, so reading an enemy's **type** profile stays the headline decision
+and mitigation is the second-order one.
+
+#### What is actually wrong is the coarseness
+
+Only **8 distinct damage factors** occur anywhere on the roster, because there
+are only **7 distinct `(Armor, MR, Penetration)` profiles across 27 heroes** —
+and five of the seven share `Armor` 15:
+
+| Armor | MR | Pen | Heroes | Roles |
+|---|---|---|---|---|
+| 15 | 25 | 40 | 5 | Ranged |
+| 15 | 30 | 25 | 7 | Striker, Tank |
+| 15 | 30 | 30 | 3 | Striker |
+| 15 | 40 | 15 | 3 | Buffer |
+| 25 | 30 | 30 | 1 | Striker |
+| 40 | 30 | 25 | 6 | Striker, Tank |
+| 40 | 30 | 30 | 2 | Striker |
+
+`Magic Resist` is **fully determined by Role**, and it is the stat the pricing
+decision above says should be the one that varies. This is stat-pass work, in the
+same family as the `Speed` grid: the formula is right and the inputs are a
+template.
 
 ### Penetration can negate, but never overpower an equal
 
