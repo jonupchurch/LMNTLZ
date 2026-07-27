@@ -273,6 +273,153 @@ was dropped in favour of guaranteeing every hero a common slot.)*
 
 ---
 
+## What a utility effect is
+
+**Every effect is conditional.** None is a flat always-on bonus — that is what
+the 35 stat points are for. The condition takes one of three shapes:
+
+| Shape | Example | Fires per battle | Built from |
+|---|---|---|---|
+| **Trigger → persistent** | below 50% HP → +20 Might for the rest of the battle | ≤ 1 | `05-status.md` vocabulary |
+| **Per-attack chance** | 25% → +1 reach this turn | ~3 | needs a turn-start roll |
+| **Ward / charge** | ignore the first Stun or Silence | ≤ 1, consumed | `05-status.md` vocabulary |
+
+**Triggers fire once, but their consequence lasts the rest of the battle.** That
+is forced by two numbers pulling opposite ways. A 6v6 runs roughly 155 hero-turns
+across 12 heroes, and 36 rune effects are live in it — so anything that re-arms
+on a short cooldown puts a proc on nearly every turn:
+
+| If an effect… | Firings per battle | Cadence |
+|---|---|---|
+| fires **once** | 36 | 1 per 4.3 turns |
+| re-arms every 6 turns | ~72 | 1 per 2.2 turns |
+| re-arms every 4 turns | ~108 | **1 per 1.4 turns** |
+
+But a single once-per-battle *burst* cannot justify the price. 200 shards has to
+beat 150 for a fresh +20 elsewhere, and +20 `Might` on a `Might` 30 hero is +67%
+on every packet for all 13 of its turns — one proc would have to be worth **8.7
+turns of that hero's output**. Persisting the consequence gets both: one readable
+moment, ongoing weight. It costs one extension to `05-status.md` — a duration
+class beyond the 4-turn ceiling, applicable only to rune effects — and that is a
+feature, since it is what makes a rune feel unlike a power rider.
+
+> **Probabilistic effects must grant *capability*, not *magnitude*.** A 25%
+> chance of more damage is worth exactly 25% of that damage and always loses to a
+> flat stat. A 25% chance to reach a target you otherwise cannot is not a
+> fraction of anything. Every per-attack effect below grants access, control or
+> negation — never a bigger number.
+
+Across a rough even mix of the three shapes, a battle carries **~63 effect events
+over ~155 hero-turns — one every 2.5 turns.** That holds because per-attack procs
+leave no lasting state and wards are silent: a debuff simply does not apply.
+
+### The utility slot is a bad buy early and a good buy late
+
+That is the stage gate justifying itself economically rather than thematically.
+The stat stages have rising marginal cost — 7.5 shards/point at stage 1, 15 at
+stage 2, 30 at stage 3 — so what 200 shards competes against depends entirely on
+how deep a player already is:
+
+| Cheapest alternative available | 200 shards buys instead | Bar for utility |
+|---|---|---|
+| +20 for 150 — an empty slot somewhere | 26.7 points | very high |
+| +10 for 150 — stage 2 | 13.3 points | moderate |
+| +5 for 150 — stage 3 | 6.7 points | low |
+
+Everything in the catalog is tuned to roughly **10–20 stat points of value** —
+above the late bar, below the early one. A player who bought utility first would
+be making a mistake, and the gate prevents it.
+
+---
+
+## The utility catalog
+
+**33 effects: 6 common, 3 per element.** Pool size was set by where the return on
+authoring collapses. If an effect independently suits a given hero with
+probability *p*, the chance a pool holds *something* wanted is `1 − (1−p)ⁿ`:
+
+| Effects per pool | p = 0.4 | p = 0.5 | Elemental sink realized |
+|---|---|---|---|
+| 1 | 40% | 50% | 5,400 of 10,800 shards |
+| **3** | 78% | **87.5%** | **9,450** |
+| 4 | 87% | 93.8% | 10,125 |
+| 9 | 99% | 99.8% | 10,778 |
+
+*(Sink = 27 heroes × 2 elemental slots × 200. An unwanted effect is simply never
+bought.)* Going 1→3 recovers ~4,000 shards of sink; 3→9 recovers another ~1,300
+for six times the authoring. **A fixed single effect per pool is the option to
+avoid** — it strands half the elemental sink. The martial pools settle it
+further: Slash, Pierce and Crush are reachable from only 3 slots on the whole
+roster, so a 9-effect martial pool would carry six effects no player ever sees.
+
+Each element offers **one offensive, one defensive, one tempo** effect, so the
+choice is made on what the hero does rather than on which effect is strongest.
+
+### Common pool — one of six, every hero, slot 3
+
+| Name | Condition | Effect | Role |
+|---|---|---|---|
+| **Before the First Blow** | battle start · 100% | Gain a shield worth 30% of max HP | def |
+| **Cornered** | first time below 50% HP | +20 `Might`, rest of battle | off |
+| **The Point Proven** | first Bane hit you land | +10 `Penetration`, rest of battle | off |
+| **Not This Time** | ward, one charge | Ignore the first **Stun or Silence** applied to you | def |
+| **Take It Back** | 25% per attack | Strip one active buff from the target | tempo |
+| **The Line Shortens** | an ally falls | +15 `Speed`, rest of battle | tempo |
+
+`Not This Time` names a *class* rather than taking whatever lands first.
+Magnitudes run 1–5, so an untargeted "ignore the first debuff" is spent on a
+minor tick roughly 60% of the time and the Stun three turns later lands anyway.
+Stun and Silence are the two that cost an entire action.
+
+### Elemental pools — one of three, slots 1 and 2
+
+| | Offense | Defense | Tempo |
+|---|---|---|---|
+| **Earth** | **Made Heavy** — Bane hits you land permanently cost the target 10 `Speed` | **Weight Tells** — below 50%: +20 `Armor`, +20 `Magic Resist`, and you cannot be moved from your row | **All One Piece** — you cannot be critically hit |
+| **Air** | **On the Same Breath** — on a killing blow, act again immediately | **Harder to Follow** — first Bane hit taken: +20 `Agility` | **Further Than It Looks** — 25% at turn start, +1 reach that turn |
+| **Fire** | **It Spreads** — killing blow: +15 `Might`, stacks 3× | **Too Close** — when struck, the attacker takes 15% of the packet | **The Draft** — your damage-over-time effects tick again when you act |
+| **Water** | **Runs Dry** — Bane hits you land halve the target's next heal | **It Passes Through** — the first debuff applied is cleansed at end of turn, +20 `Resolve` | **Draws It Up** — healing you receive is increased by 40% |
+| **Light** | **Held in the Light** — enemies below half HP cannot dodge your attacks | **Nowhere to Stand** — enemies cannot conceal or become untargetable against you; +10 `Perception` | **The Lamp Lifted** — the first ally to fall cleanses all debuffs from every survivor |
+| **Dark** | **Before It Knew** — your first attack against a target that has not yet acted deals double | **No One Saw** — below 50%: untargetable until your next turn | **It Lingers** — debuffs you apply last one turn longer |
+| **Slash** | **Again, There** — consecutive attacks on the same target deal +10% each, resetting on switch | **Both Ways** — when struck, 25% to apply a magnitude-2 bleed to the attacker | **It Stays Open** — damage-over-time you apply cannot be cleansed or reduced |
+| **Pierce** | **The Way In** — +15 `Penetration` against any enemy you have already struck | **Turned Aside** — the first critical hit against you lands as a normal hit | **Straight Past** — your attacks ignore shields |
+| **Crush** | **Knocked Loose** — 15% per attack to attempt a **Stun** at tier-3 potency, contested by `Resolve` | **The Floor Comes Up** — below 50%: Stun every enemy in reach for 1 turn | **Stays Broken** — mitigation shred you apply cannot be cleansed and lasts the battle |
+
+Three notes on specific entries:
+
+- **`Further Than It Looks` is the strongest effect in the catalog**, and it is in
+  the Air pool deliberately. At full formation +1 reach is worth 1.2× on a
+  front-seat reach-2 hero but converts *cannot attack at all* into a real target
+  list from the middle and back seats — see the table in
+  [`02-squads.md`](02-squads.md). It manipulates the formation rule rather than a
+  stat, so it needs a home with real opportunity cost. **The roll happens at turn
+  start and is shown before the player chooses**, which makes it a decision
+  rather than variance applied to a decision already made.
+- **`It Spreads` stacks to exactly +45**, which takes a `Might` 30 hero to 75 —
+  precisely the stat cap. The ceiling is meant to be legible.
+- **`Knocked Loose` routes through the existing potency-versus-`Resolve` landing
+  system**, which finally gives `Resolve` a job. It is currently the least
+  exercised of the ten stats.
+
+Two pairs are deliberate counters, which is what should drive rebuying as the
+meta moves: Light's `Nowhere to Stand` answers Dark's `No One Saw`, and Pierce's
+`Straight Past` answers `Before the First Blow` — likely the most-taken common
+effect.
+
+> **All 33 names were checked against the 127 entries in the workbook's `Power
+> List` sheet** (which contains the 40 passives as a subset). No exact collisions
+> and no two-word near misses. This matters because the generated Rune Forge
+> screen proposes ~23 effects of which **eight collide exactly** with existing
+> power names — its ideas are worth mining, its names are not.
+
+> **The magnitudes are placeholders in the same sense the hero numbers are.**
+> Every entry is in the 10–20-stat-point band by estimate, but 30% of max HP
+> versus 25%, or 25% versus 20% on the Air roll, are questions only
+> `packages/sim` answers. The shapes are the decision; the constants are a tuning
+> pass.
+
+---
+
 ## The rune shop
 
 The whole system is reached through one screen. A player picks a **hero**, then
@@ -764,10 +911,13 @@ point of writing it that way.
 
 ## Open
 
-- **The ten utility pools.** Nine elemental plus one common, ~3–4 effects each,
-  about 35 in total. Their power level is doing two jobs at once — it balances
-  breadth against depth, *and* it sets whether a utility slot is worth 200
-  shards. Martial pools can be smaller than arcane ones.
+- **Utility effect magnitudes.** The catalog is settled — 33 effects, three
+  shapes, one offensive/defensive/tempo triad per element. The *constants* are
+  not: 30% of max HP versus 25%, 25% versus 20% on the Air roll, whether +20
+  `Might` on `Cornered` is the right weight. Every entry is in the 10–20-stat-
+  point band by estimate, and that estimate is doing two jobs at once — it
+  balances breadth against depth *and* it sets whether a utility slot is worth
+  200 shards. Only `packages/sim` answers it.
 - **Event and ladder payouts.** Battle and hold rates are set (20/40/10/20);
   what a guild event placement and a weekly or monthly ladder finish pay is not.
   Both are the levers that reward *standing* rather than volume, so they matter
