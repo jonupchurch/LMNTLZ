@@ -90,6 +90,11 @@ unlimited, paying happens once and is final.**
 **Destruction is per rune, not per component.** Replacing a rune destroys
 everything placed in it, whatever stage it had reached.
 
+> **There is no piecemeal editing.** A player cannot swap the second stat, or
+> trade one utility effect for another, or reclaim the trace boost. The only
+> operations are *advance to the next stage* and *destroy and start over*. A
+> stage-4 rune that needs one stat changed costs the full 650 to rebuild.
+
 ### Why staged rather than all-or-nothing
 
 An earlier draft made a rune **atomic** — all four components for 650 or nothing
@@ -365,6 +370,78 @@ would be odd for the economy to let people out-*grind* each other without limit.
 
 ---
 
+## Monetization
+
+**What is sold is speed, never ceiling.** Because a full kit is a common ceiling
+every player reaches, selling *time to reach it* is a categorically different
+thing from selling power. A paying player and a free player who are both fully
+kitted are exactly equal.
+
+Two boosts, both cheap, both daily, both **capped**:
+
+| SKU | Effect | Cap |
+|---|---|---|
+| **Attack boost** | 2× shards from attack victories | first **20 battles** that day |
+| **Defense boost** | 2× shards from defensive holds | first **20 holds** that day |
+| *bundle* | both of the above | — |
+
+**Ambush battles pay 4× instead of 2×** under whichever boost is active — an
+ambusher with the attack boost, a Hidden defender with the defense boost.
+
+> **The 4× replaces the 2×; it does not multiply with it**, and it sits on top of
+> whatever base premium Hidden battles already carry.
+
+### Why the caps, and why ambush can carry 4×
+
+**Caps turn the boost into a convenience purchase.** Uncapped, a multiplier's
+value scales with how much a player already plays, so it pays out most to the
+people who need it least. Capped at 20, a player with thirty minutes gets roughly
+what an hour would have paid, while someone already grinding all evening gets the
+same fixed bonus as everyone else. That monetizes time-poverty rather than
+competitiveness.
+
+**Ambush battles can carry a much larger multiplier because they cannot be
+farmed.** Entering one requires a consecutive-win streak, the chance is capped at
+90%, and the *attacker does not choose it* — the engine does. The volume is
+bounded by the game's own rules rather than by a purchase limit, so a big number
+there rewards a streak the player genuinely earned.
+
+Note that the **defense cap will rarely bind**, since a player does not control
+how often they are attacked. That is fine and by design: the defense boost is the
+naturally-bounded one, limited by other players' behaviour rather than by a rule.
+
+### An uncapped tier is not worth selling
+
+It was considered as a higher price point and rejected on arithmetic rather than
+on principle. With a 20-battle attack boost already on sale, an uncapped SKU is
+worth something **only to a player fighting more than 20 battles a day** — at
+3–5 minutes each, already 80+ minutes of play. So it would have a tiny
+addressable population, deliver its entire value to exactly the group whose
+advantage the design is trying not to sell, and carry the full perception cost of
+"they sell an unlimited multiplier."
+
+**The higher price point is the bundle**: attack and defense together. Same caps,
+no new mechanic, no pay-to-win surface, and it is the purchase most players
+actually want.
+
+### The revenue curve runs backwards, deliberately
+
+Once a player is fully kitted, shards buy only **adaptation** — re-speccing to
+answer a shifting meta. So a boost is worth *less* to a veteran than to a
+newcomer, which is the reverse of how most games' monetization curves run.
+
+That falls out of the ceiling being common, and it is the honest consequence of
+the design rather than a flaw: **revenue skews toward new and mid-game players
+instead of concentrating on the most invested ones.** Anyone modelling the
+business should start from that rather than from a standard whale curve.
+
+> **The one thing to keep watching** is that re-speccing never ends, so a boosted
+> player adapts to every meta shift faster than an unboosted one, indefinitely.
+> The caps are what bound that to a fixed daily amount rather than a permanent
+> multiple. If a cap is ever raised, this is the property being traded away.
+
+---
+
 ## The new-player gap
 
 Two players can field identical *heroes*. They cannot field identical *runes*,
@@ -479,7 +556,12 @@ point of writing it that way.
   zone are set here.
 - **Whether there is a status track at all.** Cosmetics, titles, frames and guild
   banners would absorb long-term play in a way that cannot touch power. The brand
-  work exists to support it; whether it is in scope is undecided.
+  work exists to support it; whether it is in scope is undecided. It is also the
+  one thing that can be **sold without touching the speed-versus-ceiling question
+  at all**, which matters given the revenue curve above runs backwards.
+- **Boost pricing, and what "cheap" means.** The caps are set (20 battles, 20
+  holds, 4× on ambush); the price is not, and it has to be read against the earn
+  rate once that exists.
 - **Feature unlocks as an onboarding ramp.** The Hidden zone, the second and
   third attack squads, and guild membership could gate on account progress. This
   is progression that gates *complexity* rather than power, so it cannot violate
