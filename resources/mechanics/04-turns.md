@@ -351,7 +351,7 @@ separate model — it is **phases 2–4 in detail**:
 
 | Pipeline step | Phase |
 |---|---|
-| 1 · Act | *outside* — turn order, still open |
+| 1 · Act | *outside* — the turn queue, below |
 | 2 · Land | 3 · Defense |
 | 3 · Base | 2 · Attack |
 | 4 · Type | 2 · Attack |
@@ -399,6 +399,8 @@ The five phases, their order, and:
   ignored, and a compulsion naming a hero outside that set does not apply.
 - **Taunt** compels, **fade** filters, and **the two cancel on the same hero.**
 - The **AI plays defense squads only**, never an attack squad.
+- **Turn order is a bounded accumulator** — every hero gains `50 + Speed` per
+  tick and acts at 100. Speed 45 acts 1.46× as often as Speed 15.
 
 ## Open
 
@@ -408,7 +410,6 @@ The five phases, their order, and:
   single flat self-buff has to say so. Whether that is a per-power flag, a
   separate rider category, or simply a rule that self-targeted riders always
   resolve once, is a `03-powers.md` decision — named here so it isn't lost.
-- **Turn order and action economy.** Below.
 
 ---
 
@@ -449,3 +450,90 @@ Two things follow that are worth having before any tuning happens:
   far less of the battle and rejoins sooner. Combined with the cooldown effect,
   `Speed` is plausibly the strongest of the ten stats — it should be priced as
   one, and it is the first place to look if the roster reads as lopsided.
+
+### How often "more often" is — the bounded accumulator
+
+```
+tick:        every hero gains  50 + Speed
+act:         while accumulator >= 100 — act, then subtract 100
+start:       every hero seeded at  50 − Speed
+tiebreak:    higher accumulator, then higher Speed, then squad slot
+```
+
+That is the whole rule. It is fully deterministic — **no RNG anywhere in turn
+order** — which is what lets the client project the queue forward and lets the
+server re-derive it from the action log alone (`../../docs/tech-stack.md`).
+
+**The gain is `50 + Speed`, not `Speed`.** Rate has to diminish in the stat that
+buys it, the same way mitigation does, and for the same reason: runic equipment
+is coming and `Speed` already multiplies cooldowns, durations and
+damage-over-time on top of actions. Under a plain proportional accumulator a
+Speed-45 hero takes **three** turns to a Speed-15 hero's one, and five at the
+cap — on top of every other rate it accelerates.
+
+| Speed | Gain | Acts every | Relative rate | Who |
+|---|---|---|---|---|
+| 15 | 65 | 1.54 ticks | **1.00×** | 5 — martial Strikers |
+| 25 | 75 | 1.33 | 1.15× | 12 — Tanks and Ranged |
+| 30 | 80 | 1.25 | 1.23× | 6 — arcane Strikers |
+| 35 | 85 | 1.18 | 1.31× | 3 — Buffers |
+| 45 | 95 | 1.05 | 1.46× | 1 — Silka |
+| **75** | 125 | 0.80 | **1.92×** | the cap, reachable only with gear |
+
+Simulated over the full 27-hero roster for 20 ticks, measured rates match those
+predictions exactly and the whole field spans **1.46×** — Silka takes 19 actions
+where a martial Striker takes 13.
+
+**The base constant is the tuning dial, and it is the only one.** Raising it
+flattens the spread, lowering it steepens: at base 25 the roster spans 1.75×
+and the cap reaches 2.5×; at base 0 it is the proportional scheme at 3× and 5×.
+50 is chosen because it keeps the *geared* ceiling under 2× — a doubled action
+rate is about as far as `Speed` can go before it stops competing with the other
+nine stats and starts replacing them.
+
+### Three consequences, all load-bearing
+
+**Drain the accumulator in a loop; never test it once per tick.** At base speeds
+the gain is always below the threshold so a hero can never bank two actions and
+the distinction is invisible. A geared hero at Speed 75 gains 125 per tick and
+**a check-once implementation gives it 1.54× instead of 1.92×** — silently
+losing a fifth of its actions. The bug does not exist today and appears the day
+equipment ships, which is exactly the kind that survives to production.
+
+**Acting more often is not acting twice in a row.** Across a 27-hero field only
+**1 action in 410** immediately follows the same hero. "Faster" shows up as
+skipping fewer beats, not as a double turn — nothing to explain in the UI, and
+no burst that the damage math has to be defended against.
+
+**The tick is internal. The player sees a queue.** Ticks are the engine's clock
+granularity, some are empty, and none of that should ever surface. What surfaces
+is the projected order of upcoming actions, which is exact because nothing here
+is random. `../04-battle-screen.md` asks for a "turn / initiative flow
+indicator" — that is what it shows, and it is a genuine tactical read rather
+than decoration.
+
+### The opening exchange
+
+Seeding every hero at `50 − Speed` makes all of them reach exactly 100 on the
+first tick, so **round one is a clean initiative pass: every hero acts once,
+fastest to slowest.** The queue desynchronizes from round two onward as the
+remainders diverge.
+
+```
+open:   Sp45  Sp35  Sp30  Sp25  Sp15      — every hero, once, in Speed order
+then:   Sp45  Sp35
+        Sp45  Sp35  Sp30  Sp25  Sp15
+        Sp45  Sp35  Sp30  Sp25
+```
+
+The alternative — seeding at `Speed`, so the fast open before the slow have
+moved — was rejected because the Speed-15 band is **every martial Striker**, and
+those are the `Might` 40–45 heroes. Making the hardest hitters miss the opening
+exchange is a large, invisible thumb on the scale for arcane squads, decided by
+a seeding constant rather than by design.
+
+Ties inside that first pass break by **Speed, then squad slot** — not toward the
+attacker. Giving the attacking squad the opening six blows was considered and
+left alone: it is a real lever, but it changes what every defense squad has to be
+built to survive, and that is a balance decision to make deliberately later
+rather than to smuggle in through initiative.

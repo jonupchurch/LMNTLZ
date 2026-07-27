@@ -172,11 +172,15 @@ than staying level.
 
 ### Stat modifiers
 
-Buffs and debuffs to any of the ten stats, at the magnitudes above. `Speed`
-buffs are the exception: **`Speed` is granted as a percentage, never as flat
-points** (`01-stats.md`), because a flat +10 would be worth +67% to a Speed-15
-hero and +29% to a Speed-35 one, and the tier-3 Air power is a self-buff whose
-four owners span almost that whole range.
+Buffs and debuffs to any of the ten stats, at the magnitudes above. **`Speed` is
+no exception — it is granted in flat points like everything else.**
+
+An earlier rule made `Speed` a percentage, because a flat +10 looked worth +67%
+to a Speed-15 hero against +29% to a Speed-35 one. That assumed action rate
+scales with `Speed`; the bounded accumulator in `04-turns.md` makes it scale with
+`50 + Speed`, so the real spread of a flat +10 is **+15.4% to +10.5%** — and a
+percentage buff is now the *regressive* option, worth twice as much to the
+fastest hero and only 2–5% in absolute terms. Full table in `01-stats.md`.
 
 ### Mitigation shred — a percentage, not points
 

@@ -530,16 +530,35 @@ Full consequences in [`04-turns.md`](04-turns.md) — including the one that
 matters most for tuning here, that **Speed multiplies the rate of everything
 counted in turns**, not just actions.
 
-#### Speed buffs are a percentage, and the range is too narrow for them
+#### Speed buffs are flat points — the accumulator already normalizes them
 
-A power that grants Speed grants a **percentage**, never flat points. A flat
-+10 would be worth +67% to a Speed-15 hero and +29% to a Speed-35 one, which
-matters concretely: the tier-3 Air power is a *self*-buff and its four owners sit
-almost across the whole range, so identical text would have been worth wildly
-different amounts.
+> **Reversed.** This file previously required Speed buffs to be granted as a
+> **percentage**, on the reasoning that a flat +10 is worth +67% to a Speed-15
+> hero and +29% to a Speed-35 one. That arithmetic assumed action rate is
+> proportional to `Speed`. It is not: `04-turns.md` settles the turn queue as a
+> bounded accumulator gaining **`50 + Speed`** per tick, and the base constant
+> does the normalizing that percentage-granting was invented to do.
 
-But the roster gives a percentage very little to work with, and this is a
-**problem for the stat pass to fix**:
+Measured across the roster's actual Speed values:
+
+| Buff | Sp15 | Sp25 | Sp30 | Sp35 | Sp45 | Spread | |
+|---|---|---|---|---|---|---|---|
+| flat +10, *if rate ∝ Speed* | +66.7% | +40.0% | +33.3% | +28.6% | +22.2% | **3.00×** | the rejected case |
+| **flat +10, actual** | **+15.4%** | +13.3% | +12.5% | +11.8% | **+10.5%** | **1.46×** | mildly favours slow |
+| +10%, actual | +2.3% | +3.3% | +3.8% | +4.1% | +4.7% | **2.05×** | favours *fast* |
+
+**A percentage is now the regressive option.** It is worth twice as much to the
+hero that is already fastest, which is the opposite of what the rule was for —
+and in absolute terms a +10% buff moves the action rate by 2–5%, too little to
+read as a power at all. Flat points give the more even distribution *and* a
+magnitude a player can feel, so Speed rejoins the ordinary ±10/15/20/25 tier
+scale in `05-status.md` with no special case.
+
+The concrete case that drove the original rule — the tier-3 Air self-buff, whose
+four owners span most of the range — is fine under flat points: it is worth
++15.4% to the slowest owner and +10.5% to the fastest.
+
+The grid itself is still a **problem for the stat pass to fix**:
 
 | Speed | Heroes |
 |---|---|
@@ -551,16 +570,16 @@ But the roster gives a percentage very little to work with, and this is a
 
 Two things are wrong here. **Speed is almost entirely a function of Role** — it
 carries essentially no per-hero information. And the values sit on a **10-point
-grid**, so a buff of +10% on a Speed-25 hero is +2.5 and **can never cross a
-gap**. A small percentage buff therefore changes how often a hero acts but can
-never change *where it sits in initiative order* — it moves pace, never
-priority.
+grid**, which under flat buffs means a +10 lands a hero exactly on the next
+band's value rather than between bands: a buffed Speed-25 Tank becomes a Speed-35
+Buffer, tied rather than ahead. Every buff either changes nothing about ordering
+or promotes a hero one whole rung, and nothing in between.
 
-That may be the right behaviour, but it should be a decision rather than an
-artifact of the grid. If Speed buffs are meant to let a hero seize initiative,
-the roster needs spreading across a wider range with irregular values so the
-gaps are crossable. Silka is the only hero currently priced off-template, at
-Speed 45 paid for with 15 Toughness and 15 Armor.
+That should be a decision rather than an artifact of the grid. If Speed buffs are
+meant to let a hero seize initiative, the roster needs spreading across a wider
+range with **irregular** values, so a buff lands a hero *between* rungs and
+ordering actually changes. Silka is the only hero currently priced off-template,
+at Speed 45 paid for with 15 Toughness and 15 Armor.
 
 ### 3. What Luck actually rolls
 
