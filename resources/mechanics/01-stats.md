@@ -62,7 +62,7 @@ The order below is the contract. Any power that deviates must say so explicitly.
 | 4 | **Crit** | Whether this one spikes — once per packet | `Luck` |
 | 5 | **Mitigate** | How much is absorbed | `Armor` **or** `Magic Resist` (def), reduced by `Penetration` (att) |
 | 6 | **Type** | Bane / Fault / resisted / neutral | *no stat* — from the derivation rule |
-| 7 | **Apply** | Subtract from the pool | pool size from `Toughness` |
+| 7 | **Apply** | Floor at 25% of the packet, then subtract from the pool | pool size from `Toughness` |
 | 8 | **Status** | Does an attached effect stick | power potency vs `Resolve` |
 
 The attacker's **type** decides which mitigation stat applies at step 5: a
@@ -252,7 +252,7 @@ in the other direction.
 ### Type effectiveness, last
 
 ```
-final = mitigated × typeMultiplier      # Bane ×1.5; Fault and resisted TBD
+typed = mitigated × typeMultiplier      # Bane ×1.5; Fault and resisted TBD
 ```
 
 Applying doors and banes **after** mitigation rather than before is free:
@@ -260,9 +260,46 @@ both are multiplicative, so they commute and the final number is identical
 either way. It is purely a presentation choice — and it closes the "how do
 steps 4–6 compose" question this file carried as open.
 
-> One caveat that makes it stop being free: **any clamp or minimum-damage floor
-> between the two steps breaks the commutation.** If a floor is ever added, the
-> order becomes real and has to be re-decided.
+### The damage floor
+
+```
+final = max(packet × 0.25, typed)       # a hit always lands for something
+```
+
+**A successful attack never deals less than 25% of its packet.** A miss still
+deals nothing — the floor is a guarantee about hits, not about attacks.
+
+**Applied last, after both mitigation and type.** That placement is what keeps
+the mitigation/type ordering free: a clamp *between* the two steps would break
+the commutation and force the order to be re-decided. Putting it at the end also
+makes it a promise about the number the player actually sees.
+
+Two things worth knowing about where it bites.
+
+**It exactly ties the worst case the math can already produce.** Mitigation
+caps at 50% reduction, so if `resisted` is ×0.5 the minimum possible damage is
+`0.5 × 0.5 = 25%` — precisely the floor. At today's numbers the floor therefore
+**never binds**; it is insurance, not a live rule:
+
+| At max mitigation | Raw | After floor |
+|---|---|---|
+| Bane ×1.5 | 75% | 75% |
+| Fault ×1.2 | 60% | 60% |
+| neutral ×1.0 | 50% | 50% |
+| resisted ×0.5 | 25% | 25% — ties |
+
+**It constrains a decision not yet made.** The type multipliers below the Bane's
+×1.5 are still open (`../CLAUDE.md`). The floor means **setting `resisted` below
+×0.5 buys nothing against a well-armored target** — 0.4 would produce 20% and be
+clamped straight back to 25%. So the floor quietly caps how hard the type chart
+is allowed to punish a bad matchup, and that should be a known consequence when
+those multipliers get set rather than a surprise afterwards.
+
+Where the floor does earn its place is against **stacked mitigation**. The 50%
+ceiling holds only for mitigation derived from stats; buffs, shields and gear
+could push effective reduction past it once runic equipment exists. The floor is
+the backstop that stops any stack of effects from reducing a landed hit to
+nothing.
 
 ### Worked example
 
