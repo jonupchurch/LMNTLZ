@@ -490,10 +490,10 @@ The five phases, their order, and:
 
 - **Reaction details.** Whether a reaction fires on an evaded attack, and
   whether "reactive" is a power property or a stance — both above.
-- **Once-per-cast riders.** Phase 4 running per target means a power needing a
-  single flat self-buff has to say so. Whether that is a per-power flag, a
-  separate rider category, or simply a rule that self-targeted riders always
-  resolve once, is a `03-powers.md` decision — named here so it isn't lost.
+- ~~**Once-per-cast riders.**~~ **Settled** — `03-powers.md` → *Payload and
+  rider*. A rider whose target is the **caster** resolves once per cast; riders
+  aimed at whoever the payload struck still resolve per target. Phase 4 is
+  unchanged for everything else.
 
 ---
 

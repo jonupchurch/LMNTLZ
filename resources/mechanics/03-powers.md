@@ -251,11 +251,57 @@ one thing that generates it, stated on the generator.
 
 ---
 
-## Open
+## Payload and rider
 
-- **Once-per-cast riders.** Phase 4 runs per target, so a power needing a single
-  flat self-buff has to declare it. Whether that is a per-power flag, a separate
-  rider category, or a blanket rule that self-targeted riders resolve once.
+**Settled 2026-07-27.** Phase 4 runs *per target*, which raised the question of
+what a power's extra effects do when the power hits several enemies. The answer
+needs one distinction the documents had not drawn:
+
+| | What it is | Targeting |
+|---|---|---|
+| **Payload** | What the multiplier buys — the strike, the heal, or on a few powers the effect itself | May be single- or multi-target, as authored |
+| **Rider** | An extra effect attached to a payload | Follows **whatever the payload hit** |
+
+> **A rider whose target is the *caster* resolves once per cast.** Riders aimed at
+> whoever the payload struck resolve per target, unchanged.
+
+That is the whole rule, and it is the minimal one. A burn applied across three
+enemies is three burns on three heroes — correct and intended. **The
+multiplication only misfires when the rider's target is the same entity N times,
+which is exclusively a self-rider**: a +15 `Armor` buff on a three-target power
+would otherwise land as +45.
+
+### Why not the broader rule
+
+*"Riders hit only the primary target, on offensive powers"* was considered and
+rejected on evidence. Checked against all 11 multi-target powers:
+
+- **No multi-target damage power carries a target-side rider at all.** The only
+  riders on them are self-buffs — Grieve's `Clear the Room` (Armor) and
+  `The Wide Reaping` (Toughness). For every offensive *strike*, the broad rule and
+  the narrow one agree.
+- **Two tier-5 ultimates break under it**, and both are offensive, so an
+  offensive/defensive carve-out does not save them. Umbriel's **`The Undoing`** is
+  *"no direct damage, strips all active buffs from every enemy"* — the ×5
+  multiplier buys the mass strip and nothing else. Lucen's **`The Unhidden Hour`**
+  cleanses the whole squad and strips every enemy. `05-status.md` describes a
+  strip as *"contested against `Resolve` like any rider"*, so if strips are
+  riders, the broad rule reduces both ultimates to single-target and guts them.
+
+**That is exactly what the payload/rider split resolves.** Those strips are
+payloads, not riders — they are what the power *is*. `Clear the Room`'s Armor buff
+is a rider, because the damage is the payload. Same word, two different jobs, and
+the distinction has to be in the content schema rather than left to a reader's
+judgement.
+
+**Nothing in the current roster changes under this rule.** 11 powers are
+multi-target and 19 carry self-buffs, and **none is both** — so the rule is being
+set while it is still free to set, before a power gets authored against an
+assumption nobody wrote down.
+
+---
+
+## Open
 - **Reaction details.** Whether a reaction fires on an *evaded* attack, and
   whether "reactive" is a power property or a stance a hero adopts. The second is
   the more interesting: defense is otherwise entirely engine-run, so a reactive
