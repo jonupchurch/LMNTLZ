@@ -10,9 +10,10 @@ ever costs you, which is exactly why it's safe to allow. Wings don't fight each 
 normally, and the event counts something they do (attack wins, say), tallied per
 Wing and then per guild. The best Wings get paid directly and their guild picks
 up a smaller reward on top. A Wing is a group of *people* and exists only for
-events; a **squad is still 6 heroes**, as it always was. The main thing left to
-decide is how a short-handed Wing is scored, since counting raw totals quietly
-shuts smaller guilds out.
+events; a **squad is still 6 heroes**, as it always was. **Everyone who takes
+part is paid something** — a flat amount per filled slot — with much larger
+prizes climbing steeply above that, and everything resetting at the end of each
+season once winnings are handed out.
 
 ---
 
@@ -393,12 +394,18 @@ Paid in **Rune Shards** (`06-progression.md`), on a **seasonal** cadence.
 score earns the floor. There is no cut line, no "did we make it", and no season
 in which a member played and received nothing.
 
-> **The floor pays per member, never per Wing.** This is not a detail. A flat
+> **The floor pays per filled slot, never per Wing.** This is not a detail. A flat
 > per-Wing floor would let a three-person guild run `1 / 1 / 1`, collect three
 > full floors between three people, and out-earn a full guild — which splits the
-> same three floors among 24 — by **8× per head**. Paying per member removes the
-> incentive entirely: a Wing of eight collects eight floor units, a Wing of one
-> collects one.
+> same three floors among 24 — by **8× per head**. Paying per filled slot removes
+> the incentive entirely: a Wing of eight collects eight floor units, a Wing of
+> one collects one.
+
+**"Filled slots" also settles the vacated-seat case for free.** A Wing that drops
+to seven because an officer removed someone mid-event has **seven** filled slots,
+so it collects seven floor units for the rest of the season. Kicking is therefore
+self-harming at the floor as well as in the tally — the same incentive shape the
+lock already relies on, arriving without a rule of its own.
 
 **Steep above the floor.** The floor is deliberately small relative to the top
 brackets. It exists so nobody is shut out, not so nobody needs to compete —
