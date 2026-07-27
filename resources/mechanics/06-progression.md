@@ -397,15 +397,71 @@ every player reaches, selling *time to reach it* is a categorically different
 thing from selling power. A paying player and a free player who are both fully
 kitted are exactly equal.
 
-**Exactly two products, and neither has a special case in it:**
+**The whole storefront:**
 
-| SKU | Effect | Cap |
+| SKU | Grants | Cap |
 |---|---|---|
-| **Attack boost** | **2×** shards from attacking | first **20 battles** that day |
-| **Defense boost** | **2×** shards from defending | first **20 battles** that day |
+| **Attack boost** — daily | **2×** shards from attacking | first **20 battles** that day |
+| **Defense boost** — daily | **2×** shards from defending | first **20 battles** that day |
+| **Shards** — weekly | **800 Rune Shards** | once per week |
+| **Subscription** — monthly | both boosts every day, plus 800 shards each week | — |
 
-That is the whole of it. A flat 2×, capped at 20 battles, on each side of the
-game. Both may be held at once; there is no third tier.
+> **The subscription grants exactly the à la carte cap and never more.** It is a
+> **discount and a convenience, not a higher tier.** A subscriber and a
+> maximum-spending non-subscriber end up in precisely the same place; the
+> subscriber simply pays less and does not have to remember to buy anything.
+
+That property is the point of the whole storefront, because it means one sentence
+covers it: **everything money can buy in this game is in one subscription.** In a
+genre where players assume the worst, a ceiling they can audit is worth more than
+any amount of reassurance. **Never add a tier above it.**
+
+### What money can and cannot reach
+
+Shards are capped at 800 a week however they are bought, which is roughly five
+rune stages. A full kit is 81 runes × 4 stages = **324 stages**:
+
+| Buying at the cap, no play at all | Time |
+|---|---|
+| 12 heroes fully runed (144 stages) | ~29 weeks |
+| Competitive 18 heroes (216 stages) | ~43 weeks |
+| **Full 27-hero kit** (324 stages) | **~65 weeks** |
+
+**A whale cannot buy a roster.** That is not a soft limit but a wall, and it is
+what keeps *breadth* — the design's stated veteran advantage — something earned
+rather than bought. Six months of maximum spend is about eleven heroes' worth.
+
+**Shards rather than rune stages, deliberately.** Selling stages directly was
+considered and dropped: it would bypass the Forge, create a second progression
+path to balance against the first, and force a player to work out whether 800
+shards of stages beats a boost before they could buy anything. Selling shards
+*feeds* the Forge instead — the player still walks in, plans, and commits, which
+is the part of the design worth protecting.
+
+> **The cap and the earn rate are one decision, not two.** 800 shards a week is
+> ~40% on top if a full kit takes six months of play, and noise if it takes six
+> weeks. Neither number means anything until the other is set.
+
+### The risk this carries, stated plainly
+
+**If the subscription is the ceiling of paid advantage, a competitive player will
+feel they have to hold it.** That is a harder thing to defend than one-off
+purchases, and it is the honest cost of a recurring model. Three things keep it
+answerable, and all three are design commitments rather than messaging:
+
+- **The free earn rate must reach a full kit on its own** in a time a player
+  would consider reasonable. If it does not, the subscription is not a
+  convenience — it is the game.
+- **The ceiling is common.** A subscriber and a free player who are both fully
+  kitted are exactly equal. Money buys the road, never the destination.
+- **Nothing above the subscription, ever.** The moment a higher tier exists, the
+  auditable-ceiling claim is gone and cannot be recovered.
+
+A second-order effect worth expecting: once the subscription is priced below its
+components, the à la carte items become vestigial and most revenue arrives
+through one SKU. That is fine, and it simplifies everything — but it means the
+subscription price is effectively *the* price of the game, and should be set as
+such rather than as an add-on.
 
 ### The 4× on an ambush is arithmetic, not a rule
 
@@ -439,7 +495,7 @@ Note that the **defense cap will rarely bind**, since a player does not control
 how often they are attacked. That is fine and by design: the defense boost is the
 naturally-bounded one, limited by other players' behaviour rather than by a rule.
 
-### An uncapped tier is not worth selling
+### No uncapped tier
 
 It was considered as a higher price point and rejected on arithmetic rather than
 on principle. With a 20-battle attack boost already on sale, an uncapped SKU is
