@@ -255,6 +255,38 @@ logging in.** No form, no reply, no action: presence is the response.
 whoever cared enough to ask is the one volunteering to run it — and it makes the
 act accountable to a name instead of to a sort order.
 
+##### Succession costs 650, and the old master is refunded 650
+
+> **The requester pays the founding price. The displaced master gets it back.**
+> Charged when the request is filed; **refunded to the requester** if the master
+> returns and the request lapses; **transferred to the master** when the promotion
+> completes.
+
+**Three things fall out of one rule**, which is why it is the right one:
+
+- **It prices the support ticket.** Every request is manual work, and 650 shards —
+  **1.7 days** — is enough that nobody files one idly. Charging at *request* time
+  rather than at promotion is deliberate: it puts the stake in before we do a
+  week's waiting, not after.
+- **It makes the displaced master whole.** They paid 650 to found the guild and
+  they get 650 back. **Losing a guild you abandoned is not the same as being
+  robbed**, and a refund is what keeps that true even for someone who returns two
+  months later to find it gone.
+- **It is economically neutral.** 650 moves from one player to another; nothing is
+  minted and nothing is destroyed, so the sink the whole economy turns on is
+  untouched.
+
+> **Succession refunds where disbanding does not, and the difference is real.**
+> *Founding a guild costs 650 shards* makes the fee non-refundable on disband —
+> because there, the guild simply ends and nobody pays anything. **Here someone
+> is paying to take it over, so the value transfers rather than evaporating.**
+> The rule is not "you get your money back," it is "a guild costs 650 to hold,"
+> and holding it is exactly what changed hands.
+
+**A requester who cannot afford 650 cannot request** — which is part of the
+filter, not a flaw in it. **The refund lands regardless of the balance cap**, on
+the same footing as a prize or a compensation grant (`06-progression.md`).
+
 > **This is manual work, and it is the good kind.** Each case is a support ticket:
 > roughly **4 a day at 100k DAU**, far less below that. It is also exactly the
 > shape of task the **MCP admin tooling** in `11-social.md` was posed for — verify
