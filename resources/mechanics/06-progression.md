@@ -659,13 +659,25 @@ wants to protect.
 > re-kitting six heroes is two passes rather than one banked drop. That is the
 > only legitimate plan the cap constrains, and staging it is not a hardship.
 
-#### Grants are exempt, and that is load-bearing
+#### Three sources, three rules
 
-**Battle income stops at the cap. Granted shards always land.** Guild event
-payouts, ladder finishes, and above all the **blanket compensation the no-nerf
-rule promises** (`README.md` — *grant shards to everybody*) are paid regardless
-of balance and may push a player above 10,000; battle income simply stays off
-until they spend back under it.
+| Source | At the cap |
+|---|---|
+| **Battle income** — attack victories and holds | **Stops.** Nothing drops until the balance falls back under |
+| **Prizes** — event placements, ladder finishes, compensation grants | **Always land**, and may carry the balance *above* the cap |
+| **Anything purchased** | **Refused.** A purchase that would take a player over is denied at the point of sale |
+
+**Refusing the sale is the consumer rule, not an economy rule.** Shards themselves
+remain unpurchasable — that is what caps purchasable advantage at $260/year — so
+the live case is the **boost pair**, which multiplies earned income. Selling a
+boost to a player sitting at the cap takes money for something that cannot
+produce anything. Refuse it and say why.
+
+#### Prizes are exempt, and that is load-bearing
+
+Guild event payouts, ladder finishes, and above all the **blanket compensation
+the no-nerf rule promises** (`README.md` — *grant shards to everybody*) are paid
+regardless of balance.
 
 > **Without this exemption the cap silently voids a promise.** A compensation
 > grant exists precisely to repay a player whose investment was devalued — and
@@ -675,6 +687,30 @@ until they spend back under it.
 **The UI must warn well before the cap is reached.** A player who finishes a
 session and discovers it earned nothing is a support ticket and a review, and the
 warning costs one line.
+
+#### Parking at the cap — named, accepted, taxable later
+
+The three rules above permit one deliberate strategy: **sit at the cap forever.**
+Never spend, so the gear score never moves and the league never changes; accept
+that battle income has stopped, because it was unusable anyway; and live on event
+prizes, which are the one uncapped source. The player freezes their power on
+purpose and farms a league they have outgrown.
+
+**It is a real position and it is not free.** They forfeit *all* battle income
+permanently — the 388-a-day baseline, gone — in exchange for an event advantage
+that `08-guilds.md` measures at **1.17×**, since the punching-up bonus pays them
+nothing and the hold term cannot be farmed. Trading 100% of one income stream for
+17% more of a smaller one is a bad deal that some people will take anyway.
+
+> **The drafted tax, if it ever becomes an issue: scale event payouts by league.**
+> A Bronze placement pays less than a Diamond one. Parking then defeats itself —
+> more wins, each worth less — and it needs no new tracking, since the league is
+> already known. **Event payout sizes are still open** (see *Open* below), so this
+> is a choice available at the moment they are set rather than a change to
+> anything decided.
+
+Not implemented now. Named so that if event prizes start looking like a career,
+the answer is already drafted.
 
 ### What that pace produces
 
