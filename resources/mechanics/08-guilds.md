@@ -195,6 +195,55 @@ event sits idle for a long time. If events run long, this is the rule most likel
 to feel punishing to a new member, and the mitigation is a visible countdown to
 the next lock rather than a change to the rule.
 
+### Three roles — **settled 2026-07-28**
+
+> **Guild Master** (one) · **Officers** (at most 3) · **Members.**
+
+| | Master | Officer | Member |
+|---|---|---|---|
+| Review applications · send invites | ✓ | ✓ | |
+| Spend guild funds · post guild ads | ✓ | ✓ | |
+| `/motd` | ✓ | ✓ | |
+| Edit the recruiting pitch | ✓ | ✓ | |
+| Assign Wings | ✓ | ✓ | |
+| **Remove a member** | ✓ | | |
+| **Promote and demote officers** | ✓ | | |
+| **Edit the guild name and emblem** | ✓ | | |
+| **Transfer mastery · disband** | ✓ | | |
+
+**The cap is the part that makes the tier mean anything.** Uncapped, a master can
+promote everyone and "officer" becomes a decoration; at **three** it is a real
+delegation, and it happens to match the three Wings without being tied to them.
+The number is tunable and nothing depends on it.
+
+**Recruiting powers sit with officers; identity and membership sit with the
+master.** An officer can bring people in and speak for the guild; only the master
+can remove someone, rename the guild, or hand it over. That split is why three
+tiers beat two — **a 24-person guild spanning time zones cannot run every
+application through one person**, and the design already assumes that spread by
+having an *event window* at all.
+
+#### Succession — a master who stops playing must not freeze the guild
+
+> **After 14 days of master inactivity, any officer may claim mastery — first to
+> claim takes it. After 30 days, any member may.** The displaced master becomes a
+> Member.
+
+**This will happen, and without a rule the guild is simply stuck**: no
+applications reviewed, no ads posted, no MOTD, no Wing assignments, with 23 active
+people watching. Leaving is always free, so nobody is *trapped* — but the guild
+dies of an absence rather than a decision, which is a bad way to lose one.
+
+- **14 days matches the founding grace**, so the document carries one
+  two-week constant rather than two.
+- **First-to-claim** is the same resolution the last guild seat already uses —
+  no queue, no vote, no state machine.
+- **The 30-day fallback covers a guild with no officers**, and matches the
+  inactivity window that removes an account from the matchmaking pool
+  (`09-matchmaking.md`).
+- **The former master becomes a Member**, not an officer, so the cap of three
+  never has to bend. A returning master can be re-promoted in one click.
+
 ### Founding a guild costs 650 shards — **settled 2026-07-28**
 
 > **One full rune. Paid personally by the founder, and not refundable.**
@@ -288,14 +337,7 @@ pitch needs**, and there is no reason to have two public fields.
 **Permission is enforced server-side.** The command is a request like any other
 and the client's belief about who is an officer decides nothing.
 
-> **This is the second thing to assume an officer role** — spending guild funds
-> was the first (`11-social.md`), and the screens already assume both plus *"only
-> the guild master can move or remove you."* **The role model has never actually
-> been specified**, and it is now blocking by accretion rather than by decision.
-> The minimal version implied by everything written so far is three tiers —
-> **Guild Master** (one, the founder, transferable) · **Officer** (delegated) ·
-> **Member** — which is what the moderation lever in `11-social.md` already calls
-> *guild-leader delegation*. Proposed, not decided.
+Permission follows the role model in *Three roles* below.
 
 #### There is no guild tag — **settled 2026-07-28**
 
