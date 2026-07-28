@@ -998,6 +998,32 @@ subtracted.
 > deliberately publishes, and it reveals a count without ever revealing an
 > occasion.
 
+#### A player sees all of their own — just not on a profile
+
+> **The restriction is on the *profile*, not on the player.** A player's own
+> battle history contains **every** battle they fought, Hidden included, with full
+> replays.
+
+This is what *The defender's feedback loop* above already promises, and it must
+not be read away: **the whole point of Hidden defenses is that the defender learns
+from them.** Two different surfaces —
+
+| Surface | Contains |
+|---|---|
+| **Battle history** — private, theirs | **everything**, Hidden included, with replays |
+| **Profile** — public, and their own view of it | last 20 **Visible** only |
+
+**Their own profile shows the same 20 that everyone else sees**, deliberately. A
+profile that showed Hidden battles to its owner and not to visitors would leak
+through the first screenshot anyone shared — and players screenshot profiles
+constantly. **One surface, one truth, no version of the page that says more than
+the public one.**
+
+> **The personal CSV export includes Hidden battles**, since it is the player's
+> own data leaving the system and *A player exporting their own data is a
+> portability right*. The rule has always been that **we never publish a Hidden
+> squad in-game**, not that a player may not possess their own record of it.
+
 ---
 
 ## CSV export — **settled 2026-07-28**
