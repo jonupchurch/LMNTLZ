@@ -150,13 +150,35 @@ this that quietly stops happening.
 |---|---|
 | Weekly allowance | **70 guild funds** |
 | Cost per guild ad | 5 |
-| Posts per week | **14** — about 2/day |
-| Carryover | **None.** Use it or lose it, reset weekly |
+| **Hard posting cap** | **2 guild ads per day — regardless of balance** |
+| Allowance carryover | **None.** Use it or lose it, reset weekly |
 | Personal top-up | **Not permitted** |
 
-**No carryover, for the same reason hoarding was examined elsewhere.** A dormant
-guild banking six months of allowance and then flooding the channel is the exact
-failure the weekly reset removes, and it costs nothing to prevent.
+##### The cap is on the posting rate, not on the balance
+
+> **A guild may post two ads a day. Not two a day *on average*, and not more
+> because it is holding funds — two, whatever its balance says.**
+
+**This is what makes stockpiling structurally unable to become spam**, and it
+matters because **guilds recruit part-time.** A guild that goes quiet for a month
+and then runs a recruitment drive is the normal case, not an abuse — and without a
+rate cap it is indistinguishable from a guild that saved up to flood the channel.
+Capping the *rate* lets the first happen and makes the second impossible.
+
+Two rules, doing different jobs:
+
+- **The allowance does not carry over**, and is sized to exactly the cap — 70 a
+  week is 14 posts is 2 a day. **An active guild is always funded to post at the
+  cap and can never accumulate from the allowance alone.**
+- **Event prizes do persist**, because a prize that evaporates is not a prize.
+  A guild can hold a large balance indefinitely — and **still posts twice a day**,
+  because the cap does not care. The surplus goes to logos and cosmetics, which
+  is the only other thing guild funds buy.
+
+> **So the answer to "what if they stockpile" is: nothing happens.** Holding funds
+> buys prestige, never reach. Separating the balance from the spend rate is what
+> lets event placements be meaningfully large without any of them turning into
+> channel volume.
 
 **Guild funds are a separate balance from Rune Shards** — not transferable, not
 convertible, spendable only on guild-scoped purchases. Ads are the first; **guild
@@ -187,11 +209,22 @@ the same result, and the guild gets something only a guild can spend.
 > spends the same funds on recruiting. **One reward, two meanings, chosen by
 > whoever earned it.**
 
-> **Open: what "active" means.** A guild with no active members should not be
-> recruiting, so the allowance is gated — but the threshold is a number, not a
-> mechanism. A starting proposal is **at least 3 members active in the past 7
-> days**; a guild that cannot field three players is not a guild anyone should be
-> joining.
+> **"Active" means at least 3 members active in the past 7 days — set
+> 2026-07-28.** Below that, no allowance. A guild that cannot field three players
+> is not a guild anyone should be joining, and the gate exists so that recruiting
+> into a dead guild is the one thing the channel cannot advertise.
+
+**It reuses a definition the game already has.** `09-matchmaking.md` counts a
+player active on **an attack battle or a defense-squad edit**; this is that same
+signal, counted per guild over 7 days rather than per player over 30. No new
+tracking.
+
+> **Note the interaction with the cap above.** A guild that drops under three
+> active members simply stops receiving the allowance — it does not lose funds it
+> already holds, and event prizes it won are untouched. It can still post twice a
+> day until the balance runs out, then goes quiet. **Decline is gradual rather
+> than a cliff**, which is right: three members is a bad week for a real guild as
+> often as it is the end of one.
 
 #### Nothing in this channel is free
 
