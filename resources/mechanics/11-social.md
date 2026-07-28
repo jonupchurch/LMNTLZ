@@ -1023,6 +1023,7 @@ the public one.**
 > own data leaving the system and *A player exporting their own data is a
 > portability right*. The rule has always been that **we never publish a Hidden
 > squad in-game**, not that a player may not possess their own record of it.
+> **What it may not carry is somebody else's** — see below.
 
 ---
 
@@ -1068,6 +1069,38 @@ the guild's banner — an officer cannot run a Wing, judge an assignment, or ans
 
 **The Hidden squad appears in no export, ever** — not a player's own, not an
 officer's. Same rule as embeds: absent rather than redacted.
+
+### What a battle row contains — **set 2026-07-28**
+
+| Column | Included |
+|---|---|
+| Date · zone (Visible/Hidden) · attack or defense · outcome | **always** |
+| Rating change · shards earned | **always** |
+| **Your own squad**, in full | **always** — including your Hidden squad when it defended |
+| Opponent's name and league | **always** |
+| **Opponent's squad** | **only when it was a Visible defense** |
+
+> **The opponent column is the whole question.** A Visible defense is public and
+> scoutable, so exporting it reveals nothing that was not already on offer. **A
+> Hidden defense is the one thing this design protects**, and `02-squads.md`
+> settles that *a fought Hidden squad does not stay revealed*. A CSV the attacker
+> keeps and can hand to anyone is about as revealed as a thing gets.
+
+**The fact of the battle is fine; the composition is not.** *You were ambushed
+into this player's Hidden defense and lost* leaks nothing — **everyone** has a
+Hidden squad, and its hold streak is public by design. What must not travel is
+**which six heroes were standing in it.**
+
+**Symmetrically, your own Hidden squad is yours to export.** You built it, you
+already know it, and nobody else's secret is in that column.
+
+> **Open, and it is the same question one layer down: does an attacker keep a
+> replay of a Hidden battle?** The defender's feedback loop grants replays, and
+> replays are stored rather than re-simulated (`../../docs/tech-stack.md`) — so if
+> the *attacker* also retains one, they can rewatch a Hidden squad indefinitely
+> and "does not stay revealed" is weaker than `02-squads.md` states. **Worth
+> checking against that document explicitly**; the export rule above holds either
+> way, but the replay rule may need the same carve-out.
 
 ### Two smaller things that decide whether it is any good
 
