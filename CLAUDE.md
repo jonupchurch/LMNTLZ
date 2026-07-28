@@ -135,7 +135,18 @@ re-litigated.
 - TypeScript throughout · pnpm + Turborepo · Vite + React + Tailwind client ·
   Electron + `steamworks.js` · Hono on Vercel (versioned JSON REST) ·
   Neon Postgres + Drizzle · Vercel Edge Config for the maintenance flag ·
-  auth owned in-house (Google ID tokens + Steam session tickets → own JWTs).
+  auth owned in-house (Google ID tokens + Steam session tickets → own JWTs) ·
+  Paddle · Vercel Blob · Ably · Resend · Sentry · Vitest + Playwright.
+- **The stack is complete as of 2026-07-28 — no TBD rows.** Two decisions there
+  carry beyond the vendor choice. **The realtime broker only fans out: clients
+  subscribe and never publish**, because some chat postings cost shards and a
+  client that could publish directly would bypass the charge. And **there is no
+  analytics vendor** — every question the design promises to answer is a battle
+  question, so the **battle metadata row is the analytics product**. It must carry
+  turn count, squad composition, a bot flag and league-at-battle-time from the
+  first battle ever recorded; like `engineVersion`, it cannot be backfilled.
+  *Storing composition is not exposing it* — the CSV and embed rules govern what
+  leaves the system.
 - **Gameplay is server-authoritative.** The client sends an intent; the server
   resolves it. The RNG seed never leaves the server. `packages/sim` splits into
   *rules* (pure, shared, no RNG) and *resolver* (RNG, server only).
