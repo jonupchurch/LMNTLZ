@@ -663,6 +663,83 @@ kitted are exactly equal.
 > maximum-spending non-subscriber end up in precisely the same place; the
 > subscriber simply pays less and does not have to remember to buy anything.
 
+### Prices — **set 2026-07-27**
+
+| SKU | Price |
+|---|---|
+| **Daily boost pair** — attack + defense together | **$2** |
+| **Weekly 800 shards** | **$5** |
+| **Subscription** — 4 weeks | **$20** |
+
+**The boosts are sold as a pair, never separately**, because they are not worth
+the same. A boost is 2× capped at 20 battles, and a typical player runs about 20
+battles a day against a base of **330 shards/day** — 231 from attacking, 99 from
+holds:
+
+| | Per day | A boost adds |
+|---|---|---|
+| Attack boost | 231 | **+231** |
+| Defense boost | 99 | **+99** |
+
+**The attack boost is worth 2.3× the defense boost.** Priced identically and sold
+separately, a rational player buys the attack boost every day and the defense
+boost never — killing the one purchase that rewards defensive play. Pairing them
+removes the choice rather than pricing it, which is simpler than maintaining two
+SKUs at two price points.
+
+#### What that buys against the earn rate
+
+| | Shards / 4 weeks | vs free |
+|---|---|---|
+| **Free** | 9,240 | — |
+| **Subscriber** — both boosts daily + 800/week | **21,680** | **2.35×** |
+
+*(Boosts double income within the caps: +330/day × 28 = +9,240. Shards add 800 ×
+4 = 3,200.)*
+
+| | À la carte | Subscription |
+|---|---|---|
+| Cost per 4 weeks | 28 × $2 + 4 × $5 = **$71** | **$20** |
+| Per 1,000 shards | $5.71 | **$1.61** |
+| **Per rune (650)** | **$3.71** | **$1.05** |
+
+**Crossover is 10 days.** Buy boosts on more than 10 days in a 4-week window and
+the subscription is already cheaper, so à la carte is the sporadic and trial tier
+rather than a competing plan. The gap is **3.6×**, steeper than a usual
+subscription discount — deliberately, since conversion to a predictable
+subscription is worth more than à la carte margin.
+
+#### The ceiling, in weeks
+
+| Kit | Free | Subscriber |
+|---|---|---|
+| Competitive 18 heroes (35,100) | **15.2 weeks** | **6.5 weeks** |
+| Full 27-hero roster (52,650) | 22.8 weeks | 9.7 weeks |
+
+**The advantage is a head start, not a ceiling** — roughly two months, after which
+both players sit at the same 75-point stat cap and are exactly equal on that kit.
+What persists is **re-spec frequency**: a subscriber can rebuild runes 2.35× as
+often as the meta moves. That is the honest ongoing advantage and it should be
+stated rather than glossed; it is bounded by the same cap, so it buys
+adaptability rather than power.
+
+#### Three commercial consequences
+
+- **A 4-week subscription bills 13 times a year, not 12.** $260 against $240 for a
+  $20 monthly — quietly 8.3% more. It is defensible because it aligns with the
+  season and guild-event cadence, but it **must be labelled "every 4 weeks"**
+  rather than "monthly", which several jurisdictions require anyway.
+- **$2 charges are fee-efficient on Steam and not on the web.** Steam's 30% is
+  proportional, so bundling into a currency gains nothing there. Stripe's
+  `2.9% + $0.30` makes the fixed fee **15% of a $2 charge**, which is the real
+  argument for selling a currency in larger bundles — a **standalone and browser
+  concern specifically**, not a Steam one.
+- **Maximum revenue per player is $260 a year, by construction.** *No uncapped
+  tier* is what makes that a wall rather than a target, so the business is a
+  volume business and cannot be rescued by whales. That is the commercial shape
+  of the design promise, and it should be sized deliberately rather than
+  discovered.
+
 That property is the point of the whole storefront, because it means one sentence
 covers it: **everything money can buy in this game is in one subscription.** In a
 genre where players assume the worst, a ceiling they can audit is worth more than
@@ -938,9 +1015,13 @@ point of writing it that way.
   work exists to support it; whether it is in scope is undecided. It is also the
   one thing that can be **sold without touching the speed-versus-ceiling question
   at all**, which matters given the revenue curve above runs backwards.
-- **Boost pricing, and what "cheap" means.** The caps are set (20 battles, 20
-  holds, 4× on ambush); the price is not, and it has to be read against the earn
-  rate once that exists.
+- ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $2 for
+  the daily boost pair, $5 for 800 shards, $20 for a 4-week subscription, which
+  reads as **2.35× a free player's income** and a ~2-month head start to a
+  competitive kit. What remains is not the price but the **conversion rate** it
+  implies: revenue per player is capped at $260/year by construction, so the
+  business is a volume business and the target player count should be sized
+  deliberately.
 - **Feature unlocks as an onboarding ramp.** The Hidden zone, the second and
   third attack squads, and guild membership could gate on account progress. This
   is progression that gates *complexity* rather than power, so it cannot violate
