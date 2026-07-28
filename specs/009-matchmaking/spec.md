@@ -177,6 +177,7 @@ defense, boosted income, and all four exits.
 - **FR-016**: Diamond MUST receive **hand-seeded bots only**.
 - **FR-017**: Bot ratings MUST be spread across a band rather than pegged to midpoints.
 - **FR-018**: Bot squads MUST use the same defense configuration model as players.
+- **FR-018a**: Every bot MUST carry **both a Visible and a Hidden squad**, and MUST be ambushable on the same terms as any player. A one-squad bot is a defender the ambush counter cannot tax, and the ambush counter is the recorded answer to opponent farming. This was already implied by FR-018 — a player's defense record is 12 heroes across two zones — and is stated outright because the implication was missed once.
 
 **Starter league**
 

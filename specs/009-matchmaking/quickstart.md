@@ -124,7 +124,13 @@ the player was actually present and deciding.
 starter league pool  → 100% bots, ≥ 20 distinct
 Bronze               → bots present, ~20% of the bot population
 Diamond              → NO generated bots; only hand-seeded ones
+every bot            → carries BOTH a Visible and a Hidden squad
 ```
+
+**The last line is a load-bearing assertion, not a completeness check.** A bot with
+one squad is a bot the ambush counter cannot tax, and the ambush counter is the
+recorded answer to opponent farming. Assert it over the whole pool — a single
+one-squad bot is a farmable hole in the pool.
 
 Then the shape check: **starter bots carry a spread of ratings**, not one value.
 Fight all 20 as a provisional player and confirm you can **lose to a strong one and
@@ -134,6 +140,12 @@ mean anything.
 And the ramp: bots 1–5 have one glaring exploitable Bane and no rune fill; bots
 13–20 have no free answer. A player who cannot beat bot 18 is not ready to graduate,
 which is the point of an authored ramp.
+
+**The ramp runs twice.** Each bot's Hidden squad is built one band up its own
+rung — bot 3's Hidden to the 6–12 standard, bot 10's to the 13–20 standard. Win ten
+in a row against bot 3's Visible squad and the 20% ambush roll drops you into
+something a tier harder, which is the first time the game teaches that a solved
+opponent is not a solved account.
 
 ## The metric to instrument on day one
 

@@ -12,6 +12,48 @@ Versioned release notes start when Steam builds do.
 
 ---
 
+## 2026-07-28 — Bots carry Hidden squads, and the harder squad is the Hidden one
+
+### Decided
+
+- **Every bot carries both a Visible and a Hidden squad**, and is ambushable on the
+  same terms as any player. Recorded as **FR-018a** in `009-matchmaking/spec.md`.
+- **A bot's Hidden squad is the harder of its two.** For the starter 20 it is
+  authored **one band up that bot's own rung** — bot 3's Hidden built to the 6–12
+  standard, bot 10's to the 13–20 standard, and 13–20's Hidden squads answering the
+  very type their own Visible squad invites you to bring.
+
+### The part worth explaining
+
+**The first half was already canon and the planning pass missed it.**
+`09-matchmaking.md`'s *Curated bot defenders* section defines a bot as *"a gear
+score, a Visible squad, a Hidden squad, and a `07-defense-ai.md` configuration —
+precisely what a player's defense record is, minus the account."* Phase 0 raised the
+question after reading `07-defense-ai.md`, which covers defenders only and is silent
+on zones. **FR-018 carried it too, by implication** — *the same configuration model
+as players* is 12 heroes across two zones, so a one-squad bot was never compatible
+with it. An implication is not a statement, which is why FR-018a now says it outright.
+
+**The second half was genuinely open, and it is the half that matters.** The ambush
+counter — +2% per consecutive attack win, capped at 90% — is the recorded answer to
+opponent farming. It only taxes a farmer if being ambushed *costs* something. Two
+equally-hard squads would redirect a farm rather than stop it, and the whole
+mechanism would be content spent on nothing.
+
+Making Hidden harder also gives the starter week a lesson it was missing: win ten in
+a row against a bot you have solved, and the 20% roll drops you into something a tier
+above it. **A solved opponent is not a solved account** — taught by the ramp rather
+than by a tutorial.
+
+### Cost
+
+**The bot pool is ~130 squads, not ~65** — the single largest authoring job in the
+project. `009-matchmaking/tasks.md` splits the starter authoring into T045 (Visible)
+and T046 (Hidden) so the second half cannot be quietly dropped, and the feature grew
+from 56 tasks to 57.
+
+---
+
 ## 2026-07-28 — A guild emblem is composed, not uploaded, so it is never reviewed
 
 ### Fixed

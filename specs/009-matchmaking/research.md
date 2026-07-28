@@ -196,12 +196,20 @@ already in the design push back, and whether they are sufficient is a real quest
 - **Bots carry a spread of ratings**, not one per league, so the pool is not
   uniformly farmable.
 
-> **The open question the ambush answer depends on: do bots have Hidden squads?**
-> If a farmed bot's Hidden squad is as weak as its Visible one, the ambush tax
-> redirects the farm rather than stopping it. `07-defense-ai.md` covers defenders
-> only and does not say. **This needs deciding before the bot pool is authored**,
-> because it is an authoring requirement — 20 starter bots with Hidden squads is
-> twice the content of 20 without.
+> **Bots carry Hidden squads — settled 2026-07-28, and it was already canon.**
+> This pass raised it as open after reading `07-defense-ai.md`, which covers
+> defenders only and does not say. It is stated plainly one document over:
+> `09-matchmaking.md`'s *Curated bot defenders* section defines a bot as **"a gear
+> score, a Visible squad, a Hidden squad, and a `07-defense-ai.md` configuration —
+> which is precisely what a player's defense record is, minus the account."**
+> FR-018 carries the same thing by implication: a player's defense record is 12
+> heroes across two zones, so *the same configuration model as players* was never
+> compatible with a one-squad bot.
+>
+> **The ambush tax therefore has something to bite on, provided the authoring
+> makes Hidden the harder of the two** — that is the half the canon does not
+> state, and it is an authoring instruction rather than a rule. It is recorded on
+> T045 and T046.
 
 **What would answer the farming question properly**: the battle metadata row.
 `defender_is_bot`, `attacker_rating` and `zone` together make *"how much rating is
@@ -214,7 +222,7 @@ are already mandatory under Constitution XVI. **No new field is needed.**
 
 - **The absolute bot count.** ~65–70 is a floor derived from the starter
   requirement. The real number wants a real population.
-- **Whether bots carry Hidden squads.** Raised above. An authoring decision with a
-  balance consequence.
+- ~~**Whether bots carry Hidden squads.**~~ **Settled 2026-07-28: they do**, and
+  `09-matchmaking.md` had already said so. See above.
 - **The exact widen-rate threshold** that means "Bronze needs more bots." Needs the
   metric running first.

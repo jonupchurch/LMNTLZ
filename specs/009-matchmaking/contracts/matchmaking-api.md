@@ -194,8 +194,14 @@ This is how the starter week teaches counter-building without a tutorial mode.
 calibrates a single point, a spread calibrates the band. A new player should be able
 to lose to a strong bot and beat a weak one **inside the same league**.
 
-> **Open, and it is an authoring decision with a balance consequence: do bots carry
-> Hidden squads?** The ambush counter is the recorded answer to opponent farming,
-> and it only bites if being ambushed into a bot's Hidden squad is harder than
-> attacking its Visible one. `07-defense-ai.md` covers defenders only and does not
-> say. 20 starter bots with Hidden squads is twice the content of 20 without.
+**Bots carry Hidden squads, exactly as players do.** `09-matchmaking.md` defines a
+bot as a gear score, a Visible squad, a Hidden squad and a defense-AI configuration
+— *a player's defense record minus the account* — and FR-018 requires the same
+configuration model as players, which is 12 heroes across two zones. So a bot is
+ambushable on the same terms as anyone, and `POST /matchmaking/attack` needs no bot
+branch in its ambush roll.
+
+> **The authoring instruction that makes this pay off: a bot's Hidden squad is the
+> harder of its two.** The ambush counter is the recorded answer to opponent
+> farming, and it only bites if being ambushed costs the farmer something. Equal
+> squads would redirect the farm rather than tax it.

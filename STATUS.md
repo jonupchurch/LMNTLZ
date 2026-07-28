@@ -13,13 +13,13 @@ checklist items; and each of the sixteen now carries the full set —
 `plan.md` · `research.md` · `contracts/` · `quickstart.md` · `tasks.md` —
 against one shared `specs/data-model.md`.
 
-**766 tasks across the sixteen**, each with a checkbox, a sequential id, a story
+**767 tasks across the sixteen**, each with a checkbox, a sequential id, a story
 label where it belongs to one, and an exact file path. Zero malformed, zero
 duplicate ids, zero gaps.
 
 | | |
 |---|---|
-| Total tasks | **766** |
+| Total tasks | **767** |
 | Parallelizable `[P]` | 207 |
 | Inside a user-story phase | 563 |
 | Features whose Phase 1 is a one-time bootstrap | **3** — 001 (monorepo) · 005 (`apps/api`) · 006 (`apps/client`) |
@@ -103,7 +103,7 @@ expensive each would have been to find later:
   each. All 49 research questions answered.
 - **Two read-only analysis scripts committed** so every computed figure is
   reproducible: `tools/characterize-orderings.py` and `tools/verify-accuracy.py`.
-- **`tasks.md` for all 16** — 766 tasks, ordered by user story, each independently
+- **`tasks.md` for all 16** — 767 tasks, ordered by user story, each independently
   testable and each carrying the reasoning that would otherwise be lost between the
   plan and the diff.
 
@@ -179,10 +179,14 @@ expensive later:
 - **Start new accounts at the population median** rather than a fixed 1000 (feature
   010), because the Hidden bonus inflates the population.
 
-**One open authoring question with a balance consequence**: do bots carry Hidden
-squads? The ambush counter is the recorded answer to opponent farming and it only
-bites if a bot's Hidden squad is harder than its Visible one. 20 starter bots with
-Hidden squads is twice the content of 20 without. (`009/research.md`)
+~~**One open authoring question**: do bots carry Hidden squads?~~ **Settled
+2026-07-28 — they do**, and `09-matchmaking.md` had already said so: a bot is *"a
+gear score, a Visible squad, a Hidden squad, and a `07-defense-ai.md` configuration
+— precisely what a player's defense record is, minus the account."* The Phase 0 pass
+raised it as open because it read `07-defense-ai.md`, which covers defenders only.
+**The genuinely undecided half was which squad is harder, and it is Hidden** — each
+bot's Hidden squad is authored one band up its own ramp (009 T046). The bot pool is
+therefore **~130 squads, the single largest authoring job in the project.**
 
 **A working Python 3.13 interpreter is at `py`** — the bare `python` on PATH is a
 Store stub.

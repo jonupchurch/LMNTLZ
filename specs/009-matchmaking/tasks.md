@@ -190,14 +190,15 @@ system exists to keep.
 ### Implementation for User Story 4
 
 - [ ] T044 [US4] Implement bot distribution in `apps/api/src/matchmaking/bots.ts` — **30%** starter and **20/20/20/10** across Bronze, Silver, Gold and Platinum, with Diamond **hand-seeded and counted separately** (FR-015, FR-016)
-- [ ] T045 [US4] Author **20 starter bot defenders** in `content/bots/starter/*.json`, structured as a ramp — bots 1–5 with one glaring exploitable Bane, a mono-type squad and no rune fill; 6–12 with two types and partial fill; **13–20 with mixed types, full fill and no free answer**, setting the graduation standard
-- [ ] T046 [US4] Author the padding bots for Bronze, Silver, Gold and Platinum in `content/bots/` at the derived floor — 13 · 13 · 13 · 7 — each a full defense record using **the same configuration model as players** (FR-018)
-- [ ] T047 [US4] Spread bot ratings across a band in `apps/api/src/matchmaking/bots.ts` rather than pegging to a midpoint — one anchor calibrates a single point; a spread calibrates the band (FR-017)
-- [ ] T048 [US4] Implement the inactivity test as `AND last_activity_at >= now() - interval '30 days'` **in the candidate query**, never in a nightly job — a job would leave a returning player invisible until it next ran (FR-012)
-- [ ] T049 [US4] Define activity as **an attack battle or a defense-squad edit**, never a bare login, in `apps/api/src/matchmaking/candidates.ts` — otherwise an absent account keeps collecting hold income by opening the game and doing nothing
-- [ ] T050 [US4] **Add no rule zeroing an idle account's hold income.** Leaving the pool is its own enforcement: nobody can attack a defense nobody is offered, and a second mechanism is a second thing to keep in step
-- [ ] T051 [US4] **Pad with bots first; widen only if that is not enough**, in `apps/api/src/matchmaking/candidates.ts` — a bot inside the band keeps matching in-band, while widening reaches outside it and breaks the guarantee, up to **2.67×** for a player at a league floor. Widening is **per request and never persists**
-- [ ] T052 [US4] Surface `widened: true` to the player in `apps/api/src/matchmaking/routes.ts`, because **the 1.67× guarantee does not hold on a widened match**
+- [ ] T045 [US4] Author the **Visible** squads of **20 starter bot defenders** in `content/bots/starter/*.json`, structured as a ramp — bots 1–5 with one glaring exploitable Bane, a mono-type squad and no rune fill; 6–12 with two types and partial fill; **13–20 with mixed types, full fill and no free answer**, setting the graduation standard
+- [ ] T046 [US4] Author the **Hidden** squad of each starter bot **one band up its own ramp** — bot 3's Hidden is built to the 6–12 standard, bot 10's to the 13–20 standard, and 13–20's Hidden squads answer the very type their own Visible squad invites you to bring. A farmer who solved the Visible squad walks into the squad built to punish that solution, which is the ambush tax doing its designed job
+- [ ] T047 [US4] Author the padding bots for Bronze, Silver, Gold and Platinum in `content/bots/` at the derived floor — 13 · 13 · 13 · 7 — **each carrying both squads**, a full defense record using **the same configuration model as players**, which is 12 heroes across two zones (FR-018)
+- [ ] T048 [US4] Spread bot ratings across a band in `apps/api/src/matchmaking/bots.ts` rather than pegging to a midpoint — one anchor calibrates a single point; a spread calibrates the band (FR-017)
+- [ ] T049 [US4] Implement the inactivity test as `AND last_activity_at >= now() - interval '30 days'` **in the candidate query**, never in a nightly job — a job would leave a returning player invisible until it next ran (FR-012)
+- [ ] T050 [US4] Define activity as **an attack battle or a defense-squad edit**, never a bare login, in `apps/api/src/matchmaking/candidates.ts` — otherwise an absent account keeps collecting hold income by opening the game and doing nothing
+- [ ] T051 [US4] **Add no rule zeroing an idle account's hold income.** Leaving the pool is its own enforcement: nobody can attack a defense nobody is offered, and a second mechanism is a second thing to keep in step
+- [ ] T052 [US4] **Pad with bots first; widen only if that is not enough**, in `apps/api/src/matchmaking/candidates.ts` — a bot inside the band keeps matching in-band, while widening reaches outside it and breaks the guarantee, up to **2.67×** for a player at a league floor. Widening is **per request and never persists**
+- [ ] T053 [US4] Surface `widened: true` to the player in `apps/api/src/matchmaking/routes.ts`, because **the 1.67× guarantee does not hold on a widened match**
 
 **Checkpoint**: All five stories independently functional.
 
@@ -205,10 +206,10 @@ system exists to keep.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T053 **Instrument `widenRate` from day one** in `apps/api/src/matchmaking/candidates.ts` — widened requests over total, **by league**. Bronze is where inactive accounts thin hardest and where widening breaks the bound; **a Bronze widen rate above a few percent means the bot allocation was too small**
-- [ ] T054 Confirm every battle record carries `defender_is_bot`, `attacker_league`, `defender_league` and both ratings — feature 008 owns the columns; this task asserts this feature populates them (FR-013, SC-008)
-- [ ] T055 [P] Write `apps/api/src/matchmaking/README.md` — the two axes, the carve-out, and the standing note that the bot total is a launch-tuning number with a derived floor
-- [ ] T056 Run the full quickstart manual pass, including the `rg` check that no `zeroHoldIncome`-style rule exists
+- [ ] T054 **Instrument `widenRate` from day one** in `apps/api/src/matchmaking/candidates.ts` — widened requests over total, **by league**. Bronze is where inactive accounts thin hardest and where widening breaks the bound; **a Bronze widen rate above a few percent means the bot allocation was too small**
+- [ ] T055 Confirm every battle record carries `defender_is_bot`, `attacker_league`, `defender_league` and both ratings — feature 008 owns the columns; this task asserts this feature populates them (FR-013, SC-008)
+- [ ] T056 [P] Write `apps/api/src/matchmaking/README.md` — the two axes, the carve-out, and the standing note that the bot total is a launch-tuning number with a derived floor
+- [ ] T057 Run the full quickstart manual pass, including the `rg` check that no `zeroHoldIncome`-style rule exists
 
 ---
 
@@ -244,7 +245,7 @@ system exists to keep.
 - **US3's bleed work is fully parallel with US4's bot authoring** — different files, and the bot authoring is a content task
 - T012, T013 in parallel · T020, T021 in parallel
 - T041, T042, T043 in parallel
-- T045 and T046 are content authoring and can run alongside all of Phase 6
+- T045, T046 and T047 are content authoring and can run alongside all of Phase 6
 
 ---
 
@@ -276,10 +277,12 @@ with both warnings intact.
 
 ### Incremental Delivery
 
-**The bot authoring (T045, T046) is the long pole and it is content, not code.**
-Sixty-odd full defense records — six heroes, seats, two targeting rules and a
-six-power ranking per champion, plus rune fill. Start it early and run it alongside
-everything else.
+**The bot authoring (T045, T046, T047) is the long pole and it is content, not
+code.** Sixty-odd defense *records* is **~130 squads**, because a bot carries a
+Visible and a Hidden one exactly as a player does — six heroes, seats, two
+targeting rules and a six-power ranking per champion, plus rune fill, each. Start
+it early and run it alongside everything else. **This is the single largest
+authoring job in the project.**
 
 ---
 
@@ -287,12 +290,16 @@ everything else.
 
 - **The absolute bot count is a launch-tuning number with a derived floor.**
   ~20 starter bots implies ~65–70 in total; the real number wants a real population.
-  **Bronze at 13 is thin and is the known weak point** — T053's widen rate is what
+  **Bronze at 13 is thin and is the known weak point** — T054's widen rate is what
   says whether it was enough.
-- **Whether bots carry Hidden squads is open, and it is an authoring decision with a
-  balance consequence.** The ambush counter is the recorded answer to opponent
-  farming, and it only bites if a bot's Hidden squad is harder than its Visible one.
-  **20 starter bots with Hidden squads is twice the content of 20 without.**
+- **Bots carry Hidden squads — settled 2026-07-28, and `09-matchmaking.md` had
+  already said so.** Its *Curated bot defenders* section defines a bot as *"a gear
+  score, a Visible squad, a Hidden squad, and a `07-defense-ai.md` configuration —
+  precisely what a player's defense record is, minus the account."* The Phase 0 pass
+  raised it as open because it read `07-defense-ai.md`, which covers defenders only.
+  **The half that was genuinely undecided is which squad is harder**, and T046
+  settles it: **Hidden is**. The ambush counter is the recorded answer to opponent
+  farming and equal squads would redirect a farm rather than tax it.
 - **Convergent rating makes honest play worth exactly zero in expectation**, so any
   reliable win source strictly dominates it. `defender_is_bot`, `attacker_rating`
   and `zone` together answer *"how much rating is being gained against bots, by
