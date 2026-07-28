@@ -939,6 +939,99 @@ exactly the kind of change the no-nerf rule makes expensive.
 
 ---
 
+## CSV export — **settled 2026-07-28**
+
+> **Players can download their own data. Guild masters and officers can download
+> their guild's. Both by default, free, no tier and no toggle.**
+
+**It costs almost nothing and it suits this game specifically.** The data already
+exists server-side and CSV is a serialization; meanwhile LMNTLZ is a
+counter-building game whose whole appeal is reading numbers, so the players most
+likely to stay are the ones who want a spreadsheet. It also sits naturally beside
+a design that publishes its own ceilings rather than hiding them.
+
+| Who | Gets |
+|---|---|
+| **A player** | their roster, runes and gear score, battle history, shard income |
+| **A guild master or officer** | member list and activity, per-member event contribution, the guild's event history and placements |
+
+### The line inside a guild export
+
+**A guild export contains other people's data, and that needs a rule rather than
+a judgement call.** The split that works:
+
+- **Guild-scoped facts are always exportable** — membership, activity, event
+  contribution, Wing assignment. These exist *because* the member joined; they are
+  the guild's own record of itself, and an officer cannot run an event without
+  them.
+- **Player-scoped facts follow that member's profile visibility** — battle record,
+  squads, hours. If a member has hidden something from their profile, **an officer
+  CSV must not contain it.**
+
+> **Otherwise the visibility control is theatre.** A setting that hides a field on
+> a profile page while a spreadsheet three clicks away carries it anyway is worse
+> than having no setting, because it tells a player they are protected when they
+> are not.
+
+**This makes profile visibility load-bearing** (still open — see *Open*): it stops
+being cosmetic the moment an export reads from it.
+
+**The Hidden squad appears in no export, ever** — not a player's own, not an
+officer's. Same rule as embeds: it is absent rather than redacted.
+
+### Two smaller things that decide whether it is any good
+
+- **A stable schema.** Column names and order are a contract the moment someone
+  builds a spreadsheet on them. Add columns at the end; never rename or reorder.
+  **ISO-8601 dates, UTF-8, no localisation** — a CSV that changes shape between
+  patches is worse than none.
+- **A player exporting their own data is a portability right**, not merely a
+  feature, which is worth knowing when *Retention* gets its legal read. The guild
+  export is the opposite — it is us handing one player another's data — and that
+  is exactly why the visibility rule above is not optional.
+
+---
+
+## Admin tooling via MCP — **direction posed 2026-07-28, not settled**
+
+An **MCP server behind granted per-admin API keys**, letting trusted admins drive
+moderation with AI assistance. Recorded because the reasoning should not be
+re-derived; nothing is committed.
+
+**The case for it is cost.** `../../docs/tech-stack.md` already notes admin
+tooling is *owned rather than provided* and unbuilt — and an MCP server skips the
+entire frontend, since the tools are API endpoints that have to exist anyway. It
+also makes **"an AI flags; it never moderates"** into tooling rather than a
+slogan: the model reads, ranks, summarises and drafts; a human acts.
+
+**Restricting it to trusted admins solves the credential problem and not the
+interesting one.** Fewer keys, easy revocation, no insider-threat modelling — real
+savings. But the sharp risk is **prompt injection, and it is not aimed at the
+admin**:
+
+> **The trust boundary is not *who holds the key*, it is *whose text enters the
+> model's context*.** A trustworthy admin with a legitimate key asking a perfectly
+> ordinary question — *summarise today's report queue* — pulls hostile
+> user-authored content into a model that is simultaneously holding ban tools.
+> The admin's trustworthiness is irrelevant because the admin is not the one being
+> manipulated. **Structurally it is SQL injection: restricting database access to
+> senior engineers does not fix it, because the injection arrives in the data.**
+
+Two things trust also does not cover: **the model can be wrong with no adversary
+at all**, and a disputed ban still needs **an audit record** regardless of who
+issued it.
+
+**So the shape, if it is built:** read-broad and write-narrow · destructive
+actions **propose rather than execute**, writing a pending action a human confirms
+where the model cannot reach · user content treated as data and never allowed to
+select a tool · per-admin keys with an audit log. **Not a separate service** — a
+thin layer over the same Hono API, for the same reasons chat is not one.
+
+**Build the read half first and alone.** It captures most of the value at almost
+none of the risk, and it is how you learn what the write tools should actually be.
+
+---
+
 ## Open
 
 - **Whether in-game chat is built at all, or whether it is a Discord server** —
