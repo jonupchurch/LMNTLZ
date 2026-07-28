@@ -12,6 +12,76 @@ Versioned release notes start when Steam builds do.
 
 ---
 
+## 2026-07-28 — Phase 0/1 complete across all sixteen; four recorded figures corrected
+
+### Added
+
+- **`research.md`, `contracts/` and `quickstart.md` for every one of the sixteen
+  features.** All **49 Phase 0 research questions answered** — 41 decided, 5 computed,
+  and 3 specified-but-not-run because they need the live model or production data.
+  Where a question could only be settled by measurement, the file **names the
+  measurement** instead of inventing a result.
+- **Two read-only analysis scripts** — `tools/characterize-orderings.py` (the
+  19,440-pair power-ordering sweep) and `tools/verify-accuracy.py` (the closed-form
+  hit probability against all 729 pairings). Every computed figure in the research
+  files is reproducible in seconds.
+
+### Fixed
+
+- **`07-defense-ai.md`'s *"every safe ordering ends `1·0`"* is wrong by one** —
+  logged in `resources/README.md`, docs left for deliberate editing.
+- **A fifth instance of the stale-155 cascade**, in `07-defense-ai.md`: *"roughly 13
+  turns per hero"* is `155 / 12`. The current figure is **8.5**.
+- **`01-stats.md`'s accuracy table mixes two die-rounding conventions**, and its
+  `+20 max` cell is a transcription of the symmetric median from the cell diagonally
+  above it (45.2% where every convention gives 46.2%).
+- **`docs/tech-stack.md` names presence as the realtime cost lever.** It is the cheap
+  half — $9/month at 10k DAU against ~$270 for Global fan-out.
+
+### The part worth explaining
+
+**Two recorded claims were re-derived and one of them was a tripwire pointing the
+wrong way.**
+
+The sweep reproduced `07-defense-ai.md` *exactly* — greedy's tier distribution to the
+decimal, the 19,440-pair histogram, the count of 12 safe orderings, the median of 13
+per hero. Then it produced a twelfth ordering ending `5·0` rather than `1·0`, which
+the document says is impossible. **The twelfth is the published Tank default**, which
+the same document describes three paragraphs later.
+
+That matters because feature 004's plan had turned the claim into an alarm: *"if a
+re-derivation produces one that does not, the ladder changed and the defaults need
+revisiting."* **The ladder has not changed** — everything else reproduced to the
+decimal — so following the tripwire literally sends someone to re-tune a correct
+ladder. The replacement rule is *tier 0 last*, which is **provable** rather than
+measured: a power fires only when everything above it is on cooldown, and the tier-0
+auto-attack never is.
+
+**The larger finding is that the safe set is a measurement artifact.** It is defined
+over 60 turns per hero; a hero takes **~8.5** in a real 6v6. At battle length **no
+ordering keeps all six powers live**, because tier 0 is structurally last and a battle
+is too short for the top five to be down at once. The four role defaults survive
+scrutiny anyway — scoped to their own heroes, the only power that ever fails to fire
+is the auto-attack, and **every hero fires its ultimate at least once** — but the
+squad builder must display a **9-turn** profile. A 60-turn one tells a player their
+auto-attack fires 5% of the time when in their actual battles it never fires at all.
+
+**Two proposals are raised and deliberately not taken**, because both are canon
+changes rather than Phase 0 calls. **Global chat fan-out is quadratic in players** —
+billed on delivery, so `published × subscribers` — reaching ~$27,000/month at 100k
+DAU against $90 for the connections everyone assumed were the problem; a capped room
+size makes it linear, and the language split is already sharding on a key that does
+not bound room size. And **the Hidden 2× rating bonus makes rating non-zero-sum**,
+injecting roughly 2,700 points a year into an active account: both stated jobs of the
+rating are ordinal and survive it, but *"everyone starts at 1000"* stops meaning
+*"starts at average"*.
+
+**Two Phase 0 questions turned out to be already answered in canon** — the inactivity
+threshold and the daily income brackets — which is worth recording as a reminder that
+the mechanics docs run ahead of the specs in places.
+
+---
+
 ## 2026-07-28 — All sixteen features specified and planned
 
 ### Added

@@ -4,41 +4,61 @@ _Snapshot; updated each work session. Last updated: 2026-07-28._
 
 ## Current phase
 
-**Specs complete; plans partial. Phase 0/1 is the current work — not ready to
-implement.**
+**Planning complete. Phase 0/1 done for all sixteen features. Ready for
+`speckit-tasks`, then code.**
 
 Design and tech stack are both **complete and closed**; the constitution is
-LMNTLZ-specific at **v3.0.0**; **16 specs** are written with **zero unchecked
-checklist items and zero outstanding clarifications**.
+LMNTLZ-specific at **v3.0.0**; **16 specs** are written with zero unchecked
+checklist items; and each of the sixteen now carries the full set —
+`plan.md` · `research.md` · `contracts/` · `quickstart.md` — against one shared
+`specs/data-model.md`.
 
-> **The plans are one artifact of four.** `speckit-plan` should emit
-> `research.md`, `data-model.md`, `quickstart.md` and `contracts/` per feature.
-> What exists is **`plan.md` only** — 109 lines average against the specs' 224 —
-> with Phase 0 and Phase 1 summarised inside it, plus one shared
-> `specs/data-model.md`.
->
-> **49 Phase 0 research questions are raised and 1 is resolved.**
+**All 49 Phase 0 research questions are answered**, and the answers say honestly
+which kind of answer they are:
 
-**What Constitution VII asked for is partly met.** Its stated purpose is *"so
-shared models, cross-feature dependencies, and the right build order surface on
-paper"* — and those did (see the `firingProfile` move below). **Resolving the
-technical unknowns is Phase 0, and that has not happened.**
-
-**Decided 2026-07-28: full Phase 0/1 for all sixteen** before any code —
-`research.md`, `contracts/` and `quickstart.md` per feature, answering the open
-questions. Where a question can only be settled by measurement (a simulated
-population, a live model), the research file says so and names what would answer
-it rather than inventing a result.
+| | |
+|---|---|
+| **Decided** from the docs, the vendor's, or the arithmetic | 41 |
+| **Computed** — a sweep or a simulated population was actually run | 5 |
+| **Specified but not run** — needs the live model or production data; the file names the measurement rather than inventing its result | 3 |
 
 Build order remains settled: `packages/content` → `packages/sim` (rules, then
 resolver) → `apps/api` → `apps/client`, headless and tested first.
 
-> **The planning pass earned its keep once, concretely.** Feature 006's plan found
-> that the **firing profile** — which the squad builder must display — was placed
-> in `sim/ai`, which is server-only. It is a pure function of `(hero, ranking)`, so
-> it moved to `sim/rules`. Discovered during implementation instead, the natural
-> fix would have been an endpoint: a round trip on every drag of a ranking widget,
-> to compute something the client can derive locally.
+## What the Phase 0 pass turned up
+
+**The planning pass has now earned its keep several times over.** In order of how
+expensive each would have been to find later:
+
+- **The battle metadata row gained nothing and lost nothing** — `startedAt`/`endedAt`
+  were already in the shared model, and feature 016 needs them for the drain. The
+  risk is a migration dropping them as redundant next to `turnCount`, which measures
+  *engine* length where the drain needs *wall-clock*. Flagged in three files.
+- **`07-defense-ai.md`'s *"every safe ordering ends `1·0`"* is wrong by one**, and
+  its own published Tank default is the exception. The plan had turned that claim
+  into a **tripwire** — *"if a re-derivation produces one that does not, the ladder
+  changed"* — so following it literally would have sent someone to re-tune a correct
+  ladder. The real rule is *tier 0 last*, and it is provable rather than measured.
+- **The "12 safe orderings" is a 60-turn statement, and a hero takes ~8.5 turns.**
+  At real battle length **no** ordering keeps all six powers live. The four published
+  role defaults survive anyway — the only casualty is the tier-0 auto-attack, which is
+  the fallback — but the squad builder must show a **9-turn** profile, not a 60-turn
+  one, or the number on screen describes a game nobody plays.
+- **Ably's cost driver is message fan-out, not presence.** `docs/tech-stack.md` names
+  presence as the lever if pricing came in high; presence is **$9/month at 10k DAU**
+  against **~$270** for Global fan-out — and fan-out is **quadratic in players**.
+  A capped Global room size makes it linear. Raised, not taken: it is player-facing.
+- **The Hidden 2× rating bonus makes rating non-zero-sum**, injecting ~2,700 points a
+  year into an active account. Both stated jobs of the rating are ordinal and survive
+  it; what breaks is *"everyone starts at 1000"* meaning "starts at average".
+  Recommendation raised, not taken — the fixed 1000 is recorded canon.
+- **Vercel Blob has no lifecycle expiry** (verified against current docs), so the
+  cleanup cron ships. `del()` is free and **`list()` is billed** — which independently
+  confirms the Postgres-driven design chosen on correctness grounds.
+- **Feature 006's plan found the firing profile in `sim/ai`**, which is server-only,
+  when the squad builder needs it client-side. It moved to `sim/rules`. Found during
+  implementation instead, the natural fix is an endpoint — a round trip on every drag
+  of a ranking widget.
 
 ## Done
 
@@ -68,28 +88,44 @@ resolver) → `apps/api` → `apps/client`, headless and tested first.
 - **The shared data model settled once** (`specs/data-model.md`) — six models cross
   feature boundaries, and the battle record is written by two and read by four.
 - **All 16 planned**, each gated on the nine Part II constraints. No violations.
+- **Phase 0/1 complete for all 16** — `research.md`, `contracts/` and `quickstart.md`
+  each. All 49 research questions answered.
+- **Two read-only analysis scripts committed** so every computed figure is
+  reproducible: `tools/characterize-orderings.py` and `tools/verify-accuracy.py`.
 
-## Next — Phase 0/1 across all sixteen
+## Next — `speckit-tasks`, then code
 
-**Then** `speckit-tasks`, then implementation.
+**Four tests to write before the code they cover**, each named in its quickstart:
 
-The 49 open research questions fall into three groups, and the distinction decides
-how each is answered:
-
-| Group | Examples | How it gets answered |
-|---|---|---|
-| **Answerable now** | Blob lifecycle expiry · JWKS caching · username normalisation · the report grace period | Read docs, make the call |
-| **Needs real work** | Re-deriving the 12 safe orderings (19,440 pairs) · daily tier boundaries · rating convergence bands | A sweep or a simulated population — reasoning will not settle them |
-| **Only answerable by building** | The seeded generator · draw sequencing · the packet boundary | Decided in the first hour of the code; record the decision, do not pretend to pre-make it |
-
-**Three tests to write before the code they cover**, each named in its plan:
-
-- `purity.test.ts` (002) — no entropy source reachable in `sim/rules`
-- `determinism.test.ts` (003) — 1,000 replays, byte-identical
+- `purity.test.ts` (002) — no entropy source reachable in `sim/rules`, **and** no
+  transitive import of `resolver/` or `ai/` from the client
+- `determinism.test.ts` (003) — 1,000 replays, **byte-identical**, not deep-equal
 - the alternating-battles leak test (012) — proves *selected*, not *filtered*
+- `ordering.test.ts` (014) — the blocklist gates, the classifier does not; drawn
+  backwards by two generated diagrams
 
-**A working Python 3.13 interpreter is at `py`** (the bare `python` on PATH is a
-Store stub) — needed for the ordering sweep.
+**Three questions are specified but not yet run**, and each names its measurement:
+
+| Question | Needs | Where |
+|---|---|---|
+| Classifier quality at 100 items per call | the live model + a 300-message hand-labelled set | `015/research.md` |
+| Whether Hidden actually holds better than Visible | production battles — the whole zone commitment rests on it | `010/research.md` |
+| Requests per battle (predicted 20–40) | the first real battles; `turnCount` vs action-log length answers it with no new field | `007/research.md` |
+
+**Two proposals raised, not taken** — both are canon changes, both are cheap now and
+expensive later:
+
+- **Cap Global chat room size** (feature 014). Fan-out cost is quadratic in players.
+- **Start new accounts at the population median** rather than a fixed 1000 (feature
+  010), because the Hidden bonus inflates the population.
+
+**One open authoring question with a balance consequence**: do bots carry Hidden
+squads? The ambush counter is the recorded answer to opponent farming and it only
+bites if a bot's Hidden squad is harder than its Visible one. 20 starter bots with
+Hidden squads is twice the content of 20 without. (`009/research.md`)
+
+**A working Python 3.13 interpreter is at `py`** — the bare `python` on PATH is a
+Store stub.
 
 ## Carried risks and deferred work
 
@@ -103,9 +139,12 @@ Store stub) — needed for the ordering sweep.
 - **The battle metadata row cannot be backfilled** (Constitution XVI). Turn count,
   squad composition both sides, a bot flag and league-at-battle-time must ship
   with the first battle ever recorded.
-- **Two figures to verify before launch:** Ably pricing above 200 peak concurrent
-  connections, and whether Vercel Blob offers lifecycle expiry (if not, a cleanup
-  cron ships — driven from Postgres, never from listing the bucket).
+- ~~**Two figures to verify before launch**~~ — **both verified 2026-07-28.**
+  **Vercel Blob has no lifecycle expiry**, so the cleanup cron ships; `del()` is free
+  and `list()` is billed, which confirms the Postgres-driven design twice over.
+  **Ably** is 200 peak connections free, $29/mo for 10,000, then $2.50/M messages and
+  $1.00/M connection-minutes. **The open figure that replaced them is Global chat
+  fan-out**, which is quadratic in players and unbounded without a room cap.
 - **Steam auth has never been prototyped.** A spike to schedule, not a risk to
   retire — 1.0 must get the *seam* right, not the integration.
 - **Reactive powers are specified but unpopulated**, leaving two unique passives

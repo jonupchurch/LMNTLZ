@@ -89,6 +89,61 @@ Gameplay is **server-authoritative**: the client sends an intent, the server res
 
 - `mechanics/` — the systems layer: how the game actually resolves. `01-stats.md` (the ten stats + damage pipeline) is drafted; powers, turns, status effects, progression, and defense AI are still to come. See `mechanics/README.md` for the running index and what blocks what.
 
+### Discrepancies found by the Phase 0 pass — **2026-07-28**
+
+Running the specs' Phase 0 research meant re-deriving several recorded figures from
+the authored workbook. **Almost everything reproduced exactly**; these did not. Both
+scripts live in `../tools/` and are read-only, so any of this can be re-checked in
+seconds.
+
+- **`07-defense-ai.md` — the `1·0` rule is wrong by one, and it is self-contradicting.**
+  It states *"Exactly 12 of 720 orderings are healthy for all 27 heroes, and every one
+  of them ends `1·0` … That is a structural rule, not a style."* **Eleven do.** The
+  twelfth is **`4·3·2·1·5·0`**, which ends `5·0` — and it is the **published Tank
+  default**, described three paragraphs later as *"the only safe ordering that trades
+  the ultimate for uptime."*
+  **The real structural rule is *tier 0 last*, and unlike the `1·0` claim it is
+  provable rather than measured**: a power fires only when everything above it is on
+  cooldown, and the tier-0 auto-attack has cooldown 0 and no gate, so anything below it
+  never fires. All 12 satisfy it. It is *necessary but not sufficient* — 120 of 720
+  orderings end in tier 0 and only 12 are safe.
+  Everything else in that analysis reproduced **exactly**: greedy's tier distribution
+  to the decimal, the 19,440-pair histogram (16.7 / 16.7 / 19.2 / 24.4 / 20.2 / **3.0**),
+  the count of 12, and the median of 13 per hero. **The ladder has not moved; the claim
+  was always wrong by one.** `py tools/characterize-orderings.py`.
+
+- **`07-defense-ai.md` — a fifth instance of the stale-155 cascade.** *"A battle runs
+  roughly **13 turns per hero** (`01-stats.md`)"* is `155 / 12`, from before the `+20`
+  accuracy edge. The current figure is `102 / 12` = **8.5**, so the argument built on
+  it — *"a three-power script configures under a quarter of a hero's fight"* — is
+  really about **35%**. **The conclusion still stands** (a ranking governs every turn
+  from one setting, and the gate argument is untouched); the arithmetic no longer says
+  what it says. The other four instances were corrected in `06-progression.md`.
+
+- **`01-stats.md` — the accuracy table mixes two rounding conventions, and one cell is
+  a transcription.** `py tools/verify-accuracy.py` reproduces the **mean, p10, p90,
+  min, the 315 and 0 pairs missing >50%, the 57.4% → 87.0% hit rate, the 1.51×
+  throughput ratio, the derived ~102 hero-turns, and the 42 auto-hits / 0 auto-misses**
+  — all exactly. Two order statistics differ:
+  - **`floor(Luck × 1.5)` is canon** — the prose says *"a hero with `Luck` 15 rolls
+    1–22"*, and it is the convention the recorded means reproduce. The recorded
+    symmetric **max of 82.5%** comes from a half-up die.
+  - **The `+20 max` cell reads 45.2%, which is the symmetric *median* from the cell
+    diagonally above it.** Under every rounding convention the true value is **46.2%**.
+  Nothing in the document's reasoning depends on either.
+
+- **Two Phase 0 questions were already answered in canon** and the plans that raised
+  them did not know it. `09-matchmaking.md` sets the inactivity threshold (30 days idle,
+  activity = an attack or a squad edit) that feature 009's plan asks to *"define"*; and
+  `06-progression.md` sets the daily income brackets (1–5 at 1.5×, 6–20 at 1.0×, 21+ at
+  0.5×) that feature 010's plan calls *"not decided"*. **Not defects — a reminder that
+  the mechanics docs are ahead of the specs in places, and worth reading before
+  deciding.**
+
+**These are noted so nobody builds from them. Per the standing rule, nothing was
+rewritten** — the corrections belong in the mechanics docs when someone edits them
+deliberately.
+
 ## Lore & roster
 
 - `LORE-and-flavor.md` — world (Aethrym), the Nine Forces, the **weakness-derivation rule**, House voices, drop-in flavor text, and the **Design Canon** single-source-of-truth block.
