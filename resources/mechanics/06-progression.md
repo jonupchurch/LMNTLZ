@@ -716,21 +716,70 @@ rating even though they cannot read it.
 
 ### Open inside this
 
-- ~~**Whether points reset seasonally.**~~ **Settled by `08-guilds.md`: they do.**
-  Guild and Wing rewards pay per season, and a seasonal competition on a permanent
-  total is decided by age rather than by play — a two-year-old Wing would hold an
-  unreachable score. Scores reset once winnings are paid. The **matchmaking rating
-  does not reset**: it is a measurement rather than a score, and wiping it would
-  re-expose new players to veterans, which the starter grant depends on not
-  happening.
-- **Placement for a new account.** The starter-grant design depends on newcomers
-  being sorted away from veterans quickly, so how fast the matchmaking rating
-  converges early is load-bearing rather than cosmetic.
-- **What each zone costs.** `02-squads.md` question 0 — *which squad deserves the
-  stronger heroes* — cannot be answered until the stakes are set, and there are
-  now **two currencies** to set them in. Whether a Hidden loss costs matchmaking
-  rating, ladder points, or both, and at what weight relative to a Visible loss,
-  is the decision that makes the two zones feel genuinely different to defend.
+**Re-scoped 2026-07-27**, after leagues and the opponent pool settled in
+`09-matchmaking.md`. Two of these shrank; one new question has to be answered
+before the others make sense.
+
+#### 0. What does the matchmaking rating actually *do*? — **the new blocker**
+
+This section says the rating decides *"which defenses a player is offered to
+attack."* Two later decisions now occupy that job:
+
+| Decision | Where | Effect |
+|---|---|---|
+| Five leagues on fixed gear thresholds | `09-matchmaking.md` | you are only offered same-league defenders |
+| **The pool is every defender** | `09-matchmaking.md` | no slate, no rotation, no filtering within the league |
+
+> **A pool that is *every* defender cannot also be filtered by rating.** The two
+> statements are not compatible as written, and this is the first thing to settle.
+
+Three readings, and they are genuinely different games:
+
+- **Rating orders, never restricts.** Every league-mate is offered; rating decides
+  what surfaces first. Compatible with both decisions, and the weakest form.
+- **Rating is a reward number only** and does no matching at all — in which case
+  it is misnamed, `09-matchmaking.md`'s *two axes* framing collapses to one, and
+  leagues carry the whole job.
+- **Rating filters within the league**, which contradicts today's pool decision
+  and would have to reopen it.
+
+#### 1. Placement for a new account — **smaller than it was**
+
+Written when rating was the only thing separating newcomers from veterans. It
+is not any more: **every account starts at exactly 1,500, the Bronze floor**, and
+a full kit is 10,125 — five leagues away. Gear already sorts them, and the
+edge-bleed reaches one league at most.
+
+**So the question is no longer *"does a newcomer meet a veteran"* — leagues answer
+that.** What remains is narrower and still real: how fast rating converges inside
+a league where everyone's gear is already within 1.67×.
+
+#### 2. What each zone costs — **unchanged, and the one with real weight**
+
+`02-squads.md` question 0 — *which squad deserves the stronger heroes* — cannot
+be answered until the stakes are set, and there are **two currencies** to set them
+in. Whether a Hidden loss costs matchmaking rating, ladder points, or both, and
+at what weight against a Visible loss.
+
+**This is the load-bearing one.** `02-squads.md` records the zone split as *"a
+commitment, not an observation, and it is testable: neither zone may dominate"* —
+and on shard income alone Visible currently leads **3.3 : 1**. The rating stakes
+are the counterweight, so setting them wrong silently breaks a commitment the
+design has already made.
+
+#### 3. Does a bot result move rating? — *added from `09-matchmaking.md`*
+
+Curated bots have no account and earn nothing, but an attacker beating one still
+produces a result. Falls out of question 0: if rating does no matching, this
+barely matters; if it does, an authored opponent moving a skill measurement needs
+care.
+
+#### ~~4. Whether points reset seasonally~~ — **settled by `08-guilds.md`: they do**
+
+Guild and Wing rewards pay per season, and a seasonal competition on a permanent
+total is decided by age rather than by play — a two-year-old Wing would hold an
+unreachable score. Scores reset once winnings are paid. The **matchmaking rating
+does not reset**: it is a measurement rather than a score.
 
 ---
 
