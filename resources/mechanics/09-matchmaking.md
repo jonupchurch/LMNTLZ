@@ -272,6 +272,132 @@ already answered by every account starting in the same league.
 
 ---
 
+## The pool is every defender — **settled 2026-07-27**
+
+> **Every eligible defender in your league is in the pool, every time. There is
+> no slate, no rotation, and no cooldown on re-attacking someone you have already
+> fought.**
+
+**The design goal is that people play a lot**, and a rule restricting *who* you
+may attack restricts the playing itself. `06-progression.md`'s daily curve already
+bounds what volume *pays*; bounding the opponent as well would tax the same
+behaviour twice.
+
+### What was considered, and why it was dropped
+
+A **slate of five** refilling on use, plus *no reappearance until you have fought
+20 others*. It was proposed against three costs, and analysis of the decision
+found two of the three weaker than they first read:
+
+| 20 battles/day | Wins | Shards/day | vs. typical free |
+|---|---|---|---|
+| Typical free player | 10 | 388 | — |
+| **Subscriber**, $20 / 4 weeks | 10 | 775 | **2.00×** |
+| **Farming one weak defender** | 18 | **879** | **2.27×** |
+
+1. ~~**The farm out-earns the subscription.**~~ **Accepted.** It does — a player
+   at the top of a league holds up to 1.67× the weakest league-mate's gear, wins
+   ~90%, and rides that to the capped ambush rate. But the boosts sell *speed to a
+   common ceiling*, and a grinder reaching it faster than a subscriber costs the
+   subscriber nothing. Long-term monetization moves toward **cosmetics**, which
+   this cannot touch at all.
+2. ~~**The defender's income inverts.**~~ **It self-corrects.** Being farmed 300
+   times a day pays ~300 shards passively — which funds that player *out of* being
+   the softest target in their league. It is floor protection, and it cannot be
+   sought, because only one account can be the weakest.
+3. ~~**Counter-building becomes solve-once.**~~ **The ambush already taxes it** —
+   see below. Solving a Visible squad drives the streak that stops you fighting
+   Visible squads.
+
+### Inactive accounts leave the pool
+
+The one case where none of the three self-corrections applies is an account that
+has stopped playing: it never edits a squad, never gears up, and its hold income
+accrues to somebody who is not there.
+
+> **An account idle for 30 days is removed from the matchmaking pool, and
+> re-enters on its next activity.** Settled 2026-07-27.
+
+**Activity means an attack battle or a defense-squad edit** — both are deliberate
+acts by a player who is still tuning. A bare login is not enough, or an absent
+account could keep collecting hold income by opening the game and doing nothing.
+
+**Leaving the pool is its own enforcement.** Nobody can attack a defense nobody is
+offered, so an idle account's passive income goes to zero without a second rule
+saying so. Nothing is taken away, and a returning player is back in the pool
+immediately — with a 30-day-stale squad against a moved meta, which is a fair
+cost and not a punishment.
+
+#### It thins Bronze the most, which is where it hurts
+
+Churn concentrates in the first weeks, and **every account starts at Bronze's
+floor**. So the league with the most accounts on paper has the fewest *active*
+ones, and this rule takes the difference out of exactly the pool that can least
+afford it.
+
+It does not bite at launch — everyone is in Bronze and everyone is new — but it
+should be expected around the point the first cohort ages out. **No new rule is
+needed**: *When a league is thin* already widens into the adjacent league per
+request, and this is precisely the case it was written for. What it does mean is
+that the league share percentages above describe **accounts, not opponents**, and
+the two will diverge.
+
+---
+
+## Curated bot defenders — **direction set 2026-07-27**
+
+> **The pool is seeded with authored defense records that no player owns, placed
+> deliberately across leagues and revised as the meta moves.**
+
+A bot is not an AI opponent in the usual sense. It is **a gear score, a Visible
+squad, a Hidden squad, and a `07-defense-ai.md` configuration** — which is
+precisely what a player's defense record is, minus the account.
+
+### Why they cost this design almost nothing
+
+**Nobody ever fights a human in LMNTLZ.** PvP is asynchronous: every defense is a
+snapshot the engine plays, a live player's included. A bot and a human defender
+are therefore not merely indistinguishable, they are **the same kind of thing** —
+the only difference is whether the hold income accrued to someone.
+
+That is unusual, and it has a practical consequence: **disclosing which defenders
+are bots would cost very little**, because there is no hidden-human illusion to
+protect. Most games cannot say that.
+
+### Curation is a balance lever the rest of the design lacks
+
+Two settled rules make ordinary balancing expensive here. Runes are **permanent
+and destroyed on replacement**, so nerfing an effect devalues something a player
+spent 650 shards on. And **replays are stored, never re-simulated**
+(`../../docs/tech-stack.md`), so a patch can never reach backwards.
+
+**Seeding the pool with squads that punish whatever is over-represented moves the
+meta without changing a number.** If everyone stacks Fire, the answer can be more
+Water defenders rather than a Fire nerf — reversible, targeted by league, and it
+takes nothing away from anyone.
+
+### What follows without needing a decision
+
+- **A bot needs both zones**, or the ambush roll has nothing to route into.
+- **Bots earn nothing and hold nothing.** There is no account for shards to reach.
+- **Bots never join guilds and never score in events.** `08-guilds.md` counts
+  members.
+- **A bot's gear score places it**, exactly as a player's does, so the league
+  bands and the edge-bleeding rules apply unchanged.
+- **They answer the thin-pool cases directly** — launch, when every account is in
+  Bronze, and the churn-thinning described above.
+
+### Open
+
+- **Whether bots are always in the pool or only fill gaps.** A gap-filler needs no
+  economy rule, because a player can only reach one when humans are short. An
+  always-present bot is farmable in a way a player is not — it is *curated*, so it
+  never changes unless changed — and that is the version that can shape a meta.
+  The two goals pull opposite ways.
+- **Whether beating a bot moves matchmaking rating.** Waits on the rating axis.
+
+---
+
 ## Ambush needs no rule here
 
 > **An ambush selects a *door*, not an opponent.**
@@ -291,48 +417,28 @@ match listing, never on a profile (`02-squads.md` question 1). So an ambush
 gives the attacker a fight, not a foothold: they cannot choose that door again,
 and the defender may have rebuilt behind it.
 
-**Nor can it be farmed.** The rate is +2% per *consecutive* attack win
-(`02-squads.md`), so a high rate requires a long unbroken streak against
-league-mates of comparable gear. Reaching the 90% cap means **45 straight wins**,
-which even a dominant player inside their own league does not sustain. The rate
-is a by-product of playing well, not a resource that can be accumulated.
+**It can be farmed, and that is priced rather than prevented.** An earlier
+version of this section argued the streak was safe because reaching the 90% cap
+takes **45 straight wins**, *"which even a dominant player inside their own league
+does not sustain."* That is true against 45 *different* league-mates and false
+against the same one — and *The pool is every defender* below makes the same one
+available. The honest version:
+
+> **A capped ambush rate is the streak routing you into the squad you cannot
+> scout.** At 90%, nine attacks in ten land on a Hidden defense the attacker has
+> never seen.
+
+So farming a single defender does not compound the way it first appears. It
+solves the Visible squad and then stops mattering, because the Visible squad is
+what the attacker stops fighting. The Hidden one has to be solved separately,
+through battles that are lost before they are won and from replays rather than
+from scouting. **The streak is still a by-product of playing well; what it buys
+is a harder fight that pays more.**
 
 ---
 
 ## Open
 
-- **Whether the same defender can be attacked repeatedly.** No rule says either
-  way, and this document leans on the answer without stating it: *Ambush needs no
-  rule here* argues a streak cannot be farmed because reaching the 90% cap takes
-  45 straight wins. **That is only true if an attacker cannot pick the softest
-  Visible squad in their league and beat it 45 times.** It is the other half of
-  the session loop — `06-progression.md`'s daily curve bounds *how much* a day of
-  play pays, and this bounds *who* it can be farmed against.
-
-  **Analysed 2026-07-27, not yet decided.** Three costs, worst last:
-
-  | 20 battles/day | Wins | Shards/day | vs. typical free |
-  |---|---|---|---|
-  | Typical free player | 10 | 388 | — |
-  | **Subscriber**, $20 / 4 weeks | 10 | 775 | **2.00×** |
-  | **Farming one weak defender** | 18 | **879** | **2.27×** |
-
-  1. **The exploit out-earns the subscription.** A player at the top of a league
-     holds up to 1.67× the weakest league-mate's gear, wins ~90%, and rides that
-     to the capped 90% ambush rate — 40 a win instead of 20. The streak persists
-     overnight, so the next day opens at 90% with the 1.5× bonus tier on top.
-  2. **The defender's income inverts.** Holding even 10% of 300 daily attacks is
-     300 shards of passive income — comparable to a typical player's whole active
-     earnings, and precisely the failure `06-progression.md` warns against.
-  3. **It dissolves the counter-building loop**, which is the real cost. Solve one
-     defender once and the solution farms forever; reading an opponent stops being
-     a repeated skill and becomes a puzzle you complete.
-
-  **Proposed, pending a decision:** a **slate of 5** defenders that refills on use
-  rather than on a timer, and *a defender you have fought does not reappear until
-  you have fought 20 others* — stated in opponents rather than hours so it
-  self-scales and cannot starve a thin league, where *When a league is thin* above
-  already covers the shortfall.
 - **The rating axis.** Placement for a new account, what a Visible loss costs
   against a Hidden one, and whether hold streaks rank separately. Tracked in
   `06-progression.md`; three questions in `02-squads.md` wait on it.

@@ -1160,11 +1160,29 @@ point of writing it that way.
   hold streaks rank separately. `02-squads.md` question 0 — *which squad deserves
   the stronger heroes* — cannot be answered until the stakes attached to each
   zone are set here.
-- **Whether there is a status track at all.** Cosmetics, titles, frames and guild
-  banners would absorb long-term play in a way that cannot touch power. The brand
-  work exists to support it; whether it is in scope is undecided. It is also the
-  one thing that can be **sold without touching the speed-versus-ceiling question
-  at all**, which matters given the revenue curve above runs backwards.
+- ~~**Whether there is a status track at all.**~~ **In scope — direction set
+  2026-07-27.** Cosmetics are the intended long-term monetization: custom avatars,
+  and **foil hero portraits that everyone who battles you sees**. The *mechanism*
+  is undesigned; the direction is not.
+
+  **Identical rosters, normally this design's hardest monetization problem, are
+  what make cosmetics work here.** Every player owns the same 27 heroes, so a foil
+  is the *only* way your Bramwen can differ from mine — the cosmetic is not
+  decoration on top of an identity, it **is** the identity. And it is worn in
+  battle, where an opponent is already studying your squad, which is the one
+  surface in the game guaranteed to be looked at.
+
+  It also cannot touch the speed-versus-ceiling promise at any price, which
+  matters given the revenue curve above runs backwards. **Whether it eventually
+  replaces the boosts or sits beside them is open**; nothing here forecloses
+  either.
+
+  > **One thing to settle before it is designed: whether any of it is
+  > randomized.** A purchased random draw is a loot box, with real regulatory
+  > surface — Belgium and the Netherlands, plus Steam's own odds-disclosure
+  > requirement — and it sits badly beside a design whose promise is *a ceiling
+  > players can audit*. An **earned** random foil is a different thing entirely
+  > and carries none of that.
 - ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $5 for
   three days of the boost pair, $20 for a 4-week subscription, and **no way to buy
   shards at all** — which reads as **2.00× a free player's income** and a ~6-week
