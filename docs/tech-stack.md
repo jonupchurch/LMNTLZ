@@ -215,6 +215,48 @@ traffic inspection shows up in cheating reports.
 
 ---
 
+## Transactional email — **added 2026-07-28**
+
+**A managed sender — Resend or equivalent — behind an interface**, same shape as
+the realtime transport. It was not in the stack until guild succession needed it
+(`../resources/mechanics/08-guilds.md`): notifying an absent guild master is not
+something an in-app message can do, because the whole premise is that they are
+not opening the app.
+
+**Once it exists, three other things want it**, all of which are currently
+hand-waved as "the player is told":
+
+- **Moderation outcomes** — a ban or a forced rename, where the point is reaching
+  someone who may not log in again.
+- **Avatar review outcomes** — approved, or rejected with a free resubmit.
+- **Guild succession**, the case that forced it.
+
+**The volume is trivial and so is the cost.** Succession runs roughly **4 a day at
+100k DAU**; moderation and avatar notices add a few thousand a month at that
+scale. That is inside the ~$20/month tier of any managed sender — worth stating
+plainly given how much else in this design was sized against recurring cost.
+
+### Templated by default, AI-assisted where context varies
+
+**A succession notice is the same message every time and should be a template** —
+auditable, translatable, and incapable of inventing a fact. **AI is useful where
+the content genuinely differs**, principally moderation notices, and it operates
+under the rule that governs it everywhere else: **it drafts; a human sends.**
+Email is outward-facing and irreversible, and it speaks in our voice.
+
+> **The succession email needs no clickable action, and that is worth preserving.**
+> The master responds by **logging in** — presence *is* the reply. So the message
+> can contain no link that grants anything, which makes it structurally resistant
+> to the phishing lookalike that *"click here to keep your guild"* would invite.
+> **Any future transactional mail should be held to the same test:** if it needs a
+> link that does something, ask whether the in-app path would do instead.
+
+**Deliverability is the part that fails silently.** SPF, DKIM and DMARC on the
+sending domain, set up once, before the first real notice goes out rather than
+after someone reports never receiving one.
+
+---
+
 ## Deliberately not used
 
 | Rejected | Why |

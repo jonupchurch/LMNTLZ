@@ -225,24 +225,45 @@ having an *event window* at all.
 
 #### Succession — a master who stops playing must not freeze the guild
 
-> **After 14 days of master inactivity, any officer may claim mastery — first to
-> claim takes it. After 30 days, any member may.** The displaced master becomes a
-> Member.
+> **It is requested, not claimed.** Once a master has been inactive **14 days**,
+> an officer may request succession. **We email the master and give them 7 days.**
+> If they are still idle at the end of it, we promote the requester. The former
+> master becomes a Member.
 
 **This will happen, and without a rule the guild is simply stuck**: no
 applications reviewed, no ads posted, no MOTD, no Wing assignments, with 23 active
 people watching. Leaving is always free, so nobody is *trapped* — but the guild
 dies of an absence rather than a decision, which is a bad way to lose one.
 
-- **14 days matches the founding grace**, so the document carries one
-  two-week constant rather than two.
-- **First-to-claim** is the same resolution the last guild seat already uses —
-  no queue, no vote, no state machine.
-- **The 30-day fallback covers a guild with no officers**, and matches the
-  inactivity window that removes an account from the matchmaking pool
-  (`09-matchmaking.md`).
-- **The former master becomes a Member**, not an officer, so the cap of three
-  never has to bend. A returning master can be re-promoted in one click.
+**A request-and-review beats an automatic claim, and the difference is the
+email.** An auto-promotion on a timer dispossesses a master who was in hospital or
+on holiday, with no notice and no appeal — and it makes succession something
+officers can *watch the clock* for. Sending a real message and waiting a week
+turns it from a countdown into a question, and **the master answers it simply by
+logging in.** No form, no reply, no action: presence is the response.
+
+| | |
+|---|---|
+| Master inactive before a request is accepted | **14 days** |
+| Notice period after the email | **7 days** |
+| **Total before any change** | **21 days** |
+| Who may request | an **officer** — or **any member** if the guild has none |
+| Who is promoted | **the requester** |
+| The former master becomes | a **Member**, re-promotable in one click |
+
+**The requester is promoted rather than the longest-tenured officer**, because
+whoever cared enough to ask is the one volunteering to run it — and it makes the
+act accountable to a name instead of to a sort order.
+
+> **This is manual work, and it is the good kind.** Each case is a support ticket:
+> roughly **4 a day at 100k DAU**, far less below that. It is also exactly the
+> shape of task the **MCP admin tooling** in `11-social.md` was posed for — verify
+> idleness, send the notice, check back, promote — read-heavy with one narrow
+> write at the end. If that gets built, this is its first real job.
+
+**It needs a deliverable email address**, which both Steam and Google auth supply
+(`11-social.md`). A master with no reachable address is the one case that falls
+back to the timer alone.
 
 ### Founding a guild costs 650 shards — **settled 2026-07-28**
 
