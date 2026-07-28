@@ -13,7 +13,7 @@ checklist items; and each of the sixteen now carries the full set —
 `plan.md` · `research.md` · `contracts/` · `quickstart.md` · `tasks.md` —
 against one shared `specs/data-model.md`.
 
-**765 tasks across the sixteen**, each with a checkbox, a sequential id, a story
+**766 tasks across the sixteen**, each with a checkbox, a sequential id, a story
 label where it belongs to one, and an exact file path. Zero malformed, zero
 duplicate ids, zero gaps.
 
@@ -103,7 +103,7 @@ expensive each would have been to find later:
   each. All 49 research questions answered.
 - **Two read-only analysis scripts committed** so every computed figure is
   reproducible: `tools/characterize-orderings.py` and `tools/verify-accuracy.py`.
-- **`tasks.md` for all 16** — 765 tasks, ordered by user story, each independently
+- **`tasks.md` for all 16** — 766 tasks, ordered by user story, each independently
   testable and each carrying the reasoning that would otherwise be lost between the
   plan and the diff.
 
