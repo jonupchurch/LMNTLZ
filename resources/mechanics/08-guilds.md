@@ -25,10 +25,19 @@ season once winnings are handed out.
 - **Every Wing scores independently on one global board.** A Wing is not matched
   against a specific rival Wing or a specific rival guild; it posts a score and is
   ranked against every other Wing in the game.
-- **Rewards are paid at two levels.** The **top Wings take a reward** directly,
-  and **the guild receives a lesser reward** on top of it. So a strong Wing is
-  paid twice over — once to its eight members, once to the guild they belong to —
-  and a guild benefits from its best Wing even if the other two place nowhere.
+- **Rewards are paid at two levels, in two currencies** — **settled 2026-07-28.**
+  The **top Wings take a reward** directly, paid to their eight members in **Rune
+  Shards**; **the guild receives a lesser reward** on top, paid in **guild funds**
+  (`11-social.md`). So a strong Wing is paid twice over — once to its members,
+  once to the guild they belong to — and a guild benefits from its best Wing even
+  if the other two place nowhere.
+
+  **Guild funds are a separate, non-convertible balance** spendable only on
+  guild-scoped things: recruiting posts today, guild logos and cosmetics later.
+  That keeps the two payouts from being the same reward counted twice, and it
+  **self-balances by need** — a full 24/24 guild has no use for recruiting budget
+  and spends its winnings on prestige, while a guild still building spends the
+  identical reward on advertising.
 
 - **Wings compete; they never battle.** There is no Wing-versus-Wing fight and no
   Wing-shaped formation. Members play the game normally for the duration of an

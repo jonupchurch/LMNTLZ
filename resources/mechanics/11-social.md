@@ -117,14 +117,7 @@ that alone, and still rejected.
 ### Guild Ads — **added 2026-07-28**
 
 > **One channel for both directions: players posting that they are looking for a
-> guild, and guilds promoting themselves. A guild may post once an hour.**
-
-**The rate limit attaches to the guild, not to the member.** Twenty-four members
-at one post an hour each is twenty-four posts an hour, which is the whole channel.
-One guild, one post, one hour — regardless of who clicks it.
-
-**Players looking for a guild are limited the same way**, one post an hour, for
-the same reason and with no special case to write.
+> guild, and guilds promoting themselves.**
 
 **Split by language, like Global.** A guild advertisement in a language a reader
 does not speak is pure noise, and guilds are language communities in practice
@@ -136,6 +129,129 @@ anyway.
 
 Moderation is Global's, unchanged. The content is formulaic enough that it should
 be the quietest queue in the game.
+
+#### A guild posts from a budget, and the budget is the rate limit
+
+> **An active guild receives a weekly allowance of guild funds — 70, enough for
+> 14 posts at 5 apiece, about two a day. It does not carry over, and it cannot be
+> topped up from a member's own shards.**
+
+**One mechanism doing two jobs.** The allowance funds the posting *and* caps it,
+so no separate hourly rule is needed. At two a day it is **12× tighter than a
+one-per-hour cap** — 14 posts a week against 168 — which is most of why the
+channel stays readable.
+
+**Nobody pays personally to do recruiting duty.** Guild ads are funded *only* from
+guild funds; a member cannot spend their own shards to post one. Recruiting is
+unpaid work already, and an officer covering it out of pocket is the version of
+this that quietly stops happening.
+
+| | |
+|---|---|
+| Weekly allowance | **70 guild funds** |
+| Cost per guild ad | 5 |
+| Posts per week | **14** — about 2/day |
+| Carryover | **None.** Use it or lose it, reset weekly |
+| Personal top-up | **Not permitted** |
+
+**No carryover, for the same reason hoarding was examined elsewhere.** A dormant
+guild banking six months of allowance and then flooding the channel is the exact
+failure the weekly reset removes, and it costs nothing to prevent.
+
+**Guild funds are a separate balance from Rune Shards** — not transferable, not
+convertible, spendable only on guild-scoped purchases. Ads are the first; **guild
+logo changes are the obvious second** once logos exist, which is why this is
+funds rather than a bare post allowance.
+
+#### Two sources: the weekly allowance, and event placements
+
+> **A guild's event placement is paid in guild funds** — which is what the
+> guild-level reward in `08-guilds.md` has always been structurally, without a
+> currency attached until now.
+
+That doc already pays at two levels: **top Wings are paid directly, and the guild
+receives a lesser reward on top.** The Wing half pays members in Rune Shards. The
+guild half had no defined form, and guild funds are the natural one:
+
+| Level | Paid to | In |
+|---|---|---|
+| **Wing placement** | its eight members | **Rune Shards** |
+| **Guild placement** | the guild | **Guild funds** |
+
+**Two currencies, two recipients, no double-dip** — a member is not paid twice for
+the same result, and the guild gets something only a guild can spend.
+
+> **It self-balances by need, which is the pleasing part.** A top guild is
+> generally **full at 24/24 and does not need to advertise** — so its winnings go
+> to logos and whatever guild cosmetics follow, while a guild still building
+> spends the same funds on recruiting. **One reward, two meanings, chosen by
+> whoever earned it.**
+
+> **Open: what "active" means.** A guild with no active members should not be
+> recruiting, so the allowance is gated — but the threshold is a number, not a
+> mechanism. A starting proposal is **at least 3 members active in the past 7
+> days**; a guild that cannot field three players is not a guild anyone should be
+> joining.
+
+#### Nothing in this channel is free
+
+**A player looking for a guild pays 5 personal shards per post — text or embed,
+no exceptions.** There is no free post in Guild Ads for anyone.
+
+> **The fee is the rate limit, for both sides.** A guild's allowance caps it at
+> ~2/day; an individual's own shards cap them by costing something every time.
+> **No separate rate-limit rule is needed anywhere in this channel**, which is
+> most of why it stays readable — the one place in chat where paying is the price
+> of admission rather than a surcharge on a richer message.
+
+The asymmetry between the two sides is intentional: **a guild speaks for 24 people
+and gets a budget; a player speaks for themselves and pays for themselves.**
+
+### Embeds — **added 2026-07-28**
+
+> **A message may carry a structured game object: an attack squad, a Visible
+> defense, a Visible-battle replay, or a guild recruiting card. 5 shards, in every
+> scope.**
+
+**An embed is a reference, not an upload** — `{type, id, snapshot}`, rendered
+client-side from data the server already holds.
+
+> **That is what makes this cheap, and it is the load-bearing choice.** Nothing in
+> a squad or replay embed is authored by a human, so **embeds carry no moderation
+> surface at all** — no queue, no review, no cost per post. Compare custom avatars,
+> which needed a whole pre-moderation pipeline at ~$0.14 a review. Keep embeds as
+> references and that entire class of expense never arrives.
+
+**5 shards is deliberateness, not a rate limit.** Against 388/day it is **1.3%**,
+allowing 77 posts a day — plenty to stop idle posting, nowhere near a cap. Per-
+scope rate limits still do the limiting; the fee only makes posting an act rather
+than a reflex.
+
+#### A Hidden defense can never be embedded
+
+> **No embed may show a Hidden defense — not by its owner, not in guild chat, not
+> anywhere, and not through a replay.**
+
+Two routes exist and both are closed by the one rule:
+
+- **Directly.** Posting your own Hidden squad destroys the mechanic permanently
+  for you, and worse, creates social pressure on everyone else to do the same.
+- **Through a replay**, which is the subtle one. `02-squads.md` settled that **a
+  fought Hidden squad does not stay revealed** — but the attacker holds a replay
+  of it. Embedding that replay broadcasts to everybody what the rule declines to
+  persist even for the one person who was there.
+
+**So replay embeds are Visible battles only.** Guild chat is not an exception:
+guildmates can be matched against each other, so sharing a Hidden squad with 23
+people is directly exploitable rather than merely unwise.
+
+#### Guild logos are the one embed that is not free to run
+
+**A logo is user-authored imagery**, so it inherits the custom-avatar pipeline
+whole — **pre-moderated, never visible until approved, charged per change, free
+resubmit on rejection.** It is the only part of this feature that carries an
+ongoing review cost, and it should be designed alongside avatars rather than
+folded in here. **Its own pass.**
 
 ### Beginner chat — **added 2026-07-28**
 
