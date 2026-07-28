@@ -282,13 +282,33 @@ Two routes exist and both are closed by the one rule:
 guildmates can be matched against each other, so sharing a Hidden squad with 23
 people is directly exploitable rather than merely unwise.
 
-#### Guild logos are the one embed that is not free to run
+#### Guild avatars are curated, not uploaded — **decided 2026-07-28**
 
-**A logo is user-authored imagery**, so it inherits the custom-avatar pipeline
-whole — **pre-moderated, never visible until approved, charged per change, free
-resubmit on rejection.** It is the only part of this feature that carries an
-ongoing review cost, and it should be designed alongside avatars rather than
-folded in here. **Its own pass.**
+> **A guild picks its avatar from a set we author. Nothing is uploaded, so
+> nothing is reviewed.**
+
+**This keeps the entire feature at zero moderation cost.** An uploaded logo would
+have inherited the custom-avatar pipeline whole — pre-moderation, a review per
+change, a per-change fee sized to cover it — and it would have done so on the
+**most-read surface in the game**, which is the worst place to put a queue.
+Choosing from a set removes the queue rather than staffing it.
+
+Three things fall out of it, all good:
+
+- **Every guild card looks right by construction.** The guild promotion embed is
+  the one players see most; an upload guarantees that some fraction of them are
+  ugly, low-resolution or misaligned, and no amount of moderation fixes *bad*.
+- **It is a real sink for guild funds.** Avatars beyond a free starting handful
+  are bought with guild funds, which is exactly the "surplus goes to prestige"
+  role event prizes were given. A winning guild wears its winnings.
+- **The set is a content lever**, not a fixed cost — new avatars ship whenever
+  there is a reason to, the same additive shape as curated bot defenders.
+
+> **This is narrower than it sounds: it settles *guild* avatars only.** Player
+> custom avatars remain as decided in *Custom avatars are pre-moderated and paid*
+> below — uploads, pre-moderated, charged per change — because there the whole
+> point is that it is **yours**. A guild is a shared identity that 24 people wear,
+> which is a much better fit for a curated set than a personal one is.
 
 ### Beginner chat — **added 2026-07-28**
 
