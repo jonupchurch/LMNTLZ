@@ -736,6 +736,53 @@ a defender rated above you, or a hold against an attacker rated above you, score
 table above remain authorable as variants; what is settled is what a plain event
 counts when nothing special is being asked for.
 
+##### The sandbag this actually has to survive is skill, not gear
+
+**Leagues bound gear. Nothing bounds skill.** Rating *orders* within a league and
+never restricts it (`09-matchmaking.md`), so a skilled player holding a low gear
+score is the apex predator of a weak pool — and low leagues will genuinely hold
+lower-skill players on average, since low gear correlates with being new or
+casual. Before an event, staying down is worth something **even with no gear
+advantage at all.**
+
+This is the real version of the sandbag question, and it is sharper than the gear
+one: a hoarder faces their own *gear* level, but a skilled sandbagger faces their
+own gear level and **not** their own skill level.
+
+**Both halves of the settled metric push against it, and together they absorb
+most of it.** Twenty battles a day, a skilled player winning 90% sandbagged
+versus 55% at true gear:
+
+| | Attack pts | Punch-up | Holds | **Total** | vs. honest |
+|---|---|---|---|---|---|
+| Sandbagged in Bronze — 18 victories | 20.5 | +0 | 8.6 | **29.1** | **1.17×** |
+| At true gear, high league — 11 victories | 13.5 | +2.75 | 8.6 | 24.9 | 1.00× |
+
+**1.52× on raw attack victories alone, 1.26× once the punching-up bonus applies,
+1.17× once holds are counted.** Two rules chosen for other reasons turn out to be
+the defense:
+
+- **The punching-up bonus is worth nothing to a sandbagger.** At the top of a low
+  league by rating, there is nobody above them to beat. It pays the honest player
+  and not the parked one — which is the whole shape of the exploit, inverted.
+- **Holds are a flat term neither player can farm.** ~8.6 points arrive regardless
+  of league, diluting whatever edge the attack half carries. Counting both halves
+  narrows the gap for a reason entirely separate from why it was chosen.
+
+**Accepted at 1.17×, which is well under the 1.8× rune-destruction sandbag already
+accepted** in `09-matchmaking.md`. Recorded rather than fixed, because the fix has
+a real cost:
+
+> **The drafted stronger fix is to scale a point by the rating gap** rather than
+> paying a flat +0.5 above and nothing below. It closes the sandbag almost
+> entirely — farming far-below opponents would pay a fraction of a point — at the
+> cost of a rule a player can no longer hold in their head. *One point a win, half
+> a point more for punching up* survives being said out loud; a curve does not.
+>
+> **`packages/sim` should measure the real spread before adopting it.** The 1.17×
+> above assumes a 90% sandbagged win rate, and if low-league skill is less thin
+> than assumed the figure falls further on its own.
+
 ### 1a. Do event battles feed the personal attack streak?
 
 Event battles are ordinary battles, so by default they do — which means a heavy

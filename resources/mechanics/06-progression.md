@@ -611,6 +611,71 @@ So there are three boundaries — **5** for the bonus, **10** for the boost, **2
 before the taper — and they still read in one line: *first 5 wins pay 1.5×, wins
 6–20 pay normal, wins past 20 pay half, and a boost doubles your first 10.*
 
+### The balance cap — **set 2026-07-28**
+
+> **A player holds at most 6,500 unspent shards — ten full runes. At the cap,
+> battle income stops; granted shards still land and may carry the balance above
+> it.**
+
+**This is insurance, not an exploit fix.** Hoarding was examined and is not a
+sandbag (`09-matchmaking.md`) — a hoarder is never stronger than their
+leaguemates, and shard income is flat per victory, so banking earns exactly what
+spending earns. The cap exists because **an unbounded stockpile is the one
+quantity in the economy with no ceiling at all**, and this design's own
+bounded-formula rule says to put one there before something later needs it not to
+be infinite. `10-equipment.md` is the obvious candidate.
+
+**It is stated in runes, not in shards, and that is the point.** A cap of 6,500
+is unmemorable; **ten full runes** is a quantity a player can reason about without
+being told, and it moves automatically if a rune's price ever does. The same
+habit as sizing the boost against the 75 cap and the utility score against the
+catalog's own band — a constant should explain itself.
+
+**Since the cap prevents nothing, the only thing that matters is that it never
+fires in normal play.** Every plausible legitimate save clears it:
+
+| | 5,000 | **6,500 — chosen** | 10,000 |
+|---|---|---|---|
+| Full runes it holds | 7.7 | **10** | 15.4 |
+| Days to fill — typical, 388/day | 12.9 | **16.8** | 25.8 |
+| Days to fill — heavy, 603/day | 8.3 | **10.8** | 16.6 |
+| Heroes fully kitted, 1,950 each | 2.6 | **3.3** | 5.1 |
+
+| A player saving for… | Costs | Fits under 6,500? |
+|---|---|---|
+| One utility stage | 200 | Yes |
+| One full rune | 650 | Yes |
+| One hero, all three slots | 1,950 | Yes |
+| **Three heroes at once** | **5,850** | **Yes, with room** |
+| A whole squad of six | 11,700 | **No — two passes** |
+
+**5,000 was the version that bites.** At 8.3 days a heavy player deliberating for
+a bit over a week hits a wall, and `Commit with your eyes open, not blind` below
+makes deliberation *correct play* outright — runes are destroyed on replacement,
+so hesitating before a permanent purchase is exactly the behaviour this economy
+wants to protect.
+
+> **A full squad rebuild does not fit, deliberately.** 11,700 is 1.8× the cap, so
+> re-kitting six heroes is two passes rather than one banked drop. That is the
+> only legitimate plan the cap constrains, and staging it is not a hardship.
+
+#### Grants are exempt, and that is load-bearing
+
+**Battle income stops at the cap. Granted shards always land.** Guild event
+payouts, ladder finishes, and above all the **blanket compensation the no-nerf
+rule promises** (`README.md` — *grant shards to everybody*) are paid regardless
+of balance and may push a player above 10,000; battle income simply stays off
+until they spend back under it.
+
+> **Without this exemption the cap silently voids a promise.** A compensation
+> grant exists precisely to repay a player whose investment was devalued — and
+> the players most likely to be sitting on shards are the ones deciding what to
+> rebuild. Paying them nothing is the exact opposite of the rule's intent.
+
+**The UI must warn well before the cap is reached.** A player who finishes a
+session and discovers it earned nothing is a support ticket and a review, and the
+warning costs one line.
+
 ### What that pace produces
 
 | Play level | Shards/day | 12 heroes complete | Competitive 18 | Full 27 |
