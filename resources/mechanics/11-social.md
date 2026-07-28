@@ -1019,11 +1019,11 @@ through the first screenshot anyone shared — and players screenshot profiles
 constantly. **One surface, one truth, no version of the page that says more than
 the public one.**
 
-> **The personal CSV export includes Hidden battles**, since it is the player's
-> own data leaving the system and *A player exporting their own data is a
-> portability right*. The rule has always been that **we never publish a Hidden
-> squad in-game**, not that a player may not possess their own record of it.
-> **What it may not carry is somebody else's** — see below.
+> **The personal CSV export lists Hidden battles as results**, since it is the
+> player's own record and *A player exporting their own data is a portability
+> right*. **It carries no squad composition at all** — see *What a battle row
+> contains* below — so the question of whose Hidden six was on the field never
+> arises in a file.
 
 ---
 
@@ -1040,7 +1040,7 @@ a design that publishes its own ceilings rather than hiding them.
 
 | Who | Gets |
 |---|---|
-| **A player** | their roster, runes and gear score, battle history, shard income — everything about themselves |
+| **A player** | their roster, runes and gear score · battle **results** · shard income |
 | **A guild master or officer** | **event participation and performance only**, per member, plus the guild's own event history and placements |
 
 ### A guild export is event data and nothing else — **set 2026-07-28**
@@ -1072,27 +1072,34 @@ officer's. Same rule as embeds: absent rather than redacted.
 
 ### What a battle row contains — **set 2026-07-28**
 
+> **A battle export carries results, never compositions.** No squad columns at
+> all — not the opponent's, not your own.
+
 | Column | Included |
 |---|---|
-| Date · zone (Visible/Hidden) · attack or defense · outcome | **always** |
-| Rating change · shards earned | **always** |
-| **Your own squad**, in full | **always** — including your Hidden squad when it defended |
-| Opponent's name and league | **always** |
-| **Opponent's squad** | **only when it was a Visible defense** |
+| Date · zone (Visible/Hidden) · attack or defense · outcome | **yes** |
+| Rating change · shards earned | **yes** |
+| Damage dealt and taken · super-effective hits · powers used | **yes** |
+| Opponent's name and league | **yes** |
+| **Any squad composition, either side** | **no** |
 
-> **The opponent column is the whole question.** A Visible defense is public and
-> scoutable, so exporting it reveals nothing that was not already on offer. **A
-> Hidden defense is the one thing this design protects**, and `02-squads.md`
-> settles that *a fought Hidden squad does not stay revealed*. A CSV the attacker
-> keeps and can hand to anyone is about as revealed as a thing gets.
+**Dropping both sides is better than adjudicating one.** The obvious version keeps
+your own squad and drops the opponent's when it was Hidden — but that puts a
+conditional in the most sensitive column in the file, and a conditional is
+something that gets a bug. **A file with no composition column cannot leak a
+composition**, and the rule is one sentence rather than a decision tree.
 
-**The fact of the battle is fine; the composition is not.** *You were ambushed
-into this player's Hidden defense and lost* leaks nothing — **everyone** has a
-Hidden squad, and its hold streak is public by design. What must not travel is
-**which six heroes were standing in it.**
+**Nothing is lost, because a player's build exports separately.** The roster
+export already carries their heroes, runes and gear score in full. What goes away
+is only the **per-battle snapshot** — and nobody was reading a spreadsheet to
+remember what they fielded last Tuesday.
 
-**Symmetrically, your own Hidden squad is yours to export.** You built it, you
-already know it, and nobody else's secret is in that column.
+> **This is the aggregation argument again, one level down.** *Screenshots exist,
+> and the replay exists for seven days* — that exposure is real and accepted.
+> What the design declines to do is **manufacture a portable dataset out of it.**
+> Knowing a squad because you fought it is the game working; being handed ten
+> thousand rows of squads in a file is a different object entirely, and it is the
+> only one we control.
 
 > **Settled 2026-07-28 — and `02-squads.md` had already answered it.** That
 > document says a Hidden squad is visible *"only inside the battle itself and in
