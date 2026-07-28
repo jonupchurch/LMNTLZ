@@ -160,6 +160,27 @@ already answered by every account starting in the same league.
 
 ---
 
+## Ambush needs no rule here
+
+> **An ambush selects a *door*, not an opponent.**
+
+Every battle starts the same way: matchmaking offers defenders **from your own
+league**, and you choose one. The ambush roll then decides whether you meet that
+player's **Visible** squad or their **Hidden** one. Both squads belong to the same
+account, so both carry the same gear score and sit in the same league.
+
+**League constraint is therefore automatic**, and no separate rule is needed —
+there is no path by which an ambush reaches outside the bracket, because it never
+picks anybody.
+
+**Nor can it be farmed.** The rate is +2% per *consecutive* attack win
+(`02-squads.md`), so a high rate requires a long unbroken streak against
+league-mates of comparable gear. Reaching the 90% cap means **45 straight wins**,
+which even a dominant player inside their own league does not sustain. The rate
+is a by-product of playing well, not a resource that can be accumulated.
+
+---
+
 ## Open
 
 - **The rating axis.** Placement for a new account, what a Visible loss costs
@@ -168,11 +189,7 @@ already answered by every account starting in the same league.
 - **Whether leagues are visible to players.** A named league is legible and gives
   progression a shape, but it also tells an opponent what they are facing. It
   interacts with the scouting limits in `07-defense-ai.md`.
-- **Ambush and league boundaries.** Ambush is earned by consecutive attack wins
-  (`02-squads.md`) and routes into a Hidden squad. Whether the ambushed defender
-  must be in the attacker's league, or whether an ambush may cross upward, is
-  unsettled — and it is the obvious place to look for exploits, since ambush pays
-  double.
+- ~~**Ambush and league boundaries.**~~ **Not a question — see below.**
 - **Whether the thresholds survive the hero-numbers pass.** They are drawn from a
   simulated population, not a real one. The *shape* — five leagues, fixed
   thresholds, ratios between 1.2× and 1.7× — is the decision; the numbers are a
