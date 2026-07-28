@@ -1543,9 +1543,32 @@ point of writing it that way.
 
   It still wants care if the draws are *sold* rather than earned — Belgium and the
   Netherlands, plus Steam's own odds-disclosure requirement — but the objection
-  shrinks from structural to procedural. **Whether foils are bought, earned, or
-  both remains open**, and non-repeating makes the bought version far safer than
-  it would otherwise be.
+  shrinks from structural to procedural.
+
+  **Both — settled 2026-07-28.** Foils are **earned** as ladder finishes and guild
+  event payouts, **and bought** as the cosmetic revenue line.
+
+  - **Earned gives the ladder a prize that is not shards.** Standing currently
+    pays in the same currency as volume, which blunts it; a foil is the first
+    reward that says *where you finished* rather than *how much you played*.
+  - **Bought is the only channel that can raise ARPU without touching balance.**
+    Subscriptions alone put ARPU at **$5.46–$18.20** (*Steam is the primary
+    storefront*), where paid acquisition barely works. Earned-only forfeits that
+    entirely, in a business deliberately capped at $260/year of purchasable
+    advantage.
+  - **Having an earned path is itself the regulatory answer.** A cosmetic set with
+    no way in but purchase is a paid gacha however it is drawn; one with a real
+    earned route is a reward system that also sells shortcuts.
+
+  > **One pool, not two.** Non-repeating is a per-player property, so both sources
+  > draw from **whatever that player does not yet own** — an earned foil is
+  > removed from what they can buy, and vice versa. Two independent pools would
+  > break the fixed, computable completion cost that made non-repeating worth
+  > choosing.
+
+  **Still open: whether a prestige tier is reserved as earned-only.** A handful of
+  foils obtainable *only* by placing would make the signal unambiguous where it
+  matters most. Available later at no cost; not needed to ship.
 - ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $5 for
   three days of the boost pair, $20 for a 4-week subscription, and **no way to buy
   shards at all** — which reads as **2.00× a free player's income** and a ~6-week
