@@ -392,6 +392,36 @@ and the client's belief about who is an officer decides nothing.
 
 Permission follows the role model in *Three roles* below.
 
+#### A guild name is permanent — **settled 2026-07-28**
+
+> **Chosen once, at founding, and never changed — except when it is judged
+> inappropriate and a rename is forced, which is free.**
+
+**There is no voluntary guild rename at any price**, which is the opposite of the
+player rule (`11-social.md`: voluntary is sold at 325, forced is free). The
+asymmetry is deliberate:
+
+- **A guild name is worn by up to 24 people.** A player's name is their own to
+  change; a guild's is something 23 others joined *under*, and a master renaming
+  it unilaterally changes what they signed up to.
+- **Reputation attaches to it, and that is the strongest reason.** A guild
+  recruits publicly, places in events, and holds a standing on a global board. **A
+  renameable guild can outrun a reputation** — dodge a bad event season, shed
+  whatever players remember about it, and re-advertise clean. Permanence is what
+  makes a name mean something over time.
+
+> **It is not a trap, because founding a new guild is always available for 650.**
+> That is the escape hatch and it is priced correctly: you keep nothing — no
+> history, no streaks, no standing — and you pay a rune. **A name is permanent;
+> starting over is merely expensive.**
+
+**A forced rename changes only the name.** Members, funds, event history and
+standings all survive it — the correction is aimed at the string, not at
+twenty-four people who mostly did not choose it. **The master picks the
+replacement**, and until they do the guild carries a neutral placeholder and
+**cannot post guild ads**, since advertising under a name we have just judged
+inappropriate is the one thing that clearly must not continue.
+
 #### There is no guild tag — **settled 2026-07-28**
 
 A 2–4 character tag alongside the name was proposed by the guild-creation screen
