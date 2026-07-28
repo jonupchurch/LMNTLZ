@@ -42,25 +42,47 @@ resolver's seeded source, never from a local one.
 ## Project Structure
 
 ```text
+packages/sim/rules/
+└── firingProfile.ts   ← LIVES IN rules/, NOT ai/. See below.
+
 packages/sim/ai/
 ├── targeting.ts       the primary/fallback sort, applied at stage 4
 ├── powerChoice.ts     highest-ranked, off cooldown, past its gate
 ├── allyChoice.ts      friendly-power selection, stages 1 and 4 only
 ├── defaults.ts        role defaults, drawn from the 12 safe orderings
-├── firingProfile.ts   which powers will actually fire under a ranking
 └── index.ts
 
-packages/sim/tests/ai/
-├── safeOrderings.test.ts   the 12 safe orderings hold on all 27 heroes
-├── firingProfile.test.ts   prediction matches simulated behaviour
-├── taunt.test.ts           compulsion beats priority, always
-└── reachWindow.test.ts     +1 reach exposes a third enemy row
+packages/sim/tests/
+├── rules/firingProfile.test.ts  prediction matches simulated behaviour
+└── ai/
+    ├── safeOrderings.test.ts    the 12 safe orderings hold on all 27 heroes
+    ├── taunt.test.ts            compulsion beats priority, always
+    └── reachWindow.test.ts      +1 reach exposes a third enemy row
 
 tools/characterize-orderings.ts    the 19,440-pair sweep — offline, not CI
 ```
 
 **Structure decision**: `ai/` is a third subtree of `packages/sim`, server-only
 like `resolver/`. It is not a separate package because it consumes both halves.
+
+> ### The firing profile belongs in `rules/`, not `ai/`
+>
+> **Surfaced by feature 006's plan and resolved here** — which is exactly what
+> planning the whole set before building any of it is for.
+>
+> FR-018 requires the **squad builder** to show which powers will fire, so the
+> computation is needed **client-side**. But `ai/` is server-only, like
+> `resolver/`, because it makes choices.
+>
+> **A firing profile is not a choice.** It is a pure function of `(hero, ranking)`
+> with no randomness and no server state — *a power fires only when everything
+> above it is on cooldown* is arithmetic over the cooldown ladder. It meets every
+> condition for `rules/` and none of the ones that put anything in `ai/`.
+>
+> **Had this surfaced during implementation instead**, the likely outcome is an
+> endpoint to fetch the profile — a network round trip on every drag of a ranking
+> widget, to compute something the client could derive locally from a package it
+> already imports.
 
 ## Phase 0 — Research
 
