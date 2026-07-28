@@ -361,17 +361,27 @@ way makes *more* work.
 The first fixes the drowning problem in *Hate and NSFW never share a queue*
 above. The second is the only reason to read every message at all.
 
-#### Cost
+#### Cost — full coverage, 100 messages a call
 
-**Claude Haiku 4.5** at $1 / $5 per million tokens, batching 20 messages a call:
+> **Every message is read. Nothing is sampled.** Settled 2026-07-27.
 
-| DAU | Messages/day | Monthly, batch API |
-|---|---|---|
-| 10,000 | 60,000 | **$85** |
-| 50,000 | 300,000 | $427 |
-| 100,000 | 600,000 | $855 |
+**Claude Haiku 4.5** at $1 / $5 per million tokens, batching **100** messages a
+call, through the discounted batch API:
 
-**Set against 2–10 human hours a day at those same tiers**, from the table below.
+| DAU | Messages/day | Monthly | Human hours/day it triages |
+|---|---|---|---|
+| 10,000 | 60,000 | **$68** | 2 |
+| 50,000 | 300,000 | $338 | 5 |
+| 100,000 | 600,000 | $675 | 10 |
+
+**That is roughly 1% of net revenue, and the fraction is constant at any scale**,
+because both sides scale with players. It is not a line worth optimizing.
+
+**100 a call rather than 20 is a free 20%.** Output cost does not move — the same
+number of classifications is produced either way — so batching harder only shrinks
+prompt overhead. **One thing to measure before committing:** classification
+quality can degrade when a model judges 100 items in one pass rather than 20. If
+it does, the batch size is the knob, not the coverage.
 
 > **Prompt caching buys a better prompt, not a cheaper one.** Haiku's minimum
 > cacheable prefix is **4,096 tokens**, so a short policy prompt does not cache at
@@ -379,6 +389,22 @@ above. The second is the only reason to read every message at all.
 > cost, comes to the same price as a 500-token prompt sent uncached. **Spend the
 > difference on boundary cases**, since *racist* versus *heated trash talk* is
 > exactly the line that needs examples rather than definitions.
+
+##### Sampling was considered — the reason to reject it is coverage, not cost
+
+Reading one message in five would cost ~$14 a month at 10k DAU. **Rejected because
+1% of revenue is not worth buying anything with**, and full coverage is strictly
+better.
+
+Worth recording what sampling *would* have been good at, because it is the right
+fallback if the bill ever stops being noise: **sampling catches patterns and
+misses one-offs**, which is the exact inverse of what player reports catch. A
+persistent low-grade offender nobody bothers reporting turns up within a handful
+of messages; a single egregious message gets reported by whoever saw it. The two
+are complementary rather than redundant.
+
+**Scoring the reports is free either way** — 60 a day is about $0.04. The whole
+bill is the proactive scan.
 
 ### The load, and the three levers that keep it answerable
 
