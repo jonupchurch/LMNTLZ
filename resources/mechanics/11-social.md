@@ -232,8 +232,14 @@ tracking.
 
 #### Nothing in this channel is free
 
-**A player looking for a guild pays 10 personal shards per post — text or embed,
+**A player looking for a guild pays 5 personal shards per post — text or embed,
 no exceptions.** There is no free post in Guild Ads for anyone.
+
+> **It is the cheapest posting in the game on purpose.** It is made by the player
+> who has the least — unguilded, often new, still building — and it is the posting
+> the design most wants to *happen*, since it feeds guild formation and guild
+> formation is most of what keeps people playing. Pricing it like a squad share
+> would tax the one message we should be subsidising.
 
 > **The fee is the rate limit, for both sides.** A guild is capped at 4/day
 > outright; an individual's own shards cap them by costing something every time.
@@ -252,7 +258,7 @@ and gets a budget; a player speaks for themselves and pays for themselves.**
 > |---|---|
 > | **Your own squad** — attack squad or your own Visible defense | **10 shards** |
 > | **An opponent's Visible defense** — a wall report | **25 shards** |
-> | **Looking for a guild** | **10 shards** |
+> | **Looking for a guild** | **5 shards** — the cheapest, deliberately |
 > | A Visible-battle replay | 10 shards |
 > | **A guild promotion** | 2 free/day, then **guild funds** — see above |
 
@@ -271,10 +277,14 @@ opinions, and it is worth more — actionable intel against a specific defense.
 Charging the same for both would make the cheapest thing to post the one with a
 third party in it.
 
-**These are deliberateness, not hard rate limits.** Against 388 shards/day they
-are **2.6%** and **6.4%** — 38 or 15 posts a day if a player spent nothing else,
-which nobody does. The fee makes posting an act rather than a reflex; per-scope
-rate limits still do the limiting.
+**These are deliberateness, not hard rate limits.** Against 388 shards/day the
+three prices are **1.3% · 2.6% · 6.4%** — 77, 38 or 15 posts a day if a player
+spent nothing else, which nobody does. The fee makes posting an act rather than a
+reflex; per-scope rate limits still do the limiting.
+
+> **The ordering is the design.** Cheapest is **asking to be let in**, then
+> **asking about yourself**, then **asking about somebody else.** Price rises with
+> how much of other people's attention a posting spends.
 
 > **Guilds remain bounded by guild funds, not by these prices.** A guild promotion
 > is never paid for in personal shards at any price (*Nothing in this channel is
