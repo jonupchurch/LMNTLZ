@@ -19,6 +19,9 @@ a decision being quietly reversed later by someone who only sees the outcome.
 | Battle state | *None* — re-derived from the action log |
 | Maintenance flag | Vercel Edge Config |
 | Auth | Owned in-house: Google ID tokens + Steam session tickets → own JWTs |
+| Payments (web) | **Paddle** — merchant of record |
+| Replay logs | **Object storage**, 7-day expiry — provider TBD |
+| Transactional email | **Managed sender** behind an interface — Resend or equivalent |
 
 ## Layout
 
@@ -212,6 +215,55 @@ Certificate pinning in the Electron build is available and raises the bar
 against casual self-proxying. It is a speed bump rather than a wall and adds
 real friction when rotating certificates — **skipped initially**, revisit if
 traffic inspection shows up in cheating reports.
+
+---
+
+## Payments — Paddle, as merchant of record — **decided 2026-07-28**
+
+> **Paddle sells to the customer; we sell to Paddle.** They owe VAT, GST and US
+> sales tax in every jurisdiction, and they absorb chargebacks.
+
+**This is the entire storefront at 1.0**, since Steam is a fast-follow — the $5
+boost pair, the $20 subscription and the $5 avatar all run through it. When Steam
+ships it becomes the second rail behind the same entitlement service (*Entitlements
+are account-level*, `../resources/mechanics/06-progression.md`).
+
+**The fee is not what decided it.** Paddle runs ~**5% + $0.50** against Stripe's
+~**2.9% + $0.30**. Two other things bought that difference:
+
+- **Tax compliance is not one obligation, it is roughly forty.** EU VAT on digital
+  goods means charging each customer's local rate and remitting quarterly through
+  OSS; then the UK, Norway, Switzerland, Australia, Canada, Japan, South Korea,
+  India, and ~30 US states with economic nexus on digital goods. **Stripe Tax
+  calculates; it does not file.** For a self-funded solo operator that is a
+  recurring part-time job.
+- **Games have elevated chargeback rates**, dominated by *"my child used my
+  card."* Under merchant-of-record that is Paddle's loss to absorb; under Stripe
+  it is ours, and a poor chargeback ratio can put the account itself at risk.
+
+> **The crossover is around $150k/year of direct revenue** — that is where ~2% of
+> revenue equals a few thousand in accountancy plus the hours. Below it, MoR is
+> **strictly cheaper**. Above it the money is a wash and the fee is buying back
+> time. **Same shape as the argument for paying Steam's 30%.**
+
+**Paddle over LemonSqueezy on a customer-facing reason rather than a technical
+one.** Under MoR **the reseller's name appears on the customer's card statement**
+and often in checkout — so it is branding, not just a vendor choice, and an
+unexplained line item is itself a chargeback trigger in exactly the demographic
+that produces them.
+
+### Two things to verify before building the flow
+
+- **Does Paddle support a 4-week (28-day) billing interval?** The subscription is
+  **not monthly** (`06-progression.md` prices it per four weeks, and the published
+  2.00× subscriber ratio is derived from that cadence). If only calendar-monthly
+  is available, either the price or the published ratio moves — **check this
+  before the price is advertised anywhere.**
+- **No "integration" is required, and that is worth knowing.** Vercel's
+  marketplace integrations provision infrastructure; a payment processor is not
+  one. All three candidates are the same work: keys in env vars, API calls, and a
+  webhook handler we write. **Stripe's richer template ecosystem is mostly
+  Next.js-shaped and does not apply here.**
 
 ---
 
