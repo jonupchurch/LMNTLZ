@@ -406,18 +406,42 @@ the moment its protection lapses.
 
 ## Still open
 
-### 0. Which squad deserves the stronger heroes?
+### ~~0. Which squad deserves the stronger heroes?~~ — **settled: the player's call**
 
-The two zones face different populations, and the answer is not obvious. The
-**Visible** squad absorbs the volume — every attack in the game starts there,
-from the whole skill range, all of them able to scout it. The **Hidden** squad
-faces few attackers, but every one of them is on a win streak and therefore
-good.
+> **The design does not answer this, and must not.** Allocating twelve heroes
+> across two zones is one of the few strategic decisions a defender gets, and it
+> is meant to have real arguments on both sides.
 
-Whether a player should fortify against many average attacks or few excellent
-ones depends entirely on the rating stakes attached to each. That is a tuning
-decision with a real strategic answer, and it should be arrived at deliberately
-rather than falling out of whatever the first numbers happen to be.
+**Settled 2026-07-27.** The two zones face genuinely different problems:
+
+| | **Visible** | **Hidden** |
+|---|---|---|
+| Volume | every attack in the game starts here | only reached by ambush |
+| Attacker quality | the whole range in your league | always on a win streak, therefore good |
+| Scouting | filled rune slots and elements are visible | **never scoutable — the attacker comes in blind** |
+| Pays per hold | 10 shards | **20 shards** |
+
+Fortify Visible and you defend against volume, at the cost of being read.
+Fortify Hidden and you defend rarely, against the best attackers, but they
+arrive knowing nothing — which matters enormously in a game whose whole thesis
+is counter-building.
+
+> **This is a commitment, not an observation, and it is testable: neither zone
+> may dominate.** If one is simply the right place for the best heroes, the
+> choice is decoration.
+
+**On current numbers it does not yet hold.** Hidden is reached on roughly 15% of
+battles and pays double, so it generates about **0.30× the hold income of
+Visible** — a 3.3 : 1 advantage to fortifying Visible on shards alone. That is
+offset by an unknown: a blind attacker cannot counter-build, so the Hidden hold
+*rate* should be markedly higher. **Whether the two offsets cancel is a question
+for `packages/sim`**, and it is the first thing to check once holds can be
+simulated.
+
+The other lever is question 2 below — what a Hidden defense loss costs. If a
+Hidden loss is cheap, Hidden becomes a free roll and the best heroes belong on
+Visible whatever the income says. The two questions have to be answered
+together.
 
 ### ~~1. Does a fought Hidden squad stay revealed?~~ — **settled: no**
 
