@@ -228,6 +228,59 @@ This is easy to miss because creation does not feel like joining, and it is very
 reachable: a starter player earns **432/day**, so 650 is **1.5 days** — well
 inside their protected week.
 
+#### The message of the day, set by chat command — **settled 2026-07-28**
+
+> **`/motd <text>` in guild chat, usable by the guild master and officers only.
+> It sets a stored guild property; it does not post a message that scrolls away.**
+
+**The distinction is the whole feature.** A line typed in chat is gone in an hour.
+**The MOTD sits pinned at the top of every guild chat screen and stays there until
+it is replaced** — never expiring on a timer, never scrolling, never needing to be
+re-posted. The command is merely the fastest way to change it; the guild admin
+screen edits the same field. Anyone who builds the command without the pinned
+display has built a chat message with extra steps.
+
+> **Replacement is the only way it ends**, which is what makes it worth reading.
+> A pin that expires trains members to ignore it, and a pin that has to be renewed
+> is a chore an officer will forget — so the one that is up is always the one
+> somebody meant.
+
+**Setting it announces it in guild chat and nowhere else** — *"Rell set the
+message of the day"* — so members see that it changed rather than having to
+notice. It does not reach Global, Guild Ads, or any other scope, and it is not a
+notification: **a guild's internal business stays inside the guild's room.**
+
+##### It is internal, and the recruiting pitch is not
+
+Two free-text fields that are easy to conflate, doing opposite jobs:
+
+| Field | Audience | Where it appears |
+|---|---|---|
+| **Recruiting pitch** | **public** | the Guild Ads promotion (`11-social.md`) |
+| **MOTD** | **members only** | pinned in guild chat |
+
+**Keeping the MOTD internal keeps it off the public moderation surface.** It is
+seen by at most 24 people who chose each other, which is the same population and
+the same exposure as guild chat itself — so it needs no pipeline beyond the
+reporting that already covers that room. **A public MOTD would need what the
+pitch needs**, and there is no reason to have two public fields.
+
+> **Unlike the tag, an MOTD is long enough to be read in context**, which is
+> exactly what made the tag unmoderatable. Length is what makes free text
+> judgeable.
+
+**Permission is enforced server-side.** The command is a request like any other
+and the client's belief about who is an officer decides nothing.
+
+> **This is the second thing to assume an officer role** — spending guild funds
+> was the first (`11-social.md`), and the screens already assume both plus *"only
+> the guild master can move or remove you."* **The role model has never actually
+> been specified**, and it is now blocking by accretion rather than by decision.
+> The minimal version implied by everything written so far is three tiers —
+> **Guild Master** (one, the founder, transferable) · **Officer** (delegated) ·
+> **Member** — which is what the moderation lever in `11-social.md` already calls
+> *guild-leader delegation*. Proposed, not decided.
+
 #### There is no guild tag — **settled 2026-07-28**
 
 A 2–4 character tag alongside the name was proposed by the guild-creation screen
