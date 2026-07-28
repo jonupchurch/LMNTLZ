@@ -4,18 +4,23 @@ _Snapshot; updated each work session. Last updated: 2026-07-28._
 
 ## Current phase
 
-**Specifying (6 of 16 features done; 0 planned; no code yet).** Design and tech
-stack are both **complete and closed** — `resources/mechanics/` holds `01`–`09`
-and `11` with no design blocker outstanding, and `docs/tech-stack.md` has **no TBD
-rows**. The constitution is LMNTLZ-specific at **v3.0.0**, carrying nine product
-constraints (XII–XX) that every plan is gated against. Spec-Kit is mid-pass:
-`001`–`006` are written and pass their quality checklists.
+**Planned — all 16 features specified and planned. Ready to implement.** Design
+and tech stack are both **complete and closed**; the constitution is
+LMNTLZ-specific at **v3.0.0**; and the Spec-Kit pass is finished: **16 specs, 16
+plans, 16 quality checklists, zero unchecked items, zero clarifications
+outstanding.** Every plan carries the nine Part II gates as explicit verdicts, and
+**no plan recorded a violation** — every Complexity Tracking table is empty.
 
-**Constitution VII forbids implementing anything until all sixteen features are
-specified *and* planned**, so the remaining work before a first line of code is
-**10 specs, then 16 plans**. That is deliberate — six models cross feature
-boundaries, and the battle record is written by four features and read by four
-more.
+**Constitution VII's gate is now satisfied**, so implementation may begin. Build
+order is settled: `packages/content` → `packages/sim` (rules, then resolver) →
+`apps/api` → `apps/client`, headless and tested first.
+
+> **The planning pass earned its keep once, concretely.** Feature 006's plan found
+> that the **firing profile** — which the squad builder must display — was placed
+> in `sim/ai`, which is server-only. It is a pure function of `(hero, ranking)`, so
+> it moved to `sim/rules`. Discovered during implementation instead, the natural
+> fix would have been an endpoint: a round trip on every drag of a ranking widget,
+> to compute something the client can derive locally.
 
 ## Done
 
@@ -39,18 +44,22 @@ more.
 - **Constitution v3.0.0** — Part I process (I–XI) unchanged; **Part II product
   constraints (XII–XX)** added and wired into `plan-template.md`'s gate.
 - **Feature set scoped** — 16 features in 6 dependency layers (`specs/README.md`).
-- **Specs written and passing:** `001` content · `002` sim-rules ·
-  `003` sim-resolver · `004` defense-ai · `005` auth · `006` roster-and-squads.
+- **All 16 specified**: content · sim-rules · sim-resolver · defense-ai · auth ·
+  roster-and-squads · battle · replays · matchmaking · progression · payments ·
+  profiles · guilds · chat · moderation · ops-admin.
+- **The shared data model settled once** (`specs/data-model.md`) — six models cross
+  feature boundaries, and the battle record is written by two and read by four.
+- **All 16 planned**, each gated on the nine Part II constraints. No violations.
 
-## Next — the spec pass (dependency order)
+## Next — implementation
 
-- **Layer 3:** `007` battle · `008` replays · `009` matchmaking
-- **Layer 4:** `010` progression · `011` payments
-- **Layer 5:** `012` profiles · `013` guilds · `014` chat · `015` moderation
-- **Layer 6:** `016` ops-admin
-- **Then `speckit-plan` across all sixteen**, gated on Part II.
-- **Then implementation**, in the settled build order: `packages/content` +
-  `packages/sim` first, headless, with tests.
+- **`speckit-tasks`** across the set, then build in dependency order.
+- **Start with `packages/content`**, then `packages/sim/rules`, then
+  `sim/resolver`. Headless, with tests, before anything renders.
+- **Three tests to write before the code they cover**, each named in its plan:
+  - `purity.test.ts` (002) — no entropy source reachable in `sim/rules`
+  - `determinism.test.ts` (003) — 1,000 replays, byte-identical
+  - the alternating-battles leak test (012) — proves *selected*, not *filtered*
 
 ## Carried risks and deferred work
 

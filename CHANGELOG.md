@@ -12,6 +12,50 @@ Versioned release notes start when Steam builds do.
 
 ---
 
+## 2026-07-28 — All sixteen features specified and planned
+
+### Added
+
+- **Sixteen feature specifications**, each with a quality checklist. **Zero
+  unchecked items and zero outstanding clarifications** across the set.
+- **The shared data model** (`specs/data-model.md`), settled once rather than
+  negotiated in eight plans. Six models cross feature boundaries; the battle
+  record is written by two features and read by four.
+- **Sixteen implementation plans**, each carrying the nine Part II constraints as
+  explicit verdicts. **No plan recorded a violation** — every Complexity Tracking
+  table is empty.
+- **`STATUS.md` and `CHANGELOG.md`**, following the convention used in Tidepool
+  and playm8z.
+
+### Changed
+
+- **The firing profile moved from `sim/ai` to `sim/rules`.** See below.
+
+### The part worth explaining
+
+**The planning pass paid for itself once, concretely, which is the whole argument
+for Principle VII.**
+
+Feature 004 placed the **firing profile** — the computation telling a player which
+of their powers will actually fire under a chosen ranking — in `packages/sim/ai`,
+alongside the rest of the defense AI. That is where it belongs conceptually.
+
+Feature 006's plan then needed it **client-side**, because the squad builder must
+display it while a player drags a ranking widget. But `sim/ai` is **server-only**,
+like `sim/resolver`, because it makes choices.
+
+**A firing profile is not a choice.** *A power fires only when everything above it
+is on cooldown* is arithmetic over the cooldown ladder — a pure function of
+`(hero, ranking)` with no randomness and no server state. It meets every condition
+for `rules/` and none of the ones that put anything in `ai/`, so it moved.
+
+Found during implementation instead, the natural fix would have been an endpoint —
+a network round trip on every drag, to compute something the client can derive
+locally from a package it already imports. **Cheap to fix on paper; a performance
+bug and an API surface to deprecate otherwise.**
+
+---
+
 ## 2026-07-28 — The stack closed, the constitution became LMNTLZ's, and the spec pass began
 
 ### Added
