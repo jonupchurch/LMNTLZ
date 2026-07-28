@@ -335,6 +335,24 @@ canned:
 > pairs is legible by construction.** Same principle as curating the set in the
 > first place: make the bad output impossible rather than validating against it.
 
+##### A solid block is allowed, as one deliberate click
+
+**A guild may set its icon colour to match its background**, producing a plain
+block of colour with the icon invisible. Since the palettes do not overlap, this
+cannot happen by accident — so it is **an explicit option**, not a combination
+found by wandering into it.
+
+> **The curation exists to prevent what is *inappropriate*, not what is in poor
+> taste.** A monochrome emblem is silly; it is not harmful, it does not need
+> reviewing, and stopping it would be us overriding a guild's choice about their
+> own identity for no reason but aesthetics. Some of them will mean it — a flat
+> field of colour is a real minimalist look, and telling those guilds no in order
+> to protect the ones being careless is a bad trade.
+
+That line is worth holding elsewhere too: **every restriction in this document
+should be answerable with "because it could harm someone," never with "because it
+would look bad."**
+
 **Uniqueness is not the goal and should not be promised.** At 5,184 combinations,
 duplicates appear well before a thousand guilds exist — and that is fine, because
 **the guild's name is the identifier and the emblem is expression.** Two guilds
