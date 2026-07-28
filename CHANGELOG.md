@@ -12,6 +12,56 @@ Versioned release notes start when Steam builds do.
 
 ---
 
+## 2026-07-28 — Spec-Kit finished: 765 tasks across all sixteen
+
+### Added
+
+- **`tasks.md` for every one of the sixteen features** — **765 tasks**, organized by
+  user story so each phase is an independently testable increment. Every task carries
+  a checkbox, a sequential id, a story label where it belongs to one, and an exact
+  file path. **Zero malformed, zero duplicate ids, zero gaps.**
+- **A `STOP and VALIDATE` point in each feature's implementation strategy** — the
+  smallest slice worth demonstrating, rather than "when the phase is done".
+- **Three cross-feature seam tests named explicitly**, because each passes when
+  tested inside one feature and fails in production: the 015 → 008 retention hold,
+  the 009 → 013 starter-league warning, and the 004 → 006 firing profile.
+
+### The part worth explaining
+
+**Four features sequence a later-listed user story first, and every one of them is
+following an instruction its own plan already wrote down.**
+
+Spec-Kit's default is to phase user stories in priority order. That is right most of
+the time and wrong in a specific, recurring case: **when the first thing to build is
+the test that constrains everything after it.**
+
+- **002** — the purity test must be red-then-green *before any rule exists*, or it
+  gets written to fit whatever got built.
+- **007** — idempotency is a schema constraint. Cheap now; a migration later.
+- **011** — a grant path that trusts the client is a free storefront, so it is built
+  before anything can be bought.
+- **013** and **014** — first-acceptance-wins and the blocklist/classifier ordering,
+  both **before the happy path**, because *a test written afterwards is written
+  against an implementation that already has a shape, and the shape is the thing
+  being tested.*
+
+**The tasks carry the reasoning, not just the instruction.** A task that says
+*"select 20 Visible, however far back that reaches"* is followed by the two SQL
+queries and the sentence explaining that they differ only in where `LIMIT` sits.
+That is deliberate: the plans and research files hold the *why*, and the diff holds
+the *what*, and **the gap between them is where a correct decision gets rebuilt
+incorrectly six weeks later**.
+
+**One internal contradiction surfaced and was deliberately not resolved.** Feature
+013's `research.md` and `quickstart.md` both say the guild emblem *"is an image and
+therefore goes through review"*. Its `spec.md` says the emblem is composed from a
+fixed palette — **36 icons × 12 inks × 12 grounds** — and FR-004 says contrast warns
+and never blocks, with no review step. **A composition of curated parts has nothing
+to review.** `013/tasks.md` implements the spec and flags the discrepancy; resolving
+it is a decision, not a tasks-level call.
+
+---
+
 ## 2026-07-28 — Phase 0/1 complete across all sixteen; four recorded figures corrected
 
 ### Added

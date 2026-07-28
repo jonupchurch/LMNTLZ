@@ -4,14 +4,25 @@ _Snapshot; updated each work session. Last updated: 2026-07-28._
 
 ## Current phase
 
-**Planning complete. Phase 0/1 done for all sixteen features. Ready for
-`speckit-tasks`, then code.**
+**Spec-Kit is finished. All sixteen features carry `tasks.md`. The next thing
+that happens is code.**
 
 Design and tech stack are both **complete and closed**; the constitution is
 LMNTLZ-specific at **v3.0.0**; **16 specs** are written with zero unchecked
 checklist items; and each of the sixteen now carries the full set —
-`plan.md` · `research.md` · `contracts/` · `quickstart.md` — against one shared
-`specs/data-model.md`.
+`plan.md` · `research.md` · `contracts/` · `quickstart.md` · `tasks.md` —
+against one shared `specs/data-model.md`.
+
+**765 tasks across the sixteen**, each with a checkbox, a sequential id, a story
+label where it belongs to one, and an exact file path. Zero malformed, zero
+duplicate ids, zero gaps.
+
+| | |
+|---|---|
+| Total tasks | **765** |
+| Parallelizable `[P]` | 207 |
+| Inside a user-story phase | 562 |
+| Features whose Phase 1 is a one-time bootstrap | **3** — 001 (monorepo) · 005 (`apps/api`) · 006 (`apps/client`) |
 
 **All 49 Phase 0 research questions are answered**, and the answers say honestly
 which kind of answer they are:
@@ -92,8 +103,57 @@ expensive each would have been to find later:
   each. All 49 research questions answered.
 - **Two read-only analysis scripts committed** so every computed figure is
   reproducible: `tools/characterize-orderings.py` and `tools/verify-accuracy.py`.
+- **`tasks.md` for all 16** — 765 tasks, ordered by user story, each independently
+  testable and each carrying the reasoning that would otherwise be lost between the
+  plan and the diff.
 
-## Next — `speckit-tasks`, then code
+## Next — code, in the settled build order
+
+`packages/content` → `packages/sim` (rules, then resolver) → `apps/api` →
+`apps/client`. **Start at `specs/001-content-package/tasks.md` T001** — it carries
+the monorepo bootstrap, which runs once for the whole project.
+
+**Three features open a new app and the rest inherit it**: 001 stands up the pnpm +
+Turborepo workspace, 005 stands up `apps/api`, 006 stands up `apps/client`. Nothing
+else has a Setup phase worth more than a few tasks.
+
+### What each feature's MVP stops at
+
+Every `tasks.md` names a **STOP and VALIDATE** point — the smallest slice worth
+demonstrating. The three that gate the most downstream work:
+
+| Feature | MVP is done when |
+|---|---|
+| **001** | the 60-of-72 enumeration passes and all 243 effectiveness results resolve |
+| **002** | `purity.test.ts` is green and the recorded 729-pair figures reproduce |
+| **007** | a full battle runs in 20–40 requests and survives a cold API restart |
+
+### Where the ordering deviates from spec priority, and why
+
+Four features sequence a later-listed story first, each on an explicit instruction
+in its own plan:
+
+- **002** — US2 (purity) before US1, because `purity.test.ts` must be red-then-green
+  *before any rule exists* or it gets written to fit whatever got built.
+- **007** — US2 (idempotency) before US1, because it is a schema constraint: cheap
+  now, a migration later.
+- **011** — US3 (the grant path) before US1, because a grant path that trusts the
+  client is a free storefront.
+- **013 / 014** — the concurrency test and the moderation ordering respectively,
+  both **before the happy path**, because a test written afterwards is written
+  against an implementation that already has a shape.
+
+### The three cross-feature seams the tasks test *across*
+
+These pass when tested inside one feature and fail in production:
+
+| Seam | Test | Why it is easy to miss |
+|---|---|---|
+| **015 → 008** retention hold | `retentionSeam.test.ts` | a hold only 015 knows about is a hold the cleanup job ignores |
+| **009 → 013** starter warning | `starterWarning.test.ts` | it renders in 013 and is owned by 009; **it has been lost three times** |
+| **004 → 006** firing profile | `firingProfile.test.tsx` | if a network request appears while dragging a ranking, it moved back to `ai/` |
+
+## Still open from the Phase 0 pass
 
 **Four tests to write before the code they cover**, each named in its quickstart:
 
@@ -123,6 +183,15 @@ expensive later:
 squads? The ambush counter is the recorded answer to opponent farming and it only
 bites if a bot's Hidden squad is harder than its Visible one. 20 starter bots with
 Hidden squads is twice the content of 20 without. (`009/research.md`)
+
+**One internal contradiction surfaced by the tasks pass, and left unresolved**:
+feature 013's `research.md` and `quickstart.md` both say the guild emblem *"is an
+image and therefore goes through review"*, on the same surface as avatars. Its
+`spec.md` says the emblem is composed from a fixed palette of **36 icons × 12 inks ×
+12 grounds**, and FR-004 says contrast **warns and never blocks** — with no review
+step anywhere. **A composition of curated parts has nothing to review.**
+`013/tasks.md` implements the spec and flags the discrepancy rather than resolving
+it. The guild **name** and **pitch** are text and do go through feature 015.
 
 **A working Python 3.13 interpreter is at `py`** — the bare `python` on PATH is a
 Store stub.
