@@ -422,6 +422,39 @@ replacement**, and until they do the guild carries a neutral placeholder and
 **cannot post guild ads**, since advertising under a name we have just judged
 inappropriate is the one thing that clearly must not continue.
 
+#### The active window is social, never competitive — **settled 2026-07-28**
+
+> **A guild declares the hours its members are usually around. It is a structured
+> field, and a viewer's client compares it to their own local hours to show the
+> overlap** — *active when you are*, or *mostly while you are asleep*.
+
+**Structured rather than a line in the recruiting pitch**, because comparison is
+the only thing that makes it better than a paragraph. The comparison runs
+**client-side**, so it needs nothing from the server and **never exposes the
+viewer's time zone** — which matters, since a player may hide theirs
+(`11-social.md`).
+
+##### It affects who you can talk to, and nothing else
+
+> **When a player plays has no bearing on what they contribute. Their points count
+> the same whether they overlap the guild by ten hours or by none.**
+
+**This is not a rule we are choosing so much as one the design already
+guarantees.** PvP is asynchronous — you attack *snapshots* of defenses that are
+never online — defense is engine-run, and an event **tallies a metric over a
+period** rather than during a session. There is no synchronous play anywhere in
+the game, so **there is no mechanism by which timing could matter to a score even
+if someone wanted it to.**
+
+So the window predicts **whether you will have company**, not whether you will be
+useful. A member twelve hours out of phase is a full contributor who happens to be
+in an empty room.
+
+> **Nothing may ever gate on it.** Not event eligibility, not Wing assignment, not
+> the activity gate, not payouts. It is recruiting information — the same kind of
+> thing as languages — and the moment anything mechanical reads it, a guild
+> acquires a reason to turn away a player who would have scored exactly as well.
+
 #### There is no guild tag — **settled 2026-07-28**
 
 A 2–4 character tag alongside the name was proposed by the guild-creation screen
