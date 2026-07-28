@@ -232,7 +232,7 @@ tracking.
 
 #### Nothing in this channel is free
 
-**A player looking for a guild pays 5 personal shards per post — text or embed,
+**A player looking for a guild pays 10 personal shards per post — text or embed,
 no exceptions.** There is no free post in Guild Ads for anyone.
 
 > **The fee is the rate limit, for both sides.** A guild is capped at 4/day
@@ -246,9 +246,15 @@ and gets a budget; a player speaks for themselves and pays for themselves.**
 
 ### Embeds — **added 2026-07-28**
 
-> **A message may carry a structured game object: an attack squad, a Visible
-> defense, a Visible-battle replay, or a guild recruiting card. 5 shards, in every
-> scope.**
+> **A message may carry a structured game object. Prices — set 2026-07-28:**
+>
+> | Posting | Cost |
+> |---|---|
+> | **Your own squad** — attack squad or your own Visible defense | **10 shards** |
+> | **An opponent's Visible defense** — a wall report | **25 shards** |
+> | **Looking for a guild** | **10 shards** |
+> | A Visible-battle replay | 10 shards |
+> | **A guild promotion** | 2 free/day, then **guild funds** — see above |
 
 **An embed is a reference, not an upload** — `{type, id, snapshot}`, rendered
 client-side from data the server already holds.
@@ -259,10 +265,22 @@ client-side from data the server already holds.
 > which needed a whole pre-moderation pipeline at ~$0.14 a review. Keep embeds as
 > references and that entire class of expense never arrives.
 
-**5 shards is deliberateness, not a rate limit.** Against 388/day it is **1.3%**,
-allowing 77 posts a day — plenty to stop idle posting, nowhere near a cap. Per-
-scope rate limits still do the limiting; the fee only makes posting an act rather
-than a reflex.
+**The gap between 10 and 25 is deliberate.** A wall report is the one posting that
+**names another player**, it asks strangers for real analytical work rather than
+opinions, and it is worth more — actionable intel against a specific defense.
+Charging the same for both would make the cheapest thing to post the one with a
+third party in it.
+
+**These are deliberateness, not hard rate limits.** Against 388 shards/day they
+are **2.6%** and **6.4%** — 38 or 15 posts a day if a player spent nothing else,
+which nobody does. The fee makes posting an act rather than a reflex; per-scope
+rate limits still do the limiting.
+
+> **Guilds remain bounded by guild funds, not by these prices.** A guild promotion
+> is never paid for in personal shards at any price (*Nothing in this channel is
+> free*), so the two economies never meet: **a player's shards cannot buy a guild
+> more reach, and a guild's funds cannot buy a member a squad posting.** The
+> ceiling of 4 ads a day holds regardless of how wealthy either side is.
 
 #### A Hidden defense can never be embedded
 
