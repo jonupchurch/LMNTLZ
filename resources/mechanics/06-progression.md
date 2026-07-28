@@ -540,8 +540,8 @@ reaches the competitive eighteen before three, and completes the roster around
 four and a half. **After that, shards fund re-speccing forever** — the ceiling is
 reached and the currency changes job rather than losing its value.
 
-Against that, the **800-shard weekly purchase is about +35%** for a typical
-player. Meaningful, and short of decisive — which is the band it was aimed at.
+Against that, a subscriber's boosts are **+100% on exactly this figure** — they
+double what play already pays and add nothing to a player who does not play.
 
 ### An ambush pays double a chosen door
 
@@ -655,8 +655,7 @@ kitted are exactly equal.
 |---|---|---|
 | **Attack boost** — daily | **2×** shards from attacking | first **20 battles** that day |
 | **Defense boost** — daily | **2×** shards from defending | first **20 battles** that day |
-| **Shards** — weekly | **800 Rune Shards** | once per week |
-| **Subscription** — monthly | both boosts every day, plus 800 shards each week | — |
+| **Subscription** — 4 weeks | both boosts every day | — |
 
 > **The subscription grants exactly the à la carte cap and never more.** It is a
 > **discount and a convenience, not a higher tier.** A subscriber and a
@@ -672,8 +671,7 @@ kitted are exactly equal.
 | **Boost pack** | **$5** | 3 days of the boost pair | $1.67 |
 | **Boost pack** | **$10** | 7 days | $1.43 |
 | **Boost pack** | **$15** | 12 days | $1.25 |
-| **Shards** | **$5** | 800, once that week | — |
-| **Subscription** | **$20 / 4 weeks** | boost pair daily + 800 shards weekly | **$0.71** |
+| **Subscription** | **$20 / 4 weeks** | boost pair every day | **$0.71** |
 
 **A hard currency was considered and rejected.** Gold at $0.25 a unit would have
 amortised payment fees, but it improves **roughly 1% of total revenue**: Steam's
@@ -700,10 +698,8 @@ remains a low-friction impulse price. *(Steam is a flat 30% at every size, so
 none of this applies there — this is a standalone and browser concern
 specifically.)*
 
-**Boosts bundle; shards cannot.** Shards are capped at **800 a week however they
-are bought**, so a larger shard purchase would have to deliver across future
-weeks — which is what the subscription already is. Boosts have no total cap, only
-a daily one, so days are the thing that bundles.
+**Only boost-days are sold, so days are the only thing that bundles.** See
+*Shards cannot be bought* below for why nothing else is on the shelf.
 
 **The boosts are sold as a pair, never separately**, because they are not worth
 the same. A boost is 2× capped at 20 battles, and a typical player runs about 20
@@ -726,16 +722,16 @@ SKUs at two price points.
 | | Shards / 4 weeks | vs free |
 |---|---|---|
 | **Free** | 9,240 | — |
-| **Subscriber** — both boosts daily + 800/week | **21,680** | **2.35×** |
+| **Subscriber** — both boosts every day | **18,480** | **2.00×** |
 
-*(Boosts double income within the caps: +330/day × 28 = +9,240. Shards add 800 ×
-4 = 3,200.)*
+*(Boosts double income within the caps: +330/day × 28 = +9,240. Nothing else is
+sold.)*
 
 | | À la carte | Subscription |
 |---|---|---|
-| Cost per 4 weeks at cap | 4 × $10 + 4 × $5 = **$60** | **$20** |
-| Per 1,000 shards | $4.82 | **$1.61** |
-| **Per rune (650)** | **$3.13** | **$1.05** |
+| Cost per 4 weeks at cap | 4 × $10 = **$40** | **$20** |
+| Per 1,000 shards | $4.33 | **$2.16** |
+| **Per rune (650)** | **$2.81** | **$1.41** |
 
 **Crossover is 12 days.** Beyond that the subscription is cheaper *and* carries
 the shards, so à la carte is the sporadic and trial tier rather than a competing
@@ -745,19 +741,19 @@ than à la carte margin.
 
 **The pack ladder never overtakes the subscription**, which is the ceiling promise
 holding at the price layer: $1.67 → $1.43 → $1.25 a day against the
-subscription's **$0.71 plus 3,200 shards**. There is no quantity of à la carte
-buying that reaches a better rate, so nothing sits above the subscription.
+subscription's **$0.71**. There is no quantity of à la carte buying that reaches
+a better rate, so nothing sits above the subscription.
 
 #### The ceiling, in weeks
 
 | Kit | Free | Subscriber |
 |---|---|---|
-| Competitive 18 heroes (35,100) | **15.2 weeks** | **6.5 weeks** |
-| Full 27-hero roster (52,650) | 22.8 weeks | 9.7 weeks |
+| Competitive 18 heroes (35,100) | **15.2 weeks** | **7.6 weeks** |
+| Full 27-hero roster (52,650) | 22.8 weeks | 11.4 weeks |
 
 **The advantage is a head start, not a ceiling** — roughly two months, after which
 both players sit at the same 75-point stat cap and are exactly equal on that kit.
-What persists is **re-spec frequency**: a subscriber can rebuild runes 2.35× as
+What persists is **re-spec frequency**: a subscriber can rebuild runes 2× as
 often as the meta moves. That is the honest ongoing advantage and it should be
 stated rather than glossed; it is bounded by the same cap, so it buys
 adaptability rather than power.
@@ -782,31 +778,42 @@ covers it: **everything money can buy in this game is in one subscription.** In 
 genre where players assume the worst, a ceiling they can audit is worth more than
 any amount of reassurance. **Never add a tier above it.**
 
-### What money can and cannot reach
+### Shards cannot be bought
 
-Shards are capped at 800 a week however they are bought, which is roughly five
-rune stages. A full kit is 81 runes × 4 stages = **324 stages**:
+> **There is no way to convert money into Rune Shards.** Everything on the shelf
+> is a **2× multiplier on shards you earn**, capped at 20 battles a day. A player
+> who buys every SKU and never plays earns **nothing**.
 
-| Buying at the cap, no play at all | Time |
-|---|---|
-| 12 heroes fully runed (144 stages) | ~29 weeks |
-| Competitive 18 heroes (216 stages) | ~43 weeks |
-| **Full 27-hero kit** (324 stages) | **~65 weeks** |
+**Decided 2026-07-27**, replacing an 800-shards-a-week purchase. The reason it
+was cheap to drop is that it was never carrying much:
 
-**A whale cannot buy a roster.** That is not a soft limit but a wall, and it is
-what keeps *breadth* — the design's stated veteran advantage — something earned
-rather than bought. Six months of maximum spend is about eleven heroes' worth.
+| Subscriber income / 4 weeks | Shards | Needs play? |
+|---|---|---|
+| Base earnings | 9,240 | yes |
+| Boosts, 2× within the caps | +9,240 | **yes** |
+| ~~Purchased shards~~ | ~~+3,200~~ | ~~**no**~~ |
 
-**Shards rather than rune stages, deliberately.** Selling stages directly was
-considered and dropped: it would bypass the Forge, create a second progression
-path to balance against the first, and force a player to work out whether 800
-shards of stages beats a boost before they could buy anything. Selling shards
-*feeds* the Forge instead — the player still walks in, plans, and commits, which
-is the part of the design worth protecting.
+Purchased shards were **14.8%** of it, so removing them moved a subscriber from
+2.35× a free player to **2.00×**, and the competitive-kit timeline from 6.5 weeks
+to 7.6 against a free player's 15.2. **About one week of head start**, because
+the boost was always doing the work.
 
-> **The cap and the earn rate are one decision, not two.** 800 shards a week is
-> ~40% on top if a full kit takes six months of play, and noise if it takes six
-> weeks. Neither number means anything until the other is set.
+What that week buys is a claim that fits in a sentence and can be verified from
+the store page. *"Shards are capped at 800 a week"* invites the follow-up
+question; *"shards cannot be bought"* does not.
+
+> **Stated honestly: a boost is still a purchased advantage.** A subscriber
+> progresses twice as fast for the same play, and no amount of framing changes
+> that. **The real protection against pay-to-win is the 75-point cap and the
+> common ceiling** — every advantage here is temporary because everyone converges
+> on the same fully-runed six. The shard decision is about whether the promise is
+> *clean*, not about whether the game is fair. It was already fair.
+
+**Nothing bypasses the Forge, and that was the other reason.** Selling shards —
+or worse, selling rune stages directly — creates a second path to power running
+alongside the first, and something has to balance the two against each other.
+With only multipliers on the shelf there is exactly one road to a runed hero:
+walk into the Forge, plan, and commit.
 
 ### The risk this carries, stated plainly
 
@@ -1053,9 +1060,9 @@ point of writing it that way.
   one thing that can be **sold without touching the speed-versus-ceiling question
   at all**, which matters given the revenue curve above runs backwards.
 - ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $2 for
-  the daily boost pair, $5 for 800 shards, $20 for a 4-week subscription, which
-  reads as **2.35× a free player's income** and a ~2-month head start to a
-  competitive kit. What remains is not the price but the **conversion rate** it
+  the daily boost pair, $20 for a 4-week subscription, and **no way to buy shards
+  at all** — which reads as **2.00× a free player's income** and a ~7-week head
+  start to a competitive kit. What remains is not the price but the **conversion rate** it
   implies: revenue per player is capped at $260/year by construction, so the
   business is a volume business and the target player count should be sized
   deliberately.
