@@ -268,6 +268,20 @@ mandatory keyboard focus rings.
 > behind a capability check** so the browser build never imports it. All four
 > cost nothing now and are expensive to retrofit.
 
+### Shipping order — **confirmed 2026-07-28**
+
+> **Step 1 — the web version.** Static bundle, direct sales, no binary anywhere.
+> **Step 2 — the Steam version.** Same bundle in Electron, once the game is worth
+> the launch window.
+> **Then decide.** Any further channel is a decision made *from a position of
+> traction*, not now.
+
+The third step is deliberately unnamed. A standalone installer, macOS, a
+storefront besides Steam — each is a real option and none of them is worth
+pricing against a player base that does not exist yet. What the two committed
+steps buy is that **none of those decisions get harder by being deferred**: the
+seams below are built at step 1 regardless.
+
 ### No standalone installer — **decided 2026-07-28**
 
 > **1.0 is the browser build alone. Electron appears only when Steam does.**
