@@ -681,6 +681,61 @@ public and per-zone**, and nothing else in the design rewards being good at
 defense. Tallying holds would make the Standing Six matter competitively without
 inventing a single new mechanic.
 
+#### The default event counts both halves — **settled 2026-07-28**
+
+> **One point per attack victory, one point per hold, and a small bonus for
+> beating someone rated above you.** Attack points inherit the daily curve;
+> hold points do not — exactly as shard income already works.
+
+**Both halves, because the game has two of them.** An attack-only tally makes the
+event a participation contest and ignores the Standing Six entirely; a hold-only
+tally rewards a thing players cannot schedule. Counting both is the only version
+where a good defensive builder and a good attacker are both competing.
+
+**They are already the same size, which is what makes a flat point work.** A
+typical day is **~10 attack victories** and **~8.6 holds** — 6.8 Visible at a 40%
+hold rate, 1.8 Hidden at 60%. No weighting is needed to keep either half
+relevant:
+
+| Weighting | Attack share | Verdict |
+|---|---|---|
+| **1 point per victory, either kind** | **54%** | **Chosen** — balanced by arithmetic, not by tuning |
+| Points mirroring shard values (2 / 4 / 1 / 2) | 70% | Attack dominates; defeats the purpose |
+
+**Attack points inherit the daily curve, holds stay flat.** The 1.5× / 1.0× / 0.5×
+tiers on the first five, next fifteen and everything beyond already govern shard
+income, and holds are already never tiered. Reusing them costs nothing and stops
+an event from rewarding a pattern of play the economy deliberately taxes. The
+compression it buys is the whole argument:
+
+| Player | Attack pts | Hold pts | **Total** | vs. typical |
+|---|---|---|---|---|
+| Light — 5 victories | 7.5 | 8.6 | 16.1 | 0.76× |
+| **Typical — 10 victories** | 12.5 | 8.6 | **21.1** | **1.00×** |
+| Heavy — 21 victories | 23.0 | 8.6 | 31.6 | **1.50×** |
+
+**A heavy day is worth 1.5× a typical one, not 4×** — which is what an untiered
+count would have produced. Playing more still wins events; it cannot win them
+alone.
+
+**The punching-up bonus is +0.5, and it applies to both halves.** A victory over
+a defender rated above you, or a hold against an attacker rated above you, scores
+1.5 rather than 1.
+
+> **It cannot be farmed, and the rating is why.** The usual objection — park below
+> a threshold and harvest easy upward wins — needs an *accumulating* rating to
+> work. This one **converges**: every win over someone above you raises your own
+> number and shrinks the pool still above it. The exploit closes itself, which is
+> the same property that disarmed opponent-farming.
+>
+> The defensive half cannot be farmed at all, since **a defender never chooses who
+> attacks them.** That asymmetry is a feature — it is the half of the score that
+> is pure quality with no volume term available.
+
+**This is the *default* event, not the only one.** The four other metrics in the
+table above remain authorable as variants; what is settled is what a plain event
+counts when nothing special is being asked for.
+
 ### 1a. Do event battles feed the personal attack streak?
 
 Event battles are ordinary battles, so by default they do — which means a heavy

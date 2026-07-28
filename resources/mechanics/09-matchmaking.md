@@ -54,6 +54,13 @@ every stage costs a flat 150 while the gains diminish — so 450 shards buys 35
 points and the next 200 buys an effect. A shard-proportional score would rate a
 player who bought three +5 traces as equal to one who bought three +20 majors.
 
+> **This is not in tension with *Banked shards count too* below.** That rule
+> scores shards a player has **not** spent, as a stand-in for power they could
+> deploy at any moment. This one refuses to score shards they **have** spent,
+> because the runes those shards became are already counted directly and at their
+> real worth. Spent shards are double-counting; unspent ones are the only power on
+> the board that nothing else sees.
+
 ### Why the effect is scored at 15 points, and what that is tied to
 
 **The number is the utility catalog's own tuning, not a separate decision.**
@@ -97,6 +104,46 @@ would rate that player eight leagues above their strength.
 > score, a **1.8× sandbag leverage**. It costs real power and 150 shards per slot,
 > and the rating axis corrects for it over time. Worth watching, not worth a rule
 > yet.
+
+### Banked shards count too — **added 2026-07-28**
+
+> **`score = 2.5 × placed stat points + 0.2 × unspent shard balance`.**
+> Five banked shards are one point of gear score.
+
+**Reading only placed runes leaves a cheaper sandbag than the one accepted
+above.** Destroying a rune to drop a league costs stat points *and* 150 shards a
+slot. **Simply not spending costs neither** — a player who banks earns power they
+have not declared, and the score cannot see it. At 388 shards a day a month of
+hoarding is **11,640 shards, ~18 full runes, 2,328 points of undeclared power**
+against a Bronze floor of 1,500. That is not a rounding error; it is the whole
+league ladder hidden in a wallet.
+
+**Count the balance, not lifetime earnings.** Lifetime-earned was the first shape
+of this and it fails twice: it never decreases, so it drifts into being a measure
+of *how long someone has played* rather than how strong they are — and it
+**double-counts**, since a shard is scored once when earned and again once it is
+sitting in a rune. Current balance has neither problem.
+
+**0.2 per shard is chosen so a purchase is score-neutral.** A full rune is 650
+shards for 125 points, a true rate of 0.192; rounding *up* to 0.2 makes banking
+650 worth 130 against the 125 it buys, so **building is never worse for your
+score than hoarding** and the error leans the safe way.
+
+| Behaviour | Banked | Banked score | Effect |
+|---|---|---|---|
+| Saving for a utility stage | 200 | 40 | Noise — 2.7% of the Bronze band |
+| Saving for one full rune | 650 | 130 | **Under 9% of a league band** — does not force a hasty commit |
+| **Hoarding one month** | 11,640 | **2,328** | **Lifted clear out of Bronze** |
+
+That last row is the point: the rule is invisible to anyone playing normally and
+unavoidable for anyone hoarding, which is exactly the shape a sandbag rule needs.
+
+> **It does not fight `06-progression.md`'s "commit with your eyes open."**
+> Runes are destroyed on replacement, so deliberating before spending is correct
+> play and this rule must not punish it. At **130 points for a fully-saved rune**
+> the pressure to deploy is real but well under a league band — enough that
+> indefinite hoarding is priced, not enough that a player rushes a permanent
+> decision to dodge it.
 
 ---
 
