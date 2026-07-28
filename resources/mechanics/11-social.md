@@ -312,8 +312,38 @@ people is directly exploitable rather than merely unwise.
 
 #### Guild avatars are curated, not uploaded — **decided 2026-07-28**
 
-> **A guild picks its avatar from a set we author. Nothing is uploaded, so
-> nothing is reviewed.**
+> **A guild builds an emblem from parts we author: one of 36 icons, an icon
+> colour, and a background colour. Nothing is uploaded, so nothing is
+> reviewed.**
+
+#### The emblem is composed, not picked — **set 2026-07-28**
+
+**Three choices rather than one**, which is what stops a curated set feeling
+canned:
+
+| | |
+|---|---|
+| **Icon** | **36**, authored |
+| **Icon colour** | 12, from a vivid palette |
+| **Background colour** | 12, from a **separate** dark palette |
+| **Combinations** | **5,184** |
+
+> **Two palettes, not one shared palette, and that is the whole trick.** If icon
+> and background drew from the same list, a player could pick dark-on-dark and
+> produce something illegible — so the system would need a contrast check, a
+> rejection, and an error message. **Split the palettes and every one of the 144
+> pairs is legible by construction.** Same principle as curating the set in the
+> first place: make the bad output impossible rather than validating against it.
+
+**Uniqueness is not the goal and should not be promised.** At 5,184 combinations,
+duplicates appear well before a thousand guilds exist — and that is fine, because
+**the guild's name is the identifier and the emblem is expression.** Two guilds
+sharing a red wolf is how every clan system in the genre has ever worked.
+
+> **If more variety is ever wanted, add a shape.** A background silhouette —
+> shield, roundel, diamond, banner — multiplies the space by however many are
+> drawn, for the least art per unit of variety of any lever available. Not needed
+> now; noted so it is not re-derived.
 
 **This keeps the entire feature at zero moderation cost.** An uploaded logo would
 have inherited the custom-avatar pipeline whole — pre-moderation, a review per
@@ -326,6 +356,7 @@ Three things fall out of it, all good:
 - **Every guild card looks right by construction.** The guild promotion embed is
   the one players see most; an upload guarantees that some fraction of them are
   ugly, low-resolution or misaligned, and no amount of moderation fixes *bad*.
+  **A composed emblem cannot be ugly**, because we drew every part of it.
 - **It is a real sink for guild funds.** Avatars beyond a free starting handful
   are bought with guild funds, which is exactly the "surplus goes to prestige"
   role event prizes were given. A winning guild wears its winnings.
