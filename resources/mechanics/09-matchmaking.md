@@ -146,17 +146,82 @@ a player unable to explain why a defense felt off.
 **Promotion is a one-way event.** The score only rises as runes are placed, so
 crossing a threshold is something a player earns and cannot lose.
 
-> **Visibility makes one exploit actionable: parking just below a threshold.** At
-> the top of a league you hold up to **1.67× the gear of your weakest
-> league-mate**; cross the line and you are the weakest in the next one. Published
-> thresholds tell a player exactly where that line is.
->
-> **The rating axis is the corrective, and this is what it is for.** Gear parking
-> buys a gear advantage and no skill advantage — a parked player wins more, their
-> rating climbs, and they meet better-played opponents inside the same league.
-> The cost of parking is also real: shards accumulate with nowhere to go, since
-> placing them is what promotes you. Worth watching once there is live data;
-> not worth a rule that fights the two-axis design.
+**Visibility makes one exploit actionable: parking just below a threshold.** At
+the top of a league you hold up to **1.67× the gear of your weakest
+league-mate**; cross the line and you are the weakest in the next one. Published
+thresholds tell a player exactly where that line is. The next section answers it.
+
+### The top of a league leaks upward
+
+> **The nearer a player is to the ceiling of their league, the more often they are
+> offered a defender from the league above.**
+
+```
+pos    = (score − league floor) / (league ceiling − league floor)
+P(up)  = 0.5 × max(0, (pos − 0.9) / 0.1)
+```
+
+| Position in the league | Chance of a higher-league defender |
+|---|---|
+| below 90% of the band | **0%** |
+| 95% | 25% |
+| at the ceiling | **50%** |
+
+**Position is measured against the league's own score range, not against the
+population.** It therefore depends only on the player's own score — nobody's
+matching changes because other people geared up, which is the same principle that
+made thresholds fixed rather than percentile.
+
+**Diamond has no league above it**, so the ramp does not apply there. It matters
+least anyway: Diamond spans only 1.17×, so there is barely a top to park at.
+
+#### It turns parking into a decision rather than a free ride
+
+That is the point, and it is worth more than the exploit it answers. A player at
+the ceiling of their league now faces a fork with no wrong answer:
+
+- **Stay, and take the harder mix.** Half their opponents come from above. That
+  is a defensible choice — they hold a strong position on their league's board
+  and they are choosing the fight.
+- **Push, and tier up.** Place the shards, cross the threshold, and be properly
+  matched against people at their own level again.
+
+Either way the free lunch is gone: sitting at the top **costs** something now,
+where before it paid.
+
+**It is also a promotion on-ramp, which the flat version is not.** A player
+crossing into Silver has already been fighting Silver opponents up to half the
+time, so promotion is a gradient rather than a wall. That solves a problem
+fixed-threshold leagues would otherwise have — the moment of crossing takes a
+player from strongest-in-league to weakest-in-league in a single rune purchase,
+which without the ramp is the single worst-feeling moment in the progression.
+
+#### What it is worth, stated honestly
+
+For a parked player who beats their own league ~65% of the time and the league
+above ~40%:
+
+| | Win rate | Advantage over promoting |
+|---|---|---|
+| No mixing | 65.0% | +25.0 pts |
+| **Graduated mixing** | **52.5%** | **+12.5 pts** |
+| A flat 5–10% for the top decile | 62.5% | +22.5 pts |
+
+**This halves the incentive rather than removing it.** Removing it entirely would
+mean matching on a band centred on the player's own score, which erases the
+boundary — and with it the league as a matching unit, the on-ramp above, and the
+leaderboard. The graduated ramp keeps league-pure matching for **90% of
+players**, and accepts a residual edge at the very top as the price of all three.
+
+**Two things carry the rest.** Parking costs real progress — shards accumulate
+with nowhere to go, since placing them is what promotes you. And the **rating
+axis** does what it exists for: a parked player wins more, their rating climbs,
+and they meet better-played opponents inside the same league.
+
+**The roll is not announced, but the opponent's league is labelled as always.** A
+player near the ceiling simply starts seeing higher-league names appear, which is
+honest feedback that they are outgrowing their band rather than a hidden
+mechanic. Nothing is concealed and nothing is proclaimed.
 
 ### When a league is thin
 
