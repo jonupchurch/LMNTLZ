@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;width:1680px;padding:30px 40px 40px">
+
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding-bottom:16px;border-bottom:1px solid #241F38;margin-bottom:18px">
+    <div style="min-width:0">
+      <div style="display:flex;align-items:center;gap:13px;margin-bottom:9px">
+        <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;color:#141221;font-size:16px;line-height:1">L</div>
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.2em;color:#F4EFE4">LMNTLZ</div>
+        <div style="width:1px;height:16px;background:#3A3357"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#8E87A8">SYSTEM ARCHITECTURE · NODE &amp; EDGE VIEW</div>
+      </div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:32px;line-height:1.05;color:#F4EFE4">What talks to what, which way, and where the trust boundary sits.</div>
+    </div>
+    <div style="flex:0 0 auto;border:1px solid #241F38;background:#141221;padding:13px 15px;min-width:420px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">LEGEND</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 18px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:0;border-top:2px solid #8FCFE0;flex:0 0 auto"></div><span style="font-size:12px;color:#B4AECB">Sync request / response</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:0;border-top:2px dashed #C64BB0;flex:0 0 auto"></div><span style="font-size:12px;color:#B4AECB">Async push · fan-out</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:0;border-top:3px solid #F2C744;flex:0 0 auto"></div><span style="font-size:12px;color:#F2C744">Trust boundary</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:0;border-top:2px dashed #57507A;flex:0 0 auto"></div><span style="font-size:12px;color:#8E87A8">Post-1.0 · not at launch</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:relative;width:1600px;height:790px">
+
+    <svg width="1600" height="790" viewBox="0 0 1600 790" style="position:absolute;left:0;top:0">
+      <defs>
+        <marker id="ac-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8FCFE0"></path></marker>
+        <marker id="ac-cyan-start" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8FCFE0"></path></marker>
+        <marker id="ac-orchid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C64BB0"></path></marker>
+      </defs>
+
+      <line x1="352" y1="96" x2="352" y2="760" stroke="#F2C744" stroke-width="3"></line>
+      <rect x="300" y="98" width="104" height="26" fill="#0E0C17"></rect>
+      <text x="352" y="116" text-anchor="middle" font-family="'Chakra Petch',sans-serif" font-size="12" font-weight="700" letter-spacing="2.2" fill="#F2C744">TRUST</text>
+      <rect x="300" y="738" width="104" height="26" fill="#0E0C17"></rect>
+      <text x="352" y="756" text-anchor="middle" font-family="'Chakra Petch',sans-serif" font-size="12" font-weight="700" letter-spacing="2.2" fill="#F2C744">BOUNDARY</text>
+
+      <path d="M310,196 H384" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <path d="M390,230 H316" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="322" y="188" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">①</text>
+
+      <path d="M310,364 H336 V250 H384" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+
+      <path d="M105,644 V690 H326 V270 H384" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <path d="M245,644 V690" stroke="#8FCFE0" stroke-width="2" fill="none"></path>
+      <text x="132" y="684" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">③ verify · one account</text>
+
+      <path d="M780,170 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="792" y="162" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">① ⑤ read / write</text>
+
+      <path d="M780,200 H812 V306 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="820" y="300" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">⑤ write log</text>
+
+      <path d="M828,415 H784" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <path d="M854,415 H828 V236 H780" stroke="#8FCFE0" stroke-width="2" fill="none"></path>
+      <text x="790" y="408" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">reads flag</text>
+
+      <path d="M780,266 H842 V530 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="700" y="612" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">② publish over REST</text>
+
+      <path d="M580,150 V86 H1204 V150" stroke="#8FCFE0" stroke-width="2" fill="none"></path>
+      <path d="M1204,150 V163 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <path d="M1204,163 V269 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <path d="M1204,269 V390 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="600" y="78" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">④ checkout · webhook back · notices · API errors</text>
+
+      <path d="M40,250 H18 V712 H1010 V592" stroke="#C64BB0" stroke-width="2" stroke-dasharray="7 6" fill="none" marker-end="url(#ac-orchid)"></path>
+      <text x="360" y="706" font-family="'JetBrains Mono',monospace" font-size="10" fill="#C64BB0">② WEBSOCKET · CLIENT SUBSCRIBES DIRECTLY — THE API HOLDS NO SOCKET</text>
+
+      <path d="M40,404 H6 V744 H1405 V456" stroke="#C64BB0" stroke-width="2" stroke-dasharray="7 6" fill="none" marker-end="url(#ac-orchid)"></path>
+      <text x="1010" y="738" font-family="'JetBrains Mono',monospace" font-size="10" fill="#C64BB0">CLIENT CRASHES — INVISIBLE TO THE SERVER</text>
+    </svg>
+
+    <div style="position:absolute;left:40px;top:126px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 1 · CLIENTS <span style="color:#C0313A">UNTRUSTED</span></div>
+    <div style="position:absolute;left:390px;top:126px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 2 · EDGE &amp; API <span style="color:#4E7C3A">TRUSTED</span></div>
+    <div style="position:absolute;left:860px;top:96px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 3 · DATA</div>
+    <div style="position:absolute;left:860px;top:452px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 4 · MANAGED SERVICES</div>
+    <div style="position:absolute;left:40px;top:536px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 5 · IDENTITY PROVIDERS</div>
+
+    <div style="position:absolute;left:40px;top:150px;width:270px;height:124px;border:1px solid #3A3357;background:#141221;padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#F4EFE4">Browser SPA</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#141221;background:#F2C744;padding:2px 5px">ALL OF 1.0</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Vite · React · Tailwind · CDN</div>
+      <div style="margin-top:9px;border:1px solid #4FC3D6;background:rgba(42,127,184,0.12);padding:7px 9px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#4FC3D6">packages/sim · RULES ONLY</div>
+        <div style="font-size:11.5px;line-height:1.4;color:#B4AECB;margin-top:4px">Targeting UI · turn queue · effectiveness preview</div>
+      </div>
+    </div>
+
+    <div style="position:absolute;left:40px;top:302px;width:270px;height:124px;border:1px dashed #57507A;background:rgba(20,18,33,0.6);padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#B4AECB">Electron + Steam</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#B5732E;border:1px dashed #B5732E;padding:2px 5px">POST-1.0</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6690;margin-top:3px">Identical bundle · steamworks.js</div>
+      <div style="margin-top:9px;border:1px dashed #4A7383;background:rgba(42,127,184,0.06);padding:7px 9px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#4A7383">packages/sim · RULES ONLY</div>
+        <div style="font-size:11.5px;line-height:1.4;color:#8E87A8;margin-top:4px">Same import — a shell, not a second backend</div>
+      </div>
+    </div>
+
+    <div style="position:absolute;left:40px;top:560px;width:130px;height:84px;border:1px solid #3A3357;background:#141221;padding:11px 12px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;color:#F4EFE4">Google</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:#8E87A8;margin-top:5px">ID token<br />verified vs JWKS</div>
+    </div>
+    <div style="position:absolute;left:180px;top:560px;width:130px;height:84px;border:1px solid #3A3357;background:#141221;padding:11px 12px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;color:#F4EFE4">Steam</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.5;color:#8E87A8;margin-top:5px">Session ticket<br />verified vs Web API</div>
+    </div>
+
+    <div style="position:absolute;left:390px;top:150px;width:390px;height:130px;border:1px solid #3A3357;background:#141221;padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#F4EFE4">Versioned JSON REST API</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#4FC3D6;border:1px solid #4A7383;padding:2px 5px">/v1/…</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Hono on serverless functions</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:8px">The <strong style="color:#F4EFE4">only</strong> writer to every store. Versioned because a Steam client can be stale. <strong style="color:#F4EFE4">Holds no open socket.</strong></div>
+      <div style="display:flex;gap:5px;margin-top:8px">
+        <div style="flex:1;border:1px solid #4E7C3A;background:rgba(78,124,58,0.12);padding:4px 6px;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:#4E7C3A;text-align:center">live</div>
+        <div style="flex:1;border:1px solid #B5732E;background:rgba(181,115,46,0.12);padding:4px 6px;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:#E0A15A;text-align:center">draining</div>
+        <div style="flex:1;border:1px solid #C0313A;background:rgba(192,49,58,0.1);padding:4px 6px;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:#F06A72;text-align:center">down</div>
+      </div>
+    </div>
+
+    <div style="position:absolute;left:390px;top:316px;width:390px;height:268px;border:2px solid #F2C744;background:#141221;padding:12px 14px;box-shadow:0 0 30px rgba(242,199,68,0.13)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#F4EFE4">packages/sim</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#F2C744;border:1px solid #F2C744;padding:2px 6px">ONE PACKAGE · TWO HALVES</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="border:1px solid #4FC3D6;background:rgba(42,127,184,0.12);padding:10px 11px;height:140px">
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.05em;color:#4FC3D6">RULES</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#4FC3D6;margin-top:3px">CLIENT + SERVER</div>
+          <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:8px">Targeting legality · reach · type effectiveness · cooldowns · turn order · damage formula</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;color:#4E7C3A;margin-top:8px">PURE · NO RANDOMNESS</div>
+        </div>
+        <div style="border:1px solid #C0313A;background:rgba(192,49,58,0.1);padding:10px 11px;height:140px">
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.05em;color:#F06A72">RESOLVER</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#F06A72;margin-top:3px">SERVER ONLY</div>
+          <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:8px">Hit / miss · critical hits · status application · the defense AI's decisions</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;color:#F06A72;margin-top:8px">CONSUMES RANDOMNESS</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;border:2px solid #F2C744;background:rgba(242,199,68,0.07);padding:9px 11px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="flex:0 0 auto;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:0.14em;color:#F2C744">RNG SEED STOPS HERE</div>
+          <div style="flex:1;height:0;border-top:3px solid #F2C744"></div>
+          <div style="flex:0 0 auto;width:12px;height:12px;border:2px solid #F2C744;transform:rotate(45deg)"></div>
+        </div>
+        <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">A boundary, not a data flow. A client holding the seed reads every future roll.</div>
+      </div>
+    </div>
+
+    <div style="position:absolute;left:860px;top:120px;width:300px;height:118px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Relational store</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#4E7C3A">FOREVER</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Postgres · Drizzle</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Accounts · guilds · squads · ratings · entitlements · chat · refresh tokens · battle metadata</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.05em;color:#F2C744;margin-top:6px">NO IN-PROGRESS BATTLE STATE</div>
+    </div>
+
+    <div style="position:absolute;left:860px;top:258px;width:300px;height:96px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Blob storage</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#B5732E">EXPIRES · 7 DAYS</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Vercel Blob</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Replay event logs — written once, read rarely, never queried.</div>
+    </div>
+
+    <div style="position:absolute;left:860px;top:374px;width:300px;height:82px;border:1px solid #241F38;background:#141221;padding:11px 13px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Edge config</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Vercel Edge Config</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:6px">The maintenance flag, and nothing else.</div>
+    </div>
+
+    <div style="position:absolute;left:860px;top:476px;width:300px;height:108px;border:1px solid #C64BB0;background:#141221;padding:11px 13px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Realtime pub/sub</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#C64BB0">FAN-OUT ONLY</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Ably</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Clients subscribe · <strong style="color:#F4EFE4">clients never publish</strong>. Presence and history are primitives.</div>
+    </div>
+
+    <div style="position:absolute;left:1250px;top:120px;width:310px;height:86px;border:1px solid #241F38;background:#141221;padding:11px 13px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Transactional email</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Resend · behind an interface</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:6px">Succession · moderation · avatar review</div>
+    </div>
+
+    <div style="position:absolute;left:1250px;top:226px;width:310px;height:86px;border:1px solid #241F38;background:#141221;padding:11px 13px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Payments</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#F2C744">MERCHANT OF RECORD</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Paddle</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:6px">Entitlement belongs to the account, never the storefront.</div>
+    </div>
+
+    <div style="position:absolute;left:1250px;top:332px;width:310px;height:116px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Error monitoring</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Sentry</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Receives from <strong style="color:#F4EFE4">both</strong> the client and the API — a React exception produces no server log at all.</div>
+    </div>
+
+    <div style="position:absolute;left:1250px;top:474px;width:310px;height:110px;border:1px dashed #3A3357;background:rgba(20,18,33,0.5);padding:11px 13px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:7px">NOT ON THIS CHART, ON PURPOSE</div>
+      <div style="font-size:11.5px;line-height:1.55;color:#8E87A8">No schema, no sequence diagrams, no regions or scaling topology, no folder structure, no per-screen UI. One systems view.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;padding-top:18px;border-top:1px solid #241F38">
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+      <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#8FCFE0">①</span><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.04em;color:#F4EFE4">A battle turn</span></div>
+        <div style="font-size:12px;line-height:1.5;color:#B4AECB">Intent in → API replays the append-only log → resolver applies → appends → one packet covering the action <em>and everything following it</em>.</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.05em;color:#F2C744;margin-top:8px;padding-top:8px;border-top:1px solid #241F38">STATE IS RE-DERIVED EVERY REQUEST — IT CANNOT DESYNCHRONIZE</div>
+      </div>
+      <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#C64BB0">②</span><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.04em;color:#F4EFE4">Chat</span></div>
+        <div style="font-size:12px;line-height:1.5;color:#B4AECB">POST to the API, which authorizes, charges, persists and moderates — <em>then</em> publishes to the broker, which fans out.</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.05em;color:#F2C744;margin-top:8px;padding-top:8px;border-top:1px solid #241F38">SUBSCRIBE-ONLY IS CORRECTNESS — DIRECT PUBLISHING WOULD BYPASS THE CHARGE</div>
+      </div>
+      <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#8FCFE0">③</span><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.04em;color:#F4EFE4">Sign-in</span></div>
+        <div style="font-size:12px;line-height:1.5;color:#B4AECB">Token or ticket → API verifies against the provider → upserts the account → issues <strong style="color:#F4EFE4">our own</strong> signed token.</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.05em;color:#6E6690;margin-top:8px;padding-top:8px;border-top:1px solid #241F38">TWO PROVIDERS CONVERGE ON ONE ACCOUNT · REFRESH TOKENS IN POSTGRES</div>
+      </div>
+      <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#8FCFE0">④</span><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.04em;color:#F4EFE4">Purchase</span></div>
+        <div style="font-size:12px;line-height:1.5;color:#B4AECB">Checkout at the payment provider → webhook to the API → entitlement granted.</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.05em;color:#F2C744;margin-top:8px;padding-top:8px;border-top:1px solid #241F38">A BROWSER PURCHASE IS PRESENT IN THE STEAM BUILD</div>
+      </div>
+      <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#8FCFE0">⑤</span><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.04em;color:#F4EFE4">Replay lifecycle</span></div>
+        <div style="font-size:12px;line-height:1.5;color:#B4AECB">Metadata row to Postgres, permanently; event log to blob for 7 days. A scheduled job deletes what expired.</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.05em;color:#F2C744;margin-top:8px;padding-top:8px;border-top:1px solid #241F38">DRIVEN BY A POSTGRES QUERY, NEVER BY LISTING THE BUCKET</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1680,&quot;height&quot;:1240}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

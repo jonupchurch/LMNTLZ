@@ -32,6 +32,7 @@ outcome.
 | Unit / integration tests | **Vitest** |
 | End-to-end tests | **Playwright** |
 | Realtime transport | **Ably** — managed pub/sub, behind an interface |
+| Chat moderation | **Claude Haiku 4.5** via the batch API, behind an interface |
 | Error monitoring | **Sentry** — client and API |
 | Game telemetry | **Postgres** — SQL against the battle metadata row. *No analytics vendor.* |
 | Web funnel | **Vercel Web Analytics** — enabled at launch |
@@ -344,6 +345,39 @@ otherwise arrive as polling bolted on separately. **The transport sits behind an
 interface** for the same reason email does: so the second and third callers do not
 each re-implement it, and so the vendor stays swappable while the broker's job
 stays trivially small.
+
+---
+
+## Chat moderation — Claude Haiku 4.5 — **recorded 2026-07-28**
+
+> **This was settled in `../resources/mechanics/11-social.md` on 2026-07-27 and
+> never reached this table.** Recorded here because it is an outbound dependency
+> with a recurring bill, which is exactly what this document exists to track — and
+> because its absence propagated: the architecture diagram prompt did not ask for
+> it, so the generated charts have no node for it.
+
+**Every message is read; nothing is sampled.** Classification runs through the
+**batch API**, batching **100 messages a call** — the reasoning, the false-positive
+math and the *flag, never act* rule all live in `11-social.md` and are not
+restated here.
+
+| DAU | Messages/day | Monthly |
+|---|---|---|
+| 10,000 | 60,000 | **$68** |
+| 50,000 | 300,000 | $338 |
+| 100,000 | 600,000 | **$675** |
+
+> **It is the largest managed-service line in the stack** — more than Ably, Resend
+> and Sentry combined at the top end, and the only one that is a per-message
+> variable cost rather than a tier. It holds at roughly **1% of net revenue at any
+> scale**, because both sides scale with players, which is why it is not a line
+> worth optimizing.
+
+**Behind an interface, like the realtime transport and the sender.** `11-social.md`
+already requires the moderation vendor to be swappable so that separating chat onto
+its own service later stays mechanical. **The batch size is the tuning knob, not
+the coverage** — if judging 100 items in one pass degrades classification quality,
+the batch shrinks and full coverage is preserved.
 
 ---
 

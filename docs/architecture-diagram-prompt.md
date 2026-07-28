@@ -77,16 +77,27 @@ Lay the page out in five zones. Group by trust and ownership, not by vendor.
 
 **3 · Data**
 
-- **Postgres** — accounts, guilds, squads, ratings, entitlements, chat history,
-  refresh tokens, and **battle metadata kept forever**.
+- **Postgres** — accounts, guilds, squads, ratings, entitlements, refresh tokens,
+  and **battle metadata**.
+  > **Do not label this store "kept forever."** Only **battle metadata** is
+  > permanent. **Chat messages live in their own tables under their own retention
+  > policy** — a deliberate separation, because it is what makes moving chat onto a
+  > separate store later a mechanical change rather than a rewrite. Show chat as a
+  > **distinct, retention-bound** group inside the relational store, not as one more
+  > item in a list labeled permanent.
 - **Blob storage** — battle replay event logs, **expiring after 7 days**.
 - **Edge config** — the maintenance flag only.
 
 **4 · Managed services**
 
 Realtime pub/sub · transactional email · payments (merchant-of-record) · error
-monitoring. Draw error monitoring receiving from **both** the client and the API,
-since client-side crashes are otherwise invisible.
+monitoring · **AI chat moderation**. Draw error monitoring receiving from **both**
+the client and the API, since client-side crashes are otherwise invisible.
+
+**The moderation classifier is a real outbound dependency and needs its own node.**
+The API calls it for **every message** — nothing is sampled — in batches of 100
+through a batch API. It is easy to omit because the chat flow reads as a single
+step ("the API moderates"), but that step leaves our infrastructure.
 
 **5 · Identity providers**
 
@@ -107,8 +118,10 @@ it a diagram rather than an inventory.
    request, so there is exactly one source of truth and it cannot desynchronize.
 
 2. **Chat.** Client POSTs a message to the API → the API authorizes the scope,
-   charges any currency cost, persists, and moderates → **then** publishes to the
-   realtime service → which fans out to subscribers.
+   charges any currency cost, persists, and **calls the moderation classifier** →
+   **then** publishes to the realtime service → which fans out to subscribers.
+   > **Draw the classifier call as its own arrow leaving Zone 2.** Collapsing it
+   > into the word "moderates" hides the stack's largest per-message dependency.
    > **Show the arrows asymmetrically: clients subscribe, clients never publish.**
    > This is correctness, not hardening. Some chat postings cost in-game currency,
    > so a client able to publish directly to the broker would bypass the charge.
@@ -142,6 +155,11 @@ Worth checking the finished diagram against:
   one package imported by both sides, and it should read that way.
 - **Steam is not a second backend.** It is a second client shell and a second
   identity provider. Everything behind the API is identical.
+- **The relational store is not uniformly permanent.** Battle metadata is; chat is
+  retention-bound in its own tables. A single "kept forever" label across the whole
+  store is wrong and would mislead anyone building the schema.
+- **"The API moderates" is an outbound call, not an internal step.** If the chat
+  flow shows no arrow leaving Zone 2 for a classifier, the diagram is incomplete.
 
 ### Visual direction
 
