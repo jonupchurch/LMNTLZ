@@ -214,6 +214,37 @@ for the 80% of players who sit in the middle of their band.
 It also helps a thin league without a special case. Overlapping edges mean the
 pool at a boundary is drawn from two leagues at once.
 
+#### Considered and rejected: drawing only from the lower half above
+
+**Raised and dropped 2026-07-27.** The proposal was that a player bleeding upward
+should meet only the *bottom half* of the league above, so the jump is gentler.
+
+**It tightens the worst case, and 1.67× was never the problem.** The upward bleed
+fires above `pos` 0.9 — score **2,400** in Bronze — so the widest gap it can
+produce is 4,000 / 2,400 = **1.67×**, exactly the bound *Leagues* already
+promises. The rule that genuinely broke that promise was the thin-league widen at
+**2.67×**, and bots fix that instead.
+
+| Upper-league draw | Range | Worst ratio | Parking advantage |
+|---|---|---|---|
+| **All of Silver — as written** | 2,500 – 4,000 | 1.67× | **0** |
+| Bottom half of Silver | 2,500 – 3,250 | **1.35×** | **+2.5 pts** |
+
+**And it costs the property the section exists for.** The bleed's job at a ceiling
+is to make the top of a league *harder*, so parking below the line is not
+attractive. Drawing from the nearer half makes it easier, which hands back an
+advantage that was zero by construction — 52.5% at the top of Bronze becomes 55%
+against the 52.5% at the bottom of Silver.
+
+**It is recoverable — the fix is a constant, not a different rule.** Bleeding
+**62.5%** at the ceiling rather than 50% restores 52.5% and buys the tighter ratio
+for free. That is the version to reach for if the 1.67× ever reads badly in
+practice.
+
+> **Do not mirror the restriction downward.** Restricting *both* directions pulls
+> both blends toward the middle and widens the step to **5 points** — it is the
+> far tail of the adjacent league that does the compensating.
+
 #### Promotion stops being a wall
 
 The larger win is not the exploit. **Fixed-threshold leagues have a problem
