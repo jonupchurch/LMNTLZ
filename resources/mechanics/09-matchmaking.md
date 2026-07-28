@@ -98,47 +98,69 @@ would rate that player eight leagues above their strength.
 > and the rating axis corrects for it over time. Worth watching, not worth a rule
 > yet.
 
-#### The second sandbag: hoarding — **measured and accepted 2026-07-28**
+#### Hoarding is not a sandbag — **examined and dismissed 2026-07-28**
 
-**Not spending is a cheaper sandbag than destroying, and it is worth naming.**
-Destroying a rune costs stat points *and* 150 shards a slot; simply banking costs
-neither. A hoarder stays at the Bronze floor, farms opponents matched to a kit
-they have deliberately not built, and wins far more often than their shard
-balance says they should.
+The obvious neighbour of the risk above is **banking shards instead of spending
+them**, staying at the Bronze floor with a wallet full of undeployed power. It
+looks cheaper than destroying a rune, since it costs neither stat points nor
+shards. **It is not an exploit, and the reason is worth stating as a rule.**
 
-| At day 30 | Deployed score |
-|---|---|
-| Normal player, deploying continuously | 2,865 |
-| **Hoarder, then cashing out** | **3,738** |
+> **A sandbag exists only where score and power move by different amounts.**
+> Destroying a stage-4 rune sheds **77% of its score for 43% of its stat
+> points** — that gap is the exploit. **Hoarding moves neither.** It declines to
+> move both, together, and leaves them exactly in step.
 
-**About 30% ahead**, driven by roughly **1.64× shard income** — the daily curve
-bounds income by *victories*, and nothing bounds how easily those victories come.
+So a hoarder is **never stronger than their leaguemates.** Their score is their
+power, the league is computed from that score, and every match they play is
+correctly bounded the whole time. There is no mismatched opponent anywhere in the
+scenario and therefore nobody to protect.
+
+**Nor does it pay.** The income case was checked and does not survive: the notion
+that a hoarder farms easy opponents assumes they are strong for their league,
+which is precisely what they are not. They face their own level, win at their own
+rate, and **shard income is flat per victory regardless of opponent strength**
+(20 / 40 / 10 / 20). Hoarding earns exactly what deploying earns. What it buys is
+a delay, and delay is its own cost.
 
 **Priced and rejected: scoring the unspent balance.** `score = 2.5 × placed stat
-points + 0.2 × banked shards` closes it completely — a month of hoarding becomes
-2,328 points and lifts the player clear of Bronze. It was rejected on what it
-costs to get there:
+points + 0.2 × banked shards` was drafted before the above was clear. It should
+stay rejected on its own merits even if hoarding ever does become a problem:
 
 > **Banked shards are not power, and the league's whole job is to bound power.**
-> A hoarder placed by their wallet meets opponents at ~2.5× their real combat
-> strength — so the rule fixes an exploit by breaking, for that player, the
-> **1.67× guarantee** the league system exists to provide. Trading a promise for
-> an exploit is a bad trade even when the exploit is real.
+> Scoring them puts a player *above* their real combat strength — inventing the
+> very mismatch the league exists to prevent, in order to punish someone who was
+> not creating one.
 
-A floored variant (count only above 1,000 banked, so ordinary saving scores zero)
-answers the objection for normal players and was the recommendation; it still
-leaves the hoarder mismatched, which is the part that mattered.
+##### The one real window — recompute on placement
 
-**Accepted for the same reason as the sandbag above, and it is the same size.**
-1.64× against 1.8×, and the **rating axis is the corrective in both cases** — a
-hoarder farming easy wins climbs in rating, rating orders the pool, and they are
-served the hardest opponents their league contains. Two accepted risks of one
-magnitude answered by one existing mechanism is consistent; inventing a rule for
-one of them and not the other would not be.
+There is a single moment where hoarding *does* create a mismatch: **between
+deploying a month of shards and the league noticing.** A player who spends 11,640
+shards at once jumps from 1,500 to ~3,738, and until that is reflected they are a
+Gold-weight player sitting in Bronze — genuinely stronger than their leaguemates,
+which is the exact condition named above.
 
-> **Both are worth watching in `packages/sim`, together.** If the rating axis
-> turns out not to correct either one, they need a single answer rather than two
-> — and the floored balance rule above is the drafted candidate, ready to adopt.
+> **So the gear score is recomputed on every rune placement, and league
+> membership follows it immediately.** Not nightly, not per-season. This is the
+> only rule hoarding needs, it is cheap — the score is a sum over placed runes,
+> recomputed exactly when that set changes — and it closes the window to zero.
+
+`packages/sim` should still watch the rune-destruction sandbag above, which is a
+real 1.8× and is not addressed by any of this.
+
+##### One caveat: this bounds gear, not skill
+
+Everything above is about **power**, and the league system only ever promised to
+bound power. **A skilled player holding a low gear score still faces their own
+gear level and not their own skill level** — rating orders within a league and
+never restricts it, so it can sort them to the top of a weak pool but cannot put
+a worthy opponent in it.
+
+**The ladder is immune and the events are not.** A convergent rating pays almost
+nothing for beating opponents below you, so farming a low league cannot climb it —
+that is the two-axis design working exactly as intended. What is exposed is
+anything counting *raw victories*, which is why `08-guilds.md` sizes the same
+sandbag against the event metric and lands at **1.17×** after the punching-up
+bonus and the hold term absorb it. Measured there, not here.
 
 ---
 
