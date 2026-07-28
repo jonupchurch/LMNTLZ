@@ -22,6 +22,9 @@ a decision being quietly reversed later by someone who only sees the outcome.
 | Payments (web) | **Paddle** — merchant of record |
 | Replay logs | **Object storage**, 7-day expiry — provider TBD |
 | Transactional email | **Managed sender** behind an interface — Resend or equivalent |
+| CI/CD | **GitHub Actions** + Vercel's own git integration |
+| Unit / integration tests | **Vitest** |
+| End-to-end tests | **Playwright** |
 
 ## Layout
 
@@ -215,6 +218,29 @@ Certificate pinning in the Electron build is available and raises the bar
 against casual self-proxying. It is a speed bump rather than a wall and adds
 real friction when rotating certificates — **skipped initially**, revisit if
 traffic inspection shows up in cheating reports.
+
+---
+
+## CI and testing — **recorded 2026-07-28**
+
+**Not decisions so much as the absence of any reason to deviate**, written down
+because `AGENTS.md` mandates the testing bar and this document never named the
+tools.
+
+- **Vitest** for unit and integration tests. It is Vite's own runner, so it shares
+  the config, the transform pipeline and the TypeScript setup the client already
+  has. Anything else means maintaining a second build.
+- **Playwright** for end-to-end, which `AGENTS.md` already names for critical user
+  paths.
+- **GitHub Actions** for CI — typecheck, lint, Vitest, build — alongside Vercel's
+  git integration handling preview and production deploys. Two systems, but the
+  second is free and already implied by hosting on Vercel.
+
+> **`packages/sim` is where testing actually earns its keep.** The rules half is
+> pure, shared and RNG-free by construction, which makes it **exhaustively
+> testable without mocks** — and under the no-nerf rule it is the last place a
+> number can move freely. Property tests over the 729 type pairings and the 27-hero
+> roster are worth more here than they are anywhere else in the codebase.
 
 ---
 
