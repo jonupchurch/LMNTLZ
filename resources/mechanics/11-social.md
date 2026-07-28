@@ -67,14 +67,158 @@ fight they were in.
 
 ---
 
-## Chat
+## Chat — **settled 2026-07-27**
 
-**Three scopes at 1.0** — guild, global/league, and direct messages. Scope chosen
-2026-07-27; the mechanism, the transport and the moderation model are under
-discussion and not yet written here.
+### Four scopes
 
-**Moderation belongs to this section, not a separate one.** Reporting, muting and
-what happens to a reported message are chat's own problem and ship with it.
+| Scope | Reaches | Who may write | History |
+|---|---|---|---|
+| **Global** | everyone, **split by language** | all | short — it is ephemeral by nature |
+| **Guild** | the ≤24 members | all members | ~30 days — coordination needs it |
+| **Direct** | one other player | both | longest — it is the evidence channel |
+| **Admin** | everyone | **the team only** | permanent |
+
+**There is no league chat**, and it was considered. `09-matchmaking.md` makes
+**promotion one-way and permanent**, so a league room would eject a player from
+their own conversations as a *consequence of geaing up* — turning the currency
+the game is built on into a social cost. Rejected on that alone.
+
+### Global is split by language, not by strength
+
+One room for everybody stops being readable long before it stops being popular:
+
+| Concurrent in one room | Messages/min at one per player per 10 min | Readable |
+|---|---|---|
+| 200 | 20 | yes |
+| 500 | 50 | marginal |
+| **2,000** — 10k DAU with a fifth in chat | **200** | **no, 3.3 a second** |
+
+**Language is the right first axis and is needed regardless**, because Steam ships
+worldwide and a room where most messages are unreadable to a given player is worse
+than a smaller one. Past roughly **500 concurrent**, a language shards into
+numbered rooms.
+
+> **This is a capacity mechanism, not a social one** — which is exactly why it
+> avoids the problem that killed league chat. Nobody is ever moved out of a room
+> for something they achieved.
+
+### Admin is a broadcast, not a conversation
+
+**Read-only for players.** It carries patch notes, events, and — the load-bearing
+case — **maintenance and downtime**, which is the one message that must reach a
+player who is about to lose a session. `../../docs/tech-stack.md` already holds
+the maintenance flag in Edge Config; this is how it gets narrated.
+
+**A player may mute it but never leave it.** An unreachable player is an
+unwarnable one.
+
+> **It overlaps `../designsystem/LMNTLZ News.dc.html`, and the clean split is
+> delivery versus archive** — the Admin channel is how an announcement *arrives*,
+> the News screen is where it is *read back*. Same content, two surfaces, one
+> source. **Proposed rather than decided**, per the rule that a generated screen
+> is never authoritative.
+
+### Presence leaks nothing, and that is worth stating
+
+The generated Chat screen shows `1 482 wardens online` and per-member status like
+`In battle · round 4`. **Neither reveals anything exploitable**, because PvP is
+asynchronous: a defense is a snapshot the engine plays whether its owner is online
+or not, so knowing somebody is mid-battle tells an attacker nothing they could
+act on. Presence here is social information only.
+
+### Transport — a managed realtime service
+
+**Chat is the only hard realtime requirement in the game.** Battles are turn-based
+and a turn is a request; leaderboards tolerate a thirty-second refresh. So this is
+solved *beside* the stack rather than by rebuilding it.
+
+| Option | Presence + typing | Ops burden |
+|---|---|---|
+| Polling | **lost** | none |
+| SSE on Vercel | possible | held connections bill for duration |
+| **Managed service** | **yes** | **none** |
+| Self-hosted WebSocket | yes | an always-on service to operate |
+
+`../../docs/tech-stack.md` names this the largest unpriced item in the stack and
+notes that **Vercel's functions cannot hold a WebSocket**. A managed service is
+the only option that keeps presence at no operational cost, and chat is not where
+a small team should spend its infrastructure attention.
+
+**Put it behind an interface.** The choice is reversible only if nothing above the
+transport knows which vendor it is.
+
+#### Messages route through our own API, always
+
+```
+client → Hono API  →  auth · rate limit · filter · persist  →  realtime service → fanout
+```
+
+**Never client → service directly.** That hop is where moderation and persistence
+happen, and without it neither is possible. The ~50 ms it costs is irrelevant to
+chat.
+
+### Chat is not a separate service — **decided 2026-07-27**
+
+> **One application. Chat lives in the same Hono app as everything else, and the
+> managed transport is the only separate moving part.**
+
+**Choosing a managed transport is what makes this safe.** With connections,
+presence and fanout owned by the vendor, our half of chat is ordinary REST:
+
+| Concern | Where |
+|---|---|
+| Send · read history | **existing app** — about five endpoints |
+| Auth | **existing JWT middleware** |
+| Rate limit · filter · persist | **existing app** |
+| Connections · presence · typing · fanout | **the vendor** |
+
+A service is not warranted for five endpoints that share auth, user lookup and a
+database with everything around them. **The isolation a second app would buy is
+already bought** — by the vendor, at no operational cost.
+
+**Nor is chat the load worth isolating against.** `../../docs/tech-stack.md` puts
+a battle at 20–40 function calls:
+
+| Per player per day | Invocations |
+|---|---|
+| 20 battles | **400 – 800** |
+| A chatty session, ~20 messages | **20** |
+
+Chat is **3–5%** of the game's invocation load. Splitting it out to protect the
+game would be protecting against the smaller thing.
+
+#### Split later, on a trigger
+
+Written down so this stays revisitable rather than permanent. Separate chat when:
+
+- message volume moves game-API latency or cost;
+- **moderation needs a different deploy cadence than game patches** — the likeliest
+  trigger, since a moderation hotfix should not wait on a balance release;
+- message storage outgrows the game database.
+
+**Two things now make a later split mechanical rather than a rewrite, and both
+cost nothing today:** keep messages in **their own tables** under the retention
+above, and keep the vendor **behind an interface** so nothing upstream knows which
+one it is.
+
+### Moderation ships with chat, not after it
+
+| Stage | Mechanism |
+|---|---|
+| **Before send** | rate limit · length cap · a **slur blocklist**, not a general profanity filter |
+| **After send** | report → queue → action |
+| **Actions** | escalating mute · chat ban · account ban |
+
+**A blocklist, not a profanity filter.** Over-filtering reads as contempt for the
+player and is trivially defeated; the narrow list is the one that survives.
+
+> **Reported content is retained independently of its channel's history**, or a
+> report can outlive its own evidence. This is the reason Direct keeps the longest
+> history despite being the least public.
+
+**Usernames are a moderation surface too**, because `Identity` above makes the
+username the identity and renaming is still open. An offensive username that its
+owner cannot change is a problem the moderation queue inherits.
 
 ---
 
@@ -95,7 +239,13 @@ exactly the kind of change the no-nerf rule makes expensive.
 
 ## Open
 
-- **Chat** — the whole of it. Under discussion.
+- **Which managed realtime vendor**, and what it costs at the player counts
+  `06-progression.md` sizes the business around. The *shape* — a managed service
+  behind an interface, sends routed through our own API — is decided; the vendor
+  is a procurement question, and the interface is what keeps it one.
+- **Retention numbers.** Short / ~30 days / longest is the shape; the actual
+  figures want a legal read as much as a technical one, since Direct is the
+  evidence channel.
 - **Whether renaming is allowed**, and at what cost. The schema note above keeps
   the option open; the product decision is separate. Note that a permanent
   username is itself a moderation surface, since an offensive one cannot be

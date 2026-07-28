@@ -22,6 +22,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three Wings of 8 | **Drafted** — membership settled, rewards blocked on 06 |
 | 09 | `09-matchmaking.md` | Who you are offered as an opponent — the gear score and leagues | **Drafted** — gear axis settled; the rating axis is open in 06 |
 | 10 | *`10-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
+| 11 | `11-social.md` | Identity, the defender's feedback loop, chat and moderation | **Drafted** — four chat scopes, transport and moderation settled; vendor and retention numbers open |
 
 **Combat is done.** 01, 03, 04 and 05 together specify a battle end to end: who
 acts when, what a hit does, how two types combine, and what every adjective in a
