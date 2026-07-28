@@ -307,8 +307,32 @@ is a by-product of playing well, not a resource that can be accumulated.
   45 straight wins. **That is only true if an attacker cannot pick the softest
   Visible squad in their league and beat it 45 times.** It is the other half of
   the session loop — `06-progression.md`'s daily curve bounds *how much* a day of
-  play pays, and this bounds *who* it can be farmed against. It also decides
-  whether one weak defender can absorb hundreds of attacks a day.
+  play pays, and this bounds *who* it can be farmed against.
+
+  **Analysed 2026-07-27, not yet decided.** Three costs, worst last:
+
+  | 20 battles/day | Wins | Shards/day | vs. typical free |
+  |---|---|---|---|
+  | Typical free player | 10 | 388 | — |
+  | **Subscriber**, $20 / 4 weeks | 10 | 775 | **2.00×** |
+  | **Farming one weak defender** | 18 | **879** | **2.27×** |
+
+  1. **The exploit out-earns the subscription.** A player at the top of a league
+     holds up to 1.67× the weakest league-mate's gear, wins ~90%, and rides that
+     to the capped 90% ambush rate — 40 a win instead of 20. The streak persists
+     overnight, so the next day opens at 90% with the 1.5× bonus tier on top.
+  2. **The defender's income inverts.** Holding even 10% of 300 daily attacks is
+     300 shards of passive income — comparable to a typical player's whole active
+     earnings, and precisely the failure `06-progression.md` warns against.
+  3. **It dissolves the counter-building loop**, which is the real cost. Solve one
+     defender once and the solution farms forever; reading an opponent stops being
+     a repeated skill and becomes a puzzle you complete.
+
+  **Proposed, pending a decision:** a **slate of 5** defenders that refills on use
+  rather than on a timer, and *a defender you have fought does not reappear until
+  you have fought 20 others* — stated in opponents rather than hours so it
+  self-scales and cannot starve a thin league, where *When a league is thin* above
+  already covers the shortfall.
 - **The rating axis.** Placement for a new account, what a Visible loss costs
   against a Hidden one, and whether hold streaks rank separately. Tracked in
   `06-progression.md`; three questions in `02-squads.md` wait on it.
