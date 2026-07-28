@@ -43,9 +43,13 @@ outcome.
 
 ```
 LMNTLZ/                the single repo
-├── resources/         mechanics, lore, design prompts, generated screens, art
-├── characters/        hero data
+├── resources/
+│   ├── mechanics/     the rules — canon
+│   ├── characters/    hero data (MATCHUPS.md, hero-stats.xlsx)
+│   └── designsystem/  generated screens — look and feel only
 ├── docs/              this file, the architecture prompt
+├── specs/             Spec-Kit feature specs
+├── tools/             validators and build scripts
 ├── packages/
 │   ├── sim/           rules (shared) + resolver (server only)
 │   └── content/       heroes, powers, matchups, reach — Zod-validated
@@ -75,7 +79,7 @@ already has it: Vercel deploys `apps/client` and `apps/api` separately and
 Turborepo rebuilds only what changed.
 
 **Design and code share the repo because the docs are the spec.**
-`resources/mechanics/` is what `packages/sim` implements and `characters/` is what
+`resources/mechanics/` is what `packages/sim` implements and `resources/characters/` is what
 `packages/content` mirrors. In one repo, changing a rule *and* the code enforcing
 it is **one commit**, so the two can never disagree in history. Split, there is
 always a window where they do, and a year later nothing records which led.
