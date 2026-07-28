@@ -244,11 +244,76 @@ narrow, because a narrow bar is the only one a small team can actually enforce.
 | Stage | Mechanism |
 |---|---|
 | **Before send** | rate limit · length cap · a **slur blocklist**, not a general profanity filter |
-| **After send** | report → queue → action |
-| **Actions** | escalating mute · chat ban · **forced rename** · account ban |
+| **After send** | report → queue → **human decision** |
+| **Actions** | **mute** (automatic, temporary) · **ban** (scoped and timed) · **forced rename** |
 
 **A blocklist, not a profanity filter.** Over-filtering reads as contempt for the
 player and is trivially defeated; the narrow list is the one that survives.
+
+### Mute and ban are different things
+
+| | Who issues it | Duration | Means |
+|---|---|---|---|
+| **Mute** | **automatic** — N reports from distinct accounts | short, pending review | *"we are looking at this"* |
+| **Ban** | **a human, always** | hours to permanent | *"we looked, and decided"* |
+
+**A mute is not a verdict**, which is why automation is allowed to issue one and
+never a ban.
+
+### Bans have two axes: scope and duration — **settled 2026-07-27**
+
+> **A chat ban names which rooms it covers and how long it lasts. It never
+> touches gameplay.**
+
+| Scope | Loses | Keeps |
+|---|---|---|
+| **Global** | Global rooms | **Guild and Direct** |
+| **All chat** | Global, Guild, Direct | — |
+| *Account* | everything | *not a chat action — see below* |
+
+**Global-only is the important one and will be the common case.** Global is where
+strangers meet: highest volume, lowest stakes, and where nearly all friction
+happens. Someone abrasive in Global but fine with their own guild should not lose
+their guild over it, and a single all-or-nothing ban would force exactly that
+choice on a moderator.
+
+**Durations escalate on repeat:** 1 hour · 24 hours · 7 days · 30 days ·
+permanent. That requires per-account ban history, so the *next* offense starts
+where the last one left off rather than at the bottom.
+
+#### Gameplay is never touched
+
+A chat ban costs no shards, no rating, no hold streak, no defense, and no guild
+membership. **The player keeps playing the game; they lose a room.** Coupling the
+two would make every moderation decision a competitive one, which is a bar no
+moderation queue should have to clear.
+
+> **The chat queue cannot issue an account ban.** That is a separate decision with
+> a separate bar — cheating, payment fraud, or conduct far past what a chat rule
+> covers — and it belongs beside those, not at the top of this ladder.
+
+#### The player is told
+
+**No shadowbans.** A silently muted player keeps talking to nobody, which is both
+unkind and generates the support load the action was meant to close. It also sits
+badly in a design that shows hold streaks, ambush chance and league openly —
+this would be the only thing kept back.
+
+**It costs something real:** a told ban is an evadable ban. Accepted, because the
+next rule reduces the payoff.
+
+#### A ban attaches to the identity, not the username
+
+> **Ban the Steam or Google identity, not just the account.**
+
+`../../docs/tech-stack.md` owns auth in-house and takes **verified identities from
+both providers**, so a banned player creating a fresh username through the same
+Steam account is caught for free. That is unusually strong for a game this size,
+and it exists only because auth was not outsourced.
+
+**It is not airtight** — a second Steam account defeats it — but it raises evasion
+from *thirty seconds* to *buying another copy*, which is where the ceiling should
+be.
 
 ### Hate and NSFW never share a queue with toxicity
 
@@ -271,6 +336,49 @@ common trivial one**, which is how a two-hour-a-day load becomes unanswerable.
 
 That is not a lower standard for toxicity. It routes it to the tool that works,
 and it is what keeps the serious queue answerable inside a day.
+
+### An AI flags; it never moderates — **decided 2026-07-27**
+
+> **No automated action is ever taken on a message or an account. A model scores;
+> a human decides.**
+
+That is a policy choice first, and it happens to be what makes the economics
+work: **a flag blocks nothing, so latency stops mattering**, which allows batching
+and the discounted batch API.
+
+#### It ranks the queue; it does not create it
+
+**This is the distinction that decides whether the feature helps or hurts.** At
+60,000 messages a day, a classifier at even 99% specificity produces **600 false
+flags** — ten times the 60 player reports it was meant to triage. Automating that
+way makes *more* work.
+
+| Job | Volume | Effect |
+|---|---|---|
+| **Score each player report** | ~60/day | the 2–3 genuine hate/NSFW reports sort to the top; the rest sink |
+| **Proactively scan all messages** | escalate only at very high confidence | catches what nobody reported — the one thing a report-driven queue structurally cannot do |
+
+The first fixes the drowning problem in *Hate and NSFW never share a queue*
+above. The second is the only reason to read every message at all.
+
+#### Cost
+
+**Claude Haiku 4.5** at $1 / $5 per million tokens, batching 20 messages a call:
+
+| DAU | Messages/day | Monthly, batch API |
+|---|---|---|
+| 10,000 | 60,000 | **$85** |
+| 50,000 | 300,000 | $427 |
+| 100,000 | 600,000 | $855 |
+
+**Set against 2–10 human hours a day at those same tiers**, from the table below.
+
+> **Prompt caching buys a better prompt, not a cheaper one.** Haiku's minimum
+> cacheable prefix is **4,096 tokens**, so a short policy prompt does not cache at
+> all — but a ~5,000-token prompt full of worked examples, cached at 0.1× read
+> cost, comes to the same price as a 500-token prompt sent uncached. **Spend the
+> difference on boundary cases**, since *racist* versus *heated trash talk* is
+> exactly the line that needs examples rather than definitions.
 
 ### The load, and the three levers that keep it answerable
 
