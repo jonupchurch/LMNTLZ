@@ -676,110 +676,145 @@ would be odd for the economy to let people out-*grind* each other without limit.
 
 ---
 
-## The rating ladder
+## The rating ladder — **settled 2026-07-27**
 
-**Two numbers, doing two different jobs.**
+> **One number. Visible, skill-convergent, and it does exactly two jobs:
+> standing, and the order league-mates are offered in.**
 
-| | Visible? | Decides |
-|---|---|---|
-| **Matchmaking rating** | **no** | which defenses a player is offered to attack |
-| **Ladder points** | **yes** | weekly and monthly shard payouts, and standing |
+### Why one and not two
 
-The matchmaking rating is skill-convergent — it moves toward a player's real level
-and stops, regardless of how much they play — and it is what makes the
-new-player design work: a newcomer meets other newcomers, so the widest kit gaps
-are rarely fielded against each other. Ladder points accumulate from results and
-are what a player actually sees, competes on, and is paid against.
+An earlier draft carried two — a **hidden** matchmaking rating and **visible**
+ladder points — and flagged its own cost: *the number shown to the player is not
+the number the game acts on*, which sits badly in a design where the Visible squad
+is scoutable, hold streaks are public and the ambush chance is always displayed.
 
-**The honest cost:** the number shown to the player is not the number the game
-acts on. That sits awkwardly beside a design that is otherwise unusually open —
-the entire Visible squad is scoutable, hold streaks are public per zone, and the
-ambush chance is always displayed. This is the one place LMNTLZ keeps something
-back, and it was chosen deliberately for the accuracy it buys in matchmaking.
-Worth being upfront about it in the UI rather than letting players discover it.
+Two later decisions removed the reason for the split:
 
-### Points must scale with the opponent, or the economy contradicts itself
+| The second number existed to… | Why it no longer needs to |
+|---|---|
+| keep the matching number ungameable | **Leagues match on gear** (`09-matchmaking.md`), and **the pool is every league-mate** — there is no selection left to game |
+| give players something that accumulates as they play | *Points must scale with the opponent* below establishes accumulation as the **defect**, not the feature |
 
-`Where shards come from` above says ladder payouts *"reward sustained standing
-rather than volume"*, and that was written when rating was going to be a single
-skill number. **Raw accumulating points reward volume instead** — at equal skill,
-more hours means a higher placement — which would make the ladder the one part of
-the economy that pays for grinding, in a game whose whole thesis is that nobody
-can out-roster anyone and whose storefront caps what money can buy.
+**So the rating is what you see, what you brag about, and what the game acts on.**
+The transparency cost disappears rather than being mitigated.
 
-The reconciliation, proposed rather than settled: **a win's point value scales
-with the defeated opponent's matchmaking rating.** Volume still accumulates, but
-skill multiplies the rate, so a strong player with limited time is not simply
-out-ground by a weaker one with more. It also gives the hidden number a visible
-consequence, which softens the transparency problem — players can *feel* the
-rating even though they cannot read it.
+### It converges; it does not accumulate
+
+> **Rating moves toward a player's real level and then stops, regardless of how
+> much they play.**
+
+`Where shards come from` above requires ladder payouts to *"reward sustained
+standing rather than volume."* **Raw accumulating points do the opposite** — at
+equal skill, more hours means a higher placement, which would make the ladder the
+one part of the economy that pays for grinding, in a game whose whole thesis is
+that nobody can out-roster anyone.
+
+A convergent rating satisfies that requirement by construction: **the weekly ladder
+pays on where a player stands at the close of the week, not on what they piled up
+during it.** A strong player with two hours outranks a weaker one with twenty.
+
+**A convergent rating also disarms two things it would otherwise have to rule
+against.** Beating an opponent below you moves you almost nothing — so neither
+farming one weak defender (`09-matchmaking.md`) nor grinding curated bots is a
+rating strategy. Both are handled by the shape of the number rather than by a rule.
+
+**The plateau is the point, not a flaw.** A converged player stops climbing until
+they get better, which is what a ladder is for.
+
+### Convergence bands
+
+**Gear is not in this number.** `09-matchmaking.md` measures rune power and sorts
+by league; rating measures only whether a player wins with what they have. The two
+axes stay separate.
+
+| Phase | Rated battles | **K** | Effect |
+|---|---|---|---|
+| **Provisional** | first 30 | **40** | lands near true level in ~1.5 days of typical play |
+| Settling | 31 – 200 | 20 | ordinary movement |
+| **Established** | 200 + | 10 | stable enough to rank on |
+
+Every account starts at **1000**, the same number for everyone, because gear
+placement is already handled by the Bronze floor.
+
+**Thirty battles is deliberate.** At a typical 20 battles a day a new account is
+sorted inside two days — fast enough that the starter grant is not carrying
+new-player protection on its own, slow enough that a streak of three lucky wins
+does not define someone.
+
+> **The bands are a starting point, not a decision.** Convergence speed is exactly
+> the kind of thing a simulated population settles and reasoning does not; the
+> *shape* — one number, convergent, three decaying bands — is the decision.
+
+### A Hidden victory is worth double, to either side
+
+> **Hidden battles pay a 2× rating bonus on a win. A loss costs the same in either
+> zone.**
+
+**This is the same rule the shards already follow**, and deliberately so — *An
+ambush pays double a chosen door* above doubles a Hidden victory for either side
+and leaves losses at zero. One shape, both currencies.
+
+#### It is what makes the two zones genuinely different to defend
+
+`02-squads.md` question 0 records the zone split as *"a commitment, not an
+observation, and it is testable: neither zone may dominate"* — and noted that on
+shards alone Visible leads. The rating stakes are the counterweight, and they
+point the other way.
+
+A defender taking 20 attacks a day, 85 / 15 Visible / Hidden, holding **40%** on
+Visible and **60%** on Hidden because a blind attacker cannot counter-build:
+
+| | Battles | Shards/day | **Rating/day** | Rating per battle |
+|---|---|---|---|---|
+| **Visible** | 17 | **68** | **−3.40** | −0.20 |
+| **Hidden** | 3 | 36 | **+2.40** | **+0.80** |
+
+**Shards say fortify Visible. Rating says fortify Hidden — and Visible actively
+bleeds.** Neither zone dominates, because the two currencies disagree, and a
+defender has to decide which one they are playing for.
+
+The bonus is doing real work rather than decorating: **without it Hidden is
++0.20 a battle rather than +0.80**, a quarter of the pull.
+
+> **Two honest caveats.** `02-squads.md`'s **3.3 : 1** shard figure assumed *equal*
+> hold rates; at 60 / 40 it is already **1.9 : 1**. And the whole result depends on
+> Hidden holding better than Visible — **if the two hold rates converge, Visible
+> wins both currencies and the choice collapses.** That is the first thing
+> `packages/sim` has to measure, and it is the same question `02-squads.md`
+> question 0 already parks there.
 
 ### Open inside this
 
-**Re-scoped 2026-07-27**, after leagues and the opponent pool settled in
-`09-matchmaking.md`. Two of these shrank; one new question has to be answered
-before the others make sense.
+**Closed out 2026-07-27.** All five questions are answered above or elsewhere;
+kept here because what they settled to is load-bearing.
 
-#### 0. What does the matchmaking rating actually *do*? — **the new blocker**
+- ~~**What the rating actually does.**~~ **Settled: standing, and the order
+  league-mates are offered in** — see *Why one and not two*. It never restricts
+  the pool, which is what keeps it compatible with `09-matchmaking.md`'s
+  every-defender rule.
+- ~~**Placement for a new account.**~~ **Settled: 1000 for everyone, converging in
+  ~30 battles** — see *Convergence bands*. The question shrank before it was
+  answered: it was written when rating was the only thing separating newcomers
+  from veterans, and **every account now starts at exactly 1,500 gear score — the
+  Bronze floor — against a full kit's 10,125.** Leagues sort them five bands
+  apart; rating only has to sort *within* a band where gear is already inside
+  1.67×.
+- ~~**What each zone costs.**~~ **Settled: a Hidden victory pays 2× rating, a loss
+  costs the same in either zone.** See *A Hidden victory is worth double*. This is
+  what answers `02-squads.md` question 2 and gives question 0 its counterweight.
+- ~~**Whether a bot result moves rating.**~~ **Settled: yes** —
+  `09-matchmaking.md`. Bots are built competitive and carry a fixed rating, which
+  makes them **calibration anchors** at launch when there is no population to
+  derive one from. Safe because the rating converges: beating an authored opponent
+  below you moves you almost nothing.
+- ~~**Whether points reset seasonally.**~~ **Settled by `08-guilds.md`: guild and
+  Wing scores do; the rating does not.** A seasonal competition on a permanent
+  total is decided by age rather than by play. The rating is a measurement rather
+  than a score, and wiping it would re-expose new players to veterans.
 
-This section says the rating decides *"which defenses a player is offered to
-attack."* Two later decisions now occupy that job:
-
-| Decision | Where | Effect |
-|---|---|---|
-| Five leagues on fixed gear thresholds | `09-matchmaking.md` | you are only offered same-league defenders |
-| **The pool is every defender** | `09-matchmaking.md` | no slate, no rotation, no filtering within the league |
-
-> **A pool that is *every* defender cannot also be filtered by rating.** The two
-> statements are not compatible as written, and this is the first thing to settle.
-
-Three readings, and they are genuinely different games:
-
-- **Rating orders, never restricts.** Every league-mate is offered; rating decides
-  what surfaces first. Compatible with both decisions, and the weakest form.
-- **Rating is a reward number only** and does no matching at all — in which case
-  it is misnamed, `09-matchmaking.md`'s *two axes* framing collapses to one, and
-  leagues carry the whole job.
-- **Rating filters within the league**, which contradicts today's pool decision
-  and would have to reopen it.
-
-#### 1. Placement for a new account — **smaller than it was**
-
-Written when rating was the only thing separating newcomers from veterans. It
-is not any more: **every account starts at exactly 1,500, the Bronze floor**, and
-a full kit is 10,125 — five leagues away. Gear already sorts them, and the
-edge-bleed reaches one league at most.
-
-**So the question is no longer *"does a newcomer meet a veteran"* — leagues answer
-that.** What remains is narrower and still real: how fast rating converges inside
-a league where everyone's gear is already within 1.67×.
-
-#### 2. What each zone costs — **unchanged, and the one with real weight**
-
-`02-squads.md` question 0 — *which squad deserves the stronger heroes* — cannot
-be answered until the stakes are set, and there are **two currencies** to set them
-in. Whether a Hidden loss costs matchmaking rating, ladder points, or both, and
-at what weight against a Visible loss.
-
-**This is the load-bearing one.** `02-squads.md` records the zone split as *"a
-commitment, not an observation, and it is testable: neither zone may dominate"* —
-and on shard income alone Visible currently leads **3.3 : 1**. The rating stakes
-are the counterweight, so setting them wrong silently breaks a commitment the
-design has already made.
-
-#### 3. Does a bot result move rating? — *added from `09-matchmaking.md`*
-
-Curated bots have no account and earn nothing, but an attacker beating one still
-produces a result. Falls out of question 0: if rating does no matching, this
-barely matters; if it does, an authored opponent moving a skill measurement needs
-care.
-
-#### ~~4. Whether points reset seasonally~~ — **settled by `08-guilds.md`: they do**
-
-Guild and Wing rewards pay per season, and a seasonal competition on a permanent
-total is decided by age rather than by play — a two-year-old Wing would hold an
-unreachable score. Scores reset once winnings are paid. The **matchmaking rating
-does not reset**: it is a measurement rather than a score.
+**What is left is numbers, not mechanisms:** the K bands, the 2× bonus, and
+whether the Hidden hold rate really exceeds the Visible one. All three are
+`packages/sim` questions.
 
 ---
 

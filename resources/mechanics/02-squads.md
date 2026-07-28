@@ -468,12 +468,36 @@ squad, the mechanic would decay into a slow scouting tool — every player would
 eventually have seen everyone's, and the second zone would collapse into a
 second Visible one.
 
-### 2. What does a Hidden defense loss mean for the defender?
+### ~~2. What does a Hidden defense loss mean for the defender?~~ — **settled: nothing extra**
 
-The Hidden squad is attacked rarely and only by strong players, so its win rate
-will read very differently from the Visible squad's. Whether a defender is
-rewarded for a Hidden hold, and how heavily, needs settling alongside the
-attacker's reward.
+**Settled 2026-07-27** in `06-progression.md`.
+
+> **A Hidden hold pays a 2× rating bonus. A Hidden loss costs exactly what a
+> Visible loss costs.**
+
+The asymmetry is the whole point, and it mirrors the shard rule already in place —
+an ambush doubles a victory for either side and a loss pays nothing. **One shape,
+both currencies.**
+
+#### It is what makes question 0 a real choice
+
+Question 0 above commits to *"neither zone may dominate"* and records that on
+shards alone Visible leads. Rating points the other way. A defender taking 20
+attacks a day, 85 / 15, holding 40% on Visible and 60% on Hidden:
+
+| | Battles | Shards/day | **Rating/day** |
+|---|---|---|---|
+| **Visible** | 17 | **68** | **−3.40** |
+| **Hidden** | 3 | 36 | **+2.40** |
+
+**Shards say fortify Visible; rating says fortify Hidden, and Visible actively
+bleeds.** The defender has to decide which currency they are playing for, which is
+exactly the strategic decision question 0 reserved for the player.
+
+> The **3.3 : 1** figure in question 0 assumed *equal* hold rates; at 60 / 40 it is
+> **1.9 : 1**. And if the two hold rates turn out equal, Visible wins both
+> currencies and the choice collapses — still the first thing `packages/sim` must
+> measure.
 
 ### ~~3. Is placement constrained by type?~~ — **settled: no**
 

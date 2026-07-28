@@ -10,18 +10,21 @@ the engine plays it. So matchmaking is not pairing two live players; it is
 
 ## Two axes, not one
 
-| Axis | Measures | Mechanism |
-|---|---|---|
-| **Gear** | How much rune investment a player is carrying | **Leagues** — this document |
-| **Skill** | Whether they win with it | **Rating** — still open, see below |
+| Axis | Measures | Mechanism | Does |
+|---|---|---|---|
+| **Gear** | How much rune investment a player is carrying | **Leagues** — this document | **restricts** who is in the pool |
+| **Skill** | Whether they win with it | **Rating** — `06-progression.md` | **orders** the pool; never restricts it |
 
 They are separated deliberately. Gear is knowable before a battle and changes
 slowly; skill is only knowable from outcomes. Collapsing them into one number
 means a well-played weak account and a badly-played strong one are treated as
 identical, which is exactly the confusion the design is trying to avoid.
 
-**This document settles the gear axis.** Rating remains open in
-`06-progression.md`.
+> **Only the gear axis filters.** *The pool is every defender* below means rating
+> can order what a player sees first but can never remove anybody from it. That
+> division is what lets both rules stand together.
+
+**This document settles the gear axis**; `06-progression.md` settles rating.
 
 ---
 
@@ -387,14 +390,37 @@ takes nothing away from anyone.
 - **They answer the thin-pool cases directly** — launch, when every account is in
   Bronze, and the churn-thinning described above.
 
+### They are permanent residents, built competitive — **settled 2026-07-27**
+
+> **Bots sit in the pool always, not only when it is thin. They are built to be
+> competitive, they carry a fixed rating, and beating one counts.**
+
+**Two jobs, and the first is immediate.** At launch there is no population to
+match against; bots are what makes the pool real on day one. The second is the
+long one — a gap-filler cannot shape a meta, because most players would never
+meet it.
+
+#### A fixed rating makes them calibration anchors
+
+A rating means nothing without a population to derive it from, and at launch there
+isn't one. **Bots have a rating that does not move**, so they are fixed points the
+live population sorts itself against. That is worth more than the pool-filling.
+
+#### Why "worth points" is safe here
+
+An always-present, curated opponent that never adapts would be a rating farm under
+an accumulating score. It is not one under
+`06-progression.md`'s **convergent** rating: beating an opponent below you moves
+you almost nothing, so grinding bots converges you to the bots' level and stops.
+
+**The shape of the number defends this, not a rule** — the same property that
+makes farming one weak defender pointless.
+
 ### Open
 
-- **Whether bots are always in the pool or only fill gaps.** A gap-filler needs no
-  economy rule, because a player can only reach one when humans are short. An
-  always-present bot is farmable in a way a player is not — it is *curated*, so it
-  never changes unless changed — and that is the version that can shape a meta.
-  The two goals pull opposite ways.
-- **Whether beating a bot moves matchmaking rating.** Waits on the rating axis.
+- **What a bot's rating should be**, and how many sit in each league. Both are
+  numbers rather than mechanisms, and both want a real population to check
+  against.
 
 ---
 
@@ -439,9 +465,10 @@ is a harder fight that pays more.**
 
 ## Open
 
-- **The rating axis.** Placement for a new account, what a Visible loss costs
-  against a Hidden one, and whether hold streaks rank separately. Tracked in
-  `06-progression.md`; three questions in `02-squads.md` wait on it.
+- ~~**The rating axis.**~~ **Settled 2026-07-27 in `06-progression.md`** — one
+  visible, skill-convergent number that orders the pool and never restricts it,
+  starting at 1000 and converging over ~30 battles, with a **2× bonus on a Hidden
+  victory**. `02-squads.md` questions 0 and 2 are answered by it.
 - ~~**Whether leagues are visible to players.**~~ **Settled: yes** — see
   *Leagues are visible* above.
 - ~~**Ambush and league boundaries.**~~ **Not a question — see below.**
