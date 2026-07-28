@@ -8,6 +8,24 @@
 # Personal overrides like defaultMode belong here, not in settings.json.
 .claude/settings.local.json
 
+# Dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Turborepo / Vitest local caches
+.turbo/
+coverage/
+.vitest-cache/
+
+# Vercel (from feature 005 onward)
+.vercel/
+
+# NOTE: `*.generated.ts` is deliberately NOT ignored. The emitted roster and the
+# content stamp are COMMITTED, and CI re-runs the build and fails if they differ
+# (feature 001, T041). Ignoring them would remove the only check that the
+# committed output still matches the authored workbook.
+
 # Secrets
 .env*
 !.env.example

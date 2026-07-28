@@ -1,0 +1,6 @@
+**/dist/**
+**/node_modules/**
+**/*.generated.ts
+.turbo/**
+pnpm-lock.yaml
+resources/**

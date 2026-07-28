@@ -1,0 +1,7 @@
+packages:
+  - "packages/*"
+  - "apps/*"
+allowBuilds:
+  # Vitest's bundler. Its postinstall fetches the platform binary; without it the
+  # test runner has nothing to transform TypeScript with.
+  esbuild: true
