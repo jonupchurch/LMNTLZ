@@ -665,11 +665,45 @@ kitted are exactly equal.
 
 ### Prices — **set 2026-07-27**
 
-| SKU | Price |
-|---|---|
-| **Daily boost pair** — attack + defense together | **$2** |
-| **Weekly 800 shards** | **$5** |
-| **Subscription** — 4 weeks | **$20** |
+> **Every price is a multiple of $5, and there is no second currency.**
+
+| SKU | Price | Grants | $/day |
+|---|---|---|---|
+| **Boost pack** | **$5** | 3 days of the boost pair | $1.67 |
+| **Boost pack** | **$10** | 7 days | $1.43 |
+| **Boost pack** | **$15** | 12 days | $1.25 |
+| **Shards** | **$5** | 800, once that week | — |
+| **Subscription** | **$20 / 4 weeks** | boost pair daily + 800 shards weekly | **$0.71** |
+
+**A hard currency was considered and rejected.** Gold at $0.25 a unit would have
+amortised payment fees, but it improves **roughly 1% of total revenue**: Steam's
+30% is size-independent so bundling gains nothing there, the $20 subscription is
+already a large charge, and the crossover below makes à la carte the *sporadic*
+tier by design. Against that it costs a second currency to explain, consumer-
+protection surface, unspent-balance liability, and the **stranded-balance
+pattern** — bundles priced not to divide evenly into item prices, so remainder
+pushes another purchase. In a design whose promise is a ceiling players can
+audit, that reads as a betrayal of the distinctive thing.
+
+**$5 increments capture most of the benefit with none of the cost.** Payment fees
+are a fixed-plus-percentage problem, so what matters is the *minimum* charge:
+
+| Charge | Stripe `2.9% + $0.30` | Net |
+|---|---|---|
+| $2 | $0.36 | **82.1%** |
+| **$5** | $0.45 | **91.1%** |
+| $10 | $0.59 | 94.1% |
+| $20 | $0.88 | 95.6% |
+
+Raising the floor from $2 to $5 lifts worst-case net by **11% relative**, and $5
+remains a low-friction impulse price. *(Steam is a flat 30% at every size, so
+none of this applies there — this is a standalone and browser concern
+specifically.)*
+
+**Boosts bundle; shards cannot.** Shards are capped at **800 a week however they
+are bought**, so a larger shard purchase would have to deliver across future
+weeks — which is what the subscription already is. Boosts have no total cap, only
+a daily one, so days are the thing that bundles.
 
 **The boosts are sold as a pair, never separately**, because they are not worth
 the same. A boost is 2× capped at 20 battles, and a typical player runs about 20
@@ -699,15 +733,20 @@ SKUs at two price points.
 
 | | À la carte | Subscription |
 |---|---|---|
-| Cost per 4 weeks | 28 × $2 + 4 × $5 = **$71** | **$20** |
-| Per 1,000 shards | $5.71 | **$1.61** |
-| **Per rune (650)** | **$3.71** | **$1.05** |
+| Cost per 4 weeks at cap | 4 × $10 + 4 × $5 = **$60** | **$20** |
+| Per 1,000 shards | $4.82 | **$1.61** |
+| **Per rune (650)** | **$3.13** | **$1.05** |
 
-**Crossover is 10 days.** Buy boosts on more than 10 days in a 4-week window and
-the subscription is already cheaper, so à la carte is the sporadic and trial tier
-rather than a competing plan. The gap is **3.6×**, steeper than a usual
-subscription discount — deliberately, since conversion to a predictable
-subscription is worth more than à la carte margin.
+**Crossover is 12 days.** Beyond that the subscription is cheaper *and* carries
+the shards, so à la carte is the sporadic and trial tier rather than a competing
+plan. The gap at cap is **3.0×**, steeper than a usual subscription discount —
+deliberately, since conversion to predictable recurring revenue is worth more
+than à la carte margin.
+
+**The pack ladder never overtakes the subscription**, which is the ceiling promise
+holding at the price layer: $1.67 → $1.43 → $1.25 a day against the
+subscription's **$0.71 plus 3,200 shards**. There is no quantity of à la carte
+buying that reaches a better rate, so nothing sits above the subscription.
 
 #### The ceiling, in weeks
 
@@ -729,11 +768,9 @@ adaptability rather than power.
   $20 monthly — quietly 8.3% more. It is defensible because it aligns with the
   season and guild-event cadence, but it **must be labelled "every 4 weeks"**
   rather than "monthly", which several jurisdictions require anyway.
-- **$2 charges are fee-efficient on Steam and not on the web.** Steam's 30% is
-  proportional, so bundling into a currency gains nothing there. Stripe's
-  `2.9% + $0.30` makes the fixed fee **15% of a $2 charge**, which is the real
-  argument for selling a currency in larger bundles — a **standalone and browser
-  concern specifically**, not a Steam one.
+- **The $5 floor is what answers payment fees, not a currency.** Steam's 30% is
+  proportional and unaffected either way; on the web the fixed $0.30 was 15% of a
+  $2 charge and is 6% of a $5 one. See *Prices* above for why gold was rejected.
 - **Maximum revenue per player is $260 a year, by construction.** *No uncapped
   tier* is what makes that a wall rather than a target, so the business is a
   volume business and cannot be rescued by whales. That is the commercial shape
