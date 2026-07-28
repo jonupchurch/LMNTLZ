@@ -1494,9 +1494,21 @@ point of writing it that way.
   more currency — a typical player already completes twelve heroes in 1.3 months.
   They need opponents they can beat, and a bounded ceiling over an unbounded sink
   is the wrong economy to solve an onboarding problem by granting shards into.
-- **Whether 3 slots stays 3.** Three runes reaches 53% of the theoretical stat
-  ceiling and leaves 356 points unclaimed, so a fourth slot is available later
-  without any formula moving. Cheap to add, expensive to take back.
+- ~~**Whether 3 slots stays 3.**~~ **Settled 2026-07-28: three for 1.0.** A
+  fourth is future work with nothing committed to it — not to when it arrives,
+  not to what unlocks it, not to whether it ever does.
+
+  Three runes reach **53% of the theoretical stat ceiling and leave 356 points
+  unclaimed**, so a fourth needs no formula to move; it is cheap to add and
+  effectively impossible to take back. Adding one also **raises every gear score
+  and therefore every league threshold** (`09-matchmaking.md`), which is a
+  re-derivation, not a toggle.
+
+  > **Those 356 points are the largest additive lever the design holds**, and the
+  > no-nerf rule (`README.md`) is what makes keeping it unspent worth doing: a way
+  > to move the meta later without touching a single number, alongside curated
+  > bots and new content. Pre-committing it — to equipment, to a purchase, to a
+  > date — spends an option that costs nothing to keep.
 - **The rating ladder.** Placement for a new account, how much a Visible loss
   costs against a Hidden one, and whether rating is the only ladder or whether
   hold streaks rank separately. `02-squads.md` question 0 — *which squad deserves
