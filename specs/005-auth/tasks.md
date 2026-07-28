@@ -35,6 +35,26 @@ one that matters.
 
 ## Phase 1: Setup (the API app, once for features 005–016)
 
+> ### ⛔ STOP — this phase needs accounts Jon has to create
+>
+> **Features 001–004 need no infrastructure at all. This is the first task in the
+> project that does.** Do not start T001 until these exist, and **do not create
+> them on Jon's behalf** — they are billable accounts under his name.
+>
+> | Needed | For | Who |
+> |---|---|---|
+> | **Vercel project** linked to the repo | T001's Functions entry point, and every deploy after | **Jon** |
+> | **Neon project** + connection string | T002's Drizzle client | **Jon** |
+> | **Google OAuth client** (web) + client ID | T012 onward — Google ID token verification | **Jon** |
+>
+> Jon asked to be told when this moment arrives (2026-07-28). **Tell him at the
+> 004 → 005 boundary, not when T001 fails.** Credentials go in a gitignored
+> `.env.local` he sets himself — never pasted into a session transcript.
+>
+> **Neon is the database for every environment**, tests included. A local
+> PostgreSQL 15 exists on the machine as a fallback if the DB test suite ever gets
+> slow enough to tax the edit-test loop; it is not part of the design.
+
 - [ ] T001 Scaffold `apps/api/` — `package.json` named `@lmntlz/api`, `tsconfig.json` extending the base, Hono, and a Vercel Functions entry point
 - [ ] T002 Add Drizzle and the Neon driver to `apps/api/` — `drizzle.config.ts`, a `db/client.ts` with the pooled connection, and `migrate`/`generate` scripts
 - [ ] T003 [P] Add `jose` to `apps/api/` — one dependency covering Google ID token verification **and** our own JWT signing, with no transitive dependencies and identical behaviour on Node and the edge

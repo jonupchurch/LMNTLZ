@@ -117,6 +117,23 @@ the monorepo bootstrap, which runs once for the whole project.
 Turborepo workspace, 005 stands up `apps/api`, 006 stands up `apps/client`. Nothing
 else has a Setup phase worth more than a few tasks.
 
+### ⛔ The infrastructure gate sits at 004 → 005
+
+**Features 001–004 — 182 tasks, roughly a quarter of the project — need no
+database, no hosting, no vendor account and no bill.** Pure TypeScript and Vitest.
+
+**Feature 005 is the first task in the project that needs infrastructure**, and
+`specs/005-auth/tasks.md` opens with a STOP block listing it: a **Vercel project**,
+a **Neon project**, and a **Google OAuth client**. Jon creates all three himself —
+they are billable accounts in his name — and he asked to be told when the moment
+arrives. **Tell him at the boundary, not when T001 fails.**
+
+**Neon is the database for every environment**, tests included. Local PostgreSQL 15
+exists on the machine as a fallback if the DB suite ever gets slow; it is not part
+of the design. Vendors after that: **Vercel Blob** at 008, **Paddle** and **Resend**
+at 011, **Ably** at 014. **Paddle is the one with real lead time** — merchant-of-record
+vetting takes days, so start it during stage 3, not on the day 011 begins.
+
 ### What each feature's MVP stops at
 
 Every `tasks.md` names a **STOP and VALIDATE** point — the smallest slice worth
