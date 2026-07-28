@@ -97,7 +97,7 @@ fight they were in.
 
 ## Chat — **settled 2026-07-27**
 
-### Four scopes
+### Six scopes
 
 | Scope | Reaches | Who may write | History |
 |---|---|---|---|
@@ -105,11 +105,98 @@ fight they were in.
 | **Guild** | the ≤24 members | all members | ~30 days — coordination needs it |
 | **Direct** | one other player | both | longest — it is the evidence channel |
 | **Admin** | everyone | **the team only** | permanent |
+| **Guild Ads** | everyone, split by language | **rate-limited** — see below | short |
+| **Beginner** | players still in the starter league, **+ Envoys** | all present | short |
 
-**There is no league chat**, and it was considered. `09-matchmaking.md` makes
-**promotion one-way and permanent**, so a league room would eject a player from
-their own conversations as a *consequence of geaing up* — turning the currency
-the game is built on into a social cost. Rejected on that alone.
+**There is still no league chat**, and the two additions below are not it.
+`09-matchmaking.md` makes **promotion one-way and permanent**, so a league room
+would eject a player from their own conversations as a *consequence of gearing
+up* — turning the currency the game is built on into a social cost. Rejected on
+that alone, and still rejected.
+
+### Guild Ads — **added 2026-07-28**
+
+> **One channel for both directions: players posting that they are looking for a
+> guild, and guilds promoting themselves. A guild may post once an hour.**
+
+**The rate limit attaches to the guild, not to the member.** Twenty-four members
+at one post an hour each is twenty-four posts an hour, which is the whole channel.
+One guild, one post, one hour — regardless of who clicks it.
+
+**Players looking for a guild are limited the same way**, one post an hour, for
+the same reason and with no special case to write.
+
+**Split by language, like Global.** A guild advertisement in a language a reader
+does not speak is pure noise, and guilds are language communities in practice
+anyway.
+
+> **Separating it from Global is the entire point.** Recruitment is repetitive,
+> formulaic and constant; left in Global it is the traffic that makes Global
+> unreadable, and moving it out is cheaper than any moderation or sharding rule.
+
+Moderation is Global's, unchanged. The content is formulaic enough that it should
+be the quietest queue in the game.
+
+### Beginner chat — **added 2026-07-28**
+
+> **A help channel for people who just arrived. Membership is *gated by* starter-
+> league status; it is not the starter league's room.** Players leave when they
+> leave the league — at one week, at 3,250 shards, on opting out, or on joining a
+> guild.
+
+**The distinction is not cosmetic, and it is what keeps this from being league
+chat.** Beginner chat is organised around **being new**, not around a rung on a
+ladder — the starter league is merely the cleanest definition of "new" the design
+already computes, so it is used as the gate rather than as the identity. Nothing
+about the room refers to the league, and no other league ever gets one.
+
+**The no-league-chat objection therefore does not engage.** That rule exists
+because partitioning the *whole playerbase* by strength would eject people from
+their conversations as a consequence of gearing up. This is one room, for a
+population defined by having arrived recently, **temporary by construction and
+known to be temporary from the first minute.** Leaving is graduation, not
+eviction. A cohort, not a neighbourhood.
+
+**It is also where the need is greatest.** A new player has the most questions and
+the fewest people to ask; Global is a room of veterans, and a guild is the thing
+they do not have yet. A peer room is the obvious answer and costs one more scope.
+
+> **It is the highest-risk room in the game and must be treated as such.** A
+> channel of brand-new players is precisely where scams and grooming are aimed,
+> and its occupants are the least equipped to recognise either. **Beginner chat
+> gets moderation priority over every other scope**, and **DM gating**
+> (*The load, and the three levers* below) matters here more than anywhere else.
+
+### Envoys — **added 2026-07-28**
+
+> **Appointed players who may remain in Beginner chat after graduating, in order
+> to help new players. They agree to a code of conduct. They have no powers.**
+
+Without Envoys the beginner room is a room of people who all arrived yesterday,
+with no one in it who knows anything. Envoys are the fix, and they are the only
+exception to Beginner chat being for beginners.
+
+**They have no moderation powers, and this is not a detail.** An Envoy may
+**report** exactly as any player may report; they cannot mute, remove, or act.
+Volunteer moderators with real authority and no accountability is a well-mapped
+failure mode, and the same principle already governs the classifier — *flag, never
+moderate* — so applying it to people is consistency rather than caution.
+
+| An Envoy **may** | An Envoy **may not** |
+|---|---|
+| Stay in Beginner chat after graduating | Mute, kick, or ban anyone |
+| Answer questions, explain systems | See reports, queues, or another player's history |
+| Report, like anyone | Bypass **DM gating** — the role grants no messaging privilege |
+
+> **The role is attractive to exactly the people who must not have it.** Standing
+> access to a room full of new players is what a bad actor would want most, so
+> Envoys are **appointed, never self-serve**, and **revocable at will** for any
+> breach of the code. Vetting is the cost of the feature, and it is the feature.
+
+**Recognition is cosmetic, never mechanical.** A badge, a border, or a foil fits
+the design's existing habit of paying status in things that cannot touch a battle
+(`06-progression.md`). An Envoy must never receive shards, a boost, or anything
+that makes the role worth holding for advantage rather than for helping.
 
 ### Global is split by language, not by strength
 
