@@ -245,10 +245,15 @@ mechanic. Nothing is concealed and nothing is proclaimed.
 
 ### When a league is thin
 
-**Widen into the adjacent league, nearer first.** A Bronze player short of
-opponents sees Silver before anything else; a Diamond player sees Platinum. The
-widening is per-request and never persists, so a temporarily quiet league does
-not permanently redefine anyone's bracket.
+**Pad it with bots first; widen only if that is not enough.** See *Curated bot
+defenders* below — a bot placed inside the band keeps matching in-band, while
+widening reaches outside it and **breaks the 1.67× guarantee above**, up to 2.67×
+for a player at a league floor.
+
+**Widening is the fallback to the fallback.** Into the adjacent league, nearer
+first: a Bronze player short of opponents sees Silver before anything else; a
+Diamond player sees Platinum. It is per-request and never persists, so a
+temporarily quiet league does not permanently redefine anyone's bracket.
 
 At launch this is the normal case rather than the exception: every account starts
 at exactly 1,500, so Bronze holds everyone and the other four are empty.
@@ -390,15 +395,44 @@ takes nothing away from anyone.
 - **They answer the thin-pool cases directly** — launch, when every account is in
   Bronze, and the churn-thinning described above.
 
-### They are permanent residents, built competitive — **settled 2026-07-27**
+### Scaffolding, not furniture — **settled 2026-07-27**
 
-> **Bots sit in the pool always, not only when it is thin. They are built to be
-> competitive, they carry a fixed rating, and beating one counts.**
+> **Bots sit in the pool always, not only when a request comes up short. They are
+> built to be competitive, they carry a fixed rating, and beating one counts.
+> Their numbers are a per-league dial, and the intent is to remove them
+> eventually.**
 
-**Two jobs, and the first is immediate.** At launch there is no population to
-match against; bots are what makes the pool real on day one. The second is the
-long one — a gap-filler cannot shape a meta, because most players would never
-meet it.
+**Three jobs, and they retire in order.**
+
+| Job | Lifespan |
+|---|---|
+| Make the pool real when there is no population | launch only |
+| **Even out league populations** | as long as the distribution is lumpy |
+| Apply meta pressure without touching a number | indefinite, and the reason to keep a few |
+
+**Nothing may depend on them permanently.** They are a dial the design can turn to
+zero, so any rule that would break when the last bot is removed is a rule written
+wrong. The rating anchors below are safe on exactly this test: an anchor
+bootstraps a population and is not needed once one exists.
+
+#### Evening out leagues repairs a guarantee that was broken
+
+*Leagues* above states flatly that **nobody ever faces more than 1.67× their own
+gear** — and *When a league is thin* quietly breaks it. Widening is unconditional,
+so a Bronze player at the **1,500 floor** can be served a Silver player at the
+**4,000 ceiling**: **2.67×**, well outside the promise.
+
+**Edge-bleeding never does this**, because it fires only near a boundary where the
+two bands nearly touch. Widening does, because it fires regardless of position.
+
+| Fallback for a thin league | Worst gear ratio faced |
+|---|---|
+| Widen into the adjacent league | **2.67×** — breaks the guarantee |
+| **Pad the league with bots** | **1.67×** — the guarantee holds |
+
+> **So bots are the preferred answer to a thin league and widening is the last
+> resort**, rather than the other way round. A bot placed inside the band keeps
+> matching in-band; reaching into the next league does not.
 
 #### A fixed rating makes them calibration anchors
 

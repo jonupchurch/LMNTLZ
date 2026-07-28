@@ -877,6 +877,54 @@ specifically.)*
 **Only boost-days are sold, so days are the only thing that bundles.** See
 *Shards cannot be bought* below for why nothing else is on the shelf.
 
+### Steam is the primary storefront, and the 30% is cheap — **decided 2026-07-27**
+
+> **Ship on Steam and pay the cut. Sell direct from the browser build as a
+> secondary channel, never as a replacement.**
+
+**The break-even is not close.** Steam takes 30% against roughly 3% for a direct
+sale, so Steam only has to deliver **1.39× the players** self-publishing would.
+For a title with no existing audience that bar is cleared many times over.
+
+**The supporting argument is this file's own ceiling.** Subscription spend is
+capped at **$260/year per player by construction** — cosmetics sit outside it, but
+they do not exist yet, so **at launch that cap is the whole business**:
+
+| Year-round subscriber rate | ARPU / year from subscriptions, net of Steam |
+|---|---|
+| 3% | **$5.46** |
+| 5% | $9.10 |
+| 10% | **$18.20** |
+
+Against ordinary paid-acquisition costs, **paid user acquisition barely works at
+any of those rates.** Organic discovery is therefore not a marketing channel at
+launch, it is the business model — which is precisely what the 30% buys. It also
+buys worldwide payments, tax and VAT handling, refunds, fraud, and the trust of a
+card entry a player has already made once.
+
+> **Cosmetics change the arithmetic but not the decision.** Once they ship, ARPU
+> rises and paid acquisition becomes viable — and the 1.39× break-even above is
+> unaffected either way, because it is a ratio rather than a level. Steam is
+> right at every ARPU.
+
+**The cut steps down** — 25% above $10M lifetime and 20% above $50M. At the $260
+ceiling the first step is roughly **38,500 fully-subscribed players**.
+
+#### Both channels, because they do not cannibalize
+
+`../../docs/tech-stack.md` already builds the same client for the browser. A
+player who arrives through a creator, a community or a link can buy direct at ~3%
+— the same $20 netting **$19.12 rather than $14.00**, a 37% difference on
+identical product.
+
+They do not compete, because the Steam build cannot advertise the web store and
+should not try. **Auth is already owned in-house**, so one entitlement service
+serves both and a purchase made anywhere works everywhere.
+
+> **Verify against the current Steam Distribution Agreement before building it.**
+> Platform rules on external storefronts and price parity change, and this
+> decision assumes what is true today rather than what is guaranteed.
+
 **The boosts are sold as a pair, never separately**, because they are not worth
 the same. A boost is 2× capped at 10 rewarded outcomes, and a typical player wins
 about 10 battles a day against a base of **388 shards/day** — 288 from attacking,
@@ -952,16 +1000,23 @@ adaptability rather than power.
 - **The $5 floor is what answers payment fees, not a currency.** Steam's 30% is
   proportional and unaffected either way; on the web the fixed $0.30 was 15% of a
   $2 charge and is 6% of a $5 one. See *Prices* above for why gold was rejected.
-- **Maximum revenue per player is $260 a year, by construction.** *No uncapped
-  tier* is what makes that a wall rather than a target, so the business is a
-  volume business and cannot be rescued by whales. That is the commercial shape
-  of the design promise, and it should be sized deliberately rather than
-  discovered.
+- **Maximum spend on *advantage* is $260 a year, by construction.** *No uncapped
+  tier* is what makes that a wall rather than a target, so no player can be
+  out-spent past it and the ladder cannot be rescued by whales.
+
+  > **This caps purchasable advantage, not revenue.** **Clarified 2026-07-27.**
+  > $260 is the ceiling on everything that touches speed or power. **Cosmetics sit
+  > outside it entirely and are not bounded by it** — they cannot affect a battle,
+  > a rating or a rune, so selling more of them does not move the number that
+  > matters. The design promise is about *fairness*, not about the size of the
+  > business.
 
 That property is the point of the whole storefront, because it means one sentence
-covers it: **everything money can buy in this game is in one subscription.** In a
-genre where players assume the worst, a ceiling they can audit is worth more than
-any amount of reassurance. **Never add a tier above it.**
+covers it: **everything money can buy that affects the game is in one
+subscription.** In a genre where players assume the worst, a ceiling they can
+audit is worth more than any amount of reassurance. **Never add a tier above it**
+— and never let a cosmetic acquire a mechanical effect, which is the only way this
+promise can be broken from the other side.
 
 ### Shards cannot be bought
 
@@ -1261,19 +1316,28 @@ point of writing it that way.
   replaces the boosts or sits beside them is open**; nothing here forecloses
   either.
 
-  > **One thing to settle before it is designed: whether any of it is
-  > randomized.** A purchased random draw is a loot box, with real regulatory
-  > surface — Belgium and the Netherlands, plus Steam's own odds-disclosure
-  > requirement — and it sits badly beside a design whose promise is *a ceiling
-  > players can audit*. An **earned** random foil is a different thing entirely
-  > and carries none of that.
+  **Randomization: non-repeating draws — set 2026-07-27.** A foil is drawn at
+  random from the pool and **never repeats**, so the same one is never awarded
+  twice.
+
+  > **Non-repeating is what defuses the loot-box problem.** What regulators and
+  > players object to is *unbounded spend for a specific item* — a duplicate-heavy
+  > gacha where the cost to obtain one thing has no ceiling. A non-repeating draw
+  > has a **fixed, computable cost to complete the set** and no wasted purchase,
+  > which is the same shape as everything else here: a ceiling players can audit.
+
+  It still wants care if the draws are *sold* rather than earned — Belgium and the
+  Netherlands, plus Steam's own odds-disclosure requirement — but the objection
+  shrinks from structural to procedural. **Whether foils are bought, earned, or
+  both remains open**, and non-repeating makes the bought version far safer than
+  it would otherwise be.
 - ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $5 for
   three days of the boost pair, $20 for a 4-week subscription, and **no way to buy
   shards at all** — which reads as **2.00× a free player's income** and a ~6-week
   head start to a competitive kit. What remains is not the price but the
-  **conversion rate** it implies: revenue per player is capped at $260/year by
-  construction, so the business is a volume business and the target player count
-  should be sized deliberately.
+  **conversion rate** it implies: *subscription* spend is capped at $260/year by
+  construction, so until cosmetics ship the business is a volume business and the
+  target player count should be sized deliberately.
 - ~~**Whether anything bounds how much a player can earn in a day.**~~
   **Settled** — *The daily curve* above. 1.5× on the first five victories, base to
   twenty, half beyond; counted in victories so a loss never burns a tier; play
