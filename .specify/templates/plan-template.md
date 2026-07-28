@@ -40,7 +40,25 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Part II of `.specify/memory/constitution.md`. Answer each: **PASS**, **N/A**, or
+**VIOLATION** — a violation goes in the Complexity Tracking table below with its
+justification, or the plan changes.
+
+| # | Constraint | The test | Verdict |
+|---|---|---|---|
+| XII | **Server authority & the seed boundary** *(NON-NEGOTIABLE)* | Can a modified client change an outcome, learn a future roll, or read a value it was not issued? Is RNG confined to the resolver? Is in-progress battle state re-derived rather than stored? | |
+| XIII | **One rules engine** *(NON-NEGOTIABLE)* | Does anything compute a rule outcome outside `packages/sim`'s rules half? | |
+| XIV | **Balance upward** | Does this lower a number a player has already spent on? If so, where is the compensating grant? | |
+| XV | **Derived data is generated** | Does any file carry a hand-written bane, fault, or matrix cell? Are the three distinctness rules schema-validated? | |
+| XVI | **Cannot be backfilled** | Could each new persisted field be added later and still answer the question it exists for? If no, it ships with the first record. | |
+| XVII | **Storing is not exposing** | Does this change what is *recorded*, what is *exposed*, or both? Answered separately? | |
+| XVIII | **Harm is a gate; taste is a note** | For every restriction: name the harm. If you cannot, it is a warning, not a block. | |
+| XIX | **Vendors behind interfaces** | Does feature code name a vendor? Are entitlements account-level rather than per-storefront? | |
+| XX | **Written docs are canon** | Is every rule this plan relies on written in `docs/` or `resources/mechanics/` — not only in a `.dc.html`? | |
+
+> **XVI is the one that cannot be retrofitted.** The others are expensive to
+> undo; a field missing from the first record is missing from the history the
+> first balance pass reads. Check it hardest.
 
 ## Project Structure
 

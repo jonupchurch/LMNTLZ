@@ -226,5 +226,11 @@ This repo carries the `ai-tools` toolkit (`.claude/` + `.specify/`).
 - **Stack packs** (`stacks/`): read the relevant pack before writing framework
   code — once a stack is actually chosen.
 
-`.specify/memory/constitution.md` is still the generic engineering constitution;
-run `speckit-constitution` to make it LMNTLZ-specific.
+`.specify/memory/constitution.md` is **LMNTLZ-specific as of v3.0.0** and binding.
+Part I is the eleven process principles; **Part II is nine product constraints
+(XII–XX)** a change is checked against — server authority and the seed boundary ·
+one rules engine · balance upward · derived data is generated · *the past is
+immutable and some records cannot be backfilled* · storing is not exposing · harm
+is a gate and taste is a note · vendors behind interfaces · the written docs are
+canon. The `Constitution Check` gate in `.specify/templates/plan-template.md`
+carries all nine as a table. **XVI is the only one that cannot be retrofitted.**

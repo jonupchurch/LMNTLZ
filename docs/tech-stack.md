@@ -39,16 +39,65 @@ outcome.
 
 ## Layout
 
+**One repository holds everything — design and code — decided 2026-07-28.**
+
 ```
-lmntlz/
+LMNTLZ/                the single repo
+├── resources/         mechanics, lore, design prompts, generated screens, art
+├── characters/        hero data
+├── docs/              this file, the architecture prompt
 ├── packages/
-│   ├── sim/       rules (shared) + resolver (server only)
-│   └── content/   heroes, powers, matchups, reach — Zod-validated
+│   ├── sim/           rules (shared) + resolver (server only)
+│   └── content/       heroes, powers, matchups, reach — Zod-validated
 └── apps/
-    ├── client/    Vite React SPA → static bundle
-    ├── desktop/   Electron shell → wraps the client, Steam integration
-    └── api/       Vercel Functions → imports sim
+    ├── client/        Vite React SPA → static bundle
+    ├── desktop/       Electron shell → wraps the client, Steam integration
+    └── api/           Vercel Functions → imports sim
 ```
+
+### Why one repo, and why the client/server split was never on the table
+
+**Client and server cannot be separated at all.** `packages/sim`'s *rules* half runs
+on **both** sides — that is what lets the client draw targeting, project the turn
+queue and preview effectiveness without asking the server. Separate repositories
+would force `sim` to become a published package with independent version pins:
+
+```
+client → sim@1.2.0  ─┐  they disagree about the damage formula, and the
+server → sim@1.3.0  ─┘  client previews numbers the server will not produce
+```
+
+That is the **same defect that disqualified MAUI** — two implementations of the
+combat math that must agree exactly, forever — except expressed as two *versions*
+of one codebase rather than two languages, which is harder to notice and no less
+wrong. **Deploy independence is not a reason to split**, because the monorepo
+already has it: Vercel deploys `apps/client` and `apps/api` separately and
+Turborepo rebuilds only what changed.
+
+**Design and code share the repo because the docs are the spec.**
+`resources/mechanics/` is what `packages/sim` implements and `characters/` is what
+`packages/content` mirrors. In one repo, changing a rule *and* the code enforcing
+it is **one commit**, so the two can never disagree in history. Split, there is
+always a window where they do, and a year later nothing records which led.
+
+> **That traceability is worth more here than on a typical project.** Under the
+> **no-nerf rule** numbers cannot move freely after launch, and every battle record
+> carries `engineVersion` and `contentVersion` precisely so *"which rules produced
+> this?"* stays answerable. A repository boundary between the rule and its
+> implementation works directly against that.
+
+**The cost is the art.** `resources/` is ~68 MB and git cannot delta-compress PNGs,
+so each roster re-render adds a full copy (*Asset storage*, below). It lands almost
+entirely on **fresh full clones** — CI is unaffected, since GitHub Actions and
+Vercel both clone shallow. **On a solo project the traceability beats the
+megabytes**; multi-repo coordination pays off when different people own different
+halves, and nobody else owns a half here.
+
+**A wiki is not part of this.** GitHub wikis have no pull-request review and break
+relative links, so **no rule or canon ever goes in one** — it would put canon in
+two places, which is the failure this whole document set is organized against. A
+wiki is worth revisiting **at launch for player-facing docs** — a game guide, patch
+notes, a public codex — which is different content for a different audience.
 
 `packages/sim` splits along a load-bearing seam:
 
