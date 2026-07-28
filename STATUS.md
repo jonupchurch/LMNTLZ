@@ -4,16 +4,34 @@ _Snapshot; updated each work session. Last updated: 2026-07-28._
 
 ## Current phase
 
-**Planned — all 16 features specified and planned. Ready to implement.** Design
-and tech stack are both **complete and closed**; the constitution is
-LMNTLZ-specific at **v3.0.0**; and the Spec-Kit pass is finished: **16 specs, 16
-plans, 16 quality checklists, zero unchecked items, zero clarifications
-outstanding.** Every plan carries the nine Part II gates as explicit verdicts, and
-**no plan recorded a violation** — every Complexity Tracking table is empty.
+**Specs complete; plans partial. Phase 0/1 is the current work — not ready to
+implement.**
 
-**Constitution VII's gate is now satisfied**, so implementation may begin. Build
-order is settled: `packages/content` → `packages/sim` (rules, then resolver) →
-`apps/api` → `apps/client`, headless and tested first.
+Design and tech stack are both **complete and closed**; the constitution is
+LMNTLZ-specific at **v3.0.0**; **16 specs** are written with **zero unchecked
+checklist items and zero outstanding clarifications**.
+
+> **The plans are one artifact of four.** `speckit-plan` should emit
+> `research.md`, `data-model.md`, `quickstart.md` and `contracts/` per feature.
+> What exists is **`plan.md` only** — 109 lines average against the specs' 224 —
+> with Phase 0 and Phase 1 summarised inside it, plus one shared
+> `specs/data-model.md`.
+>
+> **49 Phase 0 research questions are raised and 1 is resolved.**
+
+**What Constitution VII asked for is partly met.** Its stated purpose is *"so
+shared models, cross-feature dependencies, and the right build order surface on
+paper"* — and those did (see the `firingProfile` move below). **Resolving the
+technical unknowns is Phase 0, and that has not happened.**
+
+**Decided 2026-07-28: full Phase 0/1 for all sixteen** before any code —
+`research.md`, `contracts/` and `quickstart.md` per feature, answering the open
+questions. Where a question can only be settled by measurement (a simulated
+population, a live model), the research file says so and names what would answer
+it rather than inventing a result.
+
+Build order remains settled: `packages/content` → `packages/sim` (rules, then
+resolver) → `apps/api` → `apps/client`, headless and tested first.
 
 > **The planning pass earned its keep once, concretely.** Feature 006's plan found
 > that the **firing profile** — which the squad builder must display — was placed
@@ -51,15 +69,27 @@ order is settled: `packages/content` → `packages/sim` (rules, then resolver) �
   feature boundaries, and the battle record is written by two and read by four.
 - **All 16 planned**, each gated on the nine Part II constraints. No violations.
 
-## Next — implementation
+## Next — Phase 0/1 across all sixteen
 
-- **`speckit-tasks`** across the set, then build in dependency order.
-- **Start with `packages/content`**, then `packages/sim/rules`, then
-  `sim/resolver`. Headless, with tests, before anything renders.
-- **Three tests to write before the code they cover**, each named in its plan:
-  - `purity.test.ts` (002) — no entropy source reachable in `sim/rules`
-  - `determinism.test.ts` (003) — 1,000 replays, byte-identical
-  - the alternating-battles leak test (012) — proves *selected*, not *filtered*
+**Then** `speckit-tasks`, then implementation.
+
+The 49 open research questions fall into three groups, and the distinction decides
+how each is answered:
+
+| Group | Examples | How it gets answered |
+|---|---|---|
+| **Answerable now** | Blob lifecycle expiry · JWKS caching · username normalisation · the report grace period | Read docs, make the call |
+| **Needs real work** | Re-deriving the 12 safe orderings (19,440 pairs) · daily tier boundaries · rating convergence bands | A sweep or a simulated population — reasoning will not settle them |
+| **Only answerable by building** | The seeded generator · draw sequencing · the packet boundary | Decided in the first hour of the code; record the decision, do not pretend to pre-make it |
+
+**Three tests to write before the code they cover**, each named in its plan:
+
+- `purity.test.ts` (002) — no entropy source reachable in `sim/rules`
+- `determinism.test.ts` (003) — 1,000 replays, byte-identical
+- the alternating-battles leak test (012) — proves *selected*, not *filtered*
+
+**A working Python 3.13 interpreter is at `py`** (the bare `python` on PATH is a
+Store stub) — needed for the ordering sweep.
 
 ## Carried risks and deferred work
 
