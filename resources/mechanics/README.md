@@ -17,7 +17,7 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 03 | `03-powers.md` | 6 active powers + 3 passives per hero; multipliers, cooldowns, healing | **Drafted** — 127 powers authored and costed, magnitudes now supplied by 05 |
 | 04 | `04-turns.md` | The five-phase turn; the turn queue and action economy | **Settled** — phases, targeting, reactions and turn order all decided |
 | 05 | `05-status.md` | Crowd control and buff/debuff effects; what Resolve resists | **Drafted** — magnitudes, potency, stacking and the effect catalog all specified |
-| 06 | `06-progression.md` | Rune Shards, custom runes, the rating ladder | **Drafted** — the currency and the power model are settled; rates and the ladder are open |
+| 06 | `06-progression.md` | Rune Shards, custom runes, the rating ladder | **Drafted** — currency, power model, rates and the daily curve settled; the ladder is open |
 | 07 | `07-defense-ai.md` | How the engine plays a defense squad | **Drafted** — targeting priority, power preference and scouting all settled |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three Wings of 8 | **Drafted** — membership settled, rewards blocked on 06 |
 | 09 | `09-matchmaking.md` | Who you are offered as an opponent — the gear score and leagues | **Drafted** — gear axis settled; the rating axis is open in 06 |

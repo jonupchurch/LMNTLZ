@@ -301,6 +301,14 @@ is a by-product of playing well, not a resource that can be accumulated.
 
 ## Open
 
+- **Whether the same defender can be attacked repeatedly.** No rule says either
+  way, and this document leans on the answer without stating it: *Ambush needs no
+  rule here* argues a streak cannot be farmed because reaching the 90% cap takes
+  45 straight wins. **That is only true if an attacker cannot pick the softest
+  Visible squad in their league and beat it 45 times.** It is the other half of
+  the session loop — `06-progression.md`'s daily curve bounds *how much* a day of
+  play pays, and this bounds *who* it can be farmed against. It also decides
+  whether one weak defender can absorb hundreds of attacks a day.
 - **The rating axis.** Placement for a new account, what a Visible loss costs
   against a Hidden one, and whether hold streaks rank separately. Tracked in
   `06-progression.md`; three questions in `02-squads.md` wait on it.

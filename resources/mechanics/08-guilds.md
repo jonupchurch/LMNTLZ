@@ -464,17 +464,17 @@ making ambition pointless.
 ### A calibration example
 
 Numbers mean nothing without the earn rate beside them. Against a **4-week
-season**, a typical player earns **9,240 shards** — about **14 complete runes** —
+season**, a typical player earns **10,864 shards** — about **17 complete runes** —
 from ordinary play (`06-progression.md`). A ladder that lands correctly against
 that:
 
 | Bracket | Reaches | Per filled slot | In runes | Share of a season's earnings |
 |---|---|---|---|---|
-| **Participation floor** | any Wing that posts a score | **300** | 0.5 | 3% |
-| Placed | top 35% | 700 | 1.1 | 8% |
-| High | top 10% | 1,600 | 2.5 | 17% |
-| Elite | top 1% | 4,000 | 6.2 | 43% |
-| **Apex** | top 10 Wings | **9,000** | 13.8 | 97% |
+| **Participation floor** | any Wing that posts a score | **300** | 0.5 | 2.8% |
+| Placed | top 35% | 700 | 1.1 | 6.4% |
+| High | top 10% | 1,600 | 2.5 | 15% |
+| Elite | top 1% | 4,000 | 6.2 | 37% |
+| **Apex** | top 10 Wings | **9,000** | 13.8 | 83% |
 
 Worked through for one member over one season: a slot in a **top-10% Wing inside
 a placing guild** takes 1,600 plus a ~400 guild share, so **2,000**; a slot in a
@@ -486,6 +486,11 @@ section is built around.
 > plausible-sounding number — is **0.5% of a season's earnings**, or about a
 > fourteenth of one rune. Guild rewards have to be denominated in runes to be
 > felt at all.
+
+> **The shares moved when `06-progression.md`'s daily curve landed** and ordinary
+> earnings rose from 9,240 to 10,864 over four weeks. **The payout figures did not
+> move** — they are round numbers chosen against the rune price, which is
+> unchanged. Only the percentage column, which is derived, is different.
 
 **Season length is the free variable, and it scales everything above.** Four
 weeks is proposed: the top bracket then pays roughly *one hero fully runed*,
@@ -530,15 +535,15 @@ So the ladder **adds brackets as the population supports them**:
 #### The weekly ladder
 
 **A straight quarter of the seasonal figures does not work.** Weekly ordinary
-earnings are 2,310 shards (9,240 ÷ 4), and 300 ÷ 4 is a **75-shard floor** —
+earnings are 2,716 shards (10,864 ÷ 4), and 300 ÷ 4 is a **75-shard floor** —
 0.12 of a rune, barely above the 50-shard figure the sanity check above calls too
 small to feel. Percentages scale linearly; *"feels like a reward"* does not.
 
 | Bracket | Reaches | Per filled slot | In runes | Share of a week's ordinary earnings |
 |---|---|---|---|---|
-| **Floor** | any Wing that posts a score | **150** | 0.23 | 6.5% |
-| Placed | top 35% | 400 | 0.62 | 17% |
-| **High** | top 10% | **900** | 1.4 | 39% |
+| **Floor** | any Wing that posts a score | **150** | 0.23 | 5.5% |
+| Placed | top 35% | 400 | 0.62 | 15% |
+| **High** | top 10% | **900** | 1.4 | 33% |
 
 A 6× spread with nobody at zero — the same deep-floor, steep-top shape, and the
 floor alone puts about **one rune a month** in a participating player's hands.

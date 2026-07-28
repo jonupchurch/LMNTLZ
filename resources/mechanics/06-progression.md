@@ -525,20 +525,112 @@ is exactly the failure this file warns about — passive income large enough tha
 logging off competes with playing. At half, defence is a meaningful supplement
 that still cannot rival attacking.
 
+### The daily curve — **set 2026-07-27**
+
+> **Attack income is tiered by the day's victory count: the first 5 victories pay
+> 1.5×, victories 6–20 pay the base rate, and everything past 20 pays 0.5×.
+> Play is never blocked and nothing is ever capped at zero.**
+
+| Victories that day | Multiplier | Chosen door | Ambush |
+|---|---|---|---|
+| **1 – 5** | **1.5×** | **30** | **60** |
+| 6 – 20 | 1.0× | 20 | 40 |
+| **21 +** | **0.5×** | **10** | **20** |
+
+**Holds are never tiered.** A hold is driven by how often other people attack
+you, which the defender does not control, so there is nothing there to pace.
+
+#### Why tier at all
+
+Before this, attack income was **perfectly linear in battles played** — 23 shards
+per victory, forever, with no diminishing return in the resource it consumes.
+That is the one property `README.md` says no formula in this project may have;
+the stat being consumed here is simply *time* rather than a hero stat.
+
+Nothing enforced the 20-battle figure the tables below are built on. It was an
+assumption about typical play, and the real limiter was battle length — roughly
+102 hero-turns per 6v6, which nobody has measured in wall-clock. **The economy's
+whole shape therefore rested on a number no one had chosen**, and it would move
+every time combat pacing did.
+
+| Victories/day | Tiered | Untiered | Play time* |
+|---|---|---|---|
+| 10 — typical | 288 | 230 | ~1.7 h |
+| 25 | 517 | 575 | ~4.2 h |
+| **50** | **863** | 1,150 | **~8.5 h** |
+| 100 | 1,438 | 2,300 | ~17 h |
+
+*\* At ~3 s per hero-turn — an estimate, not a measurement. `packages/sim`
+settles it, and every figure in this column moves with it.*
+
+#### Counted in victories, not battles
+
+**A loss must never burn a tier.** The rule above this section is that a loss pays
+nothing but never takes anything away, and a tier counted in *attempts* would
+quietly break it — losing would cost you the difference between 1.5× and 1.0× on
+your next win, which taxes attacking hard opponents in a game whose entire thesis
+is counter-building.
+
+Counting victories also states plainly: *your first five wins today pay 1.5×.*
+
+#### Why 1.5× on the first five
+
+**It rewards showing up rather than grinding.** Five victories is roughly 25
+minutes — a tier that finishes *before* a typical session does, so every player
+who logs in collects it in full and nobody has to play long to reach it. Ten
+would have covered a typical session end to end, which is not a return bonus at
+all but a 35% rate increase wearing one.
+
+Seven daily sessions beat one long one by **1.84×** for the same number of
+battles.
+
+**It is also progressive**, which was not the goal but is the better consequence.
+A light player's victories all sit inside the bonus tier while a heavy player's
+mostly do not, so the gap between them narrows from **3.30× to 2.70×** — the
+casual player gains 35% and the grinder 11%.
+
+#### Fractions
+
+Every multiplier here lands on a whole number, because the base rewards are 20
+and 40 and the multipliers are 1.5, 1.0, 0.5 and the 2× boost. **No fraction
+occurs at current rates.** The rule exists so a later rate change cannot
+introduce one silently:
+
+> **Apply every multiplier to the base, sum, then round half up. A rewarded
+> outcome never pays less than 1.**
+
+#### The boost keeps its own boundary
+
+The 2× boost caps at **10 victories** and is deliberately *not* aligned to the
+5-victory bonus tier. Doubling both components across exactly the range a typical
+player occupies is what produces the **2.00×** subscriber ratio in *Monetization*
+below; moving the cap to 5 would cut it to 1.75× and break a published figure to
+save one number on a screen.
+
+So there are three boundaries — **5** for the bonus, **10** for the boost, **20**
+before the taper — and they still read in one line: *first 5 wins pay 1.5×, wins
+6–20 pay normal, wins past 20 pay half, and a boost doubles your first 10.*
+
 ### What that pace produces
 
 | Play level | Shards/day | 12 heroes complete | Competitive 18 | Full 27 |
 |---|---|---|---|---|
-| Light — 10 attacks, 5 holds | 165 | 3.1 mo | 5.4 mo | **8.9 mo** |
-| **Typical — 20 attacks, 10 holds** | **330** | **1.6 mo** | **2.7 mo** | **4.5 mo** |
-| Heavy — 30 attacks, 20 holds | 545 | 0.9 mo | 1.6 mo | 2.7 mo |
+| Light — 10 attacks, 5 holds | **223** | 2.3 mo | 4.0 mo | **6.6 mo** |
+| **Typical — 20 attacks, 10 holds** | **388** | **1.3 mo** | **2.3 mo** | **3.8 mo** |
+| Heavy — 30 attacks, 20 holds | **603** | 0.9 mo | 1.5 mo | 2.4 mo |
 
-*(50% win rate, 15% of victories being ambushes, starting from the 7,800 grant.)*
+*(50% win rate, 15% of victories being ambushes, starting from the 7,800 grant.
+Untiered, these read 165 / 330 / 545 and 8.9 / 4.5 / 2.7 months.)*
 
-A typical player finishes the twelve heroes they were given inside two months,
-reaches the competitive eighteen before three, and completes the roster around
-four and a half. **After that, shards fund re-speccing forever** — the ceiling is
+A typical player finishes the twelve heroes they were given inside six weeks,
+reaches the competitive eighteen before three months, and completes the roster
+around **3.8**. **After that, shards fund re-speccing forever** — the ceiling is
 reached and the currency changes job rather than losing its value.
+
+> **The curve shortened the runway by 15%, and that was a decision rather than a
+> side effect.** 4.5 months to complete a roster is a long time in a game whose
+> currency's endgame job is re-speccing, and the bonus tier buys the daily-return
+> incentive with runway that was arguably too long already.
 
 Against that, a subscriber's boosts are **+100% on exactly this figure** — they
 double what play already pays and add nothing to a player who does not play.
@@ -653,8 +745,8 @@ kitted are exactly equal.
 
 | SKU | Grants | Cap |
 |---|---|---|
-| **Attack boost** — daily | **2×** shards from attacking | first **20 battles** that day |
-| **Defense boost** — daily | **2×** shards from defending | first **20 battles** that day |
+| **Attack boost** — daily | **2×** shards from attacking | first **10 victories** that day |
+| **Defense boost** — daily | **2×** shards from defending | first **10 holds** that day |
 | **Subscription** — 4 weeks | both boosts every day | — |
 
 > **The subscription grants exactly the à la carte cap and never more.** It is a
@@ -702,36 +794,45 @@ specifically.)*
 *Shards cannot be bought* below for why nothing else is on the shelf.
 
 **The boosts are sold as a pair, never separately**, because they are not worth
-the same. A boost is 2× capped at 20 battles, and a typical player runs about 20
-battles a day against a base of **330 shards/day** — 231 from attacking, 99 from
-holds:
+the same. A boost is 2× capped at 10 rewarded outcomes, and a typical player wins
+about 10 battles a day against a base of **388 shards/day** — 288 from attacking,
+100 from holds:
 
 | | Per day | A boost adds |
 |---|---|---|
-| Attack boost | 231 | **+231** |
-| Defense boost | 99 | **+99** |
+| Attack boost | 288 | **+288** |
+| Defense boost | 100 | **+100** |
 
-**The attack boost is worth 2.3× the defense boost.** Priced identically and sold
+**The attack boost is worth 2.9× the defense boost.** Priced identically and sold
 separately, a rational player buys the attack boost every day and the defense
 boost never — killing the one purchase that rewards defensive play. Pairing them
 removes the choice rather than pricing it, which is simpler than maintaining two
 SKUs at two price points.
 
+> **The gap widened from 2.3× when the daily curve landed**, because the bonus
+> tier front-loads attack income and holds are deliberately never tiered. It
+> strengthens the case for pairing rather than weakening it.
+
 #### What that buys against the earn rate
 
 | | Shards / 4 weeks | vs free |
 |---|---|---|
-| **Free** | 9,240 | — |
-| **Subscriber** — both boosts every day | **18,480** | **2.00×** |
+| **Free** | 10,864 | — |
+| **Subscriber** — both boosts every day | **21,728** | **2.00×** |
 
-*(Boosts double income within the caps: +330/day × 28 = +9,240. Nothing else is
+*(Boosts double income within the caps: +388/day × 28 = +10,864. Nothing else is
 sold.)*
+
+> **The 2.00× survives the daily curve exactly**, which is why the boost cap
+> stayed at 10 and was not aligned to the 5-victory bonus tier. The boost doubles
+> both components across precisely the range a typical player occupies; moving
+> the cap to 5 would have dropped it to 1.75×.
 
 | | À la carte | Subscription |
 |---|---|---|
 | Cost per 4 weeks at cap | 4 × $10 = **$40** | **$20** |
-| Per 1,000 shards | $4.33 | **$2.16** |
-| **Per rune (650)** | **$2.81** | **$1.41** |
+| Per 1,000 shards | $3.68 | **$1.84** |
+| **Per rune (650)** | **$2.39** | **$1.20** |
 
 **Crossover is 12 days.** Beyond that the subscription is cheaper *and* carries
 the shards, so à la carte is the sporadic and trial tier rather than a competing
@@ -781,21 +882,21 @@ any amount of reassurance. **Never add a tier above it.**
 ### Shards cannot be bought
 
 > **There is no way to convert money into Rune Shards.** Everything on the shelf
-> is a **2× multiplier on shards you earn**, capped at 20 battles a day. A player
-> who buys every SKU and never plays earns **nothing**.
+> is a **2× multiplier on shards you earn**, capped at 10 rewarded outcomes a
+> day. A player who buys every SKU and never plays earns **nothing**.
 
 **Decided 2026-07-27**, replacing an 800-shards-a-week purchase. The reason it
 was cheap to drop is that it was never carrying much:
 
 | Subscriber income / 4 weeks | Shards | Needs play? |
 |---|---|---|
-| Base earnings | 9,240 | yes |
-| Boosts, 2× within the caps | +9,240 | **yes** |
+| Base earnings | 10,864 | yes |
+| Boosts, 2× within the caps | +10,864 | **yes** |
 | ~~Purchased shards~~ | ~~+3,200~~ | ~~**no**~~ |
 
-Purchased shards were **14.8%** of it, so removing them moved a subscriber from
-2.35× a free player to **2.00×**, and the competitive-kit timeline from 6.5 weeks
-to 7.6 against a free player's 15.2. **About one week of head start**, because
+Purchased shards were **12.8%** of it, so removing them moved a subscriber from
+2.29× a free player to **2.00×**, and the competitive-kit timeline from 5.6 weeks
+to 6.5 against a free player's 12.9. **About one week of head start**, because
 the boost was always doing the work.
 
 What that week buys is a claim that fits in a sentence and can be verified from
@@ -871,12 +972,17 @@ naturally-bounded one, limited by other players' behaviour rather than by a rule
 ### No uncapped tier
 
 It was considered as a higher price point and rejected on arithmetic rather than
-on principle. With a 20-battle attack boost already on sale, an uncapped SKU is
-worth something **only to a player fighting more than 20 battles a day** — at
-3–5 minutes each, already 80+ minutes of play. So it would have a tiny
-addressable population, deliver its entire value to exactly the group whose
+on principle. With a 10-victory attack boost already on sale, an uncapped SKU is
+worth something **only to a player winning more than 10 battles a day** — around
+20 battles at 3–5 minutes each, already 80+ minutes of play. So it would have a
+tiny addressable population, deliver its entire value to exactly the group whose
 advantage the design is trying not to sell, and carry the full perception cost of
 "they sell an unlimited multiplier."
+
+**The daily curve makes it worse still.** Past 20 victories the base rate is
+already halved, so an uncapped 2× buys a grinder back to *par* rather than
+ahead — the SKU with the worst perception cost in the storefront would be selling
+the removal of a taper.
 
 **There is no third SKU.** If a higher price point is ever wanted, the two boosts
 sold together is the only version that adds no mechanic and no pay-to-win
@@ -1059,13 +1165,19 @@ point of writing it that way.
   work exists to support it; whether it is in scope is undecided. It is also the
   one thing that can be **sold without touching the speed-versus-ceiling question
   at all**, which matters given the revenue curve above runs backwards.
-- ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $2 for
-  the daily boost pair, $20 for a 4-week subscription, and **no way to buy shards
-  at all** — which reads as **2.00× a free player's income** and a ~7-week head
-  start to a competitive kit. What remains is not the price but the **conversion rate** it
-  implies: revenue per player is capped at $260/year by construction, so the
-  business is a volume business and the target player count should be sized
-  deliberately.
+- ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $5 for
+  three days of the boost pair, $20 for a 4-week subscription, and **no way to buy
+  shards at all** — which reads as **2.00× a free player's income** and a ~6-week
+  head start to a competitive kit. What remains is not the price but the
+  **conversion rate** it implies: revenue per player is capped at $260/year by
+  construction, so the business is a volume business and the target player count
+  should be sized deliberately.
+- ~~**Whether anything bounds how much a player can earn in a day.**~~
+  **Settled** — *The daily curve* above. 1.5× on the first five victories, base to
+  twenty, half beyond; counted in victories so a loss never burns a tier; play
+  itself is never blocked. What is **not** settled is whether the same defender can
+  be attacked repeatedly, which is the other half of the session loop and belongs
+  to `09-matchmaking.md`.
 - **Feature unlocks as an onboarding ramp.** The Hidden zone, the second and
   third attack squads, and guild membership could gate on account progress. This
   is progression that gates *complexity* rather than power, so it cannot violate
