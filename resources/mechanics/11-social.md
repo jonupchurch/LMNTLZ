@@ -939,6 +939,67 @@ exactly the kind of change the no-nerf rule makes expensive.
 
 ---
 
+## The public profile — **settled 2026-07-28**
+
+Mostly fixed, with one configurable pair.
+
+| Field | Visibility |
+|---|---|
+| **Visible defense squad** | **always** — scouting is the core loop |
+| **Both hold streaks** | **always** — public by design, incl. the Hidden squad's |
+| **League** · **rating** · **roster power** | **always** |
+| **Guild** | **always** — a guild roster shows it regardless |
+| **Battle record** | **always, as the last 20 battles** |
+| **Time zone** · **languages** | **player's choice**, shown by default |
+
+### Location is the one thing a player may hide
+
+**Time zone and languages are the fields that describe a person rather than an
+account**, which is why they are the pair worth making optional. Everything else
+above describes *play*, and this is a competitive game where hiding play invites
+exactly the suspicion a privacy control is meant to avoid.
+
+**Default to shown**, because both are what recruiters filter on and most players
+want to be found. **Hiding them on a profile does not remove them from a
+*Looking for a Guild* posting** — that posting is the player's own, and choosing
+to include something there is a different act from leaving it on display
+permanently.
+
+### The record is the last 20 battles, and never a Hidden one
+
+> **The public record shows the last 20 *Visible* battles. Hidden battles never
+> appear in it — not as entries, not as gaps, not as a discrepancy in a count.**
+
+**A rolling window rather than a lifetime tally** because a permanent ratio is a
+number worth protecting, and a player protecting it **stops attacking** — which is
+the behaviour the entire economy depends on, at 288 of a typical 388 shards a day.
+Twenty battles is informative, recovers from a bad run, and is never worth
+defending by not playing.
+
+#### Excluding Hidden battles naively is what leaks them
+
+**This is the trap.** Take the player's last 20 battles, filter out the Hidden
+ones, and display what remains — and the result **advertises exactly what it was
+meant to conceal**, in three separate ways:
+
+- **A short list.** 20 requested, 17 shown, so three were Hidden.
+- **A gap in time.** A visible run with an unexplained six-hour hole in it.
+- **A count that does not reconcile** with anything else on the page — *"20 of
+  23"*, or a total that disagrees with the streaks.
+
+**So it is not a filter over the last 20 battles. It is the last 20 Visible
+battles**, selected that way from the start: always exactly 20, contiguous by
+their own numbering, with nothing on the page from which a Hidden count can be
+subtracted.
+
+> **Same rule as embeds, one layer deeper.** A Hidden battle is *absent*, never
+> redacted — and an absence that can be measured is not an absence. The Hidden
+> squad's **hold streak stays public**, which is the one Hidden fact the design
+> deliberately publishes, and it reveals a count without ever revealing an
+> occasion.
+
+---
+
 ## CSV export — **settled 2026-07-28**
 
 > **Players can download their own data. Guild masters and officers can download
