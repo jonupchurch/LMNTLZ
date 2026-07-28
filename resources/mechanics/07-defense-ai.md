@@ -219,12 +219,10 @@ An unconfigured squad also shows **up to four distinct behaviours** rather than
 one, since the defaults are per role and a squad of six typically spans three or
 four roles.
 
-> **The same reasoning obliges power preference to declare a default, and it must
-> not be greedy.** *Why ranking beats firing the biggest thing available* measures
-> greedy at **4 distinct rotations across 27 heroes**, with seventeen sharing one.
-> A greedy default would hand every unconfigured defense in the game the same
-> opening — reintroducing precisely the failure the ranking exists to prevent.
-> **Open**: what the default ranking should be instead.
+**Power preference carries per-role defaults for the same reason** — see *The
+default ranking is per role*. They are drawn from the 12 orderings that are safe
+for every hero, so an unconfigured defense can never have a power silently
+switched off.
 
 ---
 
@@ -332,6 +330,75 @@ that. The problem is not *what* greedy fires — it is that every hero fires it 
 the same order.
 
 At squad level, ranking gives **240⁶ ≈ 1.9 × 10¹⁴** behavioural combinations.
+
+### A ranking can silently delete powers — and most of them do
+
+> **A power only ever fires when everything ranked above it is on cooldown.**
+
+That one sentence has consequences the ranking model did not account for. The
+tier-0 auto-attack has **cooldown 0 and no gate**, so it is available every turn —
+which means **anything ranked below tier 0 never fires at all.** Simulated over
+60 turns for all 27 heroes:
+
+| Ranking | t0 | t1 | t2 | t3 | t4 | t5 |
+|---|---|---|---|---|---|---|
+| **`5·4·3·2·1·0`** — greedy | 5.4 | 18.8 | 23.6 | 23.6 | 16.7 | 11.9 |
+| `0·5·4·3·2·1` — tier 0 first | **100** | 0 | 0 | 0 | 0 | 0 |
+| `5·4·0·3·2·1` — tier 0 third | 71.4 | **0** | **0** | **0** | 16.7 | 11.9 |
+| `1·2·3·4·5·0` — cheap first | 0 | 50.0 | 25.0 | 25.0 | **0** | **0** |
+
+*(This also validates the model: greedy's simulated 5.4/18.8/23.6/23.6/16.7/11.9
+reproduces the published 4.6/19.6/23.3/23.5/16.4/12.6 closely.)*
+
+**Cheap powers ranked high starve expensive ones**, because availability scales
+with `1/(cooldown+1)`. `1·2·3·4·5·0` puts tier 1 on top, and both ultimates go to
+**exactly zero**.
+
+Enumerating all 720 orderings against every hero:
+
+| Powers still firing ≥1% of turns | Share of the 19,440 hero × ordering pairs |
+|---|---|
+| 1 | 16.7% |
+| 2 | 16.7% |
+| 3 | 19.2% |
+| 4 | 24.4% |
+| 5 | 20.2% |
+| **6 — all live** | **3.0%** |
+
+**Only 3% of orderings keep a whole kit working**, a median of 13 per hero. So the
+240 distinct rotations are real, but most of them are varied *because* they have
+switched powers off.
+
+**Two things follow.**
+
+- **The squad builder must show which powers will actually fire** under the chosen
+  ranking. Without it, a player ranking casually disables half their kit and never
+  learns why their defense is weak. This is not a nice-to-have; it is the
+  difference between a lever and a trap.
+- **Every default must come from the safe set.** Exactly **12 of 720 orderings are
+  healthy for all 27 heroes**, and every one of them ends **`1·0`** — tier 1
+  second-to-last, tier 0 last. That is a structural rule, not a style.
+
+### The default ranking is per role
+
+**Settled 2026-07-27**, matching how targeting defaults work, and chosen from the
+12 universally safe orderings so no default can ever delete a power:
+
+| Role | Default ranking | t0 | t1 | t2 | t3 | t4 | t5 | Why |
+|---|---|---|---|---|---|---|---|---|
+| **Striker** | `5·4·3·2·1·0` | 5.4 | 18.8 | 23.6 | 23.6 | 16.7 | **11.9** | `Finish It` pays for closing out — burst first |
+| **Tank** | `4·3·2·1·5·0` | 3.7 | **24.0** | 24.2 | 24.5 | 16.7 | **6.9** | `Hold the Line` wants presence over spike; the only safe ordering that trades the ultimate for uptime |
+| **Ranged** | `3·5·4·2·1·0` | **2.0** | 22.6 | 25.0 | 25.0 | 14.1 | 11.3 | `Measured Shot` pays a lower stat budget for reach — the lowest tier-0 share, so it is rarely reduced to a ×1 auto |
+| **Buffer** | `4·5·2·3·1·0` | 3.1 | 18.0 | **30.8** | 19.5 | 16.7 | 11.9 | `Behind the Line` keeps it alive to sustain — mid-tier cadence |
+
+Four distinct openings instead of greedy's one, all verified to keep every power
+live on every hero.
+
+> **The role→ordering mapping is a proposal; the safety is not.** All four are
+> measured, and no default can switch a power off. Which ordering suits which role
+> should still be checked against what each role's tier-2 and tier-3 powers
+> actually *do* — the Buffer assignment in particular assumes its mid tiers carry
+> the support, which nobody has verified.
 
 ### Why not scripting the opening instead
 

@@ -393,10 +393,11 @@ enemy pip with no number is what the design already draws.
 
 ## Open
 
-- **Late resistance.** The Turn Sequence screen proposed re-testing long control
-  against `Resolve` as it ticks, letting a high-`Resolve` hero shake a stun off
-  early rather than only refusing it on application. Tagged OPEN there too. With
-  stun at 1 turn it currently has nothing to bite on.
+- ~~**Late resistance.**~~ **Settled: not applicable.** Re-testing long control
+  against `Resolve` as it ticks needs control that lasts long enough to re-test,
+  and **Stun and Silence are both 1 turn** — there is no second tick. `Resolve`
+  already does its work at application. Revisit only if control ever exceeds one
+  turn, which *Crowd control is priced separately* above advises against.
 - ~~**Whether shields have a type.**~~ **Settled: no.** Shields absorb any
   damage. A martial-only or arcane-only shield would sharpen counter-building,
   but it costs another variant to read on a chip that already carries up to four

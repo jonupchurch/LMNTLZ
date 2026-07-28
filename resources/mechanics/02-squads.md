@@ -433,7 +433,7 @@ will read very differently from the Visible squad's. Whether a defender is
 rewarded for a Hidden hold, and how heavily, needs settling alongside the
 attacker's reward.
 
-### 3. Is placement constrained by type?
+### ~~3. Is placement constrained by type?~~ — **settled: no**
 
 [`../03-squad-builder.md`](../03-squad-builder.md) has always said "melee vs.
 magic positioning matters." A hard rule — martial heroes must be front — sits
@@ -442,10 +442,24 @@ options would be thin. Soft incentives are almost certainly right, but reach
 may already be doing this job on its own: whatever else is true, a melee hero
 wants to be where it can actually connect.
 
-### 4. Does anything besides reach depend on row?
+**No hard rule. Reach is the constraint.** `Might ≥ 40 ⟺ reach 1` holds across
+all 27 heroes, and a reach-1 champion in the middle seat reaches only its own
+front line — so it cannot attack at all. The roster's heaviest hitters are
+already forced forward by a rule that exists for other reasons, and a champion
+placed badly is simply useless rather than illegal. A type rule would add a
+restriction on top of a constraint that already bites harder.
+
+### ~~4. Does anything besides reach depend on row?~~ — **settled: no**
 
 Reach makes rows matter. Whether they *also* modify damage taken or dealt, or
-weight AI target selection, is unanswered — and may now be unnecessary.
+weight AI target selection, was unanswered.
+
+**Nothing else depends on row.** Reach already makes placement the most
+consequential squad decision — it decides who can act at all, it opens up as
+rows empty, and `07-defense-ai.md` now uses row distance in both the targeting
+menu and the engine's tiebreak chain. A damage modifier on top would be a second
+positional system layered on a working one, and no design problem is asking for
+it.
 
 ### 5. How is reach assigned across the roster? — *parked*
 
@@ -488,11 +502,16 @@ the back seat too easy to fill well — the seat is designed as a trap for the
 careless, and a trap is not much of a trap if over half the roster springs it
 safely.
 
-### 6. Does the defense squad follow different combat rules?
+### ~~6. Does the defense squad follow different combat rules?~~ — **settled: no**
 
 The zones now differ in *visibility*, but whether a defending formation behaves
-differently in combat — row collapse, reach, targeting — is still unanswered.
-Belongs to [`07-defense-ai.md`](07-defense-ai.md).
+differently in combat — row collapse, reach, targeting — was unanswered.
+
+**They do not.** One combat model, both zones. The Visible/Hidden split is about
+**who can see a squad and what a win pays**, never about how a battle resolves —
+and `07-defense-ai.md` reached the same answer independently. Divergent combat
+rules would mean an attacker's knowledge of the game did not transfer between the
+two doors, which is the opposite of what the ambush mechanic is for.
 
 ---
 
