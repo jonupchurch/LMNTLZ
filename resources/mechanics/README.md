@@ -20,7 +20,8 @@ feeling is lore; numbers, orderings, and formulas are mechanics.
 | 06 | `06-progression.md` | Rune Shards, custom runes, the rating ladder | **Drafted** — the currency and the power model are settled; rates and the ladder are open |
 | 07 | `07-defense-ai.md` | How the engine plays a defense squad | **Drafted** — targeting priority, power preference and scouting all settled |
 | 08 | `08-guilds.md` | Guilds of up to 24, split into three Wings of 8 | **Drafted** — membership settled, rewards blocked on 06 |
-| 09 | *`09-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
+| 09 | `09-matchmaking.md` | Who you are offered as an opponent — the gear score and leagues | **Drafted** — gear axis settled; the rating axis is open in 06 |
+| 10 | *`10-equipment.md`* | Runic equipment — stat bonuses, buff stacking | Not started — **planned fast-follower**, see below |
 
 **Combat is done.** 01, 03, 04 and 05 together specify a battle end to end: who
 acts when, what a hit does, how two types combine, and what every adjective in a
@@ -108,7 +109,7 @@ What is left has a much simpler shape:
   strategic weight are *which zone deserves the stronger heroes* (which depends
   on the rating stakes attached to each, so it leans on 06) and *whether
   anything besides reach depends on row* (which belongs to 07).
-- **`09-equipment.md` is deliberately last**, and everything above has been
+- **`10-equipment.md` is deliberately last**, and everything above has been
   written to accommodate it — see the bounded-formula rule.
 - **The hero-numbers pass is orthogonal to all of it.** Every formula is
   specified; the values feeding them are a template. See *Parked* below.
