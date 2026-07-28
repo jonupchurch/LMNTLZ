@@ -54,13 +54,6 @@ every stage costs a flat 150 while the gains diminish — so 450 shards buys 35
 points and the next 200 buys an effect. A shard-proportional score would rate a
 player who bought three +5 traces as equal to one who bought three +20 majors.
 
-> **This is not in tension with *Banked shards count too* below.** That rule
-> scores shards a player has **not** spent, as a stand-in for power they could
-> deploy at any moment. This one refuses to score shards they **have** spent,
-> because the runes those shards became are already counted directly and at their
-> real worth. Spent shards are double-counting; unspent ones are the only power on
-> the board that nothing else sees.
-
 ### Why the effect is scored at 15 points, and what that is tied to
 
 **The number is the utility catalog's own tuning, not a separate decision.**
@@ -105,45 +98,47 @@ would rate that player eight leagues above their strength.
 > and the rating axis corrects for it over time. Worth watching, not worth a rule
 > yet.
 
-### Banked shards count too — **added 2026-07-28**
+#### The second sandbag: hoarding — **measured and accepted 2026-07-28**
 
-> **`score = 2.5 × placed stat points + 0.2 × unspent shard balance`.**
-> Five banked shards are one point of gear score.
+**Not spending is a cheaper sandbag than destroying, and it is worth naming.**
+Destroying a rune costs stat points *and* 150 shards a slot; simply banking costs
+neither. A hoarder stays at the Bronze floor, farms opponents matched to a kit
+they have deliberately not built, and wins far more often than their shard
+balance says they should.
 
-**Reading only placed runes leaves a cheaper sandbag than the one accepted
-above.** Destroying a rune to drop a league costs stat points *and* 150 shards a
-slot. **Simply not spending costs neither** — a player who banks earns power they
-have not declared, and the score cannot see it. At 388 shards a day a month of
-hoarding is **11,640 shards, ~18 full runes, 2,328 points of undeclared power**
-against a Bronze floor of 1,500. That is not a rounding error; it is the whole
-league ladder hidden in a wallet.
+| At day 30 | Deployed score |
+|---|---|
+| Normal player, deploying continuously | 2,865 |
+| **Hoarder, then cashing out** | **3,738** |
 
-**Count the balance, not lifetime earnings.** Lifetime-earned was the first shape
-of this and it fails twice: it never decreases, so it drifts into being a measure
-of *how long someone has played* rather than how strong they are — and it
-**double-counts**, since a shard is scored once when earned and again once it is
-sitting in a rune. Current balance has neither problem.
+**About 30% ahead**, driven by roughly **1.64× shard income** — the daily curve
+bounds income by *victories*, and nothing bounds how easily those victories come.
 
-**0.2 per shard is chosen so a purchase is score-neutral.** A full rune is 650
-shards for 125 points, a true rate of 0.192; rounding *up* to 0.2 makes banking
-650 worth 130 against the 125 it buys, so **building is never worse for your
-score than hoarding** and the error leans the safe way.
+**Priced and rejected: scoring the unspent balance.** `score = 2.5 × placed stat
+points + 0.2 × banked shards` closes it completely — a month of hoarding becomes
+2,328 points and lifts the player clear of Bronze. It was rejected on what it
+costs to get there:
 
-| Behaviour | Banked | Banked score | Effect |
-|---|---|---|---|
-| Saving for a utility stage | 200 | 40 | Noise — 2.7% of the Bronze band |
-| Saving for one full rune | 650 | 130 | **Under 9% of a league band** — does not force a hasty commit |
-| **Hoarding one month** | 11,640 | **2,328** | **Lifted clear out of Bronze** |
+> **Banked shards are not power, and the league's whole job is to bound power.**
+> A hoarder placed by their wallet meets opponents at ~2.5× their real combat
+> strength — so the rule fixes an exploit by breaking, for that player, the
+> **1.67× guarantee** the league system exists to provide. Trading a promise for
+> an exploit is a bad trade even when the exploit is real.
 
-That last row is the point: the rule is invisible to anyone playing normally and
-unavoidable for anyone hoarding, which is exactly the shape a sandbag rule needs.
+A floored variant (count only above 1,000 banked, so ordinary saving scores zero)
+answers the objection for normal players and was the recommendation; it still
+leaves the hoarder mismatched, which is the part that mattered.
 
-> **It does not fight `06-progression.md`'s "commit with your eyes open."**
-> Runes are destroyed on replacement, so deliberating before spending is correct
-> play and this rule must not punish it. At **130 points for a fully-saved rune**
-> the pressure to deploy is real but well under a league band — enough that
-> indefinite hoarding is priced, not enough that a player rushes a permanent
-> decision to dodge it.
+**Accepted for the same reason as the sandbag above, and it is the same size.**
+1.64× against 1.8×, and the **rating axis is the corrective in both cases** — a
+hoarder farming easy wins climbs in rating, rating orders the pool, and they are
+served the hardest opponents their league contains. Two accepted risks of one
+magnitude answered by one existing mechanism is consistent; inventing a rule for
+one of them and not the other would not be.
+
+> **Both are worth watching in `packages/sim`, together.** If the rating axis
+> turns out not to correct either one, they need a single answer rather than two
+> — and the floored balance rule above is the drafted candidate, ready to adopt.
 
 ---
 
