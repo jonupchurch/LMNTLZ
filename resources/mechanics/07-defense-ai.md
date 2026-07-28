@@ -512,10 +512,12 @@ later.
   owner's turns — so a stance with no additional cost is a property wearing a
   costume, plus a third ranking widget on every squad row. It remains available
   as a config field once `packages/sim` can price one.
-- **Whether the two zones behave differently.** `02-squads.md` question 6 asks
-  whether a defending formation follows different combat rules at all. Nothing so
-  far requires it, and the Visible/Hidden distinction is currently about
-  visibility and reward rather than behaviour.
+- ~~**Whether the two zones behave differently.**~~ **Settled: no** —
+  `02-squads.md` question 6 closed to *the defense squad follows identical combat
+  rules*. Nothing required a difference, and the Visible/Hidden distinction is
+  entirely about **visibility and reward**: what an attacker can see, how a battle
+  is entered, and what a hold pays. The engine plays both zones the same way, so
+  everything in this document applies to each without qualification.
 - ~~**Whether the AI ever declines to act.**~~ **Settled: only when it has
   nothing legal.** A champion passes if and only if **no power it owns has a
   legal target in reach** — never as a tactical choice, never because its

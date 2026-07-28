@@ -320,9 +320,30 @@ Two more, **settled 2026-07-27**:
 >
 > **So two of the 27 unique passives are dead** — one grants immunity to nothing,
 > the other denies nothing. `03-powers.md` makes the unique layer the carrier of
-> hero identity, so this is a real gap rather than a curiosity. Either the
-> reactive powers those passives answer get authored, or both passives need
-> replacing.
+> hero identity, so this is a real gap rather than a curiosity.
+
+**Resolved 2026-07-28: author the reactive powers, do not replace the passives.**
+The choice was between authoring the powers those two passives answer and
+replacing both passives; authoring wins on three counts.
+
+- **Replacing costs the same work and destroys more.** Two new unique passives is
+  comparable authoring effort to a handful of reactive powers — and it retires
+  the entire reaction system, which is already fully specified above, to save
+  nothing.
+- **Reactions are a *defensive* mechanic, and defense is the half the player
+  never touches.** A reaction fires on an evaded attack, so it is a thing a
+  defending squad does while the engine drives it. That is exactly where
+  mechanical variety is scarcest and pays most.
+- **It fixes two heroes' identities rather than rewriting them.** `Already Gone`
+  and `Nothing to Discuss` are good passives pointed at nothing; the cheapest
+  repair is to build the target.
+
+**How many, and on whom, belongs to the hero-numbers pass** (see
+`README.md` → *Parked*). A reaction wants high `Agility` to fire at all, so the
+assignment is downstream of the stat pass and should not be guessed before it.
+One sizing note for whoever does it: at 6 heroes drawn from 27, **a single
+reactive hero already appears in ~22% of enemy squads**, so this does not need
+many to stop being dead.
 
 ### 5 · Resolution — the clocks move
 

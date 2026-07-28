@@ -314,6 +314,12 @@ power, not a stance a champion adopts**. Full reasoning in `04-turns.md` →
 roster**, which leaves Silka's `Already Gone` and Hettamar's `Nothing to Discuss`
 as two dead unique passives.
 
+> **Resolved 2026-07-28 — the reactive powers get authored.** Replacing the two
+> passives was the alternative and it costs the same effort while retiring a
+> fully-specified system. **How many and on whom goes with the hero-numbers
+> pass**, since a reaction needs `Agility` to fire at all. This is the one known
+> gap in the 127; everything else in this file is authored and costed.
+
 ### Silka's bonus action — bounded by reach
 
 > **`Quicker Than Told` chains as many times as there are enemies in reach.**
