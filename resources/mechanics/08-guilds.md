@@ -867,11 +867,27 @@ reward on top. Two things inside that are not:
   1000 is everyone and the brackets collapse toward the floor. **That degrades in
   the right direction** — early players find the higher tiers unusually reachable,
   which is a good problem at launch and self-corrects as the population grows.
-- **Whether all eight members of a paid Wing are paid equally.** An even split is
-  simple and rewards being *in* a good Wing. Splitting by contribution rewards
-  playing well but stacks on top of question 0 — if score is a total *and* the
-  payout is proportional to contribution, a low-activity member is punished twice
-  for the same thing.
+- ~~**Whether all eight members of a paid Wing are paid equally.**~~ —
+  **settled 2026-07-28: an even split.** Every member of a placed Wing takes the
+  same share, regardless of individual contribution.
+
+  **Proportional payout punishes the same person twice.** Score is already a
+  **total**, so a quiet member has already reduced their Wing's placement; making
+  their share proportional charges them for it a second time. One penalty per
+  shortfall is enough.
+
+  > **It also rebuilds what the assignment lock was written to tear down.** The
+  > lock exists so a guild cannot cut a laggard mid-event. A proportional split
+  > restores that pressure in a form the lock cannot reach — the Wing can no
+  > longer remove you, but it can make sure you know what you cost everyone. An
+  > even split is the only version where **a member who falls ill mid-event is a
+  > disappointment rather than a liability.**
+
+  **Free-riding is the accepted cost**, and it is small: eight members, a public
+  tally, and a total-based score that visibly moves with each contribution. A
+  participation minimum was considered and rejected — it recreates the cutting
+  pressure in miniature by giving the Wing a reason to watch whether a struggling
+  member clears a bar.
 
 The currency is settled — **Rune Shards** — so this is no longer blocked on
 `06-progression.md`. What is left is a genuine design choice about whether being
