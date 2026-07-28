@@ -553,6 +553,89 @@ makes farming one weak defender pointless.
 
 ---
 
+## The starter league — **settled 2026-07-28**
+
+> **A new account begins in a league whose entire defender pool is authored bots.
+> It lasts one week or 3,250 shards earned, whichever comes first, and a player
+> may leave early at any time. Leaving is permanent.**
+
+**This replaces the early-progression bonus rather than adding to it.** The
+question it answers was whether new players need extra shards; the answer is that
+they need **beatable opponents**, and easier opponents produce more victories,
+which produce more shards on their own. The front-load arrives as *difficulty*
+instead of as currency — which matters in an economy built as a bounded ceiling
+over an unbounded sink, where every granted shard is one the mid-game never gets
+to absorb.
+
+### What it fixes, beyond onboarding
+
+- **The new-player gap, absolutely.** A fresh account is **1,500 gear score
+  against a full kit's 10,125 — 6.75×.** Leagues bound that to 1.67× *only if
+  Bronze is populated*. An authored pool bounds it by construction, with no
+  dependence on who happens to be playing.
+- **Cold start at launch.** Every account begins here, so **launch week is
+  bot-only for the entire population** and everyone graduates together. The
+  emptiest the game will ever be is the one week nobody can tell.
+- **It can teach counter-building**, which nothing else does. The ramp is
+  authored, so bot 1 can carry one obvious exploitable Bane and bot 6 none — a
+  tutorial for the game's actual thesis without a tutorial mode existing.
+- **It calibrates rating against known quantities.** Bots carry fixed ratings as
+  anchors (above), and provisional **K=40 covers the first 30 battles** — so a
+  starter week sets a player's initial rating against authored opponents rather
+  than against whoever was in the pool.
+
+### Defense is dormant, and the income is corrected for it
+
+**Nothing attacks a starter player's defense.** The offered pool is bots, so no
+starter attacks another, and bots do not attack — bot *offense* AI does not exist
+and is not worth building for one week (`07-defense-ai.md` covers defenders only).
+Building a defense during the starter week is **preparation for graduation**, and
+should be presented that way.
+
+That removes **holds — 100 of a typical 388 shards a day, 26%** — so the starter
+league pays **1.5× on attack income**, daily curve intact:
+
+| | Normal | Starter, ×1.5 | Net |
+|---|---|---|---|
+| Light | 223 | 248 | 1.11× |
+| **Typical** | **388** | **432** | **1.11×** |
+| Heavy | 603 | 675 | 1.12× |
+
+> **Most of that multiplier is not a bonus.** 1.35× merely replaces the dormant
+> holds; only the remaining **11%** is help. Stating it honestly matters, because
+> a 1.5× that reads as a 50% head start would misprice every figure downstream.
+
+**The daily curve stays on**, taper included. A flat 1.5× replacing the curve was
+considered and has the wrong gradient — it pays a heavy player **1.37×** against a
+typical player's 1.2×, rewarding exactly the behaviour an authored pool should not
+encourage.
+
+### Two exits, and why both are needed
+
+**One week, or 3,250 shards — five full runes — whichever lands first.** They fire
+for different players:
+
+| | Days to 3,250 | Exits on |
+|---|---|---|
+| Light — 248/day | 13.1 | **Time** |
+| Typical — 432/day | 7.5 | **Time**, barely |
+| Heavy — 675/day | **4.8** | **Shards** |
+
+**Time protects the slow player; the shard cap stops the fast one over-farming an
+authored pool.** A heavy player would otherwise take a full week of guaranteed-
+beatable opponents, which is neither a fair head start nor an interesting week.
+
+**Opting out is voluntary and permanent.** A player who wants real opponents on
+day two should have them; a player who returns after leaving would be farming a
+pool built for beginners. One-way keeps it honest and needs no rule beyond a flag.
+
+> **This is the one carve-out from *The pool is every defender*.** That rule is
+> otherwise absolute, and the exception is deliberately bounded — a single week,
+> once per account, at the very start, opt-out at will. Naming it as an exception
+> is what stops it becoming a precedent for others.
+
+---
+
 ## Ambush needs no rule here
 
 > **An ambush selects a *door*, not an opponent.**

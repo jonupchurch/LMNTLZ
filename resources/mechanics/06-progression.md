@@ -1477,9 +1477,23 @@ point of writing it that way.
   what a guild event placement and a weekly or monthly ladder finish pay is not.
   Both are the levers that reward *standing* rather than volume, so they matter
   more than their size suggests.
-- **Whether the early curve is front-loaded at all.** The new-player section
-  assumes it is, but at 20 a win a typical player already completes their twelve
-  granted heroes in under two months. A separate early bonus may be unnecessary.
+- ~~**Whether the early curve is front-loaded at all.**~~ **Settled 2026-07-28 —
+  it is, but through matchmaking rather than through the curve.** There is **no
+  separate early shard bonus.** New accounts instead spend their first week in a
+  **starter league whose entire defender pool is authored bots**
+  (`09-matchmaking.md`), which front-loads progression as *difficulty* — easier
+  opponents mean more victories, which mean more shards, with nothing extra
+  injected into the economy.
+
+  Defense is dormant there, costing the **26% of income that holds provide**, so
+  starter attack income pays **1.5×** — of which 1.35× is compensation and only
+  **11% is a genuine head start.** It ends at one week or **3,250 shards (five
+  full runes)**, whichever comes first, and can be left early and permanently.
+
+  **This was the better answer to the question as asked.** New players do not need
+  more currency — a typical player already completes twelve heroes in 1.3 months.
+  They need opponents they can beat, and a bounded ceiling over an unbounded sink
+  is the wrong economy to solve an onboarding problem by granting shards into.
 - **Whether 3 slots stays 3.** Three runes reaches 53% of the theoretical stat
   ceiling and leaves 356 points unclaimed, so a fourth slot is available later
   without any formula moving. Cheap to add, expensive to take back.
