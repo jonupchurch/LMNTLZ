@@ -62,6 +62,64 @@ a point of `Might`. No partial weight fixed that; only removing the damage term
 did. `Luck` now has two jobs, the die and the crit rate, and the arithmetic is
 in `01-stats.md`.
 
+## The no-nerf rule
+
+**Settled 2026-07-27.**
+
+> **Balance early, tweak forever, and never swing the nerf hammer.** Once a
+> number ships, it does not go down.
+
+### Why it is affordable here, and it genuinely is
+
+Three settled decisions already point this way, so the rule is closer to naming
+an existing commitment than to adding a constraint:
+
+- **Runes are permanent and destroyed on replacement.** A nerf writes off 650
+  shards of a player's investment with no refund path — in a game where the
+  currency *is* the progression, that is confiscation with extra steps.
+- **Replays are stored, never re-simulated** (`../../docs/tech-stack.md`), so a
+  patch already cannot reach backwards. Half of this rule was decided the day
+  that was.
+- **All 27 heroes are unlocked and identical.** The usual reason to nerf — a
+  paywalled or luck-gated unit dominating — cannot arise, because nobody can own
+  something you don't.
+
+### What it forces
+
+**Buffing becomes the only balance direction**, which is power creep by another
+name — and power creep is exactly what the bounded-formula rule above was written
+to survive. **The caps are what make buff-only safe**, and this rule makes them
+load-bearing in a way they were not before:
+
+| Guardrail | Ceiling it holds |
+|---|---|
+| Hard cap of **75 per stat** | maximum mitigation stays exactly 50% |
+| Accuracy clamp | 65% – 95%, whatever gear does |
+| Bounded mitigation curve | no runaway at 3× current stat values |
+
+**So the rule has a lifetime.** Buff everything to the cap and relative balance
+freezes, with no lever left. Long before then the levers should be *additive*
+rather than numeric: **curated bot defenders** to apply meta pressure
+(`09-matchmaking.md`), and new content — `10-equipment.md` is the planned one.
+
+### The one carve-out
+
+**Fixing a bug is not a nerf.** If a power does something it was never specified
+to do, correcting it restores the design rather than changing it. The same goes
+for a data-entry error. State the difference out loud when it comes up, because
+the distinction is what keeps the rule credible rather than lawyerly.
+
+### Where it will be tested first
+
+**The 33 utility effects.** They are the newest numbers, the least verified, the
+only ones that are *purchased* — 200 shards for the fourth rune stage — and
+their magnitudes are still open (`06-progression.md`). If one lands at 3× its
+band, the rule says the answer is to raise the other 32.
+
+**This is the strongest argument yet for the build order already decided.**
+`packages/sim` is not verification after the fact; under a no-nerf rule it is the
+last moment a number can move freely. See the hero-numbers pass below.
+
 ## Parked, on purpose
 
 Not blocked — **deferred by decision**, so don't treat these as outstanding
