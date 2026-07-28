@@ -1,8 +1,14 @@
 # LMNTLZ — Tech Stack Decision Record
 
-**Status: settled 2026-07-26.** Every entry below was approved deliberately.
-The *why* is recorded alongside the *what*, because the reasoning is what stops
-a decision being quietly reversed later by someone who only sees the outcome.
+**Status: complete as of 2026-07-28.** Every entry below was approved
+deliberately. The *why* is recorded alongside the *what*, because the reasoning is
+what stops a decision being quietly reversed later by someone who only sees the
+outcome.
+
+> **The stack table has no TBD rows.** The five gaps carried since 2026-07-26 —
+> object storage, transactional email, error monitoring, analytics and realtime —
+> all closed on 2026-07-28. What remains under *Still open* are **numbers to verify
+> and spikes to schedule**, not choices to make.
 
 ---
 
@@ -20,11 +26,15 @@ a decision being quietly reversed later by someone who only sees the outcome.
 | Maintenance flag | Vercel Edge Config |
 | Auth | Owned in-house: Google ID tokens + Steam session tickets → own JWTs |
 | Payments (web) | **Paddle** — merchant of record |
-| Replay logs | **Object storage**, 7-day expiry — provider TBD |
-| Transactional email | **Managed sender** behind an interface — Resend or equivalent |
+| Replay logs | **Vercel Blob**, 7-day expiry |
+| Transactional email | **Resend**, behind an interface |
 | CI/CD | **GitHub Actions** + Vercel's own git integration |
 | Unit / integration tests | **Vitest** |
 | End-to-end tests | **Playwright** |
+| Realtime transport | **Ably** — managed pub/sub, behind an interface |
+| Error monitoring | **Sentry** — client and API |
+| Game telemetry | **Postgres** — SQL against the battle metadata row. *No analytics vendor.* |
+| Web funnel | **Vercel Web Analytics** — enabled at launch |
 
 ## Layout
 
@@ -244,6 +254,162 @@ tools.
 
 ---
 
+## Realtime transport — Ably — **decided 2026-07-28**
+
+> **The broker does exactly one job: fan-out.** Clients subscribe; they never
+> publish. Every message reaches it only after passing through our own API.
+
+**Chat is in-game and that is now settled** — global, guild, Guild Ads, beginner,
+direct and admin (`../resources/mechanics/11-social.md`). Everything else in this
+document is request/response, which was right for gameplay because PvP is
+asynchronous and a battle turn *is* a request. Chat is the one system that is not.
+
+### Discord was foreclosed by Guild Ads, not by preference
+
+Handing chat to Discord was genuinely on the table as a way to avoid owning this.
+**The Guild Ads channel is what makes it impossible**, and it is worth recording
+why so it is not revisited as an easy saving:
+
+- Postings **cost shards** — 5 looking-for-guild, 10 your own squad, 25 an
+  opponent's — and guild ads draw **guild-fund credits** against a hard **4/day**
+  ceiling (`../resources/mechanics/08-guilds.md`).
+- Embeds **reference live game state** — open slots, league, roster power, an
+  actual squad — rather than carrying uploaded content.
+- **No embed may ever show a Hidden defense**, which is enforceable only where we
+  control rendering.
+
+Global and beginner chat could plausibly have lived on Discord. Guild Ads never
+could — and once the pipe exists for one channel, the others ride it for free.
+
+### Why clients hold subscribe-only tokens
+
+**Four independent rules force every message through our API before delivery**,
+and any one of them alone would be sufficient:
+
+| Rule | From |
+|---|---|
+| Embeds cost shards | `11-social.md` |
+| Guild ad credits — 2 free daily, hard cap 4/day, from guild funds | `08-guilds.md` |
+| Moderation classification | `11-social.md` |
+| Scope authorization — guild membership, beginner-league gating, admin role | `11-social.md` |
+
+```
+client → POST /v1/chat/message → our API (authorize · charge · persist · moderate)
+                                      → publish → Ably → fans out to subscribers
+```
+
+> **A client able to publish directly to the broker would bypass the shard
+> charge.** So subscribe-only is a **correctness requirement, not a hardening
+> measure** — the economy rules in `11-social.md` are enforced by the fact that
+> publishing is a REST call to us. Our API mints short-lived Ably tokens scoped to
+> exactly the channels that player may read, which is also where guild membership
+> and beginner-league gating are enforced.
+
+### Why Ably specifically
+
+- **Vercel still holds no connections.** We publish over REST; the player's browser
+  opens the WebSocket to Ably directly. The serverless architecture is untouched —
+  which is the property that ruled out running our own socket server on Vercel in
+  the first place.
+- **Presence and history are primitives**, not features to build. The Chat screen's
+  `1 482 wardens online` and `In battle · round 4` are a subscription, not a
+  subsystem.
+- **Token auth is scoped by us**, so channel permissions stay server-side.
+- **The free tier covers development and soft launch**, and the bill starts only
+  when there are players — the right shape for a self-funded project.
+
+**A self-hosted socket process was the runner-up and lost on scope.** Since the
+broker is pure fan-out, self-hosting means rebuilding fan-out, reconnection,
+presence and scaling by hand — a commodity — and introducing the only stateful,
+always-on deployment in an otherwise stateless system.
+
+### Cost, and the one knob that changes its shape
+
+**Concurrency, not message volume, is what is billed.** At 10k DAU with a
+~30-minute average daily session that is roughly **200 average and ~600 peak**
+concurrent connections — past the 200-connection free tier, so **verify current
+pricing before launch** rather than trusting the figure here.
+
+> **Presence is what makes the bill scale with DAU instead of with chat usage.**
+> Showing an online count requires holding a connection the whole time a player is
+> in the app. Connecting only while the chat panel is *open* drops concurrency
+> severalfold. **Presence is therefore the designated cost lever** — if the bill
+> bites, that is the thing to turn off, and it is a toggle rather than a rewrite.
+
+### Decide once — three other features want this pipe
+
+**Chat is merely the first caller.** Guild event standings, live leaderboards and
+battle-report pushes all want server-initiated delivery, and all of them would
+otherwise arrive as polling bolted on separately. **The transport sits behind an
+interface** for the same reason email does: so the second and third callers do not
+each re-implement it, and so the vendor stays swappable while the broker's job
+stays trivially small.
+
+---
+
+## Observability — Sentry for crashes, Postgres for everything else — **decided 2026-07-28**
+
+> **Game telemetry is not product analytics.** They answer different questions and
+> only one of them needs a vendor.
+
+**The questions this design actually has to answer are all battle questions**, and
+a battle already writes a permanent row we own at full fidelity. Routing copies of
+that through Amplitude, Mixpanel or PostHog would buy a **sampled, aggregated,
+retention-limited** version of data already sitting in Postgres — and charge for
+it.
+
+| Question | Answered by |
+|---|---|
+| Do Hidden squads hold better than Visible? | **SQL** — the zone-balance commitment in `../resources/mechanics/02-squads.md` |
+| Is a battle really ~102 hero-turns? | **SQL** |
+| Which heroes are over- or under-picked? | **SQL** — the input to the balance pass |
+| Are league thresholds right for the real population? | **SQL** — `../resources/mechanics/09-matchmaking.md` |
+| Did a player find the guild-creation button? | a product-analytics vendor |
+| Did the client just throw an exception? | **Sentry — nothing else can see it** |
+
+**Only the last row is invisible without a purchase**, and that is the whole case
+for the one vendor being added. A React exception on a player's machine produces
+**no server log at all**; the first signal is a support ticket, if one ever comes.
+Sentry also uploads **source maps at build time**, which is the difference between
+a usable stack trace and minified noise, and groups by release so *"this started
+at deploy X"* is answerable.
+
+**Click-tracking is deferred rather than rejected.** Signup drop-off is a real
+question, but it is noise until there is a population, and it is the one question
+here that a vendor genuinely answers better. Revisit at traction. **Vercel Web
+Analytics** covers page views and the pre-signup funnel and is a dashboard toggle
+on an account we already have, so it is switched on at launch and costs nothing to
+have been wrong about.
+
+### The consequence: the metadata row must be wider than currently specced
+
+> **This is the load-bearing part of the decision, and it is not about Sentry.**
+> Choosing SQL over a vendor means the schema *is* the analytics product — and
+> `Two version stamps, not one` already established the rule that applies:
+> **it cannot be backfilled, so it ships with the first battle ever recorded.**
+
+The row is specced above as *participants, date, zone, outcome, rating change,
+shards*. **That answers zone balance and nothing else on the list.** At ~200 bytes
+a row, four more fields are free; not having them means the first balance pass
+runs blind, under a **no-nerf rule** that makes the first pass the one that
+matters most.
+
+| Add | Without it |
+|---|---|
+| **Turn count** | The ~102-hero-turn figure stays an estimate forever, and several economy numbers rest on it |
+| **Squad composition, both sides** | No pick rate, no per-hero win rate, no counter-matrix validation — the entire balance pass has no input |
+| **Defender is a bot** | Every aggregate is polluted by **our own authored loadouts**, which are not player choices and would read as meta signal |
+| **League and rating at battle time** | Thresholds cannot be checked against the population that actually experienced them |
+
+> **Storing squad composition is not the same as exposing it, and the two rules
+> must not be conflated.** `../resources/mechanics/11-social.md` settled that **CSV
+> export carries no squad composition at all, either side**, and that **no embed
+> may ever show a Hidden defense**. Those govern *what leaves the system*. This
+> governs *what the system records about itself*. Keeping both straight is the
+> reason to state them next to each other.
+
+---
+
 ## Payments — Paddle, as merchant of record — **decided 2026-07-28**
 
 > **Paddle sells to the customer; we sell to Paddle.** They owe VAT, GST and US
@@ -321,7 +487,7 @@ one place costs 23× more than putting them in two:
 | | Where | Size | Kept |
 |---|---|---|---|
 | **Metadata** — participants, date, zone, outcome, rating change, shards | **Postgres** | ~200 B | **forever** |
-| **Event log** — the replay itself | **object storage** (R2 / S3 / Vercel Blob) | ~5 KB | **7 days** |
+| **Event log** — the replay itself | **Vercel Blob** | ~5 KB | **7 days** |
 
 A replay is **written once, read rarely, and never queried** — which is the
 definition of a blob, not a relation. Object storage is ~**$0.015/GB-month**
@@ -345,6 +511,36 @@ The cost stops being a function of *how long we have run* and becomes a function
 of *how many people play*, which is the shape every other cost in this design
 already has.
 
+### Vercel Blob, on vendor count rather than price — **decided 2026-07-28**
+
+**At 7–70 GB the three candidates are within pennies of each other**, so price was
+never going to decide it. **Vercel Blob wins on being an account we already have**
+— no second console, no second set of credentials, no separate bill, and
+`@vercel/blob` reads its token from the environment the API already runs in.
+
+R2 would be marginally cheaper with free egress; S3 would be the most portable.
+Neither difference is worth a fourth vendor on a self-funded project whose whole
+storage footprint fits on a phone.
+
+> **The one real tradeoff: expiry is ours to run.** S3 and R2 both offer lifecycle
+> rules, where *"delete objects older than 7 days"* is a config setting the
+> provider enforces. **Assume Vercel Blob has no equivalent and budget a cron** —
+> Vercel Cron Jobs are built in, so this is a scheduled function, not
+> infrastructure. Worth verifying against current Blob docs before building, since
+> a lifecycle rule would remove the job entirely.
+
+**Drive the cleanup from Postgres, never from listing the bucket.** The metadata
+row already carries the battle date and the report flag, so the job is a query —
+*rows older than 7 days, not attached to an open report, log not yet deleted* —
+then a delete per blob and a flag flip. That makes it deterministic, resumable
+after a partial failure, and re-runnable without side effects. Listing the bucket
+instead would make the *storage* the source of truth about retention, which is
+precisely the second-source-of-truth problem this design refuses everywhere else.
+
+> **A silently failing cleanup cron is the failure mode**, because nothing breaks
+> — storage just grows. **Alarm on the count of expired-but-undeleted rows**, which
+> is one query against data we already have, rather than on the job's own success.
+
 ### A reported battle is preserved past expiry
 
 **Seven days is shorter than a dispute.** A cheating report or a contested ban can
@@ -363,8 +559,9 @@ report is closed, and for a stated period afterwards.
 > result** — and the result is exactly the part that is kept forever. Only the
 > *viewing* of a battle has a shelf life.
 
-**Thirty days also covers the disputes**, which is the other reason to hold a log
-at all: a cheating report or a contested ban arrives within days, not months.
+**Seven days covers the ordinary dispute too**, which is the other reason to hold a
+log at all: a cheating report arrives within days, not months — and the one that
+arrives late is exactly the case the preservation rule above is for.
 
 ### The client shows the last 50
 
@@ -375,16 +572,20 @@ battles** shown on a public profile is a separate, narrower rule
 
 > **The list is metadata, so it long outlives the replays.** A player can see
 > *that* they fought and *what happened* for as far back as we keep rows; they can
-> **watch** only what is still inside the 30-day window. Those are different
+> **watch** only what is still inside the 7-day window. Those are different
 > promises and the UI should not blur them — an entry whose log has expired should
 > say so rather than failing to open.
+>
+> **At ~20 battles a day the 50-entry list is ~2.5 days deep, which sits inside
+> the 7-day window** — so in normal play nearly every visible entry is still
+> watchable, and the expired-log state is an edge case rather than the common one.
 
 ---
 
-## Transactional email — **added 2026-07-28**
+## Transactional email — Resend — **decided 2026-07-28**
 
-**A managed sender — Resend or equivalent — behind an interface**, same shape as
-the realtime transport. It was not in the stack until guild succession needed it
+**A managed sender behind an interface.** It was not in the stack until guild
+succession needed it
 (`../resources/mechanics/08-guilds.md`): notifying an absent guild master is not
 something an in-app message can do, because the whole premise is that they are
 not opening the app.
@@ -421,6 +622,21 @@ Email is outward-facing and irreversible, and it speaks in our voice.
 sending domain, set up once, before the first real notice goes out rather than
 after someone reports never receiving one.
 
+### Why Resend
+
+**The same reasoning as Vercel Blob: it is the least stack.** A TypeScript-first
+SDK, domain verification that walks you through the three DNS records above, and a
+free tier well past what this volume needs. Postmark has the better deliverability
+reputation and SES is by far the cheapest at volume — **neither advantage is
+reachable at four emails a day.**
+
+> **It stays behind an interface for a reason that is not vendor lock-in.**
+> Sending mail is **irreversible and outward-facing** — the one class of action
+> this project consistently gates. The interface is where the send-time rules live:
+> *templated by default*, *AI drafts and a human sends*, and a hard block on
+> anything resembling a credential link. A vendor SDK called directly from three
+> places has nowhere to put those.
+
 ---
 
 ## Deliberately not used
@@ -435,6 +651,10 @@ after someone reports never receiving one.
 | Replay validation | Requires the client to hold the RNG seed, leaking every future roll. |
 | **A standalone installer** | The only artifact that needs a code-signing certificate, and the one with the smallest audience. See *No standalone installer* below. |
 | **.NET MAUI** | Would rewrite the client in C#/XAML, has no web target, discards the design system — and **duplicates `packages/sim`'s rules in a second language**. Does not solve signing either; MSIX requires it. See below. |
+| **Discord for chat** | Guild Ads postings cost shards and guild credits, reference live game state, and must never render a Hidden defense. None of that is enforceable outside the game. See *Realtime transport*. |
+| **A self-hosted socket process** | The broker's only job is fan-out, so self-hosting rebuilds a commodity — and adds the sole stateful, always-on deployment to an otherwise stateless system. |
+| **Polling for chat** | Cheapest today, but the invocation cost grows with concurrency as pure waste, and it silently forecloses presence. |
+| **A product-analytics vendor** | The questions this design must answer are battle questions, and battles already write permanent rows we own at full fidelity. A vendor would sell back a sampled copy. See *Observability*. |
 
 ---
 
@@ -555,22 +775,19 @@ adopted for, and it breaks the architecture's best property.**
 - **Admin/moderation tooling** is now owned rather than provided. Nothing needed
   on day one, but banning a cheater has to be possible before the ladder means
   anything.
-- **Chat needs a realtime transport this stack does not have.** Everything
-  settled above is request/response — versioned JSON REST over Hono on Vercel —
-  and that was a sound call *for gameplay*, because PvP is asynchronous and a
-  battle turn is a request. Chat is not asynchronous. The generated Chat screen
-  assumes live message delivery, presence (`1 482 wardens online`), per-member
-  status (`In battle · round 4`) and typing indicators, none of which REST
-  provides.
+- ~~Chat needs a realtime transport this stack does not have.~~ **Closed
+  2026-07-28 — Ably.** See *Realtime transport* above.
+- **Ably's pricing above 200 peak concurrent connections is estimated, not
+  verified.** The architecture does not depend on the number, but the launch
+  budget does. Check it against current published pricing before launch, and note
+  that **presence is the lever** if it comes in high.
+- **Whether Vercel Blob supports lifecycle expiry.** If it does, the cleanup cron
+  disappears; if not, it ships. Either way the retention rule is unchanged — this
+  only decides whether we run the deletion or the provider does.
 
-  This is a genuine gap rather than an oversight: Vercel's serverless functions
-  cannot hold an open WebSocket, so the answer is either a managed realtime
-  service, a separate long-lived process outside Vercel, or dropping to polling
-  and accepting that presence and typing indicators go with it. **Note the
-  ordering risk** — chat is the first feature to need this, but guild events,
-  live leaderboards and battle-report pushes all want the same pipe, so it is
-  worth deciding once rather than per-feature.
+### Closed on 2026-07-28
 
-  Not blocking anything today. It *is* the largest unpriced item in the stack,
-  and picking polling now quietly forecloses the presence features the screens
-  already show.
+Recorded so the gaps are not re-opened as though they were never asked:
+**Vercel Blob** for replay logs · **Resend** for transactional email · **Sentry**
+for error monitoring · **Postgres and no analytics vendor** for game telemetry ·
+**Ably** for realtime. **The stack table has no TBD entries.**
