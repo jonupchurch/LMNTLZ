@@ -545,11 +545,69 @@ you almost nothing, so grinding bots converges you to the bots' level and stops.
 **The shape of the number defends this, not a rule** — the same property that
 makes farming one weak defender pointless.
 
+### Where the bots live — **settled 2026-07-28**
+
+> **Bots carry a wide spread of ratings, not one per league**, and they are
+> distributed heavily toward the bottom:
+
+| Where | Share of the bot population |
+|---|---|
+| **Starter league** | **30%** |
+| Bronze — the lowest gear league | 20% |
+| Silver | 20% |
+| Gold | 20% |
+| Platinum | 10% |
+| **Diamond and any league above it** | **0% — hand-seeded only** |
+
+**The weighting is upside-down from the player population on purpose**, and every
+part of it is load-bearing:
+
+- **The starter league is 100% bots by definition**, so it needs the deepest pool
+  — every opponent a new player sees for a week comes from it, and at launch that
+  is the entire population.
+- **Low leagues are where the pool is genuinely thinnest.** Not just at launch:
+  Bronze is also where **inactive accounts thin hardest** (*Inactive accounts
+  leave the pool*), so it stays thin permanently.
+- **Bronze is where the widen breaks a guarantee.** *When a league is thin*
+  serves a Bronze-floor player opponents up to **2.67× their gear** against a
+  stated maximum of 1.67×. Padding Bronze is what repairs it, which is why it
+  gets the largest league share.
+- **High leagues need it least.** Platinum holds the most engaged players, who are
+  the least likely to find an empty pool.
+
+#### Diamond gets bots that were written, not bots that were needed
+
+**Bots below the top league are padding; bots at the top are commentary.** They do
+different jobs and should be authored differently:
+
+- **Padding bots fill a pool** and are generated to a spec. They are **scaffolding
+  and they retire** as the real population arrives (*Scaffolding, not furniture*).
+- **A Diamond bot is a balance lever.** At the top there is no pool to fill — the
+  best players are all there — and a generic bot would just be a free win
+  distorting the ladder. Every one is **specifically designed and seeded** to
+  apply meta pressure, which is the additive lever the no-nerf rule reaches for
+  before touching a number.
+
+> **So the percentages are the scaffolding and they decay; the hand-seeded ones
+> are the furniture and they do not.** That is the same distinction *Scaffolding,
+> not furniture* already draws, now with a line showing exactly where it falls.
+
+#### A spread of ratings, not a midpoint
+
+**Pegging every bot in a league to that league's midpoint was the alternative and
+it is worse.** Bots are **calibration anchors** (*A fixed rating makes them
+calibration anchors*) — and one anchor per league calibrates a single point, while
+a spread calibrates the whole band. A new player converging over ~30 provisional
+battles should be able to lose to a strong bot and beat a weak one **inside the
+same league**, which is what makes the resulting rating mean anything.
+
 ### Open
 
-- **What a bot's rating should be**, and how many sit in each league. Both are
-  numbers rather than mechanisms, and both want a real population to check
-  against.
+- **How many bots in total.** The shape above is settled; the absolute count is a
+  launch-tuning number that wants a real population. One floor worth noting: a
+  starter player fights roughly **140 battles in their week**, so the starter pool
+  has to be deep enough that an authored *ramp* still reads as a ramp rather than
+  as the same six opponents on repeat.
 
 ---
 
