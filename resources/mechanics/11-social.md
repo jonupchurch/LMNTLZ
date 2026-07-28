@@ -952,32 +952,35 @@ a design that publishes its own ceilings rather than hiding them.
 
 | Who | Gets |
 |---|---|
-| **A player** | their roster, runes and gear score, battle history, shard income |
-| **A guild master or officer** | member list and activity, per-member event contribution, the guild's event history and placements |
+| **A player** | their roster, runes and gear score, battle history, shard income — everything about themselves |
+| **A guild master or officer** | **event participation and performance only**, per member, plus the guild's own event history and placements |
 
-### The line inside a guild export
+### A guild export is event data and nothing else — **set 2026-07-28**
 
-**A guild export contains other people's data, and that needs a rule rather than
-a judgement call.** The split that works:
+> **An officer cannot export a member's roster.** Not their runes, not their gear
+> score, not their battle record, not their squads — regardless of what that
+> member has made public.
 
-- **Guild-scoped facts are always exportable** — membership, activity, event
-  contribution, Wing assignment. These exist *because* the member joined; they are
-  the guild's own record of itself, and an officer cannot run an event without
-  them.
-- **Player-scoped facts follow that member's profile visibility** — battle record,
-  squads, hours. If a member has hidden something from their profile, **an officer
-  CSV must not contain it.**
+**The reason is aggregation, not secrecy.** Most of what an officer would want is
+already visible one profile at a time, so the restriction is not hiding anything
+new. What it refuses is the *bulk* of it: **a spreadsheet of 24 players' builds is
+a different object from 24 profile visits**, and the difference is exactly what
+makes it worth restricting. Aggregation is a privacy change even when every row is
+individually public.
 
-> **Otherwise the visibility control is theatre.** A setting that hides a field on
-> a profile page while a spreadsheet three clicks away carries it anyway is worse
-> than having no setting, because it tells a player they are protected when they
-> are not.
+**Event data is the carve-out because it is the guild's own record of itself.**
+Participation and performance exist *because* the member joined and played under
+the guild's banner — an officer cannot run a Wing, judge an assignment, or answer
+*why did we place 400th* without them. Everything else is the player's business.
 
-**This makes profile visibility load-bearing** (still open — see *Open*): it stops
-being cosmetic the moment an export reads from it.
+> **This decoupled a dependency I had introduced an hour earlier.** The previous
+> version let player-scoped fields follow profile visibility, which made the
+> still-open profile question load-bearing for exports. **It no longer is** —
+> visibility governs profiles, exports do not read it, and the two can be settled
+> independently.
 
 **The Hidden squad appears in no export, ever** — not a player's own, not an
-officer's. Same rule as embeds: it is absent rather than redacted.
+officer's. Same rule as embeds: absent rather than redacted.
 
 ### Two smaller things that decide whether it is any good
 
@@ -987,8 +990,8 @@ officer's. Same rule as embeds: it is absent rather than redacted.
   patches is worse than none.
 - **A player exporting their own data is a portability right**, not merely a
   feature, which is worth knowing when *Retention* gets its legal read. The guild
-  export is the opposite — it is us handing one player another's data — and that
-  is exactly why the visibility rule above is not optional.
+  export is the opposite — us handing one player another's data — and that is
+  exactly why it is narrowed to the one category the guild generated itself.
 
 ---
 
