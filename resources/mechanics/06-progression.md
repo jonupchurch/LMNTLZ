@@ -918,12 +918,35 @@ player who arrives through a creator, a community or a link can buy direct at ~3
 identical product.
 
 They do not compete, because the Steam build cannot advertise the web store and
-should not try. **Auth is already owned in-house**, so one entitlement service
-serves both and a purchase made anywhere works everywhere.
+should not try.
+
+#### Entitlements are account-level and cross-platform — **decided 2026-07-28**
+
+> **Two payment rails, one entitlement service. A purchase made anywhere works
+> everywhere, on the account rather than on the platform.**
+
+The rails are forced rather than chosen: Steam requires purchases made *inside
+the Steam build* to run through its microtransaction system, and the browser
+build has no such requirement, so there are two checkouts no matter what. What is
+a decision is whether they grant the same thing — and they do.
+
+**It costs nothing to build and it is the only lever that recovers margin from
+the cut.** `../../docs/tech-stack.md` already owns auth in-house, so entitlement
+hangs off the account the same way rating and shards do; the platform is a
+payment detail, not an identity. A subscriber who bought on the web keeps the
+boost pair when they launch through Steam, and that same $20 netted **$19.12
+rather than $14.00**.
+
+The constraint is one of promotion, not of capability: **the Steam build must not
+point players at the web store.** Anyone who finds it does so by being engaged
+enough to visit the site, which is exactly the population where a 37% margin
+difference is worth having.
 
 > **Verify against the current Steam Distribution Agreement before building it.**
 > Platform rules on external storefronts and price parity change, and this
-> decision assumes what is true today rather than what is guaranteed.
+> decision assumes what is true today rather than what is guaranteed. **This is
+> the one dated obligation in the whole design** — it has to be settled before a
+> purchase flow is written, not after.
 
 **The boosts are sold as a pair, never separately**, because they are not worth
 the same. A boost is 2× capped at 10 rewarded outcomes, and a typical player wins

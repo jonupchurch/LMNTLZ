@@ -535,10 +535,40 @@ exactly the kind of change the no-nerf rule makes expensive.
 
 ## Open
 
+- **Whether in-game chat is built at all, or whether it is a Discord server** —
+  *raised 2026-07-28, to be answered when chat is scheduled.* Chat is already a
+  fast-follow rather than a 1.0 feature, so nothing waits on this, but it should
+  be asked before the vendor question below rather than after.
+
+  **Everything recurring in this document belongs to chat.** The realtime vendor,
+  the AI classifier at $68–$675 a month, and 2–10 human hours a day of moderation
+  at 10k–50k DAU are all chat costs; **the rest of the game has none of them.**
+  Discord externalizes all three — the transport, the moderation tooling, and the
+  legal surface of hosting user speech — for nothing, and its own moderation
+  ecosystem is better than anything worth building here.
+
+  What is genuinely lost is smaller than it looks: **Admin broadcast** (a Discord
+  announcements channel does it), and **Guild chat scoped to guild membership**
+  (Discord cannot know who is in a guild without an integration). The real loss is
+  that chat is where a lapsed player gets pulled back, and a Discord a player has
+  to remember to open does that far less than a tab in the client does.
+
+  The middle option is worth pricing when this comes up: **Guild chat in-client,
+  everything social on Discord.** Guild chat is the scope that actually needs game
+  state, it is 24 people rather than a global room, and it is the least
+  moderation-exposed of the four — which drops the recurring cost close to zero
+  while keeping the retention loop.
+
+  > **This is a passion project funded personally.** Recurring operational cost is
+  > a first-class constraint here, not an afterthought — see
+  > `06-progression.md`'s revenue curve. A feature that is free to design and
+  > expensive to *run* is the shape to be most careful with, and chat is the only
+  > one in the design so far.
 - **Which managed realtime vendor**, and what it costs at the player counts
   `06-progression.md` sizes the business around. The *shape* — a managed service
   behind an interface, sends routed through our own API — is decided; the vendor
-  is a procurement question, and the interface is what keeps it one.
+  is a procurement question, and the interface is what keeps it one. **Blocked on
+  the question above**: if chat is Discord, there is no vendor to pick.
 - **Retention numbers.** Short / ~30 days / longest is the shape; the actual
   figures want a legal read as much as a technical one, since Direct is the
   evidence channel.
