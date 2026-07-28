@@ -783,14 +783,33 @@ a real cost:
 > above assumes a 90% sandbagged win rate, and if low-league skill is less thin
 > than assumed the figure falls further on its own.
 
-### 1a. Do event battles feed the personal attack streak?
+### ~~1a. Do event battles feed the personal attack streak?~~ — **settled 2026-07-28: they count**
 
-Event battles are ordinary battles, so by default they do — which means a heavy
-event week inflates everyone's ambush chance on the normal ladder, and near the
-90% cap a PvP-victory event quietly becomes a Hidden-squad event. Excluding them
-instead means the streak silently stops counting some of a player's real wins,
-which is worse. Probably: **let them count, and expect events to drive ambush
-rates up as a designed side effect.** Related to question 4.
+> **An event battle is an ordinary battle. It advances the attack streak like any
+> other, and no rule distinguishes them.**
+
+The consequence is real and intended: a heavy event week raises everyone's ambush
+chance at once, and near the **90% cap a victory-counting event quietly becomes a
+Hidden-squad event.**
+
+**That is the design working, not leaking.** `02-squads.md` states outright that a
+win streak is *the key to the better fights, not a liability* — so an event that
+drives players into Hidden battles is delivering exactly what the streak was built
+to deliver, at the moment they are playing hardest. Hidden pays **2× rating** and
+roughly double the shards, so the escalation pays for itself.
+
+**And it self-limits.** A high ambush rate means unscoutable opponents, which
+means harder battles, a lower win rate, and a broken streak. The mechanic that
+inflates it is the same one that corrects it; there is no runaway available.
+
+Both alternatives cost more than they save:
+
+- **Excluding event battles** makes the streak silently stop counting a player's
+  real wins. Someone on a genuine twenty-win run would see a number disagreeing
+  with what they just did — a worse failure than the inflation it prevents.
+- **Pausing the streak** avoids both errors and adds a third state to build,
+  explain and display, plus an odd window where **losing during an event is
+  consequence-free**, which is its own small exploit.
 
 ### 2. Does the Hidden zone participate?
 
