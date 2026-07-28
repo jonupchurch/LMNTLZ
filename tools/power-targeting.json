@@ -1,0 +1,40 @@
+{
+  "$comment": [
+    "AUTHORED DATA, not derived. Read by tools/build-content.ts.",
+    "",
+    "Every power in the workbook's `Power List` sheet is single-target, hostile and",
+    "non-reactive unless it appears here. The workbook has no column for any of the",
+    "three, so this file carries what `resources/mechanics/03-powers.md` states",
+    "explicitly and nothing more.",
+    "",
+    "Provenance, so a reader can check it rather than trust it:",
+    "  targets  -> 03-powers.md, 'Multi-target powers' table",
+    "  friendly -> 03-powers.md, 'Healing' -- all healing sits in the three Buffers'",
+    "              tier-4 slot, one at each scale",
+    "",
+    "KNOWN INCOMPLETE, and deliberately so: `friendly` is authored nowhere for BUFF",
+    "powers. 03-powers.md enumerates the heals but never lists which buffs target",
+    "allies, so every buff currently reads as hostile. That is wrong for any buff",
+    "that targets an ally and it cannot be fixed by deriving it from anything --",
+    "it needs authoring. It belongs with the hero-numbers pass, and the build fails",
+    "loudly if a name here is absent from the workbook, so this file cannot drift",
+    "quietly. See packages/content/README.md.",
+    "",
+    "This file should disappear. The right home for all three fields is three new",
+    "columns in `Power List`, at which point the reader drops the overlay entirely."
+  ],
+
+  "targets": {
+    "Two Rivers Meeting": 2,
+    "Clear the Room": "row",
+    "The Current Takes All": 3,
+    "The Wide Reaping": "row",
+    "Unmake the Wound": "single",
+    "Fair Weather": "row",
+    "Enough Light for Everyone": "party"
+  },
+
+  "friendly": ["Unmake the Wound", "Fair Weather", "Enough Light for Everyone"],
+
+  "reactive": []
+}
