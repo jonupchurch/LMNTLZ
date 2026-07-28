@@ -463,11 +463,23 @@ unbounded per-request compute cost, which makes an unkillable squad a denial-of-
 service vector rather than merely a boring matchup. The cap has to exist before
 `packages/sim` does.
 
-**300 is roughly 2× the simulated median.** A 6v6 resolves in about 155
+**300 is roughly 3× the simulated median.** A 6v6 resolves in about **102**
 hero-turns, so the cap sits far enough out that no ordinary battle approaches it
 while still bounding the log. It is a tuning constant like any other and has to
 be re-checked once healing is numbered — a heal-heavy pairing is the one shape
 that could legitimately run long.
+
+> **The margin widened without anyone choosing to widen it.** The cap was set
+> against a **155**-hero-turn median, before the `+20` accuracy edge in
+> `01-stats.md` cut a 6v6 to ~102. So 300 was ~2× when written and is ~3× now —
+> **more headroom than intended, which is the safe direction to drift**, but worth
+> knowing before anyone reads 300 as a tuned value.
+
+> **This is the first constant to re-derive from production data.** The ~102
+> figure is simulated, and `docs/tech-stack.md` settles that **turn count is
+> recorded on every battle's metadata row** precisely so the real distribution is
+> knowable. Once it is, set the cap from measured **p99**, not from the median —
+> a cap's job is to sit outside the tail, and only the tail says where that is.
 
 Resolution when the cap is reached, in order:
 

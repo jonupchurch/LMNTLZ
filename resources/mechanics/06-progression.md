@@ -281,24 +281,31 @@ the 35 stat points are for. The condition takes one of three shapes:
 | Shape | Example | Fires per battle | Built from |
 |---|---|---|---|
 | **Trigger → persistent** | below 50% HP → +20 Might for the rest of the battle | ≤ 1 | `05-status.md` vocabulary |
-| **Per-attack chance** | 25% → +1 reach this turn | ~3 | needs a turn-start roll |
+| **Per-attack chance** | 25% → +1 reach this turn | ~2 | needs a turn-start roll |
 | **Ward / charge** | ignore the first Stun or Silence | ≤ 1, consumed | `05-status.md` vocabulary |
 
 **Triggers fire once, but their consequence lasts the rest of the battle.** That
-is forced by two numbers pulling opposite ways. A 6v6 runs roughly 155 hero-turns
-across 12 heroes, and 36 rune effects are live in it — so anything that re-arms
-on a short cooldown puts a proc on nearly every turn:
+is forced by two numbers pulling opposite ways. A 6v6 runs roughly **102**
+hero-turns across 12 heroes — **8.5 turns each** — and 36 rune effects are live in
+it, so anything that re-arms on a short cooldown puts a proc on nearly every turn:
 
 | If an effect… | Firings per battle | Cadence |
 |---|---|---|
-| fires **once** | 36 | 1 per 4.3 turns |
-| re-arms every 6 turns | ~72 | 1 per 2.2 turns |
-| re-arms every 4 turns | ~108 | **1 per 1.4 turns** |
+| fires **once** | 36 | 1 per 2.8 turns |
+| re-arms every 6 turns | ~51 | 1 per 2.0 turns |
+| re-arms every 4 turns | ~77 | **1 per 1.3 turns** |
+
+> **Recomputed against the ~102 median** (the table previously assumed 155). **The
+> argument got stronger, not weaker.** Re-arm counts fall with the shorter battle,
+> but the *cadence* barely moves — both terms scale together — while the
+> once-firing row tightens from 1-per-4.3 to **1-per-2.8**, because 36 effects is
+> fixed no matter how long the battle runs. **A shorter battle makes the board
+> busier, not calmer.**
 
 But a single once-per-battle *burst* cannot justify the price. 200 shards has to
 beat 150 for a fresh +20 elsewhere, and +20 `Might` on a `Might` 30 hero is +67%
-on every packet for all 13 of its turns — one proc would have to be worth **8.7
-turns of that hero's output**. Persisting the consequence gets both: one readable
+on every packet for all **8.5** of its turns — one proc would have to be worth
+**5.7 turns of that hero's output**. Persisting the consequence gets both: one readable
 moment, ongoing weight. It costs one extension to `05-status.md` — a duration
 class beyond the 4-turn ceiling, applicable only to rune effects — and that is a
 feature, since it is what makes a rune feel unlike a power rider.
@@ -309,9 +316,17 @@ feature, since it is what makes a rune feel unlike a power rider.
 > fraction of anything. Every per-attack effect below grants access, control or
 > negation — never a bigger number.
 
-Across a rough even mix of the three shapes, a battle carries **~63 effect events
-over ~155 hero-turns — one every 2.5 turns.** That holds because per-attack procs
+Across a rough even mix of the three shapes, a battle carries **~49 effect events
+over ~102 hero-turns — one every 2.1 turns.** That holds because per-attack procs
 leave no lasting state and wards are silent: a debuff simply does not apply.
+
+> **The density barely changed** — 2.5 turns per event became 2.1 — because the
+> event count and the battle length fell together. **What did change is the bar in
+> the paragraph above**, from 8.7 turns of output down to **5.7**, since a
+> once-per-battle proc now competes against a shorter career. The conclusion is
+> unaffected — 5.7 turns of a hero's entire output is still far more than one burst
+> can deliver — but the margin is thinner than when it was written, and it is the
+> figure to re-check first when rune magnitudes get numbered.
 
 ### The utility slot is a bad buy early and a good buy late
 
