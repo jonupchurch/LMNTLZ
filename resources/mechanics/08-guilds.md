@@ -195,6 +195,87 @@ event sits idle for a long time. If events run long, this is the rule most likel
 to feel punishing to a new member, and the mitigation is a visible countdown to
 the next lock rather than a change to the rule.
 
+### Joining — invites and applications — **settled 2026-07-28**
+
+> **Both are free. The side that *receives* the request is the side that decides,
+> and its decision completes the join.**
+
+| | Who asks | Who decides | Accepting… |
+|---|---|---|---|
+| **Application** | the player | **the guild** | joins them immediately |
+| **Invite** | the guild | **the player** | joins them immediately |
+
+One rule, stated once: **whoever is asked, answers.** There is no second
+confirmation step on either path, because the deciding party has already made the
+decision that matters and a confirm-your-confirm is friction without a purpose.
+
+#### Applications are concurrent, and the first acceptance wins
+
+> **A player may hold several applications at once. A later one does not
+> invalidate an earlier one. The first guild to accept is the guild they join,
+> and every other application is withdrawn automatically at that moment.**
+
+**Exclusive applications were the alternative and they strand people.** If
+applying to guild B withdrew the application to guild A, a player waiting on a
+guild that never reviews its queue is simply stuck — and they cannot tell a slow
+guild from a dead one. Concurrency costs nothing and removes that failure
+entirely.
+
+**The contract must be stated where they apply**: *apply to as many as you like —
+the first to say yes is the one you join.* Said plainly up front, first-acceptance
+is a clear deal rather than a surprise, and a player controls it by only applying
+where they would be happy to land.
+
+#### Without a cost, the limits have to be structural
+
+**Applying and inviting are both free**, so nothing about the price stops a player
+papering 500 guilds or a guild carpet-inviting the server. Caps do that instead:
+
+| | Limit | Expiry |
+|---|---|---|
+| Concurrent applications per player | **5** | 7 days |
+| Outstanding invites per guild | **10** | 7 days |
+| Re-applying after a dismissal | **24h cooldown**, that guild only | — |
+
+Expiry matters as much as the cap: **it is what stops a review queue rotting**,
+and it means a guild that goes quiet does not silently hold anyone's application
+hostage. All three numbers are tunable and none is load-bearing.
+
+#### Filling the last slot is a race, and it resolves honestly
+
+A guild with one open slot can hold ten outstanding invites and a queue of
+applicants. **The first acceptance to commit takes the slot; every other
+acceptance fails with *the guild is full*.** No reservation, no queueing, no
+partial state — the cap of 24 is checked at the moment of joining and nowhere
+else.
+
+> **This is why acceptance-as-an-offer was rejected.** Letting a guild "accept"
+> and then having the player confirm sounds more polite, but a guild with 3 slots
+> would extend 8 offers to fill them and could receive 8 acceptances — so slots
+> would need reserving, reservations would need expiring, and a two-step handshake
+> becomes a small state machine. The race is simpler and its failure mode is one
+> honest message.
+
+#### Dismissal is told, and unexplained
+
+A dismissed applicant **is notified plainly** — ghosting a queue is worse than a
+refusal, and an application that silently expires teaches a player nothing.
+**There is no reason field.** A free-text rejection sent to someone who was just
+turned down is a harassment vector with no upside, and the 24-hour cooldown does
+the work a reason would have.
+
+#### Guilded players may apply; they may not advertise
+
+**Applications and invites are open to players already in a guild** — accepting
+one leaves their current guild, as a confirmed action that says so. Requiring
+someone to quit first and *then* apply would leave the rejected homeless, which is
+a cruel way to run a transfer.
+
+> **Posting in Guild Ads is different and stays guildless-only.** The distinction
+> is visibility, not status: **a public post is seen by the guildmates you are
+> leaving; a private application is not.** One is quietly looking around; the
+> other is an announcement.
+
 ### No guild member is ever in the starter league — **settled 2026-07-28**
 
 > **Joining a guild ends a player's starter week immediately, and leaving the
