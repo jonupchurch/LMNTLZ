@@ -1094,13 +1094,12 @@ Hidden squad, and its hold streak is public by design. What must not travel is
 **Symmetrically, your own Hidden squad is yours to export.** You built it, you
 already know it, and nobody else's secret is in that column.
 
-> **Open, and it is the same question one layer down: does an attacker keep a
-> replay of a Hidden battle?** The defender's feedback loop grants replays, and
-> replays are stored rather than re-simulated (`../../docs/tech-stack.md`) — so if
-> the *attacker* also retains one, they can rewatch a Hidden squad indefinitely
-> and "does not stay revealed" is weaker than `02-squads.md` states. **Worth
-> checking against that document explicitly**; the export rule above holds either
-> way, but the replay rule may need the same carve-out.
+> **Settled 2026-07-28 — and `02-squads.md` had already answered it.** That
+> document says a Hidden squad is visible *"only inside the battle itself and in
+> that battle's replay"*, so an attacker keeping one was always intended. What is
+> new is that **every replay in the game expires after 7 days**
+> (`../../docs/tech-stack.md`), so the Hidden case needs no special rule. The
+> export above is unaffected — it reads metadata, which is permanent.
 
 ### Two smaller things that decide whether it is any good
 

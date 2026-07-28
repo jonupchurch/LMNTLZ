@@ -455,6 +455,31 @@ layer or a dead end.
 > a profile, never in a match listing. *Hidden* is a permanent property of the
 > zone rather than a state that a fight burns off.
 
+#### That replay expires in 7 days — **added 2026-07-28**
+
+**Every replay in the game expires after 7 days**, Hidden or Visible, attacker's
+copy or defender's (`../../docs/tech-stack.md`). There is no special case here at
+all, which is the best possible version of this rule: **the Hidden squad's
+protection needs no machinery of its own.**
+
+**It was never farming that needed guarding against** — that is already
+impossible, and by a mechanic built for something else entirely:
+
+> **The streak resets on a loss.** To keep landing in one player's Hidden defense
+> you must keep *winning* there — and an attacker who is winning does not need the
+> intel. Lose once and the ambush chance is 0%, needing **45 consecutive wins** to
+> climb back to 90%. **Nobody can farm a rival's Hidden six.**
+
+What the window happens to prevent is **accumulation without effort**: a player
+who is beating a rival never builds a permanent archive of their Hidden squad,
+because nobody builds a permanent archive of anything. Seven days is how long
+reviewing a hard loss is worth doing, and that turned out to be the right number
+for storage cost too.
+
+**A Hidden replay is still unshareable at any age** — never an embed
+(`11-social.md`), never a column in anyone else's export. **The expiry is a second
+lock on a door already bolted**, which is why it costs nothing to have.
+
 **Settled 2026-07-27.** The knowledge does not persist as a game feature — only
 as a replay a player may rewatch. And it is deliberately close to a dead end,
 because **the Hidden zone can never be chosen**: an attacker cannot act on what

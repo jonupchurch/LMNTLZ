@@ -215,6 +215,92 @@ traffic inspection shows up in cheating reports.
 
 ---
 
+## Replay storage and retention — **decided 2026-07-28**
+
+> **Battle *metadata* lives in Postgres forever. Battle *event logs* live in
+> object storage and expire.**
+
+**Storing every replay in Postgres indefinitely does not survive contact with the
+volume.** Battles run at roughly **DAU × 20 a day**, and a 6v6 log over ~102
+hero-turns is about **5 KB compressed**:
+
+| | Battles/day | Replay data/day | One year |
+|---|---|---|---|
+| 10k DAU | 200,000 | 1 GB | **365 GB** |
+| 100k DAU | 2,000,000 | 10 GB | **3.65 TB** |
+
+At Neon's ~$0.35/GB-month that is **$128/month at 10k DAU after a year and $1,278
+at 100k** — and it never stops growing, because nothing in the design ever deletes
+one.
+
+### Split the row from the log
+
+**They are different objects with different access patterns**, and putting them in
+one place costs 23× more than putting them in two:
+
+| | Where | Size | Kept |
+|---|---|---|---|
+| **Metadata** — participants, date, zone, outcome, rating change, shards | **Postgres** | ~200 B | **forever** |
+| **Event log** — the replay itself | **object storage** (R2 / S3 / Vercel Blob) | ~5 KB | **7 days** |
+
+A replay is **written once, read rarely, and never queried** — which is the
+definition of a blob, not a relation. Object storage is ~**$0.015/GB-month**
+against Postgres's ~$0.35.
+
+**Retention is what actually collapses the number**, and at **7 days** it
+collapses it to nothing. The steady state is 7× the daily rate rather than an
+ever-growing pile:
+
+| | Steady-state replay data | Cost |
+|---|---|---|
+| 10k DAU | **7 GB** | **~$0.10/month** |
+| 100k DAU | **70 GB** | **~$1.05/month** |
+
+> **At this retention the storage tier barely matters** — 70 GB sits at ~$25/month
+> even in Postgres. **The retention decision dominates the architecture decision**,
+> and it is worth being honest that the split above is now about keeping the
+> database small and fast rather than about saving money.
+
+The cost stops being a function of *how long we have run* and becomes a function
+of *how many people play*, which is the shape every other cost in this design
+already has.
+
+### A reported battle is preserved past expiry
+
+**Seven days is shorter than a dispute.** A cheating report or a contested ban can
+arrive on day 3 and still be under appeal on day 12, by which point the evidence
+would be gone — so **any battle attached to a report is retained** until the
+report is closed, and for a stated period afterwards.
+
+> **This is one rule and it removes the only real objection to a short window.**
+> Without it, the correct retention would be set by the slowest appeal rather than
+> by what players actually watch — which is how a 7-day window becomes a 90-day
+> one for no gameplay benefit at all.
+
+> **Nothing breaks when a log expires.** The outcome, the rating change and the
+> streak are all in the metadata row, which is permanent. `Replays are stored JSON
+> event logs, never re-simulated` is a guarantee about **never recomputing a past
+> result** — and the result is exactly the part that is kept forever. Only the
+> *viewing* of a battle has a shelf life.
+
+**Thirty days also covers the disputes**, which is the other reason to hold a log
+at all: a cheating report or a contested ban arrives within days, not months.
+
+### The client shows the last 50
+
+**A player's battle list is capped at 50** — at ~20 battles a day that is two and a
+half days, which is the window anyone actually reviews. The **last 20 Visible
+battles** shown on a public profile is a separate, narrower rule
+(`../resources/mechanics/11-social.md`) and reads from metadata alone.
+
+> **The list is metadata, so it long outlives the replays.** A player can see
+> *that* they fought and *what happened* for as far back as we keep rows; they can
+> **watch** only what is still inside the 30-day window. Those are different
+> promises and the UI should not blur them — an entry whose log has expired should
+> say so rather than failing to open.
+
+---
+
 ## Transactional email — **added 2026-07-28**
 
 **A managed sender — Resend or equivalent — behind an interface**, same shape as
