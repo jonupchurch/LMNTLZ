@@ -38,6 +38,45 @@ when someone renames. The standard shape gives the same guarantee without that:
 one decision that touches every table at once. **Moderation makes it required
 rather than merely wise** — see *Forced rename* below.
 
+### Prices — **set 2026-07-28**
+
+| | Cost |
+|---|---|
+| **Voluntary rename** | **325 shards** — half a rune |
+| **Forced rename** | **free**, always |
+| **Custom avatar** | **$5 or 1,350 shards** |
+
+**325 is half a rune and 1,350 is a little over two**, which is how they should be
+read — 0.84 and 3.5 days of a typical player's income. Both sit outside the $260
+advantage cap, since neither can touch a battle.
+
+**The fee's job is to keep the volume small, not to fund the desk.** Shards cost
+us nothing to mint, so they cannot literally pay a moderator; what they do is make
+a rename a considered act, and a considered act is rare enough that human handling
+stays cheap. **AI assists the workflow** — surfacing, matching, preparing — under
+the same rule as everywhere else: it **flags and prepares, it never decides.**
+
+#### A dual price must always be worse value than the subscription
+
+> **Any item priced in both dollars and shards implicitly prices shards** — and
+> `Shards cannot be bought` is what caps purchasable advantage at $260/year.
+
+Paying $5 rather than 1,350 shards **frees 1,350 shards for runes**, so the
+dollars bought power indirectly. That is fine only while the rate is bad:
+
+| | Shards per dollar |
+|---|---|
+| **Subscription** — $20 for four weeks, **+10,864 shards** | **543** |
+| **Custom avatar** — $5 or 1,350 shards | **270** |
+
+**The avatar is 0.50× the subscription's efficiency**, so buying avatars is never
+a sensible way to buy progression — anyone optimising for power subscribes
+instead, and the leak closes itself.
+
+> **The rule this generalises to: no dual-priced item may exceed ~543 shards per
+> dollar.** Cross that line and the item stops being a cosmetic and becomes the
+> shard shop the design refuses to build. Check it every time one is priced.
+
 ### Renaming — **settled 2026-07-27**
 
 | Kind | Cost | Trigger |
