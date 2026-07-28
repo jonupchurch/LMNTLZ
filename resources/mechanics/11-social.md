@@ -1121,7 +1121,38 @@ remember what they fielded last Tuesday.
 
 ---
 
-## Admin tooling via MCP — **direction posed 2026-07-28, not settled**
+## Admin tooling via MCP — **direction set 2026-07-28**
+
+> **Reversible actions execute; irreversible ones propose.** A 24-hour mute, an
+> avatar rejection with a free resubmit, a queue triage — done directly, because
+> the worst case is an inconvenience undone in a click. **A permanent ban, a
+> forced rename, a guild succession** — written as pending actions confirmed on a
+> small page the model cannot reach.
+>
+> **Matching risk to reversibility rather than applying a blanket rule is what
+> keeps it usable.** Confirming every trivial action is how a safety step becomes
+> a rubber stamp: approve, approve, approve, and the one that mattered slides
+> through.
+
+### It is not urgent, and that changes what it is for
+
+**There is one admin for the foreseeable future, and an agent with direct access
+to the resources can already do this work.** So the MCP is **not** on the critical
+path and should not be treated as blocking anything.
+
+**Its value is two things, and neither is the admin console it looks like:**
+
+- **Structured, scoped, audited access is safer than ad-hoc access.** An agent
+  working directly against production has *every* capability and leaves no
+  record. **The MCP is the guardrail, not the convenience** — narrow tools, a
+  logged call for each, and the reversible/irreversible split above applied by
+  construction rather than by care.
+- **It is worth building for the experience**, on a project where the cost of
+  learning it is a weekend and the thing learned transfers.
+
+> **So the honest framing is that the MCP's audience is an agent, not a web
+> admin** — which is why the read half matters most and why "skip the frontend"
+> was never quite the right argument for it.
 
 An **MCP server behind granted per-admin API keys**, letting trusted admins drive
 moderation with AI assistance. Recorded because the reasoning should not be
