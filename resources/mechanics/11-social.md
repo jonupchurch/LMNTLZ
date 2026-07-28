@@ -47,7 +47,7 @@ rather than merely wise** — see *Forced rename* below.
 | **Custom avatar** | **$5 or 1,350 shards** |
 
 **325 is half a rune and 1,350 is a little over two**, which is how they should be
-read — 0.84 and 3.5 days of a typical player's income. Both sit outside the $260
+read — 0.84 and 3.5 days of a typical player's income. Both sit outside the $160
 advantage cap, since neither can touch a battle.
 
 **The fee's job is to keep the volume small, not to fund the desk.** Shards cost
@@ -1241,7 +1241,7 @@ none of the risk, and it is how you learn what the write tools should actually b
 - **Profiles** — what is public beyond the Visible squad, hold streaks and league,
   all of which are already public by other rules.
 - **The price of a name change and of an avatar change.** Both are per-change and
-  both sit outside the $260 advantage cap (`06-progression.md`), since neither
+  both sit outside the $160 advantage cap (`06-progression.md`), since neither
   can touch a battle. The avatar fee has a floor the name change does not: it must
   clear the ~$0.14 review it triggers, which $5 does 35× over.
 - ~~**Store platform reality.**~~ **Decided 2026-07-27** — `06-progression.md`,
