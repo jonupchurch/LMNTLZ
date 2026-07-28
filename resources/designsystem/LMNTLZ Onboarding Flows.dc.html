@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes o-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:840px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px;min-width:0">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">{{ viewLabel }}</div>
+    </div>
+    <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:8px;padding:3px;gap:3px;flex:0 0 auto">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <div onClick="{{ t.pick }}" style="padding:7px 14px;border-radius:6px;background:{{ t.bg }};color:{{ t.color }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.09em;white-space:nowrap">{{ t.label }}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;min-height:0;overflow-y:auto;position:relative">
+
+    <sc-if value="{{ isModal }}" hint-placeholder-val="{{ true }}">
+      <div style="position:relative;min-height:100%;padding:34px 22px 40px;display:flex;align-items:flex-start;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,rgba(122,63,160,.14),transparent 60%)">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(118deg,rgba(255,255,255,.014) 0 2px,transparent 2px 22px);pointer-events:none"></div>
+
+        <sc-if value="{{ isInvite }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;width:min(720px,100%);border:2px solid #4E7C3A;border-radius:14px;background:#1C1930;box-shadow:0 0 44px rgba(78,124,58,.22),0 26px 70px rgba(0,0,0,.7);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:#4E7C3A">
+              <span style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:0.2em;color:#0E0C17">GUILD INVITATION</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;color:#0E0C17">SENT BY OSSIC_KEEPS · GUILD MASTER</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;color:#0E0C17">EXPIRES IN 6 DAYS</span>
+            </div>
+
+            <div style="padding:22px 24px 0;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+              <div style="width:96px;height:96px;border-radius:14px;border:2px solid #4E7C3A;background:radial-gradient(120% 120% at 40% 10%,rgba(78,124,58,.3),#0E0C17);display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:inset 0 0 24px rgba(78,124,58,.26)">
+                <div style="width:60px;height:60px;background-image:url('hero-icons/earth-ossic.svg');background-size:contain;background-repeat:no-repeat;background-position:center"></div>
+              </div>
+              <div style="flex:1 1 300px;min-width:280px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.05">THE ROOTED DEEP</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#4E7C3A;border:1px solid #4E7C3A;border-radius:5px;padding:4px 8px">TRD</div>
+                </div>
+                <div style="font-size:14.5px;line-height:1.6;color:#D6CBE8;font-style:italic;text-wrap:pretty">“We do not rebuild every season. Bring one wall you actually enjoy running and we will teach you the rest.”</div>
+              </div>
+            </div>
+
+            <div style="padding:18px 24px 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px">
+              <sc-for list="{{ inviteFacts }}" as="ft" hint-placeholder-count="4">
+                <div style="border:1px solid #3A3357;border-radius:8px;background:#141221;padding:10px 12px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8">{{ ft.label }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:{{ ft.color }};margin-top:4px;white-space:nowrap">{{ ft.value }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#57507A;margin-top:3px;white-space:nowrap">{{ ft.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="padding:18px 24px 0">
+              <div style="border:1px solid #241F38;border-left:3px solid #4E7C3A;border-radius:9px;background:#141221;padding:14px 16px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#4E7C3A;margin-bottom:9px">YOUR SEAT</div>
+                <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                  <div style="display:flex;flex-direction:column;gap:5px;flex:1 1 220px;min-width:200px">
+                    <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;color:#EDEAF6">Third Wing · seat 4 of 8</span><span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#B4AECB">MEMBER</span></div>
+                    <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px">
+                      <sc-for list="{{ inviteSeats }}" as="st" hint-placeholder-count="8">
+                        <div style="height:14px;border-radius:3px;background:{{ st.bg }};border:1px {{ st.style }} {{ st.border }}"></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;flex:1 1 240px;min-width:220px">Wings lock during an event. Once you accept, only the guild master can move or remove you — and a vacated seat stays held until the event closes.</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:16px 24px 0">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:9px">WHAT YOU BRING · READ FROM YOUR ACCOUNT</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ myCard }}" as="m" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:8px;border:1px solid #241F38;border-radius:99px;background:#141221;padding:7px 13px 7px 9px">
+                    <div style="width:7px;height:7px;border-radius:50%;background:{{ m.dot }}"></div>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#8E87A8">{{ m.label }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11.5px;color:#F4EFE4;white-space:nowrap">{{ m.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:20px 24px 22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div style="flex:1 1 200px;min-width:180px;height:46px;border-radius:9px;background:linear-gradient(135deg,#6FA352,#4E7C3A 60%,#2C4620);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:0.12em;color:#F4EFE4;box-shadow:0 0 20px rgba(78,124,58,.34)" style-hover="filter:brightness(1.1)">ACCEPT &amp; JOIN</div>
+              <div style="height:46px;padding:0 20px;border-radius:9px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">VIEW GUILD</div>
+              <div style="height:46px;padding:0 20px;border-radius:9px;border:1px solid #241F38;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:#8E87A8;white-space:nowrap" style-hover="border-color:#C0313A;color:#F06A72">DECLINE</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#57507A;margin-left:auto;text-align:right;line-height:1.6;flex:0 0 auto">2 OTHER INVITATIONS PENDING<br />ACCEPTING ANY ONE WITHDRAWS THE REST</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isApply }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;width:min(720px,100%);border:2px solid #3B5BD1;border-radius:14px;background:#1C1930;box-shadow:0 0 44px rgba(59,91,209,.2),0 26px 70px rgba(0,0,0,.7);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:#3B5BD1">
+              <span style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:0.2em;color:#F4EFE4">APPLY TO A GUILD</span>
+              <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;color:#F4EFE4">FREE · ONE APPLICATION PER GUILD PER DAY</span>
+            </div>
+
+            <div style="padding:20px 24px 0;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+              <div style="width:74px;height:74px;border-radius:13px;border:2px solid #C0313A;background:radial-gradient(120% 120% at 40% 10%,rgba(192,49,58,.28),#0E0C17);display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+                <div style="width:46px;height:46px;background-image:url('hero-icons/slash-kaellis.svg');background-size:contain;background-repeat:no-repeat;background-position:center"></div>
+              </div>
+              <div style="flex:1 1 260px;min-width:240px">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:24px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.05">THE OPEN LINE</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#C0313A;border:1px solid #C0313A;border-radius:5px;padding:3px 7px">TOL</div></div>
+                <div style="font-size:13px;line-height:1.55;color:#8E87A8;margin-top:5px">Sky-Named · 3 open seats · recruitment set to <span style="color:#F2C744">invite only</span>, so an application is a request for one.</div>
+              </div>
+              <div style="flex:0 0 auto;border:1px solid #3A3357;border-radius:8px;background:#141221;padding:10px 13px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8">THEY ASK FOR</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#F4EFE4;margin-top:4px;white-space:nowrap">2 000+ RATING</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#4E7C3A;margin-top:3px">YOU MEET THIS</div>
+              </div>
+            </div>
+
+            <div style="padding:18px 24px 0">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:10px">WHAT THEY WILL SEE · PULLED LIVE, NOT TYPED</div>
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:13px">
+                  <div style="width:52px;height:52px;border-radius:11px;border:1px solid #7A3FA0;background-image:url('hero-icons/dark-nyxara.svg');background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#241F38;flex:0 0 auto"></div>
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:19px;letter-spacing:0.03em;color:#F4EFE4">JONUPCHURCH</div>
+                  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                    <sc-for list="{{ applyFacts }}" as="ft" hint-placeholder-count="4">
+                      <div style="border:1px solid #3A3357;border-radius:7px;background:#1C1930;padding:7px 10px">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8">{{ ft.label }}</div>
+                        <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12.5px;color:{{ ft.color }};margin-top:3px;white-space:nowrap">{{ ft.value }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;gap:5px">
+                  <sc-for list="{{ applySix }}" as="u" hint-placeholder-count="6">
+                    <div style="flex:1;height:60px;border-radius:6px;border:1px solid {{ u.core }};background-image:{{ u.image }};background-size:cover;background-position:50% 6%;background-color:#241F38;position:relative;overflow:hidden">
+                      <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(20,18,33,.9) 100%)"></div>
+                      <div style="position:absolute;top:3px;left:3px;width:15px;height:15px;background-image:{{ u.emblem }};background-size:contain;background-repeat:no-repeat"></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#57507A;margin-top:9px">YOUR STRONGEST SAVED SQUAD IS ATTACHED AUTOMATICALLY</div>
+              </div>
+            </div>
+
+            <div style="padding:16px 24px 0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">A NOTE TO THE OFFICERS · OPTIONAL</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ noteCountColor }}">{{ noteCount }}</div>
+              </div>
+              <div style="border:1px solid {{ noteBorder }};border-radius:9px;background:#141221;padding:12px 14px">
+                <input type="text" placeholder="Why this guild, and when you play." value="{{ note }}" onInput="{{ onNote }}" style="width:100%;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:14px" />
+              </div>
+            </div>
+
+            <div style="padding:16px 24px 0">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:9px">WHICH WING WOULD SUIT YOU</div>
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+                <sc-for list="{{ wingPrefs }}" as="w" hint-placeholder-count="4">
+                  <div onClick="{{ w.pick }}" style="border:1px solid {{ w.border }};border-radius:8px;background:{{ w.bg }};padding:10px 11px;cursor:{{ w.cursor }}" style-hover="border-color:{{ w.hover }}">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:{{ w.nameColor }}">{{ w.name }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ w.noteColor }};margin-top:4px">{{ w.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:20px 24px 22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div style="flex:1 1 220px;min-width:200px;height:46px;border-radius:9px;background:linear-gradient(135deg,#FFD75C,#F2C744 55%,#B5732E);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:0.12em;color:#141221;box-shadow:0 0 20px rgba(242,199,68,.3)" style-hover="filter:brightness(1.08)">SEND APPLICATION</div>
+              <div style="height:46px;padding:0 20px;border-radius:9px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">CANCEL</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#57507A;margin-left:auto;text-align:right;line-height:1.6;flex:0 0 auto">3 OF 5 APPLICATIONS OPEN<br />WITHDRAWN AUTOMATICALLY IF YOU JOIN A GUILD</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;min-height:100%;align-items:stretch">
+        <div style="width:236px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;padding:20px 14px;display:flex;flex-direction:column;gap:5px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;padding:0 6px 10px">SET UP YOUR WARDEN</div>
+          <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+            <div onClick="{{ st.pick }}" style="display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border-radius:8px;background:{{ st.bg }};border-left:2px solid {{ st.mark }};cursor:pointer" style-hover="background:#1C1930">
+              <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid {{ st.ringColor }};background:{{ st.ringBg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:9.5px;color:{{ st.numColor }}">{{ st.mark2 }}</div>
+              <div style="min-width:0">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.05em;color:{{ st.color }};line-height:1.2">{{ st.name }}</div>
+                <div style="font-size:11px;color:#6E6690;margin-top:3px;line-height:1.35">{{ st.sub }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="margin-top:auto;padding-top:14px;border-top:1px solid #241F38">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690">COMPLETE</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:#F2C744">{{ progressText }}</span></div>
+            <div style="height:5px;border-radius:99px;background:#241F38;overflow:hidden"><div style="width:{{ progressPct }};height:5px;background:#F2C744"></div></div>
+            <div style="font-size:11.5px;line-height:1.5;color:#57507A;margin-top:9px">Only the handle is required. Everything else can wait — but recruiters filter on all of it.</div>
+          </div>
+        </div>
+
+        <div style="flex:1 1 auto;min-width:600px;padding:24px 28px 44px">
+
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:20px">
+            <div>
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.05">{{ profTitle }}</div>
+              <div style="font-size:14px;color:#8E87A8;margin-top:6px;max-width:70ch">{{ profSub }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;border:1px solid #241F38;border-radius:10px;background:#141221;padding:11px 14px;flex:0 0 auto">
+              <div style="width:44px;height:44px;border-radius:10px;border:1px solid {{ sigilRing }};background-image:{{ sigilUrl }};background-size:{{ sigilSize }};background-repeat:no-repeat;background-position:center;background-color:#241F38;flex:0 0 auto"></div>
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8">LIVE PREVIEW</div>
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#F4EFE4;margin-top:2px">{{ handleDisplay }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:3px">{{ previewMeta }}</div>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ stepHandle }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px">
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:11px">WARDEN HANDLE · REQUIRED</div>
+                <div style="border:1px solid {{ handleBorder }};border-radius:9px;background:#1C1930;padding:12px 14px;margin-bottom:9px">
+                  <input type="text" placeholder="Pick a handle" value="{{ handle }}" onInput="{{ onHandle }}" style="width:100%;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:19px;letter-spacing:0.04em" />
+                </div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <div style="width:7px;height:7px;border-radius:50%;background:{{ handleDot }}"></div>
+                  <div style="font-size:12.5px;color:{{ handleDot }}">{{ handleMsg }}</div>
+                  <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#57507A">{{ handleCount }}</div>
+                </div>
+                <div style="margin-top:18px;padding-top:16px;border-top:1px solid #241F38">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:10px">DISPLAY TITLE · EARNED, NOT TYPED</div>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap">
+                    <sc-for list="{{ titles }}" as="t" hint-placeholder-count="4">
+                      <div onClick="{{ t.pick }}" style="border:1px solid {{ t.border }};border-radius:99px;background:{{ t.bg }};padding:7px 13px;cursor:{{ t.cursor }};display:flex;align-items:center;gap:8px">
+                        <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:{{ t.color }};white-space:nowrap">{{ t.name }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;color:{{ t.noteColor }};white-space:nowrap">{{ t.note }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:11px">ACCOUNTS ON THIS WARDEN</div>
+                <div style="display:grid;gap:8px">
+                  <sc-for list="{{ accounts }}" as="a" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:12px;border:1px solid #241F38;border-radius:8px;background:#1C1930;padding:12px 13px">
+                      <div style="width:28px;height:28px;border-radius:7px;background:{{ a.chip }};border:1px solid {{ a.ring }};flex:0 0 auto"></div>
+                      <div style="flex:1;min-width:0"><div style="font-size:13px;color:#F4EFE4">{{ a.name }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:2px">{{ a.note }}</div></div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ a.stateColor }};border:1px solid {{ a.stateColor }};border-radius:4px;padding:4px 7px;flex:0 0 auto">{{ a.state }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;margin-top:12px">One warden, either door. Your roster follows whichever you sign in with.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepSigil }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:8px;padding:3px;gap:3px;margin-bottom:16px">
+                <div onClick="{{ setEmblem }}" style="padding:7px 14px;border-radius:6px;background:{{ emblemTabBg }};color:{{ emblemTabColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.09em">HERO EMBLEMS</div>
+                <div onClick="{{ setPortrait }}" style="padding:7px 14px;border-radius:6px;background:{{ portraitTabBg }};color:{{ portraitTabColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.09em">PORTRAITS</div>
+                <div style="padding:7px 14px;border-radius:6px;color:#3A3357;cursor:not-allowed;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.09em">UPLOAD · OFF</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px">
+                <sc-for list="{{ sigils }}" as="g" hint-placeholder-count="18">
+                  <div onClick="{{ g.pick }}" style="border:2px solid {{ g.border }};border-radius:11px;background:#141221;padding:{{ g.pad }};cursor:pointer;box-shadow:{{ g.shadow }}" style-hover="border-color:#F2C744">
+                    <div style="height:{{ g.artH }};border-radius:7px;background-image:{{ g.url }};background-size:{{ g.size }};background-repeat:no-repeat;background-position:{{ g.pos }};background-color:#241F38"></div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:{{ g.labelColor }};margin-top:7px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ g.name }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;margin-top:14px">Every champion's emblem and portrait is available from the start, recruited or not — a sigil is a taste, not an achievement. Custom uploads are deliberately off.</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepLang }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px">
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">LANGUAGES YOU PLAY IN</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ langCountColor }}">{{ langCount }}</div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px">
+                  <sc-for list="{{ langs }}" as="l" hint-placeholder-count="12">
+                    <div onClick="{{ l.pick }}" style="display:flex;align-items:center;gap:9px;border:1px solid {{ l.border }};border-radius:8px;background:{{ l.bg }};padding:9px 11px;cursor:pointer" style-hover="border-color:#57507A">
+                      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;letter-spacing:0.08em;color:{{ l.codeColor }};flex:0 0 auto">{{ l.code }}</div>
+                      <div style="font-size:12.5px;color:{{ l.nameColor }};min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.name }}</div>
+                      <sc-if value="{{ l.primary }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.08em;color:#141221;background:#F2C744;border-radius:3px;padding:2px 4px;flex:0 0 auto">1ST</div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;margin-top:13px">Your first pick is the one shown on a Seeking a Guild broadcast. Click a selected language again to make it first.</div>
+              </div>
+              <div style="display:grid;gap:16px;align-content:start">
+                <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:12px">WHEN YOU PLAY</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #3A3357;border-radius:8px;background:#1C1930;padding:11px 13px;margin-bottom:11px">
+                    <span style="font-size:13.5px;color:#F4EFE4">{{ tzLabel }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">DETECTED</span>
+                  </div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#6E6690;margin-bottom:8px">ACTIVE WINDOW</div>
+                  <div style="display:flex;gap:3px;margin-bottom:8px">
+                    <sc-for list="{{ hours }}" as="h" hint-placeholder-count="24">
+                      <div onClick="{{ h.pick }}" style="flex:1;height:30px;border-radius:3px;background:{{ h.bg }};border:1px solid {{ h.border }};cursor:pointer" style-hover="border-color:#F2C744"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:8px;color:#57507A"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+                  <div style="font-size:12.5px;line-height:1.55;color:#8E87A8;margin-top:12px">{{ windowNote }}</div>
+                </div>
+                <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:12px">PLAYSTYLE · ONE PICK</div>
+                  <div style="display:grid;gap:7px">
+                    <sc-for list="{{ styles }}" as="p" hint-placeholder-count="3">
+                      <div onClick="{{ p.pick }}" style="border:1px solid {{ p.border }};border-radius:8px;background:{{ p.bg }};padding:11px 13px;cursor:pointer" style-hover="border-color:#57507A">
+                        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:{{ p.nameColor }}">{{ p.name }}</div>
+                        <div style="font-size:12px;line-height:1.45;color:#8E87A8;margin-top:4px">{{ p.text }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepVisible }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:12px">WHAT OTHERS CAN SEE</div>
+                <div style="display:grid;gap:7px">
+                  <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="5">
+                    <div onClick="{{ t.pick }}" style="display:flex;align-items:center;gap:12px;border:1px solid {{ t.border }};border-radius:8px;background:#1C1930;padding:12px 13px;cursor:{{ t.cursor }}" style-hover="border-color:#57507A">
+                      <div style="width:36px;height:19px;border-radius:99px;background:{{ t.trackBg }};position:relative;flex:0 0 auto"><div style="position:absolute;{{ t.knobSide }}:2px;top:2px;width:15px;height:15px;border-radius:50%;background:{{ t.knob }}"></div></div>
+                      <div style="flex:1;min-width:0"><div style="font-size:13px;color:{{ t.nameColor }}">{{ t.name }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:3px">{{ t.note }}</div></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:12px">ALWAYS PUBLIC · NOT NEGOTIABLE</div>
+                <div style="display:grid;gap:7px;margin-bottom:14px">
+                  <sc-for list="{{ publics }}" as="p" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:11px;border:1px dashed #3A3357;border-radius:8px;padding:11px 13px">
+                      <div style="width:16px;height:16px;border-radius:4px;background:#241F38;border:1px solid #57507A;flex:0 0 auto"></div>
+                      <div style="flex:1;min-width:0"><div style="font-size:13px;color:#B4AECB">{{ p.name }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#57507A;margin-top:3px">{{ p.note }}</div></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="border-left:3px solid #4E7C3A;background:#1C1930;padding:12px 14px"><div style="font-size:13px;line-height:1.6;color:#B4AECB">Your <strong style="color:#F4EFE4">Hidden Six is never visible</strong> to anyone, at any privacy setting. Scouting shows one wall and the count of runed slots — never the effects.</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ stepReview }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px">
+              <div style="border:1px solid #241F38;border-radius:10px;background:#141221;overflow:hidden">
+                <div style="padding:13px 16px;border-bottom:1px solid #241F38;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">YOUR WARDEN</div>
+                <sc-for list="{{ summary }}" as="r" hint-placeholder-count="7">
+                  <div style="display:grid;grid-template-columns:126px 1fr auto;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #1C1930">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8">{{ r.label }}</div>
+                    <div style="font-size:13px;color:#F4EFE4;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.value }}</div>
+                    <div onClick="{{ r.edit }}" style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#57507A;cursor:pointer;flex:0 0 auto" style-hover="color:#F2C744">EDIT</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:11px">HOW YOU WILL APPEAR TO RECRUITERS</div>
+                <div style="border:2px solid #3B5BD1;border-radius:12px;background:linear-gradient(115deg,rgba(59,91,209,.24) 0%,#161327 52%,#141221 100%);box-shadow:0 0 24px rgba(59,91,209,.2);overflow:hidden">
+                  <div style="display:flex;align-items:center;gap:9px;padding:8px 14px;background:#3B5BD1">
+                    <span style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:0.2em;color:#F4EFE4">SEEKING A GUILD</span>
+                    <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;color:#F4EFE4">◈ 150 · PREVIEW</span>
+                  </div>
+                  <div style="padding:15px 17px 17px;display:flex;gap:15px;align-items:center;flex-wrap:wrap">
+                    <div style="width:64px;height:64px;border-radius:12px;border:2px solid {{ sigilRing }};background-image:{{ sigilUrl }};background-size:{{ sigilSize }};background-repeat:no-repeat;background-position:center;background-color:#241F38;flex:0 0 auto"></div>
+                    <div style="flex:1 1 180px;min-width:160px">
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:21px;letter-spacing:0.02em;color:#F4EFE4;line-height:1.05">{{ handleDisplay }}</div>
+                      <div style="font-size:12.5px;color:#D6CBE8;margin-top:5px">{{ styleLabel }}</div>
+                    </div>
+                    <div style="display:flex;gap:7px;flex-wrap:wrap;flex:0 0 auto">
+                      <sc-for list="{{ previewFacts }}" as="ft" hint-placeholder-count="3">
+                        <div style="min-width:88px;border:1px solid #3A3357;border-radius:7px;background:rgba(14,12,23,.55);padding:8px 10px">
+                          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;color:#8E87A8">{{ ft.label }}</div>
+                          <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:{{ ft.color }};margin-top:3px;white-space:nowrap">{{ ft.value }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+                  <div style="flex:1 1 200px;min-width:190px;height:46px;border-radius:9px;background:linear-gradient(135deg,#FFD75C,#F2C744 55%,#B5732E);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:0.12em;color:#141221;box-shadow:0 0 20px rgba(242,199,68,.3)" style-hover="filter:brightness(1.08)">SAVE PROFILE</div>
+                  <div style="height:46px;padding:0 20px;border-radius:9px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">FIND A GUILD</div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#57507A;margin-top:11px;line-height:1.6">EVERYTHING HERE IS EDITABLE LATER EXCEPT THE HANDLE, WHICH CHANGES ONCE PER SEASON</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400,&quot;height&quot;:940}}">
+const TYPES = {
+  earth:{core:"#4E7C3A"}, air:{core:"#8FCFE0"}, fire:{core:"#E8552B"}, water:{core:"#2A7FB8"},
+  light:{core:"#F2C744"}, dark:{core:"#7A3FA0"}, slash:{core:"#C0313A"}, pierce:{core:"#3B5BD1"}, crush:{core:"#B5732E"}
+};
+const SIGILS = [
+  ["dark-nyxara","Nyxara","dark"],["slash-kaellis","Kaellis","slash"],["crush-boldrek","Boldrek","crush"],
+  ["air-zephyrine","Zephyrine","air"],["earth-ossic","Ossic","earth"],["fire-pyrrhic","Pyrrhic","fire"],
+  ["water-nix","Nix","water"],["light-seraphel","Seraphel","light"],["pierce-vantric","Vantric","pierce"],
+  ["earth-bramwen","Bramwen","earth"],["air-vael","Vael","air"],["fire-cindara","Cindara","fire"],
+  ["water-marisel","Marisel","water"],["light-lucen","Lucen","light"],["dark-umbriel","Umbriel","dark"],
+  ["slash-grieve","Grieve","slash"],["pierce-silka","Silka","pierce"],["crush-hettamar","Hettamar","crush"]
+];
+const PORTRAIT_OF = {
+  "dark-nyxara":"16-dark-nyxara","slash-kaellis":"19-slash-kaellis","crush-boldrek":"25-crush-boldrek",
+  "air-zephyrine":"04-air-zephyrine","earth-ossic":"02-earth-ossic","fire-pyrrhic":"08-fire-pyrrhic",
+  "water-nix":"12-water-nix","light-seraphel":"13-light-seraphel","pierce-vantric":"22-pierce-vantric",
+  "earth-bramwen":"01-earth-bramwen","air-vael":"06-air-vael","fire-cindara":"09-fire-cindara",
+  "water-marisel":"10-water-marisel","light-lucen":"14-light-lucen","dark-umbriel":"17-dark-umbriel",
+  "slash-grieve":"21-slash-grieve","pierce-silka":"23-pierce-silka","crush-hettamar":"26-crush-hettamar"
+};
+const LANGS = [["EN","English"],["ES","Español"],["DE","Deutsch"],["FR","Français"],["PT","Português"],["IT","Italiano"],["PL","Polski"],["RU","Русский"],["TR","Türkçe"],["JA","日本語"],["KO","한국어"],["ZH","中文"]];
+const STYLES = [
+  ["attacker","DAILY ATTACKER","Runs offense every day and wants targets, not lectures."],
+  ["defender","WALL BUILDER","Enjoys tuning defense and reading who broke through."],
+  ["event","EVENT RUNNER","Shows up for every event window and coordinates the wing."]
+];
+const TITLES = [["none","No title","DEFAULT",true],["champion","Court-Champion","EARNED",true],["skynamed","Sky-Named","LOCKED",false],["crown","Sundered Crown","LOCKED",false]];
+const STEPS = [
+  ["handle","Handle & accounts","Who you are"],
+  ["sigil","Sigil","Emblem or portrait"],
+  ["lang","Language & hours","How you're found"],
+  ["visible","Visibility","What others see"],
+  ["review","Review","Send it"]
+];
+const TOGGLES = [
+  ["roster","Roster power & league",true,"Shown on broadcasts and to recruiters",false],
+  ["record","Battle record",true,"Wins, losses and streaks",false],
+  ["squads","Saved squad names",false,"Composition is never shown, only names",false],
+  ["hours","Active hours",true,"Helps a wing know when you're on",false],
+  ["online","Online status",true,"Guild always sees this",false]
+];
+const PUBLICS = [["Handle & sigil","Every message you send"],["League & rating","The ladder is public"],["Guild membership","Shown on the guild roster"],["Defensive win streaks","Visible to anyone scouting you"]];
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+
+class Component extends DCLogic {
+  state = {
+    view: "invite", step: "handle", sigilMode: "emblem", sigil: "dark-nyxara",
+    handle: "jonupchurch", title: "champion",
+    langs: ["EN", "ES"], style: "attacker",
+    hours: [18,19,20,21,22], note: "",
+    vis: { roster: true, record: true, squads: false, hours: true, online: true }
+  };
+
+  toggleLang(code) {
+    this.setState(s => {
+      const i = s.langs.indexOf(code);
+      if (i < 0) return { langs: s.langs.concat([code]) };
+      if (i > 0) return { langs: [code].concat(s.langs.filter(x => x !== code)) };
+      return { langs: s.langs.filter(x => x !== code) };
+    });
+  }
+  toggleHour(h) {
+    this.setState(s => ({ hours: s.hours.indexOf(h) >= 0 ? s.hours.filter(x => x !== h) : s.hours.concat([h]) }));
+  }
+
+  renderVals() {
+    const s = this.state, self = this;
+    const done = { handle: s.handle.length >= 3, sigil: true, lang: s.langs.length > 0, visible: true, review: false };
+    const doneCount = ["handle","sigil","lang","visible"].filter(k => done[k]).length;
+    const sigilIsPortrait = s.sigilMode === "portrait";
+    const sigilKey = s.sigil;
+    const sigilRing = TYPES[SIGILS.filter(g => g[0] === sigilKey)[0][2]].core;
+    const sigilUrl = sigilIsPortrait
+      ? "url('portraits/" + PORTRAIT_OF[sigilKey] + ".png')"
+      : "url('hero-icons/" + sigilKey + ".svg')";
+    const styleRow = STYLES.filter(x => x[0] === s.style)[0];
+    const langLabel = s.langs.length ? s.langs.join(" · ") : "none picked";
+    const hoursSorted = s.hours.slice().sort((a,b) => a - b);
+    const windowNote = hoursSorted.length
+      ? hoursSorted.length + " hours marked, centred on " + String(hoursSorted[Math.floor(hoursSorted.length/2)]).padStart(2,"0") + ":00 local."
+      : "No hours marked — recruiters cannot tell when you play.";
+
+    const six = [
+      ["16-dark-nyxara","dark"],["19-slash-kaellis","slash"],["22-pierce-vantric","pierce"],
+      ["04-air-zephyrine","air"],["08-fire-pyrrhic","fire"],["02-earth-ossic","earth"]
+    ];
+
+    return {
+      viewLabel: s.view === "invite" ? "GUILD INVITATION" : (s.view === "apply" ? "GUILD APPLICATION" : "PROFILE SETUP"),
+      tabs: [["invite","INVITED"],["apply","APPLYING"],["profile","PROFILE SETUP"]].map(t => ({
+        label: t[1],
+        bg: s.view === t[0] ? "#F2C744" : "transparent",
+        color: s.view === t[0] ? "#141221" : "#B4AECB",
+        pick: () => self.setState({ view: t[0] })
+      })),
+      isModal: s.view !== "profile", isInvite: s.view === "invite", isApply: s.view === "apply", isProfile: s.view === "profile",
+
+      inviteFacts: [
+        { label: "LEAGUE", value: "SKY-NAMED", color: "#F2C744", note: "TOP 4% OF COURTS" },
+        { label: "GUILD POWER", value: fmt(184200), color: "#F4EFE4", note: "24 WARDENS" },
+        { label: "LAST EVENT", value: "2ND OF 64", color: "#4E7C3A", note: "THREE EVENTS TOP 5" },
+        { label: "LANGUAGES", value: "EN · DE", color: "#B4AECB", note: "MOSTLY UTC+1" }
+      ],
+      inviteSeats: [0,1,2,3,4,5,6,7].map(i => ({
+        bg: i < 3 ? "#4E7C3A" : (i === 3 ? "rgba(242,199,68,.3)" : "transparent"),
+        style: i === 3 ? "solid" : (i < 3 ? "solid" : "dashed"),
+        border: i === 3 ? "#F2C744" : (i < 3 ? "#4E7C3A" : "#57507A")
+      })),
+      myCard: [
+        { label: "RATING", value: "2 148", dot: "#F2C744" },
+        { label: "ROSTER POWER", value: fmt(21840), dot: "#B4AECB" },
+        { label: "LANGUAGES", value: langLabel, dot: "#8FCFE0" },
+        { label: "ATTACK STREAK", value: "\u00D74", dot: "#4E7C3A" }
+      ],
+
+      applyFacts: [
+        { label: "LEAGUE", value: "COURT-CHAMPION", color: "#F2C744" },
+        { label: "RATING", value: "2 148", color: "#F4EFE4" },
+        { label: "ROSTER POWER", value: fmt(21840), color: "#F4EFE4" },
+        { label: "LANGUAGES", value: langLabel, color: "#B4AECB" }
+      ],
+      applySix: six.map(u => ({
+        core: TYPES[u[1]].core,
+        image: "url('portraits/" + u[0] + ".png')",
+        emblem: "url('hero-icons/" + u[0].replace(/^\d+-/, "") + ".svg')"
+      })),
+      note: s.note, onNote: e => this.setState({ note: e.target.value }),
+      noteCount: s.note.length + " / 200",
+      noteCountColor: s.note.length > 200 ? "#F06A72" : "#57507A",
+      noteBorder: s.note.length > 0 ? "#3B5BD1" : "#3A3357",
+      wingPrefs: [["any","NO PREFERENCE","officers place you"],["first","FIRST WING","full 8/8"],["second","SECOND WING","full 8/8"],["third","THIRD WING","3 seats open"]].map((w, i) => {
+        const full = i === 1 || i === 2;
+        return { name: w[1], note: w[2],
+          border: i === 3 ? "#F2C744" : (full ? "#241F38" : "#3A3357"),
+          bg: i === 3 ? "rgba(242,199,68,.1)" : (full ? "rgba(28,25,48,.4)" : "#1C1930"),
+          nameColor: i === 3 ? "#F2C744" : (full ? "#57507A" : "#F4EFE4"),
+          noteColor: full ? "#57507A" : "#6E6690",
+          cursor: full ? "not-allowed" : "pointer",
+          hover: full ? "#241F38" : "#F2C744",
+          pick: () => {} };
+      }),
+
+      steps: STEPS.map(st => ({
+        name: st[1], sub: st[2],
+        bg: s.step === st[0] ? "#241F38" : "transparent",
+        mark: s.step === st[0] ? "#F2C744" : "transparent",
+        color: s.step === st[0] ? "#F2C744" : "#F4EFE4",
+        mark2: done[st[0]] ? "\u2713" : "",
+        ringColor: done[st[0]] ? "#4E7C3A" : "#3A3357",
+        ringBg: done[st[0]] ? "rgba(78,124,58,.2)" : "transparent",
+        numColor: "#4E7C3A",
+        pick: () => self.setState({ step: st[0] })
+      })),
+      progressText: doneCount + " / 4",
+      progressPct: Math.round(doneCount / 4 * 100) + "%",
+      stepHandle: s.step === "handle", stepSigil: s.step === "sigil", stepLang: s.step === "lang",
+      stepVisible: s.step === "visible", stepReview: s.step === "review",
+      profTitle: { handle:"Name your warden", sigil:"Choose a sigil", lang:"Language & playing hours", visible:"Decide what's visible", review:"Review and save" }[s.step],
+      profSub: {
+        handle:"The handle is the one thing you cannot change freely later — once per season after that.",
+        sigil:"Pick any champion's emblem or portrait. There are no custom avatars, by design.",
+        lang:"This is what recruiters filter on. It is also what a Seeking a Guild broadcast reads from.",
+        visible:"Sensible defaults are already set. Nothing here exposes your Hidden Six.",
+        review:"Everything below is pulled live. Only the handle is locked after saving."
+      }[s.step],
+
+      handle: s.handle, onHandle: e => this.setState({ handle: e.target.value.replace(/\s/g, "") }),
+      handleDisplay: (s.handle || "unnamed").toUpperCase(),
+      handleCount: s.handle.length + " / 16",
+      handleBorder: s.handle.length >= 3 ? "#4E7C3A" : "#B5732E",
+      handleDot: s.handle.length >= 3 ? "#4E7C3A" : "#B5732E",
+      handleMsg: s.handle.length >= 3 ? "Available in every Court." : "At least 3 characters, letters and numbers only.",
+      titles: TITLES.map(t => ({
+        name: t[1], note: t[2],
+        border: s.title === t[0] ? "#F2C744" : (t[3] ? "#3A3357" : "#241F38"),
+        bg: s.title === t[0] ? "rgba(242,199,68,.1)" : (t[3] ? "#1C1930" : "rgba(28,25,48,.4)"),
+        color: s.title === t[0] ? "#F2C744" : (t[3] ? "#F4EFE4" : "#57507A"),
+        noteColor: t[3] ? "#6E6690" : "#B5732E",
+        cursor: t[3] ? "pointer" : "not-allowed",
+        pick: () => { if (t[3]) self.setState({ title: t[0] }); }
+      })),
+      accounts: [
+        { name: "Steam · jonupchurch", note: "76561198… · primary", chip: "#241F38", ring: "#8FCFE0", state: "LINKED", stateColor: "#4E7C3A" },
+        { name: "Google · jon@…", note: "used in the browser build", chip: "#F4EFE4", ring: "#3A3357", state: "LINKED", stateColor: "#4E7C3A" }
+      ],
+
+      setEmblem: () => this.setState({ sigilMode: "emblem" }),
+      setPortrait: () => this.setState({ sigilMode: "portrait" }),
+      emblemTabBg: !sigilIsPortrait ? "#F2C744" : "transparent",
+      emblemTabColor: !sigilIsPortrait ? "#141221" : "#B4AECB",
+      portraitTabBg: sigilIsPortrait ? "#F2C744" : "transparent",
+      portraitTabColor: sigilIsPortrait ? "#141221" : "#B4AECB",
+      sigils: SIGILS.map(g => ({
+        name: g[1].toUpperCase(),
+        url: sigilIsPortrait ? "url('portraits/" + PORTRAIT_OF[g[0]] + ".png')" : "url('hero-icons/" + g[0] + ".svg')",
+        size: sigilIsPortrait ? "cover" : "70%",
+        pos: sigilIsPortrait ? "50% 6%" : "center",
+        artH: sigilIsPortrait ? "104px" : "72px",
+        pad: "8px",
+        border: s.sigil === g[0] ? "#F2C744" : "#241F38",
+        shadow: s.sigil === g[0] ? "0 0 18px rgba(242,199,68,.26)" : "none",
+        labelColor: s.sigil === g[0] ? "#F2C744" : "#6E6690",
+        pick: () => self.setState({ sigil: g[0] })
+      })),
+      sigilUrl: sigilUrl, sigilRing: sigilRing, sigilSize: sigilIsPortrait ? "cover" : "72%",
+      previewMeta: (s.title === "champion" ? "Court-Champion · " : "") + langLabel,
+
+      langs: LANGS.map(l => {
+        const on = s.langs.indexOf(l[0]) >= 0, first = s.langs[0] === l[0];
+        return { code: l[0], name: l[1], primary: first,
+          border: on ? (first ? "#F2C744" : "#3A3357") : "#241F38",
+          bg: on ? (first ? "rgba(242,199,68,.1)" : "#1C1930") : "transparent",
+          codeColor: on ? (first ? "#F2C744" : "#8FCFE0") : "#57507A",
+          nameColor: on ? "#F4EFE4" : "#6E6690",
+          pick: () => self.toggleLang(l[0]) };
+      }),
+      langCount: s.langs.length + " picked",
+      langCountColor: s.langs.length ? "#B4AECB" : "#B5732E",
+      tzLabel: "UTC−5 · America/New_York",
+      hours: (function () {
+        const out = [];
+        for (let h = 0; h < 24; h++) {
+          const on = s.hours.indexOf(h) >= 0;
+          out.push({ bg: on ? "#F2C744" : "#241F38", border: on ? "#F2C744" : "#241F38", pick: () => self.toggleHour(h) });
+        }
+        return out;
+      })(),
+      windowNote: windowNote,
+      styles: STYLES.map(p => ({
+        name: p[1], text: p[2],
+        border: s.style === p[0] ? "#F2C744" : "#241F38",
+        bg: s.style === p[0] ? "rgba(242,199,68,.08)" : "#1C1930",
+        nameColor: s.style === p[0] ? "#F2C744" : "#F4EFE4",
+        pick: () => self.setState({ style: p[0] })
+      })),
+
+      toggles: TOGGLES.map(t => {
+        const on = s.vis[t[0]], locked = t[0] === "online";
+        return { name: t[1], note: locked ? t[3] : t[3],
+          border: on ? "#3A3357" : "#241F38",
+          trackBg: on ? "#F2C744" : "#2A2640",
+          knob: on ? "#141221" : "#8E87A8",
+          knobSide: on ? "right" : "left",
+          nameColor: on ? "#F4EFE4" : "#8E87A8",
+          cursor: locked ? "not-allowed" : "pointer",
+          pick: () => { if (!locked) self.setState({ vis: Object.assign({}, s.vis, { [t[0]]: !on }) }); } };
+      }),
+      publics: PUBLICS.map(p => ({ name: p[0], note: p[1] })),
+
+      summary: [
+        { label: "HANDLE", value: (s.handle || "unnamed").toUpperCase(), edit: () => self.setState({ step: "handle" }) },
+        { label: "TITLE", value: TITLES.filter(t => t[0] === s.title)[0][1], edit: () => self.setState({ step: "handle" }) },
+        { label: "SIGIL", value: SIGILS.filter(g => g[0] === sigilKey)[0][1] + " · " + (sigilIsPortrait ? "portrait" : "emblem"), edit: () => self.setState({ step: "sigil" }) },
+        { label: "LANGUAGES", value: langLabel, edit: () => self.setState({ step: "lang" }) },
+        { label: "ACTIVE HOURS", value: hoursSorted.length + " hours · UTC−5", edit: () => self.setState({ step: "lang" }) },
+        { label: "PLAYSTYLE", value: styleRow[1], edit: () => self.setState({ step: "lang" }) },
+        { label: "VISIBILITY", value: Object.keys(s.vis).filter(k => s.vis[k]).length + " of 5 shown", edit: () => self.setState({ step: "visible" }) }
+      ],
+      styleLabel: styleRow[2],
+      previewFacts: [
+        { label: "LEAGUE", value: "COURT-CHAMPION", color: "#F2C744" },
+        { label: "ROSTER POWER", value: fmt(21840), color: "#F4EFE4" },
+        { label: "LANGUAGES", value: langLabel, color: "#B4AECB" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
