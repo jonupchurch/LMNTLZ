@@ -225,6 +225,8 @@ traffic inspection shows up in cheating reports.
 | Redis / a state store | Would create a second source of truth alongside the action log. See above. |
 | An auth provider | Steam is custom regardless, there are no passwords, and MAU pricing scales badly for games. |
 | Replay validation | Requires the client to hold the RNG seed, leaking every future roll. |
+| **A standalone installer** | The only artifact that needs a code-signing certificate, and the one with the smallest audience. See *No standalone installer* below. |
+| **.NET MAUI** | Would rewrite the client in C#/XAML, has no web target, discards the design system — and **duplicates `packages/sim`'s rules in a second language**. Does not solve signing either; MSIX requires it. See below. |
 
 ---
 
@@ -244,13 +246,77 @@ isn't. Worth revisiting *before* adding collaborators rather than after.
 
 ## Platform target
 
-**Desktop only.** Electron on Steam and as a standalone installer, plus the same
-static build in a desktop browser. Mouse and keyboard, minimum window
-**1280×720**, designed for **1600×900**, graceful to ultrawide.
+**Desktop only.** The static build in a desktop browser at 1.0, and the same
+bundle wrapped in Electron on Steam afterwards — **those two channels and no
+others.** Mouse and keyboard, minimum window **1280×720**, designed for
+**1600×900**, graceful to ultrawide.
 
 No mobile, no tablet, no touch, no Steam Deck / gamepad target. Design prompts
 in `resources/` were updated to match; touch-target guidance is replaced with
 mandatory keyboard focus rings.
+
+> **Steam ships after 1.0 — decided 2026-07-28.** 1.0 is the browser build,
+> selling direct. The Steam target is unchanged and
+> still primary; it is only later, because the Steam launch window is a one-shot
+> marketing asset and is worth spending on a finished game
+> (`../resources/mechanics/06-progression.md`, *Steam ships after 1.0*).
+>
+> **Every Steam seam is built at 1.0 even though none of it runs.** Identity is
+> provider-agnostic (username is the identity, providers link to it),
+> entitlements are account-level rather than per-storefront, payment sits behind
+> a rail interface, and **`steamworks.js` stays isolated in `apps/desktop/`
+> behind a capability check** so the browser build never imports it. All four
+> cost nothing now and are expensive to retrofit.
+
+### No standalone installer — **decided 2026-07-28**
+
+> **1.0 is the browser build alone. Electron appears only when Steam does.**
+
+**Code signing is the whole reason, and it lands on exactly one artifact.**
+
+| Channel | Needs a certificate? |
+|---|---|
+| Browser build | **No** — there is no binary |
+| Steam | **No** — Valve does not require signed builds, and Steam's own client delivers the files |
+| **Standalone installer from our site** | **Yes** — unsigned, Windows SmartScreen shows *"Windows protected your PC"* to every first-time user |
+
+Since the CA/Browser Forum moved private keys onto hardware in June 2023, an OV
+certificate runs roughly **$200–400/year** and EV **$300–600/year**, plus a token;
+macOS notarization is a separate **$99/year** Apple Developer membership. The
+cheap modern path is **Azure Trusted Signing at ~$10/month**, which is open to
+individuals — so this is a **~$120/year** door rather than a closed one.
+
+**But the standalone is the artifact worth least.** A player who wants a desktop
+app and is not on Steam is a narrow slice, and against the browser build the
+wrapper adds almost nothing: the game is **server-authoritative**, so it cannot
+work offline; it needs no filesystem access; and the rendering is identical
+Chromium either way. What it does add is a second build target, an auto-update
+feed to host, and the certificate.
+
+**Dropping it makes 1.0 markedly smaller** — a static Vite bundle on a CDN plus
+the Hono API, with no Electron, no packaging pipeline and no signing at all. It
+is reversible for ~$120/year the moment there is demand for it.
+
+### Why not MAUI (or any non-TypeScript client)
+
+Raised and rejected 2026-07-28. **It does not solve the problem it would be
+adopted for, and it breaks the architecture's best property.**
+
+- **It does not fix signing.** A MAUI Windows app ships as MSIX, which *requires*
+  a signature — strictly worse than Electron, which merely benefits from one.
+- **It has no web target.** MAUI is a native UI framework; Blazor is the .NET web
+  story, and it is a different framework. Choosing MAUI means giving up the
+  browser build — which is the entire 1.0 channel.
+- **It discards the design system.** Everything in `resources/designsystem/` is
+  HTML and CSS.
+- **It would duplicate `packages/sim`.** This is the disqualifying one. The sim
+  splits into *rules* — pure, shared, no RNG — and *resolver*, server-only. **The
+  client runs the same rules the server does**, which is what lets it project a
+  turn queue and preview damage without the server agreeing to anything. A C#
+  client means **two implementations of the combat math that must agree
+  exactly**, forever, in a game whose entire loop is reading numbers off a
+  screen. One TypeScript rules engine shared by both sides is the single best
+  structural decision in this document; nothing is worth trading it for.
 
 ---
 
@@ -258,7 +324,9 @@ mandatory keyboard focus rings.
 
 - **Steam auth end-to-end has not been prototyped.** Ticket verification is
   documented and well-trodden, but it is the piece with the least certainty and
-  is worth spiking before it sits on the critical path.
+  is worth spiking before it sits on the critical path. **No longer near it** —
+  Steam is a fast-follow to 1.0, so this is a spike to schedule rather than a
+  risk to retire now. What 1.0 must get right is the *seam*, not the integration.
 - **Vercel invocation cost at scale.** 20–40 function calls per battle scales
   with engagement rather than user count. Worth modelling before launch, not
   after.

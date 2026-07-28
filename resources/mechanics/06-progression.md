@@ -881,6 +881,10 @@ specifically.)*
 
 > **Ship on Steam and pay the cut. Sell direct from the browser build as a
 > secondary channel, never as a replacement.**
+>
+> **Steam is a fast-follow, not part of 1.0 — added 2026-07-28.** Launch direct
+> from the web build, add Steam once the game is worth the launch window. See
+> *Steam ships after 1.0* below; everything else in this section is unchanged.
 
 **The break-even is not close.** Steam takes 30% against roughly 3% for a direct
 sale, so Steam only has to deliver **1.39× the players** self-publishing would.
@@ -944,9 +948,70 @@ difference is worth having.
 
 > **Verify against the current Steam Distribution Agreement before building it.**
 > Platform rules on external storefronts and price parity change, and this
-> decision assumes what is true today rather than what is guaranteed. **This is
-> the one dated obligation in the whole design** — it has to be settled before a
-> purchase flow is written, not after.
+> decision assumes what is true today rather than what is guaranteed. It has to
+> be settled before the *Steam* purchase flow is written — the launch flow is
+> web-direct, and Steam's rules do not reach it.
+
+#### Steam ships after 1.0 — **decided 2026-07-28**
+
+> **Launch direct from the web build. Architect every Steam seam now; implement
+> none of it until the game is worth the launch window.**
+
+**Nothing above changes.** The 1.39× break-even is a *ratio*, so it is unaffected
+by when the ratio is taken; Steam is still the right storefront and the 30% is
+still cheap. What moves is only the order.
+
+**The launch window is a one-shot asset, and it is the real cost.** The listing
+fee is $100 and recoupable — irrelevant. What is not recoverable is Steam's
+launch weighting: wishlist conversion, review velocity and early concurrents in
+the first days are what feed the algorithm, and a title that spends that window
+on an unfinished game does not get a second one. **Releasing early on Steam is
+strictly worse than releasing later**, which is the unusual case where the
+cautious option is also the higher-revenue one.
+
+**Launching direct first is not a compromise, it is better economics per player.**
+Web-direct keeps ~97% against Steam's 70%:
+
+| Year-round subscriber rate | ARPU net of Steam | **ARPU direct** |
+|---|---|---|
+| 3% | $5.46 | **$7.57** |
+| 5% | $9.10 | **$12.61** |
+| 10% | $18.20 | **$25.22** |
+
+**38% more per player — against far fewer players.** That gap is the entire
+argument for Steam and the entire argument for it being second: the direct
+channel monetizes an audience better than Steam does, and Steam is how the
+audience gets found in the first place. Build the game with the people who arrive
+through a link, then buy reach.
+
+##### What "architect for it" means concretely
+
+Four seams, all of which cost nothing to leave open and are expensive to retrofit:
+
+- **Identity is provider-agnostic from day one.** `11-social.md` already settles
+  that the username is the identity and providers *link* to it. Steam becomes a
+  third row in a linked-providers table rather than a migration. **The failure
+  mode to avoid is making a Google subject ID the account's primary key.**
+- **Entitlements are account-level** — decided above, and this is what makes it
+  load-bearing rather than merely tidy. A launch buyer who links Steam a year
+  later keeps everything, because entitlement never knew which storefront paid.
+- **Payment is a rail behind an interface.** 1.0 has one rail. Steam's
+  microtransaction API is the second, and the entitlement service must not be
+  able to tell them apart.
+- **`steamworks.js` is isolated and lazily loaded.** The browser and standalone
+  builds must never import it. `../../docs/tech-stack.md` already puts the
+  Electron shell in `apps/desktop/`; keep the Steam surface inside a single
+  module behind a capability check.
+
+##### The one thing that is better done early
+
+**A "Coming Soon" store page accrues wishlists without releasing anything.**
+Wishlists are the single largest input to Steam's launch visibility, they
+compound over months, and the page can go up long before the build does — it
+costs the $100 and the store-page work, not a release. **This is the one part of
+Steam where earlier is strictly better than later**, and it is separable from
+everything else here. Not scheduled; noted so the option is not lost by treating
+"Steam" as one indivisible decision.
 
 **The boosts are sold as a pair, never separately**, because they are not worth
 the same. A boost is 2× capped at 10 rewarded outcomes, and a typical player wins

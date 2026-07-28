@@ -107,11 +107,9 @@ These are project truth. Don't re-derive or contradict them:
 - Never hand-author a hero's weaknesses, and never hand-author the 9×9 matrix —
   both are generated. Validate the three rules in the content schema.
 
-> **`resources/LORE-and-flavor.md` is stale on this point.** Line 71 still
-> describes the Fault as "drawn from a neighboring Force on the ring or
-> triangle — left to design tuning," and the Design Canon block still presents
-> the profile as four independent slots. The derivation rule above wins. Rewrite
-> the codex when the roster settles.
+`resources/LORE-and-flavor.md` now carries the same rule — *The doors are not
+chosen* derives both weaknesses, and the Design Canon block states the two
+authored fields explicitly. **The two agree; no reconciliation is outstanding.**
 
 ## Tech stack — settled
 
@@ -122,6 +120,18 @@ re-litigated.
 - **Desktop only.** Electron on Steam + standalone, plus the same static build
   in a desktop browser. Mouse and keyboard, min window 1280×720, target
   1600×900. No mobile, no touch, no gamepad.
+- **Two channels only — browser at 1.0, Steam as a fast-follow.** **No standalone
+  installer**: it is the sole artifact needing a code-signing certificate
+  (~$120–600/yr) and the one with the smallest audience, while Steam needs none.
+  So **there is no Electron at 1.0 at all** — a static Vite bundle plus the Hono
+  API. The Steam launch window is a one-shot marketing asset, spent on a finished
+  game. **Build every Steam seam anyway:** provider-agnostic identity,
+  **account-level entitlements** (a purchase belongs to the account, never to the
+  storefront), payment behind a rail interface, and `steamworks.js` isolated so
+  the browser build never imports it.
+- **The client stays TypeScript.** MAUI and friends were rejected — no web target,
+  no signing relief, and they would **duplicate `packages/sim`'s rules in a second
+  language**, which is the one thing the architecture cannot afford.
 - TypeScript throughout · pnpm + Turborepo · Vite + React + Tailwind client ·
   Electron + `steamworks.js` · Hono on Vercel (versioned JSON REST) ·
   Neon Postgres + Drizzle · Vercel Edge Config for the maintenance flag ·
