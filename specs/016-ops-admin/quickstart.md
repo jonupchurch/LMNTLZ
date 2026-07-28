@@ -194,8 +194,12 @@ a join rather than an investigation.
 ls apps/admin/src/routes
 ```
 
-Three things: the pending-action queue, the moderation queues, the avatar/emblem review
+Three things: the pending-action queue, the moderation queues, the avatar review
 queue. **Nothing else.**
+
+**A guild emblem never appears here** — it is composed from preconfigured assets, so
+there is no upload to hold and nothing to approve. Only feature 012's avatar uploads
+reach a review queue.
 
 **Every capability added here is a capability that must then be secured** behind the
 one credential the automation deliberately does not hold. That is a stronger reason to

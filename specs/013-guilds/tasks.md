@@ -112,14 +112,18 @@ before succession exists.
 - [ ] T031 [US1] **Warn, never block**, on low contrast in `apps/client/src/features/guilds/EmblemDesigner.tsx` — a solid block of colour is a permitted choice (FR-004, Constitution XVIII)
 - [ ] T032 [US1] Store the recruiting pitch as a **guild property validated for length**, not text typed per posting, in `apps/api/src/guilds/found.ts` (FR-007)
 - [ ] T033 [US1] **Build no guild tag** — no short abbreviation beside a player's name. Three characters cannot be read in context, and compression is exactly what defeats a blocklist (FR-006)
+- [ ] T034 [US1] Save an emblem **immediately, with no review queue, no pending state and no private storage**, in `apps/api/src/guilds/found.ts` — it is a triple of indices into a curated palette, validated as `icon ∈ 0..35`, `ink ∈ 0..11`, `ground ∈ 0..11`
 
-> **Unreconciled: [research.md](research.md) and [quickstart.md](quickstart.md) both
-> say the emblem "is an image and therefore goes through review", on the same
-> surface as avatars.** The spec says it is composed from a fixed palette of 36 × 12
-> × 12 curated parts, and FR-004 says contrast **warns and never blocks** with no
-> review step. **Implement the spec** — a composition of curated parts has nothing
-> to review — and raise the discrepancy rather than resolving it here. The **name**
-> and the **pitch** are text and do go through feature 015's moderation.
+> **Settled 2026-07-28: the emblem needs no review, because it is composed from
+> preconfigured assets.** `research.md` and `quickstart.md` previously said it went
+> through image review on the same surface as avatars; both have been corrected.
+> **Composition is what removes the review, not a relaxed policy** — an avatar is an
+> *upload* and is still pre-moderated (feature 012), while all 5,184 emblem
+> combinations are vetted at authoring time and none of them is player-supplied
+> content. The same reasoning as feature 014's embeds, which carry no moderation
+> surface for the same reason.
+>
+> The guild **name** and **pitch** are text and **do** go through feature 015.
 
 **Checkpoint**: A guild exists, is paid for, and its founder was warned before graduating.
 
@@ -133,14 +137,14 @@ before succession exists.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T034 [P] [US3] Write `apps/api/tests/guilds/roles.test.ts` — the six-row permission grid: member invites `403`, officer invites `200`, officer succession `200`, officer sets emblem `403`, master disbands `200`, officer disbands `403`
-- [ ] T035 [P] [US3] Write `apps/api/tests/guilds/boundary.test.ts` — `GET /v1/guilds/:id` exposes **no** other player's guild applications, **no** member's shard balance and **no** squad composition (Constitution XVII)
+- [ ] T035 [P] [US3] Write `apps/api/tests/guilds/roles.test.ts` — the six-row permission grid: member invites `403`, officer invites `200`, officer succession `200`, officer sets emblem `403`, master disbands `200`, officer disbands `403`
+- [ ] T036 [P] [US3] Write `apps/api/tests/guilds/boundary.test.ts` — `GET /v1/guilds/:id` exposes **no** other player's guild applications, **no** member's shard balance and **no** squad composition (Constitution XVII)
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Implement the three roles in `apps/api/src/guilds/membership.ts` — **one** Guild Master, **at most 3** Officers, and Members (FR-017)
-- [ ] T037 [US3] Enforce the permission table **server-side** in `apps/api/src/guilds/membership.ts`, never by hiding a control (FR-018, Constitution XII)
-- [ ] T038 [US3] Implement `/motd` in `apps/api/src/guilds/motd.ts` — it sets a **pin** rather than sending a message, usable by master and officers, announcing in **guild chat only**, plus a **login notice** derived from a last-seen comparison (FR-019)
+- [ ] T037 [US3] Implement the three roles in `apps/api/src/guilds/membership.ts` — **one** Guild Master, **at most 3** Officers, and Members (FR-017)
+- [ ] T038 [US3] Enforce the permission table **server-side** in `apps/api/src/guilds/membership.ts`, never by hiding a control (FR-018, Constitution XII)
+- [ ] T039 [US3] Implement `/motd` in `apps/api/src/guilds/motd.ts` — it sets a **pin** rather than sending a message, usable by master and officers, announcing in **guild chat only**, plus a **login notice** derived from a last-seen comparison (FR-019)
 
 **Checkpoint**: A guild does not stop when one person does.
 
@@ -154,10 +158,10 @@ before succession exists.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T039 [US4] Write `apps/api/tests/guilds/succession.test.ts` with the injected clock — **all four branches**: master returns at day 13 (never available), day 20 (available and **cancels**), never returns (**completes at day 21**), and **day 22 (too late — they are no longer master)**
-- [ ] T040 [P] [US4] Add the money branch to `apps/api/tests/guilds/succession.test.ts` — an officer with 650 at day 14 who spends it and has 400 at day 21 **does not** complete. The 650 is checked **at completion**, not only at initiation
-- [ ] T041 [P] [US4] Add the neutrality assertion to `apps/api/tests/guilds/succession.test.ts` — 650 moves from one player to another and **nothing is created or destroyed** (SC-006)
-- [ ] T042 [P] [US4] Write `apps/api/tests/guilds/clock.test.ts` — `rg -n "Date\.now\(\)|new Date\(\)" apps/api/src/guilds` returns **nothing**, and adding `const t = Date.now()` to a guilds module **fails lint**
+- [ ] T040 [US4] Write `apps/api/tests/guilds/succession.test.ts` with the injected clock — **all four branches**: master returns at day 13 (never available), day 20 (available and **cancels**), never returns (**completes at day 21**), and **day 22 (too late — they are no longer master)**
+- [ ] T041 [P] [US4] Add the money branch to `apps/api/tests/guilds/succession.test.ts` — an officer with 650 at day 14 who spends it and has 400 at day 21 **does not** complete. The 650 is checked **at completion**, not only at initiation
+- [ ] T042 [P] [US4] Add the neutrality assertion to `apps/api/tests/guilds/succession.test.ts` — 650 moves from one player to another and **nothing is created or destroyed** (SC-006)
+- [ ] T043 [P] [US4] Write `apps/api/tests/guilds/clock.test.ts` — `rg -n "Date\.now\(\)|new Date\(\)" apps/api/src/guilds` returns **nothing**, and adding `const t = Date.now()` to a guilds module **fails lint**
 
 > **The day-22 branch is the one worth naming.** It is what a real person
 > experiences as unfair, and it is the one nobody thinks to test. **Succession being
@@ -165,13 +169,13 @@ before succession exists.
 
 ### Implementation for User Story 4
 
-- [ ] T043 [US4] Implement succession as **requested, not claimed**, in `apps/api/src/guilds/succession.ts` — available only after the master has been inactive **14 days** (FR-020)
-- [ ] T044 [US4] Email the master on request via the sender interface, giving them **7 days**, in `apps/api/src/guilds/succession.ts` (FR-021)
-- [ ] T045 [US4] Make **logging in** lapse the request in `apps/api/src/guilds/succession.ts` — **presence is the reply**, so the email contains **no link that grants anything** and is phishing-resistant by construction (FR-022, Constitution XIX)
-- [ ] T046 [US4] Transfer on completion in `apps/api/src/guilds/succession.ts` — the requester pays **650** and the former master is **refunded 650** (FR-023)
-- [ ] T047 [US4] Refuse a request from an officer who cannot afford 650, in `apps/api/src/guilds/succession.ts` (FR-024)
-- [ ] T048 [US4] Leave a displaced master as a **Member**, not removed from the guild, in `apps/api/src/guilds/succession.ts` (FR-025)
-- [ ] T049 [US4] Make **14 and 7 config, not constants**, in `apps/api/src/guilds/config.ts` — the shape is decided; the numbers want a real population
+- [ ] T044 [US4] Implement succession as **requested, not claimed**, in `apps/api/src/guilds/succession.ts` — available only after the master has been inactive **14 days** (FR-020)
+- [ ] T045 [US4] Email the master on request via the sender interface, giving them **7 days**, in `apps/api/src/guilds/succession.ts` (FR-021)
+- [ ] T046 [US4] Make **logging in** lapse the request in `apps/api/src/guilds/succession.ts` — **presence is the reply**, so the email contains **no link that grants anything** and is phishing-resistant by construction (FR-022, Constitution XIX)
+- [ ] T047 [US4] Transfer on completion in `apps/api/src/guilds/succession.ts` — the requester pays **650** and the former master is **refunded 650** (FR-023)
+- [ ] T048 [US4] Refuse a request from an officer who cannot afford 650, in `apps/api/src/guilds/succession.ts` (FR-024)
+- [ ] T049 [US4] Leave a displaced master as a **Member**, not removed from the guild, in `apps/api/src/guilds/succession.ts` (FR-025)
+- [ ] T050 [US4] Make **14 and 7 config, not constants**, in `apps/api/src/guilds/config.ts` — the shape is decided; the numbers want a real population
 
 **Checkpoint**: All four stories independently functional.
 
@@ -179,12 +183,12 @@ before succession exists.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T050 Implement activity in `apps/api/src/guilds/activity.ts` with *considered active for 14 days from founding regardless of headcount* **as part of the definition, not as a caller-side exception** — written as an exception it would need special-casing everywhere activity is read (FR-026, SC-007)
-- [ ] T051 Define guild activity by member activity within a stated window that **does not depend on when a member plays** (FR-027, SC-008)
-- [ ] T052 Write `apps/api/tests/guilds/deferred.test.ts` — `rg -in "wing|event|guildFund|treasury" apps/api/src/guilds` returns **nothing**. **A "harmless" Wing column now is a structure with no rules attached, and it will acquire wrong ones**
-- [ ] T053 Dissolve a guild whose last member leaves, in `apps/api/src/guilds/membership.ts` — the founding fee is **not** returned. Succession refunds where disbanding does not, and the rule is *a guild costs 650 to hold*, not *you get your money back*
-- [ ] T054 [P] Write `apps/api/src/guilds/README.md` — the three roles, the contended-row argument, and the standing note that Wings are deferred with their design
-- [ ] T055 Run the full quickstart manual pass
+- [ ] T051 Implement activity in `apps/api/src/guilds/activity.ts` with *considered active for 14 days from founding regardless of headcount* **as part of the definition, not as a caller-side exception** — written as an exception it would need special-casing everywhere activity is read (FR-026, SC-007)
+- [ ] T052 Define guild activity by member activity within a stated window that **does not depend on when a member plays** (FR-027, SC-008)
+- [ ] T053 Write `apps/api/tests/guilds/deferred.test.ts` — `rg -in "wing|event|guildFund|treasury" apps/api/src/guilds` returns **nothing**. **A "harmless" Wing column now is a structure with no rules attached, and it will acquire wrong ones**
+- [ ] T054 Dissolve a guild whose last member leaves, in `apps/api/src/guilds/membership.ts` — the founding fee is **not** returned. Succession refunds where disbanding does not, and the rule is *a guild costs 650 to hold*, not *you get your money back*
+- [ ] T055 [P] Write `apps/api/src/guilds/README.md` — the three roles, the contended-row argument, and the standing note that Wings are deferred with their design
+- [ ] T056 Run the full quickstart manual pass
 
 ---
 
@@ -197,7 +201,7 @@ before succession exists.
 - **US2 (Phase 3)**: Foundational only. **Sequenced first**
 - **US1 (Phase 4)**: needs feature 010's charge and feature 009's `StarterExitWarning`
 - **US3 (Phase 5)**: needs membership (T012, T020) and feature 014's guild chat for `/motd`
-- **US4 (Phase 6)**: needs the clock (T005) and roles (T036)
+- **US4 (Phase 6)**: needs the clock (T005) and roles (T037)
 - **Polish (Phase 7)**: depends on US1 and US2
 
 ### User Story Dependencies
@@ -219,7 +223,7 @@ before succession exists.
 - **US1 and US2 can be worked in parallel** — founding and joining touch different modules, and US2's tests use a guild fixture
 - T009, T010, T011 in parallel
 - T022, T023, T024, T025 in parallel
-- T034, T035 in parallel · T040, T041, T042 in parallel
+- T035, T036 in parallel · T041, T042, T043 in parallel
 
 ---
 

@@ -12,11 +12,49 @@ Versioned release notes start when Steam builds do.
 
 ---
 
-## 2026-07-28 — Spec-Kit finished: 765 tasks across all sixteen
+## 2026-07-28 — A guild emblem is composed, not uploaded, so it is never reviewed
+
+### Fixed
+
+- **The emblem needs no moderation review**, and eight places said otherwise.
+  Feature 013's `research.md`, `quickstart.md` and `contracts/`; feature 015's report
+  target enum; and four references in feature 016 to *"the avatar / emblem review
+  queue"*. All corrected.
+- **`guild-emblem` is no longer a report target.** Replaced with **`guild-name`**,
+  which is text, *is* moderatable, and is what makes feature 013's free forced rename
+  reachable — it previously had no report path while `username` did.
+
+### The part worth explaining
+
+**Composition is what removes the review, not a relaxed policy** — and that
+distinction is why the correction is worth more than a typo fix.
+
+An emblem is **36 icons × 12 inks × 12 grounds**, every asset vetted at authoring
+time, so a saved emblem is a **triple of indices into a curated palette**. There are
+5,184 combinations and **none of them is player-supplied content**. There is no
+upload to hold, nothing to store privately, and nothing to approve.
+
+An **avatar is an upload**, so feature 012 still pre-moderates it — a genuine harm
+gate, because a bad image seen by every opponent cannot be undone by a later removal.
+**The two are not the same shape**, and treating them as one would have built a
+review queue for a dropdown.
+
+**This is the same argument feature 014 already makes about embeds**: nothing in them
+is authored by a human, so they carry no moderation surface at all. Three features
+now share one rule — **a surface exists only where a player can put something into
+it** — and each of the three would otherwise have paid for a pipeline it does not
+need.
+
+The **contrast rule is unchanged and still warns rather than blocks**. A solid block
+of colour remains a permitted choice.
+
+---
+
+## 2026-07-28 — Spec-Kit finished: 766 tasks across all sixteen
 
 ### Added
 
-- **`tasks.md` for every one of the sixteen features** — **765 tasks**, organized by
+- **`tasks.md` for every one of the sixteen features** — **766 tasks**, organized by
   user story so each phase is an independently testable increment. Every task carries
   a checkbox, a sequential id, a story label where it belongs to one, and an exact
   file path. **Zero malformed, zero duplicate ids, zero gaps.**
@@ -52,13 +90,10 @@ That is deliberate: the plans and research files hold the *why*, and the diff ho
 the *what*, and **the gap between them is where a correct decision gets rebuilt
 incorrectly six weeks later**.
 
-**One internal contradiction surfaced and was deliberately not resolved.** Feature
-013's `research.md` and `quickstart.md` both say the guild emblem *"is an image and
-therefore goes through review"*. Its `spec.md` says the emblem is composed from a
-fixed palette — **36 icons × 12 inks × 12 grounds** — and FR-004 says contrast warns
-and never blocks, with no review step. **A composition of curated parts has nothing
-to review.** `013/tasks.md` implements the spec and flags the discrepancy; resolving
-it is a decision, not a tasks-level call.
+**One internal contradiction surfaced and was raised rather than resolved** — feature
+013's guild emblem, which `research.md` and `quickstart.md` sent through image review
+and `spec.md` composed from a fixed palette. **Resolved the same day in favour of the
+spec**; see the entry above.
 
 ---
 

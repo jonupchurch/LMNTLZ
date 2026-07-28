@@ -147,18 +147,35 @@ Application expiry is a scheduled job (feature 016) driven from Postgres — res
 and safe to re-run, the same shape as the replay cleanup. Test it by advancing the
 clock and running the job, not by waiting.
 
-## The emblem
-
-Same surface and same rules as avatars (feature 012):
+## The emblem — composed, so there is nothing to review
 
 ```
-hate imagery    → rejected
-impersonation   → rejected
-ugly            → APPROVED
-unapproved emblem reachable by URL → MUST NOT BE
+pick icon 17, ink 4, ground 9   → SAVES IMMEDIATELY, no pending state
+a low-contrast combination      → warns, and SAVES ANYWAY
+an icon index outside 0-35      → 422
 ```
 
-**Harm is a gate; taste is a note.**
+**No review queue, no pending state, no private storage.** The emblem is
+**36 icons × 12 inks × 12 grounds**, all vetted at authoring time, so a saved emblem
+is a triple of indices into a curated palette — 5,184 combinations, **none of them
+player-supplied content**.
+
+Then the structural check:
+
+```bash
+rg -in "emblem" apps/admin/src apps/api/src/moderation
+```
+
+**Nothing.** If an emblem ever reaches a review queue, something is treating a
+palette index as an upload.
+
+> **Composition is what removes the review, not a relaxed policy.** An avatar is an
+> upload and *is* pre-moderated (feature 012). The contrast rule still **warns and
+> never blocks** — harm is a gate, taste is a note, and a solid block of colour is a
+> permitted choice.
+
+The guild **name** and **pitch** are text and **do** go through feature 015 — an
+unacceptable name is the one case where a permanent name changes.
 
 ## What must not be there
 

@@ -182,9 +182,21 @@ initiate succession; only the master may set the emblem and disband.
 (feature 016), driven from Postgres, resumable, safe to re-run — the same shape as the
 replay cleanup.
 
-**The emblem is an image and therefore goes through review**, on the same surface and
-the same rules as avatars (feature 012): harm is a gate, taste is a note, private
-storage until approved.
+**The emblem is composed from preconfigured assets and therefore needs no review.**
+36 icons × 12 inks × 12 grounds, every one vetted at authoring time, so a saved
+emblem is a triple of indices into a curated palette — **5,184 combinations, none of
+them player-supplied content**. It saves immediately, and a low-contrast combination
+**warns and never blocks** (FR-004).
+
+> **Composition is what removes the review, not a relaxed policy.** An avatar is an
+> **upload**, so feature 012 pre-moderates it and stores it privately until approved.
+> There is no equivalent step here because there is no equivalent surface — nothing
+> in an emblem is authored by the player, which is the same reason feature 014's
+> embeds carry no moderation cost.
+>
+> **The guild *name* and *pitch* are text and do go through feature 015.** An
+> unacceptable name is the one case where a permanent name changes, handled as a free
+> forced rename.
 
 ## What is NOT settled here
 

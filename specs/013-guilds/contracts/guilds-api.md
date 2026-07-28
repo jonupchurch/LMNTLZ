@@ -133,9 +133,17 @@ deliberate rather than incidental because a test asserts it.
 
 ## `PUT /v1/guilds/:guildId/motd` · `PUT /v1/guilds/:guildId/emblem`
 
-`motd` sets a pin (feature 014). The **emblem is an image and goes through review** on
-the same surface and the same rules as avatars: **harm is a gate, taste is a note**,
-private storage until approved.
+`motd` sets a pin (feature 014).
+
+**The emblem needs no review.** It is **composed from preconfigured assets** — 36
+icons × 12 inks × 12 grounds, all vetted at authoring time — so a saved emblem is a
+triple of indices into a curated palette and there is nothing a player can put into
+it. It saves immediately; a low-contrast combination **warns and never blocks**.
+
+> **This is the difference between the emblem and an avatar.** An avatar is an
+> **upload**, so it is pre-moderated and privately stored until approved (feature
+> 012). Composition from a fixed palette is what removes the review entirely — not a
+> relaxed policy, an absent surface.
 
 ## `GET /v1/guilds/:guildId`
 

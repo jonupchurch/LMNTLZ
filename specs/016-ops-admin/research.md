@@ -168,7 +168,9 @@ whole of it.
 ```
 apps/admin  contains:  the pending-action queue and its confirm button
                        the moderation queues (feature 015)
-                       the avatar / emblem review queue (features 012, 013)
+                       the avatar review queue (feature 012 — uploads only;
+                         a guild emblem is composed from preconfigured assets
+                         and never reaches a queue)
             and nothing else.
 ```
 

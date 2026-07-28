@@ -19,9 +19,9 @@ duplicate ids, zero gaps.
 
 | | |
 |---|---|
-| Total tasks | **765** |
+| Total tasks | **766** |
 | Parallelizable `[P]` | 207 |
-| Inside a user-story phase | 562 |
+| Inside a user-story phase | 563 |
 | Features whose Phase 1 is a one-time bootstrap | **3** — 001 (monorepo) · 005 (`apps/api`) · 006 (`apps/client`) |
 
 **All 49 Phase 0 research questions are answered**, and the answers say honestly
@@ -183,15 +183,6 @@ expensive later:
 squads? The ambush counter is the recorded answer to opponent farming and it only
 bites if a bot's Hidden squad is harder than its Visible one. 20 starter bots with
 Hidden squads is twice the content of 20 without. (`009/research.md`)
-
-**One internal contradiction surfaced by the tasks pass, and left unresolved**:
-feature 013's `research.md` and `quickstart.md` both say the guild emblem *"is an
-image and therefore goes through review"*, on the same surface as avatars. Its
-`spec.md` says the emblem is composed from a fixed palette of **36 icons × 12 inks ×
-12 grounds**, and FR-004 says contrast **warns and never blocks** — with no review
-step anywhere. **A composition of curated parts has nothing to review.**
-`013/tasks.md` implements the spec and flags the discrepancy rather than resolving
-it. The guild **name** and **pitch** are text and do go through feature 015.
 
 **A working Python 3.13 interpreter is at `py`** — the bare `python` on PATH is a
 Store stub.

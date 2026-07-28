@@ -14,7 +14,7 @@
 ## `POST /v1/reports`
 
 ```jsonc
-{ "targetType": "message" | "profile" | "avatar" | "guild-emblem" | "username",
+{ "targetType": "message" | "profile" | "avatar" | "guild-name" | "username",
   "targetId": "...",
   "category": "harm" | "friction",
   "detail": "..." }
@@ -28,6 +28,12 @@
 **Routing happens once, here, from the reporter's chosen category.** A moderator may
 reclassify. **The classifier's score never routes** — it ranks within a queue it did
 not choose. That is FR-003 extended to the queue itself.
+
+> **A guild *emblem* is not a report target and there is no such value.** It is
+> composed from preconfigured assets — 36 icons × 12 inks × 12 grounds, all vetted at
+> authoring time — so there is nothing player-supplied in one to report. A guild
+> **name** is text and is reportable, which is what makes feature 013's free forced
+> rename reachable.
 
 **Filing a report places a retention hold** (feature 008). The replay or message
 outlives its normal window by `max(7 days from conclusion, 30 days from the report's

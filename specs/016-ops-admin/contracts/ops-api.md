@@ -189,7 +189,7 @@ irreversible action is the exact thing this design exists to make visible.
 ```
 the pending-action queue and its confirm button
 the moderation queues                     (feature 015)
-the avatar / emblem review queue          (features 012, 013)
+the avatar review queue                   (feature 012 — uploads only)
 ```
 
 **And nothing else.** Propose-don't-execute *requires somewhere to confirm*, so the

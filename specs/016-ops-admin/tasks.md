@@ -38,7 +38,7 @@ would be testing a branch that should not exist.
 ## Phase 1: Setup
 
 - [ ] T001 Create `apps/api/src/ops/` and `apps/api/src/ops/jobs/`, and register the ops routes in `apps/api/src/index.ts`
-- [ ] T002 Scaffold `apps/admin/` — a Vite + React app whose routes are **only** the pending-action queue, the moderation queues (feature 015) and the avatar/emblem review queue (features 012, 013), **and nothing else**
+- [ ] T002 Scaffold `apps/admin/` — a Vite + React app whose routes are **only** the pending-action queue, the moderation queues (feature 015) and the **avatar** review queue (feature 012, **uploads only**), **and nothing else**. A guild emblem is composed from preconfigured assets and never reaches a queue
 - [ ] T003 [P] Add an `ops` test project to `apps/api/vitest.config.ts`
 
 ---
@@ -188,7 +188,7 @@ would be testing a branch that should not exist.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T045 Verify `apps/admin/src/routes` holds **exactly three things** — the pending-action queue, the moderation queues, the avatar/emblem review queue. **Every capability added here is a capability that must then be secured** behind the one credential automation deliberately does not hold, which is a stronger reason to keep it small than build cost is
+- [ ] T045 Verify `apps/admin/src/routes` holds **exactly three things** — the pending-action queue, the moderation queues, the avatar review queue — and that `rg -in "emblem" apps/admin/src` returns **nothing**. **Every capability added here is a capability that must then be secured** behind the one credential automation deliberately does not hold, which is a stronger reason to keep it small than build cost is
 - [ ] T046 [P] Write `apps/api/src/ops/README.md` — the reversible/irreversible line, the hardware-key argument, and the standing rule that health checks observe rather than self-report
 - [ ] T047 Run the full quickstart manual pass
 
