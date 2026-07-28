@@ -195,6 +195,52 @@ event sits idle for a long time. If events run long, this is the rule most likel
 to feel punishing to a new member, and the mitigation is a visible countdown to
 the next lock rather than a change to the rule.
 
+### Founding a guild costs 650 shards — **settled 2026-07-28**
+
+> **One full rune. Paid personally by the founder, and not refundable.**
+
+**Sized to be a decision, not a barrier.** 650 is **1.7 days** of a typical
+player's income, 2.9 for a light one — nobody who wants a guild is priced out,
+and nobody makes one by reflex. The alternative is thousands of one-member guilds
+with a name and no people, which is worse for the guild-ads channel than any
+spam rule could fix.
+
+**Stated in runes, like the balance cap.** A founder is spending exactly one rune
+they will not build, which is a trade they can feel without a table.
+
+**Not refundable on disband**, for the same reason a rune is destroyed on
+replacement: *committing is what costs.* An escrowed fee would make founding
+free-if-you-change-your-mind, which is the reflex the price exists to slow.
+
+> **It pairs with the allowance gate to kill vanity guilds twice.** A one-member
+> guild has already paid 650 **and** cannot advertise, since guild funds require
+> **3 members active in 7 days** (`11-social.md`). Neither rule alone is decisive;
+> together they mean a guild that never recruits is a rune thrown away in silence.
+
+#### Founding is a third door out of the beginner league
+
+**Creating a guild ends the starter week exactly as joining one does** — the
+founder is in a guild, and no guild member is ever in the beginner league. So the
+warning fires on **three** doors, not two: **an invitation, an application, and
+creation.**
+
+This is easy to miss because creation does not feel like joining, and it is very
+reachable: a starter player earns **432/day**, so 650 is **1.5 days** — well
+inside their protected week.
+
+#### A new guild needs an allowance before it has members
+
+> **Open — the bootstrap gap.** Guild funds require 3 members active in 7 days.
+> **A guild founded today has one member and therefore cannot advertise**, which
+> is the exact moment it most needs to. The gate meant to starve dead guilds
+> also starves newborn ones.
+
+**Proposed fix: a founding grace period.** A newly created guild draws the daily
+allowance for its first **14 days** regardless of headcount; after that the
+3-active rule applies normally. It solves the bootstrap without weakening the
+gate, since a guild that has not found two other people in a fortnight is the
+thing the gate was written for.
+
 ### Joining — invites and applications — **settled 2026-07-28**
 
 > **Both are free. The side that *receives* the request is the side that decides,

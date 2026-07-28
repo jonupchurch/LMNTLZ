@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:880px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px;min-width:0">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">{{ viewLabel }}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.12em;color:{{ dirtyColor }};border-left:1px solid #241F38;padding-left:16px;white-space:nowrap">{{ dirtyLabel }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex:0 0 auto">
+      <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:8px;padding:3px;gap:3px">
+        <div onClick="{{ setCreate }}" style="padding:7px 14px;border-radius:6px;background:{{ createBg }};color:{{ createColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.09em">CREATE</div>
+        <div onClick="{{ setEdit }}" style="padding:7px 14px;border-radius:6px;background:{{ editBg }};color:{{ editColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.09em">EDIT PROFILE</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;background:#1C1930;border:1px solid #F2C744;border-radius:8px;padding:7px 13px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#F2C744">◈</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#F2C744">{{ shardsText }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="flex:1 1 auto;min-width:680px;overflow-y:auto;min-height:0;padding:22px 26px 44px">
+
+      <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+        <div style="border:1px solid #241F38;border-left:3px solid #F2C744;border-radius:10px;background:#141221;padding:16px 18px;margin-bottom:18px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1 1 340px;min-width:300px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#F2C744;margin-bottom:6px">FOUNDING A COURT COSTS ◈ 2 500</div>
+            <div style="font-size:13.5px;line-height:1.6;color:#B4AECB">You become guild master immediately and alone. Three wings of eight open empty — <strong style="color:#F4EFE4">24 seats, one of them yours</strong>. The name and tag are permanent; everything below them can be rewritten whenever you like.</div>
+          </div>
+          <div style="flex:0 0 auto;display:flex;gap:8px;flex-wrap:wrap">
+            <div style="border:1px solid #3A3357;border-radius:8px;background:#1C1930;padding:9px 12px"><div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8">YOUR SHARDS</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:#F4EFE4;margin-top:4px;white-space:nowrap">◈ {{ shardsText }}</div></div>
+            <div style="border:1px solid #3A3357;border-radius:8px;background:#1C1930;padding:9px 12px"><div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;color:#8E87A8">AFTER FOUNDING</div><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:{{ afterColor }};margin-top:4px;white-space:nowrap">◈ {{ afterText }}</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px;margin-bottom:16px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:13px">IDENTITY {{ identityLock }}</div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.5fr) 150px;gap:12px;margin-bottom:14px">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8">GUILD NAME</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ nameCountColor }}">{{ nameCount }}</span>
+            </div>
+            <div style="border:1px solid {{ nameBorder }};border-radius:9px;background:{{ lockedBg }};padding:12px 14px">
+              <input type="text" placeholder="Name your court" value="{{ name }}" onInput="{{ onName }}" style-focus="box-shadow:0 0 0 2px #0E0C17,0 0 0 4px #8FCFE0" style="width:100%;background:transparent;border:none;outline:none;border-radius:5px;color:{{ lockedText }};font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:22px;letter-spacing:0.03em" />
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:8px">
+              <div style="width:7px;height:7px;border-radius:50%;background:{{ nameDot }}"></div>
+              <div style="font-size:12.5px;color:{{ nameDot }}">{{ nameMsg }}</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8;margin-bottom:7px">TAG · 2–4</div>
+            <div style="border:1px solid {{ tagBorder }};border-radius:9px;background:{{ lockedBg }};padding:12px 14px">
+              <input type="text" placeholder="TAG" value="{{ tag }}" onInput="{{ onTag }}" style-focus="box-shadow:0 0 0 2px #0E0C17,0 0 0 4px #8FCFE0" style="width:100%;background:transparent;border:none;outline:none;border-radius:5px;color:{{ lockedText }};font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;letter-spacing:0.14em;text-align:center" />
+            </div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8">MOTTO · SHOWN UNDER THE NAME EVERYWHERE</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ mottoCountColor }}">{{ mottoCount }}</span>
+          </div>
+          <div style="border:1px solid {{ mottoBorder }};border-radius:9px;background:#1C1930;padding:12px 14px">
+            <input type="text" placeholder="Six words at most." value="{{ motto }}" onInput="{{ onMotto }}" style-focus="box-shadow:0 0 0 2px #0E0C17,0 0 0 4px #8FCFE0" style="width:100%;background:transparent;border:none;outline:none;border-radius:5px;color:#F4EFE4;font-family:Barlow,sans-serif;font-style:italic;font-size:15px" />
+          </div>
+        </div>
+        <div style="padding-top:14px;border-top:1px solid #241F38">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8">RECRUITING MESSAGE · READ ON EVERY GUILD BROADCAST</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ pitchCountColor }}">{{ pitchCount }}</span>
+          </div>
+          <div style="border:1px solid {{ pitchBorder }};border-radius:9px;background:#1C1930;padding:12px 14px">
+            <textarea placeholder="Who you want, and what they get. Two sentences beat ten." value="{{ pitch }}" onInput="{{ onPitch }}" rows="3" style-focus="box-shadow:0 0 0 2px #0E0C17,0 0 0 4px #8FCFE0" style="width:100%;background:transparent;border:none;outline:none;border-radius:5px;resize:none;color:#D6CBE8;font-family:Barlow,sans-serif;font-size:14px;line-height:1.6"></textarea>
+          </div>
+          <div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:9px">This is the only free text on a broadcast. Every number beside it — open slots, league, guild power, event finish — is pulled live at send time, so it cannot be overstated.</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:15px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">GUILD SIGIL · 36 EMBLEMS × 12 INKS × 8 GROUNDS</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#F2C744">{{ comboText }} COMBINATIONS · NO UPLOADS</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:168px minmax(0,1fr);gap:18px;align-items:start">
+          <div>
+            <div style="width:168px;height:168px;border-radius:18px;border:2px solid {{ inkColor }};background:{{ groundColor }};display:flex;align-items:center;justify-content:center;box-shadow:0 0 26px {{ inkGlow }}">
+              <div style="width:104px;height:104px;background-color:{{ inkColor }};-webkit-mask-image:{{ emblemUrl }};mask-image:{{ emblemUrl }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:9px;margin-top:12px">
+              <div style="width:46px;height:46px;border-radius:11px;border:1px solid {{ inkColor }};background:{{ groundColor }};display:flex;align-items:center;justify-content:center"><div style="width:28px;height:28px;background-color:{{ inkColor }};-webkit-mask-image:{{ emblemUrl }};mask-image:{{ emblemUrl }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div></div>
+              <div style="width:30px;height:30px;border-radius:8px;border:1px solid {{ inkColor }};background:{{ groundColor }};display:flex;align-items:center;justify-content:center"><div style="width:19px;height:19px;background-color:{{ inkColor }};-webkit-mask-image:{{ emblemUrl }};mask-image:{{ emblemUrl }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div></div>
+              <div style="width:20px;height:20px;border-radius:6px;border:1px solid {{ inkColor }};background:{{ groundColor }};display:flex;align-items:center;justify-content:center"><div style="width:13px;height:13px;background-color:{{ inkColor }};-webkit-mask-image:{{ emblemUrl }};mask-image:{{ emblemUrl }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div></div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.06em;color:#57507A;line-height:1.5;padding-bottom:3px">46 · 30 · 20<br />ROSTER SIZES</div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:{{ contrastColor }};border:1px solid {{ contrastColor }};border-radius:6px;padding:6px 9px;margin-top:12px;text-align:center">{{ contrastLabel }}</div>
+          </div>
+
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8;margin-bottom:8px">EMBLEM · {{ emblemName }}</div>
+            <div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;margin-bottom:16px">
+              <sc-for list="{{ emblems }}" as="g" hint-placeholder-count="36">
+                <div onClick="{{ g.pick }}" style="aspect-ratio:1;border:2px solid {{ g.border }};border-radius:8px;background:{{ g.bg }};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:{{ g.shadow }}" style-hover="border-color:#F2C744">
+                  <div style="width:66%;height:66%;background-color:{{ g.tint }};-webkit-mask-image:{{ g.url }};mask-image:{{ g.url }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px">
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8;margin-bottom:8px">EMBLEM INK · {{ inkName }}</div>
+                <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px">
+                  <sc-for list="{{ inks }}" as="c" hint-placeholder-count="12">
+                    <div onClick="{{ c.pick }}" style="aspect-ratio:1;border-radius:8px;border:2px solid {{ c.border }};background:{{ c.hexv }};cursor:pointer;box-shadow:{{ c.shadow }}" style-hover="border-color:#F4EFE4"></div>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8;margin-bottom:8px">GROUND · {{ groundName }}</div>
+                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+                  <sc-for list="{{ grounds }}" as="c" hint-placeholder-count="8">
+                    <div onClick="{{ c.pick }}" style="aspect-ratio:1;border-radius:8px;border:2px solid {{ c.border }};background:{{ c.hexv }};cursor:pointer;box-shadow:{{ c.shadow }}" style-hover="border-color:#F4EFE4"></div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:13px">Shape, ink and ground only — no text, no uploads, nothing to moderate. The pairing is checked for contrast as you go, because the sigil has to read at 20px on a roster row.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px">
+        <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:13px">WHO CAN JOIN</div>
+          <div style="display:grid;gap:7px;margin-bottom:15px">
+            <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+              <div onClick="{{ m.pick }}" style="border:1px solid {{ m.border }};border-radius:8px;background:{{ m.bg }};padding:11px 12px;cursor:pointer" style-hover="border-color:#57507A">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.05em;color:{{ m.nameColor }}">{{ m.name }}</div>
+                <div style="font-size:12px;line-height:1.45;color:#8E87A8;margin-top:4px">{{ m.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding-top:14px;border-top:1px solid #241F38">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8">MINIMUM RATING</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:{{ minColor }}">{{ minLabel }}</span>
+            </div>
+            <div style="display:flex;gap:5px">
+              <sc-for list="{{ minTiers }}" as="t" hint-placeholder-count="5">
+                <div onClick="{{ t.pick }}" style="flex:1;text-align:center;padding:8px 0;border-radius:6px;border:1px solid {{ t.border }};background:{{ t.bg }};cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:{{ t.color }}" style-hover="border-color:#F2C744">{{ t.label }}</div>
+              </sc-for>
+            </div>
+            <div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:10px">{{ minNote }}</div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">GUILD LANGUAGES</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ langCountColor }}">{{ langCount }}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:12px">
+            <sc-for list="{{ langs }}" as="l" hint-placeholder-count="12">
+              <div onClick="{{ l.pick }}" style="display:flex;align-items:center;gap:8px;border:1px solid {{ l.border }};border-radius:7px;background:{{ l.bg }};padding:8px 10px;cursor:pointer" style-hover="border-color:#57507A">
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:9.5px;letter-spacing:0.08em;color:{{ l.codeColor }};flex:0 0 auto">{{ l.code }}</span>
+                <span style="font-size:12px;color:{{ l.nameColor }};min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.name }}</span>
+                <sc-if value="{{ l.primary }}" hint-placeholder-val="{{ false }}">
+                  <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.08em;color:#141221;background:#F2C744;border-radius:3px;padding:2px 4px;flex:0 0 auto">1ST</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:12px;line-height:1.5;color:#8E87A8">First pick is the one shown on broadcasts and in guild search. Click a selected language again to promote it.</div>
+        </div>
+
+        <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:13px">WHEN THE COURT SITS</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #3A3357;border-radius:8px;background:#1C1930;padding:11px 13px;margin-bottom:13px">
+            <span style="font-size:13.5px;color:#F4EFE4">{{ tzLabel }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">PRIMARY</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#8E87A8;margin-bottom:8px">EVENT WINDOW · WHEN THE WING IS EXPECTED</div>
+          <div style="display:flex;gap:3px;margin-bottom:8px">
+            <sc-for list="{{ hours }}" as="h" hint-placeholder-count="24">
+              <div onClick="{{ h.pick }}" style="flex:1;height:32px;border-radius:3px;background:{{ h.bg }};border:1px solid {{ h.border }};cursor:pointer" style-hover="border-color:#F2C744"></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:8px;color:#57507A;margin-bottom:12px"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+          <div style="font-size:12px;line-height:1.5;color:#8E87A8">{{ windowNote }}</div>
+        </div>
+      </div>
+
+      <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+          <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:13px">MESSAGE OF THE DAY · GUILD CHAT HEADER</div>
+            <div style="border:1px solid {{ motdBorder }};border-radius:9px;background:#1C1930;padding:12px 14px;margin-bottom:9px">
+              <textarea placeholder="What the wing needs to know today." value="{{ motd }}" onInput="{{ onMotd }}" rows="2" style-focus="box-shadow:0 0 0 2px #0E0C17,0 0 0 4px #8FCFE0" style="width:100%;background:transparent;border:none;outline:none;border-radius:5px;resize:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:14px;line-height:1.6"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:#57507A">PINNED FOR 24 HOURS · OFFICERS CAN ALSO SET THIS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ motdCountColor }}">{{ motdCount }}</div>
+            </div>
+          </div>
+          <div style="border:1px solid #241F38;border-radius:10px;background:#141221;padding:20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#B5732E;margin-bottom:13px">PERMANENT AND DESTRUCTIVE</div>
+            <div style="display:grid;gap:7px">
+              <div style="display:flex;align-items:center;gap:12px;border:1px dashed #3A3357;border-radius:8px;padding:12px 13px">
+                <div style="flex:1;min-width:0"><div style="font-size:13px;color:#B4AECB">Transfer guild mastery</div><div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#57507A;margin-top:3px">TO AN OFFICER · YOU BECOME AN OFFICER</div></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#B4AECB;border:1px solid #3A3357;border-radius:5px;padding:5px 9px;cursor:pointer;flex:0 0 auto" style-hover="border-color:#57507A;color:#F4EFE4">CHOOSE</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;border:1px dashed #C0313A;border-radius:8px;background:rgba(192,49,58,.06);padding:12px 13px">
+                <div style="flex:1;min-width:0"><div style="font-size:13px;color:#F06A72">Disband the court</div><div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#57507A;margin-top:3px">BLOCKED DURING AN EVENT · 24 WARDENS RELEASED</div></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#F06A72;border:1px solid #C0313A;border-radius:5px;padding:5px 9px;cursor:pointer;flex:0 0 auto" style-hover="background:#C0313A;color:#FFFFFF">DISBAND</div>
+              </div>
+            </div>
+            <div style="font-size:12px;line-height:1.5;color:#8E87A8;margin-top:12px">The name and tag cannot be changed after founding — a court's record follows its name. The sigil, motto, pitch and everything else on this page is rewritable at any time.</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="width:388px;flex:0 0 auto;background:#141221;border-left:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:14px 16px 13px;border-bottom:1px solid #241F38">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.08em;color:#F4EFE4;margin-bottom:5px">LIVE PREVIEW</div>
+        <div style="font-size:12.5px;line-height:1.5;color:#8E87A8">Exactly what a warden sees in chat and in guild search.</div>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:14px 16px 16px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:10px">GUILD BROADCAST · ◈ 400</div>
+        <div style="border:2px solid {{ inkColor }};border-radius:12px;background:linear-gradient(135deg,{{ inkGlow }} 0%,#161327 46%,#141221 100%);box-shadow:0 0 22px {{ inkGlow }};overflow:hidden;margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;background:{{ inkColor }};flex-wrap:wrap">
+            <span style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:0.18em;color:{{ headerInk }}">GUILD BROADCAST</span>
+            <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:0.1em;color:{{ headerInk }}">◈ 400</span>
+          </div>
+          <div style="padding:14px 15px 15px">
+            <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+              <div style="width:54px;height:54px;border-radius:12px;border:2px solid {{ inkColor }};background:{{ groundColor }};display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+                <div style="width:34px;height:34px;background-color:{{ inkColor }};-webkit-mask-image:{{ emblemUrl }};mask-image:{{ emblemUrl }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div>
+              </div>
+              <div style="min-width:0;flex:1">
+                <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:17px;letter-spacing:0.02em;color:#F4EFE4;line-height:1.1">{{ nameDisplay }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:{{ inkColor }};border:1px solid {{ inkColor }};border-radius:4px;padding:3px 6px">{{ tagDisplay }}</div>
+                </div>
+                <div style="font-size:12px;line-height:1.5;color:#D6CBE8;font-style:italic;margin-top:5px">{{ mottoDisplay }}</div>
+              </div>
+            </div>
+            <div style="font-size:12.5px;line-height:1.55;color:#D6CBE8;margin-bottom:12px">“{{ pitchDisplay }}”</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px">
+              <sc-for list="{{ previewFacts }}" as="ft" hint-placeholder-count="4">
+                <div style="border:1px solid #3A3357;border-radius:6px;background:rgba(14,12,23,.55);padding:7px 9px">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.12em;color:#8E87A8">{{ ft.label }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:{{ ft.color }};margin-top:3px;white-space:nowrap">{{ ft.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="border:1px solid #3A3357;border-radius:7px;background:rgba(14,12,23,.55);padding:9px 10px;margin-bottom:11px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.12em;color:#8E87A8">OPEN SLOTS</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:{{ inkColor }}">{{ openText }}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px">
+                <sc-for list="{{ seats }}" as="st" hint-placeholder-count="24">
+                  <div style="height:9px;border-radius:2px;background:{{ st.bg }};border:1px {{ st.style }} {{ st.border }}"></div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="height:34px;border-radius:7px;background:linear-gradient(135deg,#FFD75C,#F2C744 55%,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:0.1em;color:#141221">REQUEST TO JOIN</div>
+          </div>
+        </div>
+
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:10px">GUILD SEARCH ROW</div>
+        <div style="display:flex;align-items:center;gap:11px;border:1px solid #241F38;border-radius:9px;background:#1C1930;padding:11px 12px;margin-bottom:18px">
+          <div style="width:34px;height:34px;border-radius:8px;border:1px solid {{ inkColor }};background:{{ groundColor }};display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <div style="width:21px;height:21px;background-color:{{ inkColor }};-webkit-mask-image:{{ emblemUrl }};mask-image:{{ emblemUrl }};-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center"></div>
+          </div>
+          <div style="min-width:0;flex:1">
+            <div style="display:flex;align-items:center;gap:6px"><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;color:#F4EFE4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ nameDisplay }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:{{ inkColor }};flex:0 0 auto">{{ tagDisplay }}</span></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#6E6690;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ searchMeta }}</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:{{ modeColor }};flex:0 0 auto">{{ modeShort }}</div>
+        </div>
+
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:10px">CHECKS BEFORE {{ ctaShort }}</div>
+        <div style="display:grid;gap:6px">
+          <sc-for list="{{ checks }}" as="c" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:10px;border:1px solid {{ c.border }};border-radius:7px;background:#1C1930;padding:9px 11px">
+              <div style="width:15px;height:15px;border-radius:50%;border:1.5px solid {{ c.ring }};background:{{ c.fill }};display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8.5px;color:#0E0C17">{{ c.mark }}</div>
+              <div style="font-size:12.5px;color:{{ c.color }};min-width:0">{{ c.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex:0 0 auto;border-top:1px solid #241F38;padding:12px 16px 14px;background:#161327">
+        <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.1em;color:#8E87A8">FOUNDING COST</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#F2C744">◈ 2 500</span>
+          </div>
+        </sc-if>
+        <div style="height:44px;border-radius:9px;background:{{ ctaBg }};border:1px solid {{ ctaBorder }};display:flex;align-items:center;justify-content:center;cursor:{{ ctaCursor }};font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.11em;color:{{ ctaColor }};box-shadow:{{ ctaShadow }}" style-hover="filter:brightness(1.08)">{{ ctaText }}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;color:#57507A;margin-top:9px;line-height:1.6">{{ ctaFoot }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1480,&quot;height&quot;:960}}">
+const EMBLEMS = [
+  ["shield","Shield"],["tower","Tower"],["mountain","Mountain"],["flame","Flame"],["wave","Wave"],["sun","Sun"],
+  ["crescent","Crescent"],["star","Star"],["eye","Eye"],["sword","Sword"],["axe","Axe"],["spear","Spear"],
+  ["hammer","Hammer"],["bow","Bow"],["arrowhead","Arrowhead"],["anvil","Anvil"],["crown","Crown"],["chalice","Chalice"],
+  ["key","Key"],["lantern","Lantern"],["book","Book"],["scales","Scales"],["raven","Raven"],["wolf","Wolf"],
+  ["serpent","Serpent"],["stag","Stag"],["boar","Boar"],["fish","Fish"],["tree","Tree"],["leaf","Leaf"],
+  ["seed","Seed"],["root","Root"],["gate","Gate"],["bridge","Bridge"],["chain","Chain"],["spiral","Spiral"]
+];
+const INKS = [
+  ["#4E7C3A","Moss"],["#C9922E","Bronze"],["#8FCFE0","Sky"],["#DCE6EA","Frost"],
+  ["#E8552B","Ember"],["#FFB347","Flame"],["#2A7FB8","Tide"],["#4FC3D6","Spring"],
+  ["#F2C744","Gold"],["#7A3FA0","Violet"],["#C64BB0","Orchid"],["#F4EFE4","Ivory"]
+];
+const GROUNDS = [
+  ["#0E0C17","Void"],["#241F38","Slate"],["#42215B","Deep violet"],["#164A6E","Deep tide"],
+  ["#2C4620","Deep moss"],["#77161C","Deep crimson"],["#6E4317","Deep bronze"],["#F4EFE4","Parchment"]
+];
+const LANGS = [["EN","English"],["ES","Español"],["DE","Deutsch"],["FR","Français"],["PT","Português"],["IT","Italiano"],["PL","Polski"],["RU","Русский"],["TR","Türkçe"],["JA","日本語"],["KO","한국어"],["ZH","中文"]];
+const MODES = [
+  ["open","OPEN","Anyone meeting the rating floor joins instantly. Seats fill fastest and least carefully."],
+  ["invite","INVITE ONLY","Applications arrive as requests. An officer must accept each one."],
+  ["closed","CLOSED","Nobody can apply. Invitations still work, and the guild stays out of search."]
+];
+const TIERS = [[0,"ANY"],[1200,"1 200"],[1600,"1 600"],[2000,"2 000"],[2400,"2 400"]];
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+const lum = c => {
+  const f = i => { const v = parseInt(c.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(1) + 0.7152 * f(3) + 0.0722 * f(5);
+};
+const ratio = (a, b) => { const l1 = lum(a), l2 = lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+const hex = (c, a) => "rgba(" + parseInt(c.slice(1,3),16) + "," + parseInt(c.slice(3,5),16) + "," + parseInt(c.slice(5,7),16) + "," + a + ")";
+
+class Component extends DCLogic {
+  state = {
+    view: "create", shards: 4260,
+    name: "", tag: "", motto: "", pitch: "",
+    emblem: "root", ink: "#4E7C3A", ground: "#241F38",
+    mode: "invite", min: 1600, langs: ["EN"], hours: [19,20,21,22], motd: "", dirty: false
+  };
+  set(patch) { this.setState(Object.assign({ dirty: true }, patch)); }
+  toggleLang(code) {
+    this.setState(s => {
+      const i = s.langs.indexOf(code);
+      if (i < 0) return { langs: s.langs.concat([code]), dirty: true };
+      if (i > 0) return { langs: [code].concat(s.langs.filter(x => x !== code)), dirty: true };
+      return { langs: s.langs.filter(x => x !== code), dirty: true };
+    });
+  }
+  toggleHour(h) {
+    this.setState(s => ({ hours: s.hours.indexOf(h) >= 0 ? s.hours.filter(x => x !== h) : s.hours.concat([h]), dirty: true }));
+  }
+  renderVals() {
+    const s = this.state, self = this;
+    const isCreate = s.view === "create";
+    const emblemRow = EMBLEMS.filter(e => e[0] === s.emblem)[0];
+    const inkRow = INKS.filter(c => c[0] === s.ink)[0];
+    const groundRow = GROUNDS.filter(c => c[0] === s.ground)[0];
+    const emblemUrl = "url('guild-emblems/" + s.emblem + ".svg')";
+    const cr = ratio(s.ink, s.ground);
+    const contrastOk = cr >= 3;
+    const nameOk = s.name.trim().length >= 4;
+    const tagOk = s.tag.trim().length >= 2 && s.tag.trim().length <= 4;
+    const pitchOk = s.pitch.trim().length >= 20;
+    const langOk = s.langs.length > 0;
+    const canAfford = s.shards >= 2500;
+    const ready = isCreate ? (nameOk && tagOk && pitchOk && langOk && contrastOk && canAfford) : s.dirty;
+    const modeRow = MODES.filter(m => m[0] === s.mode)[0];
+    const hoursSorted = s.hours.slice().sort((a,b) => a - b);
+    const langLabel = s.langs.length ? s.langs.join(" · ") : "none";
+    const tierLabel = TIERS.filter(t => t[0] === s.min)[0][1];
+
+    const check = (ok, label) => ({
+      label: label, mark: ok ? "\u2713" : "",
+      ring: ok ? "#4E7C3A" : "#B5732E",
+      fill: ok ? "#4E7C3A" : "transparent",
+      border: ok ? "#241F38" : "#B5732E",
+      color: ok ? "#B4AECB" : "#E0A15A"
+    });
+    const checks = isCreate ? [
+      check(nameOk, nameOk ? "Name is available" : "Name needs at least 4 characters"),
+      check(tagOk, tagOk ? "Tag is free" : "Tag must be 2 to 4 characters"),
+      check(pitchOk, pitchOk ? "Recruiting message written" : "Recruiting message is too short to be useful"),
+      check(contrastOk, contrastOk ? "Sigil reads at 20px · " + cr.toFixed(1) + ":1" : "Ink and ground are too close · " + cr.toFixed(1) + ":1"),
+      check(canAfford, canAfford ? "You can cover the founding cost" : "Not enough shards to found a court")
+    ] : [
+      check(true, "Name and tag are permanent — not editable"),
+      check(contrastOk, contrastOk ? "Sigil reads at 20px · " + cr.toFixed(1) + ":1" : "Ink and ground are too close · " + cr.toFixed(1) + ":1"),
+      check(pitchOk, pitchOk ? "Recruiting message written" : "Recruiting message is too short to be useful"),
+      check(langOk, langOk ? "At least one language set" : "Pick a language or you vanish from search"),
+      check(s.dirty, s.dirty ? "Unsaved changes ready to publish" : "Nothing changed yet")
+    ];
+
+    const seats = [];
+    for (let i = 0; i < 24; i++) {
+      const filled = isCreate ? i === 0 : i < 19;
+      seats.push({
+        bg: filled ? s.ink : "transparent",
+        style: filled ? "solid" : "dashed",
+        border: filled ? s.ink : "#57507A"
+      });
+    }
+    const openCount = isCreate ? 23 : 5;
+
+    return {
+      viewLabel: isCreate ? "FOUND A COURT" : "GUILD PROFILE",
+      setCreate: () => this.setState({ view: "create" }),
+      setEdit: () => this.setState({ view: "edit" }),
+      createBg: isCreate ? "#F2C744" : "transparent", createColor: isCreate ? "#141221" : "#B4AECB",
+      editBg: !isCreate ? "#F2C744" : "transparent", editColor: !isCreate ? "#141221" : "#B4AECB",
+      isCreate: isCreate, isEdit: !isCreate,
+      shardsText: fmt(s.shards),
+      afterText: fmt(Math.max(0, s.shards - 2500)),
+      afterColor: canAfford ? "#B4AECB" : "#F06A72",
+      dirtyLabel: isCreate ? "NOTHING IS SPENT UNTIL YOU FOUND IT" : (s.dirty ? "UNSAVED CHANGES" : "ALL CHANGES SAVED"),
+      dirtyColor: isCreate ? "#6E6690" : (s.dirty ? "#F2C744" : "#4E7C3A"),
+      identityLock: isCreate ? "· NAME AND TAG ARE PERMANENT" : "· NAME AND TAG LOCKED AFTER FOUNDING",
+
+      name: s.name, onName: e => self.set({ name: e.target.value }),
+      nameCount: s.name.length + " / 24",
+      nameCountColor: s.name.length > 24 ? "#F06A72" : "#57507A",
+      nameBorder: nameOk ? "#4E7C3A" : "#3A3357",
+      nameDot: nameOk ? "#4E7C3A" : "#B5732E",
+      nameMsg: nameOk ? "Available in every Court." : "At least 4 characters. This cannot be changed later.",
+      lockedBg: "#1C1930", lockedText: "#F4EFE4",
+      tag: s.tag, onTag: e => self.set({ tag: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4) }),
+      tagBorder: tagOk ? "#4E7C3A" : "#3A3357",
+      motto: s.motto, onMotto: e => self.set({ motto: e.target.value }),
+      mottoCount: s.motto.length + " / 60",
+      mottoCountColor: s.motto.length > 60 ? "#F06A72" : "#57507A",
+      mottoBorder: s.motto.length ? "#3A3357" : "#241F38",
+      pitch: s.pitch, onPitch: e => self.set({ pitch: e.target.value }),
+      pitchCount: s.pitch.length + " / 240",
+      pitchCountColor: s.pitch.length > 240 ? "#F06A72" : "#57507A",
+      pitchBorder: pitchOk ? "#4E7C3A" : "#3A3357",
+
+      comboText: fmt(36 * 12 * 8),
+      emblemUrl: emblemUrl, emblemName: emblemRow[1].toUpperCase(),
+      inkColor: s.ink, inkName: inkRow[1].toUpperCase(), inkGlow: hex(s.ink, 0.24),
+      groundColor: s.ground, groundName: groundRow[1].toUpperCase(),
+      headerInk: lum(s.ink) > 0.35 ? "#0E0C17" : "#F4EFE4",
+      contrastLabel: contrastOk ? "CONTRAST " + cr.toFixed(1) + ":1 · READS AT 20PX" : "CONTRAST " + cr.toFixed(1) + ":1 · TOO CLOSE",
+      contrastColor: contrastOk ? "#4E7C3A" : "#C0313A",
+      emblems: EMBLEMS.map(e => ({
+        url: "url('guild-emblems/" + e[0] + ".svg')",
+        tint: e[0] === s.emblem ? s.ink : "#8E87A8",
+        bg: e[0] === s.emblem ? s.ground : "#1C1930",
+        border: e[0] === s.emblem ? "#F2C744" : "#241F38",
+        shadow: e[0] === s.emblem ? "0 0 14px rgba(242,199,68,.28)" : "none",
+        pick: () => self.set({ emblem: e[0] })
+      })),
+      inks: INKS.map(c => ({
+        hexv: c[0],
+        border: c[0] === s.ink ? "#F2C744" : "#241F38",
+        shadow: c[0] === s.ink ? "0 0 14px rgba(242,199,68,.3)" : "none",
+        pick: () => self.set({ ink: c[0] })
+      })),
+      grounds: GROUNDS.map(c => ({
+        hexv: c[0],
+        border: c[0] === s.ground ? "#F2C744" : "#3A3357",
+        shadow: c[0] === s.ground ? "0 0 14px rgba(242,199,68,.3)" : "none",
+        pick: () => self.set({ ground: c[0] })
+      })),
+
+      modes: MODES.map(m => ({
+        name: m[1], text: m[2],
+        border: s.mode === m[0] ? "#F2C744" : "#241F38",
+        bg: s.mode === m[0] ? "rgba(242,199,68,.08)" : "#1C1930",
+        nameColor: s.mode === m[0] ? "#F2C744" : "#F4EFE4",
+        pick: () => self.set({ mode: m[0] })
+      })),
+      minLabel: tierLabel === "ANY" ? "NO FLOOR" : tierLabel + " RATING",
+      minColor: s.min === 0 ? "#B4AECB" : "#F2C744",
+      minTiers: TIERS.map(t => ({
+        label: t[1],
+        border: s.min === t[0] ? "#F2C744" : "#3A3357",
+        bg: s.min === t[0] ? "rgba(242,199,68,.12)" : "transparent",
+        color: s.min === t[0] ? "#F2C744" : "#B4AECB",
+        pick: () => self.set({ min: t[0] })
+      })),
+      minNote: s.min === 0
+        ? "Anyone may apply. Expect volume, and expect to read every application."
+        : "Wardens below " + tierLabel + " cannot apply and will not see you in search.",
+
+      langs: LANGS.map(l => {
+        const on = s.langs.indexOf(l[0]) >= 0, first = s.langs[0] === l[0];
+        return { code: l[0], name: l[1], primary: first,
+          border: on ? (first ? "#F2C744" : "#3A3357") : "#241F38",
+          bg: on ? (first ? "rgba(242,199,68,.1)" : "#1C1930") : "transparent",
+          codeColor: on ? (first ? "#F2C744" : "#8FCFE0") : "#57507A",
+          nameColor: on ? "#F4EFE4" : "#6E6690",
+          pick: () => self.toggleLang(l[0]) };
+      }),
+      langCount: s.langs.length + " picked",
+      langCountColor: s.langs.length ? "#B4AECB" : "#B5732E",
+      tzLabel: "UTC+1 · Europe/Berlin",
+      hours: (function () {
+        const out = [];
+        for (let h = 0; h < 24; h++) {
+          const on = s.hours.indexOf(h) >= 0;
+          out.push({ bg: on ? "#F2C744" : "#241F38", border: on ? "#F2C744" : "#241F38", pick: () => self.toggleHour(h) });
+        }
+        return out;
+      })(),
+      windowNote: hoursSorted.length
+        ? hoursSorted.length + " hours marked. Recruits see this before they apply, so keep it honest."
+        : "No window set — applicants cannot tell when the wing gathers.",
+
+      motd: s.motd, onMotd: e => self.set({ motd: e.target.value }),
+      motdCount: s.motd.length + " / 160",
+      motdCountColor: s.motd.length > 160 ? "#F06A72" : "#57507A",
+      motdBorder: s.motd.length ? "#3A3357" : "#241F38",
+
+      nameDisplay: (s.name.trim() || "YOUR COURT").toUpperCase(),
+      tagDisplay: s.tag.trim() || "TAG",
+      mottoDisplay: s.motto.trim() || "Your motto sits here.",
+      pitchDisplay: s.pitch.trim() || "Your recruiting message appears here, exactly this size, on every broadcast you send.",
+      previewFacts: [
+        { label: "LEAGUE", value: isCreate ? "UNRANKED" : "SKY-NAMED", color: isCreate ? "#8E87A8" : "#F2C744" },
+        { label: "GUILD POWER", value: isCreate ? "\u2014" : fmt(184200), color: "#F4EFE4" },
+        { label: "LAST EVENT", value: isCreate ? "NO RECORD" : "2ND OF 64", color: isCreate ? "#8E87A8" : "#4E7C3A" },
+        { label: "LANGUAGES", value: langLabel, color: "#B4AECB" }
+      ],
+      seats: seats,
+      openText: openCount + " / 24",
+      searchMeta: (tierLabel === "ANY" ? "no floor" : tierLabel + "+") + " · " + langLabel + " · " + openCount + " open",
+      modeShort: modeRow[1],
+      modeColor: s.mode === "open" ? "#4E7C3A" : (s.mode === "invite" ? "#F2C744" : "#8E87A8"),
+
+      checks: checks,
+      ctaShort: isCreate ? "FOUNDING" : "PUBLISHING",
+      ctaText: isCreate ? "FOUND THE COURT · ◈ 2 500" : (s.dirty ? "PUBLISH CHANGES" : "NOTHING TO PUBLISH"),
+      ctaBg: ready ? "linear-gradient(135deg,#FFD75C,#F2C744 55%,#B5732E)" : "#1C1930",
+      ctaBorder: ready ? "#F2C744" : "#2A2640",
+      ctaColor: ready ? "#141221" : "#57507A",
+      ctaCursor: ready ? "pointer" : "not-allowed",
+      ctaShadow: ready ? "0 0 20px rgba(242,199,68,.3)" : "none",
+      ctaFoot: isCreate
+        ? "THE NAME AND TAG ARE PERMANENT · THE SIGIL, MOTTO AND PITCH ARE NOT"
+        : "PUBLISHED CHANGES APPEAR ON EVERY BROADCAST AND SEARCH ROW IMMEDIATELY"
+    };
+  }
+}
+</script>
+</body>
+</html>
