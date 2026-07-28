@@ -35,8 +35,36 @@ when someone renames. The standard shape gives the same guarantee without that:
 | **User-facing** | `username`, unique index | what players see, type and search |
 
 **This costs nothing now and is very expensive to retrofit**, because it is the
-one decision that touches every table at once. It also leaves renaming as an open
-product question rather than foreclosing it — see *Open* below.
+one decision that touches every table at once. **Moderation makes it required
+rather than merely wise** — see *Forced rename* below.
+
+### Renaming — **settled 2026-07-27**
+
+| Kind | Cost | Trigger |
+|---|---|---|
+| **Forced** | **always free** | a moderator acts on a reported username |
+| **Voluntary** | **sold, per change** | the player wants a different name |
+
+**Reports of inappropriate usernames go to the moderation queue** — the team, for
+now — and the outcome is a forced rename. Same queue, same actions as chat.
+
+> **A forced rename is never charged for.** Selling name changes *and* charging a
+> violator to correct their own violation is monetizing enforcement, and it is the
+> kind of thing that ends up in a screenshot. The paid SKU is for voluntary
+> changes only.
+
+**The forced path clears the name to a placeholder and lets the player choose the
+replacement** on next login, free. An assigned name reads as punishment and
+generates the support load the action was meant to close.
+
+**Age floor: 13+, with the store rating carrying mature content honestly.**
+Decided 2026-07-27. An 18+ claim that is not enforced is worse exposure than a
+lower floor that is — and the moderation bar in *Moderation* below is already a
+13+ bar, so the stated floor should match what is actually enforced.
+
+**Two consequences of a name being an identity.** A released name should return to
+the pool only after a cooldown, or renaming becomes a squatting tool; and account
+deletion releases a name on the same terms.
 
 ---
 
@@ -201,24 +229,158 @@ cost nothing today:** keep messages in **their own tables** under the retention
 above, and keep the vendor **behind an interface** so nothing upstream knows which
 one it is.
 
-### Moderation ships with chat, not after it
+## Moderation — **settled 2026-07-27**
+
+Ships **with** chat, not after it.
+
+### What is watched
+
+> **Racist and hate content, and overtly NSFW content. Not general profanity, and
+> not rudeness.**
+
+**The bar is a non-toxic chat for a broad audience**, and it is deliberately
+narrow, because a narrow bar is the only one a small team can actually enforce.
 
 | Stage | Mechanism |
 |---|---|
 | **Before send** | rate limit · length cap · a **slur blocklist**, not a general profanity filter |
 | **After send** | report → queue → action |
-| **Actions** | escalating mute · chat ban · account ban |
+| **Actions** | escalating mute · chat ban · **forced rename** · account ban |
 
 **A blocklist, not a profanity filter.** Over-filtering reads as contempt for the
 player and is trivially defeated; the narrow list is the one that survives.
 
-> **Reported content is retained independently of its channel's history**, or a
-> report can outlive its own evidence. This is the reason Direct keeps the longest
-> history despite being the least public.
+### Hate and NSFW never share a queue with toxicity
 
-**Usernames are a moderation surface too**, because `Identity` above makes the
-username the identity and renaming is still open. An offensive username that its
-owner cannot change is a problem the moderation queue inherits.
+They look like one job and behave nothing alike:
+
+| | Objective | Frequency | Can the victim fix it? |
+|---|---|---|---|
+| **Racist / hate** | **yes** | rare | **no** — it harms bystanders too |
+| **Overtly NSFW** | **yes** | rare | no |
+| Flaming, trash talk, tilt | **no** | **constant** | **yes — block them** |
+
+In competitive games the overwhelming majority of reports are *"this person was
+rude."* **One undifferentiated queue means the rare serious report drowns in the
+common trivial one**, which is how a two-hour-a-day load becomes unanswerable.
+
+> **The principle that sorts them: staff handle what blocking cannot fix.**
+> A racist message harms everyone who reads it, so a mute button is no remedy —
+> staff, always, fast. A rude message harms one person who has a mute button, so
+> give them the button.
+
+That is not a lower standard for toxicity. It routes it to the tool that works,
+and it is what keeps the serious queue answerable inside a day.
+
+### The load, and the three levers that keep it answerable
+
+Moderation cost scales linearly with players and with nothing else. At 10,000 DAU,
+a third of them in chat at ~20 messages each, a ~0.1% report rate and two minutes
+a review:
+
+| DAU | Reports/day | Human hours/day |
+|---|---|---|
+| 10,000 | 60 | **2** |
+| 25,000 | 150 | 5 |
+| **50,000** | **300** | **10** |
+
+**A small team hits the wall around 15–20k DAU**, which is inside the player count
+the business needs. Three levers, in order of effect:
+
+1. **Prevention — gate who may open a Direct message.** A stranger reaching you
+   privately is where harassment lives and the one place no bystander can flag it.
+   Guild recruiting is the legitimate stranger case, so the shape is a **request**:
+   a stranger may ask, and nothing lands until it is accepted.
+2. **Delegation — guild leaders moderate their own room.** `08-guilds.md` already
+   has 24 known members and a leadership structure; mute and kick inside a guild
+   room take a whole scope off the central queue at no new concept.
+3. **Automation — thresholds, not judgment.** *N reports from **distinct**
+   accounts* auto-mutes pending review. Distinct reporters is what makes it
+   brigade-resistant.
+
+### Forced rename is required, and it settles a schema question
+
+`Identity` above makes the username the identity and leaves renaming open. **An
+offensive username its owner will not change is unanswerable without a forced
+rename**, so the action is not optional.
+
+> **That makes the immutable-`id` note in `Identity` load-bearing rather than
+> advisory.** With the username as a real primary key, a forced rename rewrites
+> every foreign key in the system; with an internal id, it is one column.
+
+### Retention
+
+> **Reported content is retained independently of its channel's history**, or a
+> report outlives its own evidence. This is why Direct keeps the longest history
+> despite being the least public.
+
+---
+
+## Custom avatars are pre-moderated and paid — **decided 2026-07-27**
+
+**Chat is text-only, which avoids the expensive half of moderation entirely** — no
+image classification, no upload pipeline. **Custom avatars reintroduce it
+deliberately**, and the fee is what pays for it.
+
+### Pre-moderation is the condition the whole thing rests on
+
+> **An uploaded avatar is not visible to anybody until a human has approved it.**
+
+| | A bad image is seen | The queue is a… |
+|---|---|---|
+| Post-moderate — live now, removed on report | **yes, by every opponent** | harm problem |
+| **Pre-moderate — approved before visible** | **never** | **throughput problem** |
+
+A day's wait for a paid cosmetic is acceptable. A racist avatar broadcast to every
+opponent for six hours is not — and reports would arrive *after* the damage.
+
+### The economics work, with one condition
+
+An avatar review is a **glance**, not a read — roughly 20 seconds against the two
+minutes a chat report takes, so about **$0.14**. A **$5** fee is ~35× that.
+
+> **The fee is charged per change, not once to unlock the feature.** Changing an
+> avatar means paying again, and so does changing a name.
+
+**That is what makes the economics unbreakable rather than merely comfortable.** A
+one-time unlock with free changes inverts at about 36 changes a year — a player
+who swaps weekly generates 52 reviews against a single payment. Per-change
+pricing means **every review that exists has already been paid for**, so no volume
+of changes can ever cost more than it earns.
+
+**It also removes the need for a rate limit.** A cooldown was the alternative way
+to bound this; the fee does the same job without a rule, and without telling an
+enthusiastic customer to wait.
+
+**A rejection must still allow a free resubmit.** The fee buys an *approved*
+avatar; charging again for a rejection produces chargebacks and support load that
+dwarf it.
+
+**Moderation is disclosed at purchase**, not discovered afterwards.
+
+### What accepting uploads commits us to
+
+These attach the moment an upload is accepted, fee or no fee:
+
+- **DMCA** — copyrighted art will be uploaded; a takedown path is required.
+- **CSAM reporting obligations** — non-negotiable in the US, with a required
+  reporting route **on discovery**, which is not the same as on publication.
+- **Storage and deletion**, including honoring account deletion.
+
+**None of this argues against doing it**; it argues for having the paths written
+before the first upload — and it is a further argument for pre-moderation, since
+every image is being looked at regardless.
+
+### The curated tier carries the volume
+
+**A gold border on a player's heroes, seen by everyone who battles them, is the
+same broadcast surface as a foil at zero moderation cost.** That gives the clean
+two-tier shape:
+
+| Tier | Moderation | Role |
+|---|---|---|
+| **Curated** — foils, borders, frames | **none** | the volume |
+| **Custom upload** | pre-moderated, paid | the premium, self-funding |
 
 ---
 
@@ -246,12 +408,12 @@ exactly the kind of change the no-nerf rule makes expensive.
 - **Retention numbers.** Short / ~30 days / longest is the shape; the actual
   figures want a legal read as much as a technical one, since Direct is the
   evidence channel.
-- **Whether renaming is allowed**, and at what cost. The schema note above keeps
-  the option open; the product decision is separate. Note that a permanent
-  username is itself a moderation surface, since an offensive one cannot be
-  corrected by its owner.
 - **Profiles** — what is public beyond the Visible squad, hold streaks and league,
   all of which are already public by other rules.
+- **The price of a name change and of an avatar change.** Both are per-change and
+  both sit outside the $260 advantage cap (`06-progression.md`), since neither
+  can touch a battle. The avatar fee has a floor the name change does not: it must
+  clear the ~$0.14 review it triggers, which $5 does 35× over.
 - ~~**Store platform reality.**~~ **Decided 2026-07-27** — `06-progression.md`,
   *Steam is the primary storefront*. Steam plus a secondary direct channel from
   the browser build; auth is already owned, so one entitlement service serves
