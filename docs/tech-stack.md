@@ -361,6 +361,14 @@ stays trivially small.
 math and the *flag, never act* rule all live in `11-social.md` and are not
 restated here.
 
+> **It is asynchronous and off the send path, which is an architectural fact rather
+> than an implementation detail.** `11-social.md` puts the classifier **after
+> send**; what gates a message before it goes out is a **slur blocklist**, a rate
+> limit and a length cap — all local. A batch API accumulates 100 messages before
+> dispatch and answers in minutes, so gating delivery on it would stall chat for
+> hours. **Moderation is two tiers: a synchronous cheap gate, and an asynchronous
+> thorough flag.** Anything that draws them as one step is wrong.
+
 | DAU | Messages/day | Monthly |
 |---|---|---|
 | 10,000 | 60,000 | **$68** |

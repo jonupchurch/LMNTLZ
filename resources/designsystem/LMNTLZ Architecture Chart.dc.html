@@ -67,35 +67,36 @@
       <text x="132" y="684" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">③ verify · one account</text>
 
       <path d="M780,170 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
-      <text x="792" y="162" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">① ⑤ read / write</text>
+      <text x="852" y="162" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">① ⑤ read / write</text>
 
-      <path d="M780,200 H812 V306 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
-      <text x="820" y="300" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">⑤ write log</text>
+      <path d="M780,200 H812 V360 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="852" y="352" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">⑤ write log</text>
 
-      <path d="M828,415 H784" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
-      <path d="M854,415 H828 V236 H780" stroke="#8FCFE0" stroke-width="2" fill="none"></path>
-      <text x="790" y="408" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">reads flag</text>
+      <path d="M854,469 H828 V236 H784" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="790" y="462" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">reads flag</text>
 
-      <path d="M780,266 H842 V530 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
-      <text x="700" y="612" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">② publish over REST</text>
+      <path d="M780,266 H842 V596 H854" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="852" y="588" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">② publish over REST</text>
 
       <path d="M580,150 V86 H1204 V150" stroke="#8FCFE0" stroke-width="2" fill="none"></path>
       <path d="M1204,150 V163 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
       <path d="M1204,163 V269 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
       <path d="M1204,269 V390 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <path d="M1204,390 V537 H1244" stroke="#8FCFE0" stroke-width="2" fill="none" marker-end="url(#ac-cyan)"></path>
+      <text x="1244" y="530" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">② classify before publishing</text>
       <text x="600" y="78" font-family="'JetBrains Mono',monospace" font-size="10" fill="#8FCFE0">④ checkout · webhook back · notices · API errors</text>
 
-      <path d="M40,250 H18 V712 H1010 V592" stroke="#C64BB0" stroke-width="2" stroke-dasharray="7 6" fill="none" marker-end="url(#ac-orchid)"></path>
+      <path d="M40,250 H18 V712 H1010 V658" stroke="#C64BB0" stroke-width="2" stroke-dasharray="7 6" fill="none" marker-end="url(#ac-orchid)"></path>
       <text x="360" y="706" font-family="'JetBrains Mono',monospace" font-size="10" fill="#C64BB0">② WEBSOCKET · CLIENT SUBSCRIBES DIRECTLY — THE API HOLDS NO SOCKET</text>
 
-      <path d="M40,404 H6 V744 H1405 V456" stroke="#C64BB0" stroke-width="2" stroke-dasharray="7 6" fill="none" marker-end="url(#ac-orchid)"></path>
-      <text x="1010" y="738" font-family="'JetBrains Mono',monospace" font-size="10" fill="#C64BB0">CLIENT CRASHES — INVISIBLE TO THE SERVER</text>
+      <path d="M40,404 H6 V772 H1584 V390 H1564" stroke="#C64BB0" stroke-width="2" stroke-dasharray="7 6" fill="none" marker-end="url(#ac-orchid)"></path>
+      <text x="1010" y="766" font-family="'JetBrains Mono',monospace" font-size="10" fill="#C64BB0">CLIENT CRASHES — INVISIBLE TO THE SERVER</text>
     </svg>
 
     <div style="position:absolute;left:40px;top:126px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 1 · CLIENTS <span style="color:#C0313A">UNTRUSTED</span></div>
     <div style="position:absolute;left:390px;top:126px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 2 · EDGE &amp; API <span style="color:#4E7C3A">TRUSTED</span></div>
     <div style="position:absolute;left:860px;top:96px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 3 · DATA</div>
-    <div style="position:absolute;left:860px;top:452px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 4 · MANAGED SERVICES</div>
+    <div style="position:absolute;left:860px;top:520px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 4 · MANAGED SERVICES</div>
     <div style="position:absolute;left:40px;top:536px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;color:#6E6690">ZONE 5 · IDENTITY PROVIDERS</div>
 
     <div style="position:absolute;left:40px;top:150px;width:270px;height:124px;border:1px solid #3A3357;background:#141221;padding:12px 14px">
@@ -145,7 +146,7 @@
       </div>
     </div>
 
-    <div style="position:absolute;left:390px;top:316px;width:390px;height:268px;border:2px solid #F2C744;background:#141221;padding:12px 14px;box-shadow:0 0 30px rgba(242,199,68,0.13)">
+    <div style="position:absolute;left:390px;top:316px;width:390px;height:278px;border:2px solid #F2C744;background:#141221;padding:12px 14px;box-shadow:0 0 30px rgba(242,199,68,0.13)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
         <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:#F4EFE4">packages/sim</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#F2C744;border:1px solid #F2C744;padding:2px 6px">ONE PACKAGE · TWO HALVES</div>
@@ -174,17 +175,24 @@
       </div>
     </div>
 
-    <div style="position:absolute;left:860px;top:120px;width:300px;height:118px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
+    <div style="position:absolute;left:860px;top:120px;width:300px;height:172px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
         <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Relational store</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#4E7C3A">FOREVER</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#B5732E">MIXED RETENTION</div>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Postgres · Drizzle</div>
-      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Accounts · guilds · squads · ratings · entitlements · chat · refresh tokens · battle metadata</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.05em;color:#F2C744;margin-top:6px">NO IN-PROGRESS BATTLE STATE</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px;margin-bottom:8px">Postgres · Drizzle</div>
+      <div style="border:1px solid #4E7C3A;background:rgba(78,124,58,0.08);padding:7px 9px;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#4E7C3A">PERMANENT</div>
+        <div style="font-size:11px;line-height:1.4;color:#B4AECB;margin-top:4px">Accounts · guilds · squads · ratings · entitlements · refresh tokens · battle metadata</div>
+      </div>
+      <div style="border:1px dashed #B5732E;background:rgba(181,115,46,0.07);padding:7px 9px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#B5732E">CHAT TABLES · RETENTION-BOUND</div>
+        <div style="font-size:11px;line-height:1.4;color:#B4AECB;margin-top:4px">Own tables, own policy — so moving chat out later is mechanical</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.05em;color:#F2C744;margin-top:7px">NO IN-PROGRESS BATTLE STATE</div>
     </div>
 
-    <div style="position:absolute;left:860px;top:258px;width:300px;height:96px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
+    <div style="position:absolute;left:860px;top:312px;width:300px;height:96px;border:1px solid #3A3357;background:#141221;padding:11px 13px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
         <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Blob storage</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#B5732E">EXPIRES · 7 DAYS</div>
@@ -193,13 +201,13 @@
       <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Replay event logs — written once, read rarely, never queried.</div>
     </div>
 
-    <div style="position:absolute;left:860px;top:374px;width:300px;height:82px;border:1px solid #241F38;background:#141221;padding:11px 13px">
+    <div style="position:absolute;left:860px;top:428px;width:300px;height:82px;border:1px solid #241F38;background:#141221;padding:11px 13px">
       <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Edge config</div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Vercel Edge Config</div>
       <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:6px">The maintenance flag, and nothing else.</div>
     </div>
 
-    <div style="position:absolute;left:860px;top:476px;width:300px;height:108px;border:1px solid #C64BB0;background:#141221;padding:11px 13px">
+    <div style="position:absolute;left:860px;top:542px;width:300px;height:108px;border:1px solid #C64BB0;background:#141221;padding:11px 13px">
       <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
         <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">Realtime pub/sub</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#C64BB0">FAN-OUT ONLY</div>
@@ -229,9 +237,14 @@
       <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Receives from <strong style="color:#F4EFE4">both</strong> the client and the API — a React exception produces no server log at all.</div>
     </div>
 
-    <div style="position:absolute;left:1250px;top:474px;width:310px;height:110px;border:1px dashed #3A3357;background:rgba(20,18,33,0.5);padding:11px 13px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:7px">NOT ON THIS CHART, ON PURPOSE</div>
-      <div style="font-size:11.5px;line-height:1.55;color:#8E87A8">No schema, no sequence diagrams, no regions or scaling topology, no folder structure, no per-screen UI. One systems view.</div>
+    <div style="position:absolute;left:1250px;top:474px;width:310px;height:126px;border:1px solid #C64BB0;background:#141221;padding:11px 13px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px;color:#F4EFE4">AI chat moderation</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#C64BB0">EVERY MESSAGE</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8E87A8;margin-top:3px">Classifier · batch API, 100 at a time</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#B4AECB;margin-top:7px">Nothing is sampled. Called inside flow ②, before anything is published.</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.05em;color:#F2C744;margin-top:7px">AN OUTBOUND CALL LEAVING ZONE 2</div>
     </div>
   </div>
 
@@ -244,7 +257,7 @@
       </div>
       <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">
         <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#C64BB0">②</span><span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.04em;color:#F4EFE4">Chat</span></div>
-        <div style="font-size:12px;line-height:1.5;color:#B4AECB">POST to the API, which authorizes, charges, persists and moderates — <em>then</em> publishes to the broker, which fans out.</div>
+        <div style="font-size:12px;line-height:1.5;color:#B4AECB">POST to the API, which authorizes, charges, persists, then <span style="color:#F2C744">calls the classifier</span> — and only then publishes to the broker, which fans out.</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.05em;color:#F2C744;margin-top:8px;padding-top:8px;border-top:1px solid #241F38">SUBSCRIBE-ONLY IS CORRECTNESS — DIRECT PUBLISHING WOULD BYPASS THE CHARGE</div>
       </div>
       <div style="border:1px solid #3A3357;background:#141221;padding:12px 14px">

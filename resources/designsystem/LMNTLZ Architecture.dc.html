@@ -204,10 +204,17 @@
             <div style="border:1px solid #3A3357;background:#141221;padding:14px 16px">
               <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
                 <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.04em;color:#F4EFE4">Relational store</div>
-                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4E7C3A">KEPT FOREVER</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B5732E">NOT UNIFORMLY PERMANENT</div>
               </div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8;margin-top:3px;margin-bottom:10px">Postgres · Drizzle</div>
-              <div style="font-size:12.5px;line-height:1.6;color:#B4AECB">Accounts · guilds · squads · ratings · entitlements · chat history · refresh tokens · <strong style="color:#F4EFE4">battle metadata</strong></div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8;margin-top:3px;margin-bottom:11px">Postgres · Drizzle</div>
+              <div style="border:1px solid #4E7C3A;background:rgba(78,124,58,0.08);padding:10px 12px;margin-bottom:8px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#4E7C3A;margin-bottom:5px">PERMANENT</div>
+                <div style="font-size:12.5px;line-height:1.55;color:#B4AECB">Accounts · guilds · squads · ratings · entitlements · refresh tokens · <strong style="color:#F4EFE4">battle metadata</strong></div>
+              </div>
+              <div style="border:1px dashed #B5732E;background:rgba(181,115,46,0.07);padding:10px 12px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#B5732E;margin-bottom:5px">CHAT TABLES · RETENTION-BOUND</div>
+                <div style="font-size:12.5px;line-height:1.55;color:#B4AECB">Their own tables under their own policy — which is what makes moving chat to a separate store later a mechanical change rather than a rewrite.</div>
+              </div>
               <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#F2C744;margin-top:10px;padding-top:9px;border-top:1px solid #241F38">NO IN-PROGRESS BATTLE STATE IS STORED HERE</div>
             </div>
             <div style="border:1px solid #3A3357;background:#141221;padding:14px 16px">
@@ -261,6 +268,15 @@
               </div>
               <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8;margin-top:3px;margin-bottom:9px">Paddle</div>
               <div style="font-size:12.5px;line-height:1.55;color:#B4AECB">Checkout there · webhook back to the API · entitlement granted.</div>
+            </div>
+            <div style="border:1px solid #C64BB0;background:#141221;padding:14px 16px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.04em;color:#F4EFE4">AI chat moderation</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#C64BB0">EVERY MESSAGE</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8;margin-top:3px;margin-bottom:10px">Classifier · batch API, 100 at a time</div>
+              <div style="font-size:12.5px;line-height:1.55;color:#B4AECB">Nothing is sampled. Called by the API inside flow ②, <strong style="color:#F4EFE4">before</strong> anything is published.</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#F2C744;margin-top:10px;padding-top:9px;border-top:1px solid #241F38">AN OUTBOUND CALL LEAVING ZONE 2 — NOT AN INTERNAL STEP</div>
             </div>
             <div style="border:1px solid #3A3357;background:#141221;padding:14px 16px">
               <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.04em;color:#F4EFE4">Error monitoring</div>
@@ -347,7 +363,7 @@
           <div style="width:24px;height:24px;border:1px solid #C64BB0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:#C64BB0;flex:0 0 auto">2</div>
           <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.05em;color:#F4EFE4">Chat</div>
         </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.7;color:#C64BB0;margin-bottom:9px">POST → API authorizes · charges · persists · moderates → publishes → broker fans out</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.7;color:#C64BB0;margin-bottom:9px">POST → API authorizes · charges · persists → <span style="color:#F2C744">calls the classifier</span> → publishes → broker fans out</div>
         <div style="font-size:12.5px;line-height:1.55;color:#B4AECB">Clients subscribe; clients never publish. The broker's only job is fan-out.</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.06em;color:#F2C744;margin-top:10px;padding-top:9px;border-top:1px solid #241F38">CORRECTNESS, NOT HARDENING — SOME POSTINGS COST CURRENCY, SO DIRECT PUBLISHING WOULD BYPASS THE CHARGE</div>
       </div>
@@ -389,7 +405,9 @@
       <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.08em;color:#B5732E">EASY TO GET WRONG</div>
       <div style="font-size:12.5px;color:#8E87A8">Check the drawing against these, not the inventory.</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+      <div style="border-left:3px solid #B5732E;background:#141221;padding:11px 13px"><div style="font-size:12.5px;line-height:1.55;color:#B4AECB"><strong style="color:#F4EFE4">The relational store is not uniformly permanent.</strong> Battle metadata is; chat is retention-bound in its own tables. One “kept forever” label across the whole store would mislead anyone building the schema.</div></div>
+      <div style="border-left:3px solid #B5732E;background:#141221;padding:11px 13px"><div style="font-size:12.5px;line-height:1.55;color:#B4AECB"><strong style="color:#F4EFE4">“The API moderates” is an outbound call.</strong> If the chat flow shows no arrow leaving Zone 2 for a classifier, the diagram is incomplete.</div></div>
       <div style="border-left:3px solid #B5732E;background:#141221;padding:11px 13px"><div style="font-size:12.5px;line-height:1.55;color:#B4AECB"><strong style="color:#F4EFE4">The API never holds an open socket.</strong> The client's realtime connection goes directly to the broker — two separate arrows, not one line through the API.</div></div>
       <div style="border-left:3px solid #B5732E;background:#141221;padding:11px 13px"><div style="font-size:12.5px;line-height:1.55;color:#B4AECB"><strong style="color:#F4EFE4">Replays are stored, never regenerated.</strong> Played back as recorded, so a balance patch can never change the outcome of a past battle.</div></div>
       <div style="border-left:3px solid #F2C744;background:#141221;padding:11px 13px"><div style="font-size:12.5px;line-height:1.55;color:#B4AECB"><strong style="color:#F4EFE4">The seed line is a boundary, not a data flow.</strong> Nothing crosses it in either direction.</div></div>

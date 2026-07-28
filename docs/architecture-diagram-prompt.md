@@ -95,9 +95,13 @@ monitoring · **AI chat moderation**. Draw error monitoring receiving from **bot
 the client and the API, since client-side crashes are otherwise invisible.
 
 **The moderation classifier is a real outbound dependency and needs its own node.**
-The API calls it for **every message** — nothing is sampled — in batches of 100
-through a batch API. It is easy to omit because the chat flow reads as a single
-step ("the API moderates"), but that step leaves our infrastructure.
+The API sends it **every message** — nothing is sampled — in batches of 100 through
+a batch API. It is easy to omit because the chat flow reads as a single step ("the
+API moderates"), but that step leaves our infrastructure.
+
+> **It sits off the critical path.** The classifier **flags for human review**; it
+> never holds, blocks or edits a message. Draw its arrow as asynchronous, like the
+> broker's fan-out — not as a synchronous request in the middle of the send flow.
 
 **5 · Identity providers**
 
@@ -117,11 +121,30 @@ it a diagram rather than an inventory.
    in-progress battle state is ever stored.** State is re-derived from the log every
    request, so there is exactly one source of truth and it cannot desynchronize.
 
-2. **Chat.** Client POSTs a message to the API → the API authorizes the scope,
-   charges any currency cost, persists, and **calls the moderation classifier** →
-   **then** publishes to the realtime service → which fans out to subscribers.
-   > **Draw the classifier call as its own arrow leaving Zone 2.** Collapsing it
-   > into the word "moderates" hides the stack's largest per-message dependency.
+2. **Chat.** Client POSTs a message to the API → the API runs **cheap local checks**
+   (rate limit, length cap, a **slur blocklist** — not a general profanity filter),
+   authorizes the scope, charges any currency cost, persists → publishes to the
+   realtime service → which fans out to subscribers. **The message is delivered
+   here.**
+
+   **Separately and asynchronously**, the API sends every message to the
+   moderation classifier in batches, and the classifier **raises flags into a
+   review queue for a human**.
+
+   > **Moderation is two tiers, and conflating them is the easy mistake.** The
+   > **blocklist is synchronous and gates the send**; the **classifier is
+   > asynchronous and never gates anything**. Draw the classifier arrow as an
+   > *async push, off the critical path*, running alongside delivery — never as a
+   > step between "persists" and "publishes".
+   >
+   > It cannot be a gate for three separate reasons, any one sufficient: the rules
+   > place it **after send**; a batch API accumulates 100 messages before dispatch
+   > and answers in minutes, so gating on it would stall chat for hours; and the
+   > governing principle is **flag, never moderate** — anything that withholds a
+   > message until classified *is* moderating.
+
+   > **Also draw the classifier as its own node leaving Zone 2.** Collapsing it into
+   > the word "moderates" hides the stack's largest per-message dependency.
    > **Show the arrows asymmetrically: clients subscribe, clients never publish.**
    > This is correctness, not hardening. Some chat postings cost in-game currency,
    > so a client able to publish directly to the broker would bypass the charge.
@@ -160,6 +183,10 @@ Worth checking the finished diagram against:
   store is wrong and would mislead anyone building the schema.
 - **"The API moderates" is an outbound call, not an internal step.** If the chat
   flow shows no arrow leaving Zone 2 for a classifier, the diagram is incomplete.
+- **But the classifier is not a gate.** If the flow reads *"persists → classifies →
+  publishes"*, it is wrong: that stalls every message behind a batch that answers in
+  minutes. The **blocklist** gates the send; the **classifier** runs alongside
+  delivery and only flags. Two tiers, drawn differently.
 
 ### Visual direction
 
