@@ -811,12 +811,31 @@ Both alternatives cost more than they save:
   explain and display, plus an odd window where **losing during an event is
   consequence-free**, which is its own small exploit.
 
-### 2. Does the Hidden zone participate?
+### ~~2. Does the Hidden zone participate?~~ — **settled 2026-07-28: yes, and no Wing streak**
 
-Guild events are the natural place for the ambush mechanic to feel different —
-but ambush is currently driven by the *attacker's personal* win streak, which
-does not obviously translate to a team. Whether a Wing has a collective streak
-is a real question and would be the first streak in the game that isn't personal.
+> **Hidden victories and Hidden holds score exactly like Visible ones — one point
+> each. There is no collective Wing streak; ambush stays personal.**
+
+**Participation needs no rule at all.** An event counts victories and holds, and a
+Hidden battle produces both. Nothing has to be added for the zone to appear in the
+tally, and 1a above already routes players into more Hidden battles during an
+event as a side effect of the streak.
+
+**Not weighting them is the deliberate part.** Hidden already pays **2× rating**
+and roughly double the shards; scoring it above 1 point in events would be the
+**third bonus stacked on one act.** The event tally is the one place the two zones
+are counted the same, which is what keeps a Visible-heavy defender competitive in
+an event they had no way to opt into.
+
+**No Wing streak, and the reason is that it would be farmable in a way a personal
+one is not.** A collective rate lets **eight players manufacture an ambush chance
+one player could not** — the streak stops measuring a run of personal wins and
+starts measuring headcount. It would also be the first non-personal streak in the
+design, a whole new mechanic serving one feature.
+
+> It stays available if events ever need a team-flavoured hook that guild-wide
+> scoring does not provide. Nothing here forecloses it; it is simply not worth a
+> new streak type today.
 
 ### ~~3. How deep does "top Wings" go?~~ — **settled**; the split inside a Wing is not
 
