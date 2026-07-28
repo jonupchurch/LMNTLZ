@@ -419,12 +419,30 @@ ones depends entirely on the rating stakes attached to each. That is a tuning
 decision with a real strategic answer, and it should be arrived at deliberately
 rather than falling out of whatever the first numbers happen to be.
 
-### 1. Does a fought Hidden squad stay revealed?
+### ~~1. Does a fought Hidden squad stay revealed?~~ — **settled: no**
 
 An ambushed attacker has now seen that player's Hidden squad. Whether that
 knowledge persists — and whether it is even useful, given the Hidden zone can
-never be chosen — decides if "remembering who ambushed you" becomes a real
+never be chosen — decided if "remembering who ambushed you" became a real
 layer or a dead end.
+
+> **A Hidden squad is visible only inside the battle itself and in that
+> battle's replay. Nowhere else, ever.** It never appears in scouting, never on
+> a profile, never in a match listing. *Hidden* is a permanent property of the
+> zone rather than a state that a fight burns off.
+
+**Settled 2026-07-27.** The knowledge does not persist as a game feature — only
+as a replay a player may rewatch. And it is deliberately close to a dead end,
+because **the Hidden zone can never be chosen**: an attacker cannot act on what
+they learned except by being ambushed into the same squad again, which they do
+not control. Anything the defender has since edited is stale, and the **hold
+streak resets on edit**, so a defender who reworks a Hidden squad is visibly
+starting over.
+
+That is the point of the zone. If a single ambush permanently revealed a Hidden
+squad, the mechanic would decay into a slow scouting tool — every player would
+eventually have seen everyone's, and the second zone would collapse into a
+second Visible one.
 
 ### 2. What does a Hidden defense loss mean for the defender?
 

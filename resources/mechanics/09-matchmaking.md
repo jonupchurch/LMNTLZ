@@ -128,6 +128,36 @@ Fixed thresholds mean **the score only rises as runes are placed, so a league is
 never taken away.** Promotion is an event the player earned; demotion effectively
 does not happen.
 
+### Leagues are visible
+
+**Settled 2026-07-27.** A player sees their own league, their score, and the
+threshold to the next one.
+
+**It leaks nothing about a specific opponent**, which was the concern raised
+against it. Matchmaking only offers same-league defenders, so knowing your own
+league already tells you every opponent's band — naming it adds no information an
+attacker did not have. The scouting limits in `07-defense-ai.md` are untouched:
+filled rune slots and their elements, never stats, never effects.
+
+**Show it on a widened match too.** When a thin league reaches into the adjacent
+one the opponent genuinely is from a different band, and hiding that would leave
+a player unable to explain why a defense felt off.
+
+**Promotion is a one-way event.** The score only rises as runes are placed, so
+crossing a threshold is something a player earns and cannot lose.
+
+> **Visibility makes one exploit actionable: parking just below a threshold.** At
+> the top of a league you hold up to **1.67× the gear of your weakest
+> league-mate**; cross the line and you are the weakest in the next one. Published
+> thresholds tell a player exactly where that line is.
+>
+> **The rating axis is the corrective, and this is what it is for.** Gear parking
+> buys a gear advantage and no skill advantage — a parked player wins more, their
+> rating climbs, and they meet better-played opponents inside the same league.
+> The cost of parking is also real: shards accumulate with nowhere to go, since
+> placing them is what promotes you. Worth watching once there is live data;
+> not worth a rule that fights the two-axis design.
+
 ### When a league is thin
 
 **Widen into the adjacent league, nearer first.** A Bronze player short of
@@ -173,6 +203,12 @@ account, so both carry the same gear score and sit in the same league.
 there is no path by which an ambush reaches outside the bracket, because it never
 picks anybody.
 
+**Fighting a Hidden squad does not reveal it.** A Hidden squad is visible only
+inside the battle and in that battle's replay — never in scouting, never in a
+match listing, never on a profile (`02-squads.md` question 1). So an ambush
+gives the attacker a fight, not a foothold: they cannot choose that door again,
+and the defender may have rebuilt behind it.
+
 **Nor can it be farmed.** The rate is +2% per *consecutive* attack win
 (`02-squads.md`), so a high rate requires a long unbroken streak against
 league-mates of comparable gear. Reaching the 90% cap means **45 straight wins**,
@@ -186,9 +222,8 @@ is a by-product of playing well, not a resource that can be accumulated.
 - **The rating axis.** Placement for a new account, what a Visible loss costs
   against a Hidden one, and whether hold streaks rank separately. Tracked in
   `06-progression.md`; three questions in `02-squads.md` wait on it.
-- **Whether leagues are visible to players.** A named league is legible and gives
-  progression a shape, but it also tells an opponent what they are facing. It
-  interacts with the scouting limits in `07-defense-ai.md`.
+- ~~**Whether leagues are visible to players.**~~ **Settled: yes** — see
+  *Leagues are visible* above.
 - ~~**Ambush and league boundaries.**~~ **Not a question — see below.**
 - **Whether the thresholds survive the hero-numbers pass.** They are drawn from a
   simulated population, not a real one. The *shape* — five leagues, fixed
