@@ -228,18 +228,25 @@ This is easy to miss because creation does not feel like joining, and it is very
 reachable: a starter player earns **432/day**, so 650 is **1.5 days** — well
 inside their protected week.
 
-#### A new guild needs an allowance before it has members
+#### A new guild is active for its first two weeks — **settled 2026-07-28**
 
-> **Open — the bootstrap gap.** Guild funds require 3 members active in 7 days.
-> **A guild founded today has one member and therefore cannot advertise**, which
-> is the exact moment it most needs to. The gate meant to starve dead guilds
-> also starves newborn ones.
+> **A guild founded within the last 14 days counts as active regardless of
+> headcount.** After that, the ordinary rule applies: **3 members active in the
+> past 7 days** (`11-social.md`).
 
-**Proposed fix: a founding grace period.** A newly created guild draws the daily
-allowance for its first **14 days** regardless of headcount; after that the
-3-active rule applies normally. It solves the bootstrap without weakening the
-gate, since a guild that has not found two other people in a fortnight is the
-thing the gate was written for.
+**Without it the gate eats its own young.** Guild funds require three active
+members; a guild founded today has **one**, so it cannot advertise at the exact
+moment it most needs to. The rule written to starve dead guilds would have
+starved newborn ones identically, and they are opposite things.
+
+**It is a change to the definition, not an exception to the allowance** — a new
+guild is *active*, full stop, so anything else ever gated on activity inherits the
+same grace without needing to know about it.
+
+**Fourteen days is the right length because it is the same bar, later.** A guild
+that has not found two other people in a fortnight — with 4 ad posts a day for the
+whole of it — is precisely what the gate was written for, so the grace expiring is
+the gate working rather than the gate relenting.
 
 ### Joining — invites and applications — **settled 2026-07-28**
 

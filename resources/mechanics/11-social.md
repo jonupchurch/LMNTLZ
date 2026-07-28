@@ -217,6 +217,11 @@ the same result, and the guild gets something only a guild can spend.
 > 2026-07-28.** Below that, no allowance. A guild that cannot field three players
 > is not a guild anyone should be joining, and the gate exists so that recruiting
 > into a dead guild is the one thing the channel cannot advertise.
+>
+> **Except for its first 14 days, when a guild is active regardless of headcount**
+> (`08-guilds.md`). A guild founded today has one member and would otherwise be
+> unable to advertise at the moment it most needs to — the rule aimed at dead
+> guilds would hit newborn ones exactly as hard, and they are opposite things.
 
 **It reuses a definition the game already has.** `09-matchmaking.md` counts a
 player active on **an attack battle or a defense-squad edit**; this is that same
