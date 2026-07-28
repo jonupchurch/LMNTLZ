@@ -66,8 +66,12 @@ in `01-stats.md`.
 
 **Settled 2026-07-27.**
 
-> **Balance early, tweak forever, and never swing the nerf hammer.** Once a
-> number ships, it does not go down.
+> **Balance early. To correct an outlier, raise the other twenty-six rather than
+> lower the one. A nerf is a last resort, reached only when levelling up would
+> itself break the balance — and when one happens, grant shards to everybody.**
+
+Three parts, in order of preference: **buff the field · nerf only if buffing
+cannot work · compensate in shards either way.**
 
 ### Why it is affordable here, and it genuinely is
 
@@ -84,23 +88,53 @@ an existing commitment than to adding a constraint:
   paywalled or luck-gated unit dominating — cannot arise, because nobody can own
   something you don't.
 
-### What it forces
+### Levelling up has a budget of +10, and it is measured
 
-**Buffing becomes the only balance direction**, which is power creep by another
-name — and power creep is exactly what the bounded-formula rule above was written
-to survive. **The caps are what make buff-only safe**, and this rule makes them
-load-bearing in a way they were not before:
+**Buffing the field is power creep by another name** — which is exactly what the
+bounded-formula rule above and the 75-point cap were written to survive. The caps
+are what make it safe at all, and this rule makes them load-bearing in a way they
+were not before.
 
-| Guardrail | Ceiling it holds |
+But the cap also **bounds how long the preferred lever stays available**, and the
+bound is small. `06-progression.md` guarantees that *a single +20 boost can never
+overflow*, sized against the tightest headroom on the roster:
+
+| Stat | Roster max | Headroom to 75 | **Buff budget** |
+|---|---|---|---|
+| **`Might`** | 45 | 30 | **+10** |
+| **`Speed`** | 45 | 30 | **+10** |
+| `Perception` · `Toughness` · `Armor` · `Penetration` · `Magic Resist` · `Resolve` · `Luck` | 40 | 35 | +15 |
+| `Agility` | 35 | 40 | +20 |
+
+> **Raise the roster's `Might` or `Speed` by more than 10 and a major boost
+> overflows for the first time.** At +2 a correction that is five rounds; at +5,
+> two.
+
+**And it is regressive against the deepest investments**, which is the part worth
+watching. Boosts may stack on one stat by design, so a `Might` 45 Striker
+carrying a stage-2 rune sits at **45 + 20 + 10 = exactly 75 today**. Any
+across-the-board buff clips that build entirely while helping an un-runed hero in
+full — so buff-only quietly taxes the players a no-nerf rule exists to protect.
+
+**Prefer the additive levers before either.** **Curated bot defenders** apply meta
+pressure with no number touched at all (`09-matchmaking.md`), and new content —
+`10-equipment.md` is the planned one — adds ceiling rather than moving the floor.
+
+### When a nerf is the answer anyway
+
+**Grant shards to everybody.** A nerf hurts *because* runes are permanent and
+destroyed on replacement, so devaluing one writes off up to 650 shards with no
+path back. A grant restores exactly the thing that was taken.
+
+| Grant | Cost against a typical player's day |
 |---|---|
-| Hard cap of **75 per stat** | maximum mitigation stays exactly 50% |
-| Accuracy clamp | 65% – 95%, whatever gear does |
-| Bounded mitigation curve | no runaway at 3× current stat values |
+| 200 — the utility stage | **0.5 days** |
+| **650 — one full rune** | **1.7 days** |
 
-**So the rule has a lifetime.** Buff everything to the cap and relative balance
-freezes, with no lever left. Long before then the levers should be *additive*
-rather than numeric: **curated bot defenders** to apply meta pressure
-(`09-matchmaking.md`), and new content — `10-equipment.md` is the planned one.
+**Cheap, and paid to everyone rather than to the affected**, which sidesteps
+identifying who held what and reads as goodwill rather than as an admission.
+Note it is *not* free: shards are the sink the whole economy turns on, and a
+habit of blanket grants devalues earning them.
 
 ### The one carve-out
 
@@ -114,7 +148,15 @@ the distinction is what keeps the rule credible rather than lawyerly.
 **The 33 utility effects.** They are the newest numbers, the least verified, the
 only ones that are *purchased* — 200 shards for the fourth rune stage — and
 their magnitudes are still open (`06-progression.md`). If one lands at 3× its
-band, the rule says the answer is to raise the other 32.
+band, the first answer is to raise the other 32.
+
+**They are also where levelling up runs out first.** Effects are not stat points,
+so no cap bounds them — but the band they are written to (10–20 stat points) is
+what sets a utility slot's price and its matchmaking weight of 15
+(`09-matchmaking.md`). Raising 32 effects to chase one outlier moves that band,
+which moves the gear score, which moves the leagues. **That is the case the "last
+resort" clause was written for**: a single nerf plus a blanket shard grant is
+cheaper and more contained than re-pricing the catalog.
 
 **This is the strongest argument yet for the build order already decided.**
 `packages/sim` is not verification after the fact; under a no-nerf rule it is the

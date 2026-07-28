@@ -60,12 +60,16 @@ These are project truth. Don't re-derive or contradict them:
 - **Combat is discrete turn-based.** Each power recharges over N *turns*.
   Cooldowns are integer turn counts, never milliseconds; a cooldown ring is a
   fill fraction over turns remaining, not a clock.
-- **Never nerf.** Balance early; once a number ships it does not go down. Runes
-  are permanent and destroyed on replacement, so a nerf writes off a player's
-  spend, and stored replays mean a patch cannot reach backwards anyway. Balance
-  *upward* — or better, with **curated bot defenders** and new content, which
-  move the meta without touching a number. Fixing a bug is not a nerf. The
-  reasoning, and what it forces, is in `resources/mechanics/README.md`.
+- **Balance upward; a nerf is a last resort.** To correct an outlier, raise the
+  other twenty-six rather than lower the one — runes are permanent and destroyed
+  on replacement, so a nerf writes off a player's spend, and stored replays mean
+  a patch cannot reach backwards anyway. Better still are the *additive* levers:
+  **curated bot defenders** and new content move the meta without touching a
+  number. **Levelling up has a measured budget of +10** on `Might` and `Speed`
+  before a +20 rune boost overflows the 75 cap. When a nerf is genuinely the
+  answer, **grant shards to everybody** — one full rune costs 1.7 days of typical
+  income. Fixing a bug is not a nerf. Reasoning in
+  `resources/mechanics/README.md`.
 - **Reach gates all targeting.** Every hero has a reach of 1 or 2, measured in
   rows on one shared 1–6 axis (attacker 1–3, defender 4–6). A hero's *own* rows
   count against its reach, and fully empty rows are skipped, so range opens up
