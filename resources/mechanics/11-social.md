@@ -353,6 +353,22 @@ That line is worth holding elsewhere too: **every restriction in this document
 should be answerable with "because it could harm someone," never with "because it
 would look bad."**
 
+##### Contrast is a warning, never a gate — **set 2026-07-28**
+
+**Showing a guild that its ink and ground are close is helpful. Refusing to save
+it is not.** A contrast readout may be displayed, and a low one may be called out
+plainly — *"this sigil will be hard to read at small sizes"* — but **it must never
+block submission, disable the save, or mark the emblem invalid.**
+
+> **A validator is the shape this design chose against.** Disjoint palettes
+> already make illegibility unreachable by accident; anything a player reaches
+> after that, they reached **on purpose**. Gating it converts a deliberate
+> aesthetic choice into an error message, which is the interface telling a guild
+> their taste is a mistake.
+
+**Tell them, do not stop them.** That is the general form of the rule above: harm
+is a gate, taste is a note.
+
 **Uniqueness is not the goal and should not be promised.** At 5,184 combinations,
 duplicates appear well before a thousand guilds exist — and that is fine, because
 **the guild's name is the identifier and the emblem is expression.** Two guilds
