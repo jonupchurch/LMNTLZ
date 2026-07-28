@@ -246,9 +246,25 @@ display has built a chat message with extra steps.
 > somebody meant.
 
 **Setting it announces it in guild chat and nowhere else** — *"Rell set the
-message of the day"* — so members see that it changed rather than having to
-notice. It does not reach Global, Guild Ads, or any other scope, and it is not a
-notification: **a guild's internal business stays inside the guild's room.**
+message of the day"* — so members present see that it changed rather than having
+to notice. It does not reach Global, Guild Ads, or any other scope: **a guild's
+internal business stays inside the guild's room.**
+
+##### And a toast on first login after a change
+
+**Members who were away get it once, on their next login.** Compare the MOTD's
+timestamp against each member's own last-seen marker: newer means show a toast,
+then advance the marker.
+
+> **That single comparison covers everyone exactly once.** Somebody online when it
+> was set already read the chat announcement and their marker is current, so they
+> get no toast. Somebody away for a week gets one. **And somebody away while it
+> changed four times gets one toast carrying the current text** — because the MOTD
+> is a *state*, not a log, and nobody needs the history of what it briefly said.
+
+The toast is the reason a pinned line is enough. **A pin is only seen by someone
+who opens the room**, and the members most worth reaching are the ones who have
+not been opening it.
 
 ##### It is internal, and the recruiting pitch is not
 
