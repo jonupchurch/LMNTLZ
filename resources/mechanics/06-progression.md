@@ -603,7 +603,7 @@ introduce one silently:
 
 The 2× boost caps at **10 victories** and is deliberately *not* aligned to the
 5-victory bonus tier. Doubling both components across exactly the range a typical
-player occupies is what produces the **2.00×** subscriber ratio in *Monetization*
+player occupies is what produces the **2.00×** pass holder ratio in *Monetization*
 below; moving the cap to 5 would cut it to 1.75× and break a published figure to
 save one number on a screen.
 
@@ -668,7 +668,7 @@ wants to protect.
 | **Anything purchased** | **Refused.** A purchase that would take a player over is denied at the point of sale |
 
 **Refusing the sale is the consumer rule, not an economy rule.** Shards themselves
-remain unpurchasable — that is what caps purchasable advantage at $260/year — so
+remain unpurchasable — that is what caps purchasable advantage at $160/year — so
 the live case is the **boost pair**, which multiplies earned income. Selling a
 boost to a player sitting at the cap takes money for something that cannot
 produce anything. Refuse it and say why.
@@ -733,7 +733,7 @@ reached and the currency changes job rather than losing its value.
 > currency's endgame job is re-speccing, and the bonus tier buys the daily-return
 > incentive with runway that was arguably too long already.
 
-Against that, a subscriber's boosts are **+100% on exactly this figure** — they
+Against that, a pass holder's boosts are **+100% on exactly this figure** — they
 double what play already pays and add nothing to a player who does not play.
 
 ### An ambush pays double a chosen door
@@ -934,25 +934,69 @@ kitted are exactly equal.
 | **Defense boost** — daily | **2×** shards from defending | first **10 holds** that day |
 | **Subscription** — 4 weeks | both boosts every day | — |
 
-> **The subscription grants exactly the à la carte cap and never more.** It is a
-> **discount and a convenience, not a higher tier.** A subscriber and a
-> maximum-spending non-subscriber end up in precisely the same place; the
-> subscriber simply pays less and does not have to remember to buy anything.
+> **The longest pass grants exactly the à la carte cap and never more.** It is a
+> **discount and a convenience, not a higher tier.** A pass holder and a
+> maximum-spending non-pass holder end up in precisely the same place; the
+> pass holder simply pays less and does not have to remember to buy anything.
 
-### Prices — **set 2026-07-27**
+### Prices — **set 2026-07-27, converted to passes 2026-07-28**
 
-> **Every price is a multiple of $5, and there is no second currency.**
+> **Every price is a multiple of $5, there is no second currency, and
+> *nothing auto-renews.* One product — the boost pair — sold in seven durations.**
 
 | SKU | Price | Grants | $/day |
 |---|---|---|---|
-| **Boost pack** | **$5** | 3 days of the boost pair | $1.67 |
-| **Boost pack** | **$10** | 7 days | $1.43 |
-| **Boost pack** | **$15** | 12 days | $1.25 |
-| **Subscription** | **$20 / 4 weeks** | boost pair every day | **$0.71** |
+| **Boost pass** | **$5** | 3 days of the boost pair | $1.67 |
+| **Boost pass** | **$10** | 7 days | $1.43 |
+| **Boost pass** | **$15** | 12 days | $1.25 |
+| **Boost pass** | **$20** | 4 weeks — 28 days | $0.71 |
+| **Boost pass** | **$50** | 3 months — 91 days | $0.55 |
+| **Boost pass** | **$90** | 6 months — 182 days | $0.49 |
+| **Boost pass** | **$160** | **1 year — 364 days** | **$0.44** |
+
+**Passes stack additively.** Buying while time remains extends it; it never
+replaces or resets. So there is no penalty for topping up early and no reason to
+wait until a pass lapses, which is the behaviour a renewal reminder would
+otherwise have to manufacture.
+
+#### Nothing auto-renews — **decided 2026-07-28**
+
+> **There is no subscription product. A player buys a pass; when it ends, it
+> ends.**
+
+**This trades predictable revenue for a category of problems, and the trade is
+worth it.** What goes away:
+
+- **Auto-renewal regulation**, which is a moving target in three jurisdictions at
+  once — the FTC's negative-option rule, California's ARL, and EU/UK equivalents,
+  each with its own reminder, disclosure and cancellation-flow requirements.
+- **Dunning** — failed cards, expiry, retry ladders, grace periods, and the
+  support load all of it generates.
+- **"I forgot I was subscribed" chargebacks**, which are a large category on their
+  own and land on a payment account whose ratio matters (`../../docs/tech-stack.md`).
+- **Any dark-pattern accusation at all.** In a design whose distinctive promise is
+  *a ceiling players can audit*, a subscription somebody struggles to cancel would
+  be the single most off-brand thing we could ship.
+- **The 4-week billing-interval problem.** A 28-day cycle is awkward for every
+  recurring biller; **a one-time purchase has no cycle to be awkward about.**
+
+**What it costs is real and should be stated plainly:** no MRR, no renewal by
+inertia, and a re-purchase requires an active decision that some players will
+simply not make. Against that, **a repurchase is a signal rather than an
+oversight** — and the long passes are **prepaid revenue**, which for a
+self-funded project is worth materially more than the same money arriving monthly.
+
+> **The long passes lower the ceiling on purchasable advantage from $260 to
+> $160.** Thirteen 4-week passes cost $260; the annual costs $160 for the same
+> 364 days. **Nobody rational pays the higher figure**, so the honest cap is now
+> **$160/year**. That is a 38% cut to maximum revenue per player and it buys two
+> things: the cap is cheaper to *reach*, so the gap between a whale and a
+> committed free player narrows further — and *Spending is not effectiveness*
+> gets easier to say, not harder.
 
 **A hard currency was considered and rejected.** Gold at $0.25 a unit would have
 amortised payment fees, but it improves **roughly 1% of total revenue**: Steam's
-30% is size-independent so bundling gains nothing there, the $20 subscription is
+30% is size-independent so bundling gains nothing there, the $20 pass is
 already a large charge, and the crossover below makes à la carte the *sporadic*
 tier by design. Against that it costs a second currency to explain, consumer-
 protection surface, unspent-balance liability, and the **stranded-balance
@@ -991,15 +1035,15 @@ specifically.)*
 sale, so Steam only has to deliver **1.39× the players** self-publishing would.
 For a title with no existing audience that bar is cleared many times over.
 
-**The supporting argument is this file's own ceiling.** Subscription spend is
-capped at **$260/year per player by construction** — cosmetics sit outside it, but
-they do not exist yet, so **at launch that cap is the whole business**:
+**The supporting argument is this file's own ceiling.** Pass spend is capped at
+**$160/year per player by construction** — cosmetics sit outside it, but they do
+not exist yet, so **at launch that cap is the whole business**:
 
-| Year-round subscriber rate | ARPU / year from subscriptions, net of Steam |
+| Year-round pass holder rate | ARPU / year from passes, net of Steam |
 |---|---|
-| 3% | **$5.46** |
-| 5% | $9.10 |
-| 10% | **$18.20** |
+| 3% | **$3.36** |
+| 5% | $5.60 |
+| 10% | **$11.20** |
 
 Against ordinary paid-acquisition costs, **paid user acquisition barely works at
 any of those rates.** Organic discovery is therefore not a marketing channel at
@@ -1012,8 +1056,14 @@ card entry a player has already made once.
 > unaffected either way, because it is a ratio rather than a level. Steam is
 > right at every ARPU.
 
-**The cut steps down** — 25% above $10M lifetime and 20% above $50M. At the $260
-ceiling the first step is roughly **38,500 fully-subscribed players**.
+**The cut steps down** — 25% above $10M lifetime and 20% above $50M. At the $160
+ceiling the first step is roughly **62,500 annual pass holders**.
+
+> **The ceiling fell from $260 to $160 when long passes landed** (*Nothing
+> auto-renews*), so every ARPU figure here is **38% lower than it was**. The
+> decision is unchanged — 1.39× is a ratio and does not care about the level —
+> but **paid acquisition is now further out of reach, not closer**, which makes
+> organic discovery load-bearing rather than merely preferable.
 
 #### Both channels, because they do not cannibalize
 
@@ -1038,7 +1088,7 @@ a decision is whether they grant the same thing — and they do.
 **It costs nothing to build and it is the only lever that recovers margin from
 the cut.** `../../docs/tech-stack.md` already owns auth in-house, so entitlement
 hangs off the account the same way rating and shards do; the platform is a
-payment detail, not an identity. A subscriber who bought on the web keeps the
+payment detail, not an identity. A pass holder who bought on the web keeps the
 boost pair when they launch through Steam, and that same $20 netted **$19.12
 rather than $14.00**.
 
@@ -1073,11 +1123,11 @@ cautious option is also the higher-revenue one.
 **Launching direct first is not a compromise, it is better economics per player.**
 Web-direct keeps ~97% against Steam's 70%:
 
-| Year-round subscriber rate | ARPU net of Steam | **ARPU direct** |
+| Year-round pass holder rate | ARPU net of Steam | **ARPU direct** |
 |---|---|---|
-| 3% | $5.46 | **$7.57** |
-| 5% | $9.10 | **$12.61** |
-| 10% | $18.20 | **$25.22** |
+| 3% | $3.36 | **$4.66** |
+| 5% | $5.60 | **$7.76** |
+| 10% | $11.20 | **$15.52** |
 
 **38% more per player — against far fewer players.** That gap is the entire
 argument for Steam and the entire argument for it being second: the direct
@@ -1139,7 +1189,7 @@ SKUs at two price points.
 | | Shards / 4 weeks | vs free |
 |---|---|---|
 | **Free** | 10,864 | — |
-| **Subscriber** — both boosts every day | **21,728** | **2.00×** |
+| **Pass holder** — both boosts every day | **21,728** | **2.00×** |
 
 *(Boosts double income within the caps: +388/day × 28 = +10,864. Nothing else is
 sold.)*
@@ -1149,52 +1199,55 @@ sold.)*
 > both components across precisely the range a typical player occupies; moving
 > the cap to 5 would have dropped it to 1.75×.
 
-| | À la carte | Subscription |
-|---|---|---|
-| Cost per 4 weeks at cap | 4 × $10 = **$40** | **$20** |
-| Per 1,000 shards | $3.68 | **$1.84** |
-| **Per rune (650)** | **$2.39** | **$1.20** |
+| | Short passes | 4-week pass | **Annual pass** |
+|---|---|---|---|
+| Cost per 4 weeks at cap | 4 × $10 = **$40** | **$20** | **$12.31** |
+| Per 1,000 shards | $3.68 | $1.84 | **$1.13** |
+| **Per rune (650)** | **$2.39** | $1.20 | **$0.74** |
 
-**Crossover is 12 days.** Beyond that the subscription is cheaper *and* carries
-the shards, so à la carte is the sporadic and trial tier rather than a competing
-plan. The gap at cap is **3.0×**, steeper than a usual subscription discount —
-deliberately, since conversion to predictable recurring revenue is worth more
-than à la carte margin.
+**Crossover is 12 days.** Beyond that the longer pass is cheaper *and* carries
+more shards, so the short ones are the sporadic and trial tier rather than a
+competing plan. The gap between the extremes is **3.8×**, steeper than a usual
+volume discount — deliberately, because **prepaid cash matters more to a
+self-funded project than à la carte margin does.**
 
-**The pack ladder never overtakes the subscription**, which is the ceiling promise
-holding at the price layer: $1.67 → $1.43 → $1.25 a day against the
-subscription's **$0.71**. There is no quantity of à la carte buying that reaches
-a better rate, so nothing sits above the subscription.
+**The short passes never overtake the long ones**, which is the ceiling promise
+holding at the price layer: **$1.67 → $1.43 → $1.25 → $0.71 → $0.55 → $0.49 →
+$0.44** a day, monotonic across all seven. **No quantity of short-pass buying
+ever reaches a better rate**, so nothing sits above the annual.
 
 #### The ceiling, in weeks
 
-| Kit | Free | Subscriber |
+| Kit | Free | Pass holder |
 |---|---|---|
 | Competitive 18 heroes (35,100) | **15.2 weeks** | **7.6 weeks** |
 | Full 27-hero roster (52,650) | 22.8 weeks | 11.4 weeks |
 
 **The advantage is a head start, not a ceiling** — roughly two months, after which
 both players sit at the same 75-point stat cap and are exactly equal on that kit.
-What persists is **re-spec frequency**: a subscriber can rebuild runes 2× as
+What persists is **re-spec frequency**: a pass holder can rebuild runes 2× as
 often as the meta moves. That is the honest ongoing advantage and it should be
 stated rather than glossed; it is bounded by the same cap, so it buys
 adaptability rather than power.
 
 #### Three commercial consequences
 
-- **A 4-week subscription bills 13 times a year, not 12.** $260 against $240 for a
-  $20 monthly — quietly 8.3% more. It is defensible because it aligns with the
-  season and guild-event cadence, but it **must be labelled "every 4 weeks"**
-  rather than "monthly", which several jurisdictions require anyway.
+- ~~**A 4-week subscription bills 13 times a year, not 12.**~~ **Moot since
+  2026-07-28** — nothing bills at all. Thirteen 4-week passes would cost $260
+  against $240 for twelve monthly ones, which is why a recurring 4-week cycle
+  needed careful labelling in several jurisdictions. **A one-time purchase has no
+  cycle**, so the disclosure problem disappears with the product. The 4-week
+  *duration* still aligns with the season and guild-event cadence, which is why it
+  survived as a pass length.
 - **The $5 floor is what answers payment fees, not a currency.** Steam's 30% is
   proportional and unaffected either way; on the web the fixed $0.30 was 15% of a
   $2 charge and is 6% of a $5 one. See *Prices* above for why gold was rejected.
-- **Maximum spend on *advantage* is $260 a year, by construction.** *No uncapped
+- **Maximum spend on *advantage* is $160 a year, by construction.** *No uncapped
   tier* is what makes that a wall rather than a target, so no player can be
   out-spent past it and the ladder cannot be rescued by whales.
 
   > **This caps purchasable advantage, not revenue.** **Clarified 2026-07-27.**
-  > $260 is the ceiling on everything that touches speed or power. **Cosmetics sit
+  > $160 is the ceiling on everything that touches speed or power. **Cosmetics sit
   > outside it entirely and are not bounded by it** — they cannot affect a battle,
   > a rating or a rune, so selling more of them does not move the number that
   > matters. The design promise is about *fairness*, not about the size of the
@@ -1202,7 +1255,7 @@ adaptability rather than power.
 
 That property is the point of the whole storefront, because it means one sentence
 covers it: **everything money can buy that affects the game is in one
-subscription.** In a genre where players assume the worst, a ceiling they can
+longest pass.** In a genre where players assume the worst, a ceiling they can
 audit is worth more than any amount of reassurance. **Never add a tier above it**
 — and never let a cosmetic acquire a mechanical effect, which is the only way this
 promise can be broken from the other side.
@@ -1216,13 +1269,13 @@ promise can be broken from the other side.
 **Decided 2026-07-27**, replacing an 800-shards-a-week purchase. The reason it
 was cheap to drop is that it was never carrying much:
 
-| Subscriber income / 4 weeks | Shards | Needs play? |
+| Pass holder income / 4 weeks | Shards | Needs play? |
 |---|---|---|
 | Base earnings | 10,864 | yes |
 | Boosts, 2× within the caps | +10,864 | **yes** |
 | ~~Purchased shards~~ | ~~+3,200~~ | ~~**no**~~ |
 
-Purchased shards were **12.8%** of it, so removing them moved a subscriber from
+Purchased shards were **12.8%** of it, so removing them moved a pass holder from
 2.29× a free player to **2.00×**, and the competitive-kit timeline from 5.6 weeks
 to 6.5 against a free player's 12.9. **About one week of head start**, because
 the boost was always doing the work.
@@ -1231,7 +1284,7 @@ What that week buys is a claim that fits in a sentence and can be verified from
 the store page. *"Shards are capped at 800 a week"* invites the follow-up
 question; *"shards cannot be bought"* does not.
 
-> **Stated honestly: a boost is still a purchased advantage.** A subscriber
+> **Stated honestly: a boost is still a purchased advantage.** A pass holder
 > progresses twice as fast for the same play, and no amount of framing changes
 > that. **The real protection against pay-to-win is the 75-point cap and the
 > common ceiling** — every advantage here is temporary because everyone converges
@@ -1246,23 +1299,23 @@ walk into the Forge, plan, and commit.
 
 ### The risk this carries, stated plainly
 
-**If the subscription is the ceiling of paid advantage, a competitive player will
+**If the annual pass is the ceiling of paid advantage, a competitive player will
 feel they have to hold it.** That is a harder thing to defend than one-off
 purchases, and it is the honest cost of a recurring model. Three things keep it
 answerable, and all three are design commitments rather than messaging:
 
 - **The free earn rate must reach a full kit on its own** in a time a player
-  would consider reasonable. If it does not, the subscription is not a
+  would consider reasonable. If it does not, the pass is not a
   convenience — it is the game.
-- **The ceiling is common.** A subscriber and a free player who are both fully
+- **The ceiling is common.** A pass holder and a free player who are both fully
   kitted are exactly equal. Money buys the road, never the destination.
-- **Nothing above the subscription, ever.** The moment a higher tier exists, the
+- **Nothing above the annual pass, ever.** The moment a higher tier exists, the
   auditable-ceiling claim is gone and cannot be recovered.
 
-A second-order effect worth expecting: once the subscription is priced below its
+A second-order effect worth expecting: once the annual pass is priced below its
 components, the à la carte items become vestigial and most revenue arrives
 through one SKU. That is fine, and it simplifies everything — but it means the
-subscription price is effectively *the* price of the game, and should be set as
+annual pass price is effectively *the* price of the game, and should be set as
 such rather than as an add-on.
 
 ### The 4× on an ambush is arithmetic, not a rule
@@ -1554,7 +1607,7 @@ point of writing it that way.
   - **Bought is the only channel that can raise ARPU without touching balance.**
     Subscriptions alone put ARPU at **$5.46–$18.20** (*Steam is the primary
     storefront*), where paid acquisition barely works. Earned-only forfeits that
-    entirely, in a business deliberately capped at $260/year of purchasable
+    entirely, in a business deliberately capped at $160/year of purchasable
     advantage.
   - **Having an earned path is itself the regulatory answer.** A cosmetic set with
     no way in but purchase is a paid gacha however it is drawn; one with a real
@@ -1570,10 +1623,10 @@ point of writing it that way.
   foils obtainable *only* by placing would make the signal unambiguous where it
   matters most. Available later at no cost; not needed to ship.
 - ~~**Boost pricing, and what "cheap" means.**~~ **Set** — *Prices* above. $5 for
-  three days of the boost pair, $20 for a 4-week subscription, and **no way to buy
+  three days of the boost pair, $20 for a 4-week pass, and **no way to buy
   shards at all** — which reads as **2.00× a free player's income** and a ~6-week
   head start to a competitive kit. What remains is not the price but the
-  **conversion rate** it implies: *subscription* spend is capped at $260/year by
+  **conversion rate** it implies: *pass* spend is capped at $160/year by
   construction, so until cosmetics ship the business is a volume business and the
   target player count should be sized deliberately.
 - ~~**Whether anything bounds how much a player can earn in a day.**~~

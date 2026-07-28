@@ -250,7 +250,7 @@ tools.
 > sales tax in every jurisdiction, and they absorb chargebacks.
 
 **This is the entire storefront at 1.0**, since Steam is a fast-follow — the $5
-boost pair, the $20 subscription and the $5 avatar all run through it. When Steam
+boost pair, the $20 four-week pass and the $5 avatar all run through it. When Steam
 ships it becomes the second rail behind the same entitlement service (*Entitlements
 are account-level*, `../resources/mechanics/06-progression.md`).
 
@@ -280,11 +280,13 @@ that produces them.
 
 ### Two things to verify before building the flow
 
-- **Does Paddle support a 4-week (28-day) billing interval?** The subscription is
-  **not monthly** (`06-progression.md` prices it per four weeks, and the published
-  2.00× subscriber ratio is derived from that cadence). If only calendar-monthly
-  is available, either the price or the published ratio moves — **check this
-  before the price is advertised anywhere.**
+- ~~Does Paddle support a 4-week billing interval?~~ **Moot as of 2026-07-28.**
+  `06-progression.md` replaced the subscription with **one-time passes** (3 days
+  through a year), so **nothing recurs and there is no interval to support.** This
+  also removes dunning, cancellation flows, renewal-disclosure law in three
+  jurisdictions, and the "I forgot I was subscribed" chargeback category — which
+  matters here specifically, because chargeback ratio is what puts a payment
+  account at risk.
 - **No "integration" is required, and that is worth knowing.** Vercel's
   marketplace integrations provision infrastructure; a payment processor is not
   one. All three candidates are the same work: keys in env vars, API calls, and a

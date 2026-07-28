@@ -56,26 +56,33 @@ a rename a considered act, and a considered act is rare enough that human handli
 stays cheap. **AI assists the workflow** — surfacing, matching, preparing — under
 the same rule as everywhere else: it **flags and prepares, it never decides.**
 
-#### A dual price must always be worse value than the subscription
+#### A dual price must always be worse value than the best boost pass
 
 > **Any item priced in both dollars and shards implicitly prices shards** — and
-> `Shards cannot be bought` is what caps purchasable advantage at $260/year.
+> `Shards cannot be bought` is what caps purchasable advantage at $160/year.
 
 Paying $5 rather than 1,350 shards **frees 1,350 shards for runes**, so the
 dollars bought power indirectly. That is fine only while the rate is bad:
 
 | | Shards per dollar |
 |---|---|
-| **Subscription** — $20 for four weeks, **+10,864 shards** | **543** |
+| **Annual pass** — $160 for 364 days, **+141,232 shards** | **883** |
+| 4-week pass — $20, +10,864 shards | 543 |
 | **Custom avatar** — $5 or 1,350 shards | **270** |
 
-**The avatar is 0.50× the subscription's efficiency**, so buying avatars is never
-a sensible way to buy progression — anyone optimising for power subscribes
+**The avatar is 0.31× the annual pass's efficiency**, so buying avatars is never
+a sensible way to buy progression — anyone optimising for power buys the pass
 instead, and the leak closes itself.
 
-> **The rule this generalises to: no dual-priced item may exceed ~543 shards per
-> dollar.** Cross that line and the item stops being a cosmetic and becomes the
-> shard shop the design refuses to build. Check it every time one is priced.
+> **The rule this generalises to: no dual-priced item may beat the best boost
+> pass's shards-per-dollar rate**, currently **883** on the annual. Cross that
+> line and the item stops being a cosmetic and becomes the shard shop the design
+> refuses to build.
+>
+> **State it as a ratio, not a constant.** The ceiling moved from 543 to 883 the
+> moment long passes were introduced, and it will move again if a price does —
+> so the test is *"is this worse value than the best pass?"*, never *"is this
+> under 543?"*
 
 ### Renaming — **settled 2026-07-27**
 

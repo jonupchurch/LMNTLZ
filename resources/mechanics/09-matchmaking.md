@@ -178,7 +178,7 @@ bonus and the hold term absorb it. Measured there, not here.
 | **Diamond** | 8,700 – 10,125 | **31.0%** | **1.17×** |
 
 *(Shares simulated over 20,000 accounts with exponential tenure and 20%
-subscribers.)*
+pass holders.)*
 
 **Nobody ever faces more than 1.67× their own gear.** Diamond is the largest
 league because roughly a quarter of a mature population sits at the cap — and
@@ -395,14 +395,14 @@ found two of the three weaker than they first read:
 | 20 battles/day | Wins | Shards/day | vs. typical free |
 |---|---|---|---|
 | Typical free player | 10 | 388 | — |
-| **Subscriber**, $20 / 4 weeks | 10 | 775 | **2.00×** |
+| **Pass holder**, $20 / 4 weeks | 10 | 775 | **2.00×** |
 | **Farming one weak defender** | 18 | **879** | **2.27×** |
 
 1. ~~**The farm out-earns the subscription.**~~ **Accepted.** It does — a player
    at the top of a league holds up to 1.67× the weakest league-mate's gear, wins
    ~90%, and rides that to the capped ambush rate. But the boosts sell *speed to a
-   common ceiling*, and a grinder reaching it faster than a subscriber costs the
-   subscriber nothing. Long-term monetization moves toward **cosmetics**, which
+   common ceiling*, and a grinder reaching it faster than a pass holder costs the
+   pass holder nothing. Long-term monetization moves toward **cosmetics**, which
    this cannot touch at all.
 2. ~~**The defender's income inverts.**~~ **It self-corrects.** Being farmed 300
    times a day pays ~300 shards passively — which funds that player *out of* being
