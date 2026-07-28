@@ -151,76 +151,93 @@ the top of a league you hold up to **1.67× the gear of your weakest
 league-mate**; cross the line and you are the weakest in the next one. Published
 thresholds tell a player exactly where that line is. The next section answers it.
 
-### The top of a league leaks upward
+### Leagues bleed at both edges
 
-> **The nearer a player is to the ceiling of their league, the more often they are
-> offered a defender from the league above.**
+> **The nearer a player is to either end of their league, the more often they are
+> offered a defender from the league beyond it.**
 
 ```
-pos    = (score − league floor) / (league ceiling − league floor)
-P(up)  = 0.5 × max(0, (pos − 0.9) / 0.1)
+pos     = (score − league floor) / (league ceiling − league floor)
+P(up)   = 0.5 × max(0, (pos − 0.9) / 0.1)
+P(down) = 0.5 × max(0, (0.1 − pos) / 0.1)
 ```
 
-| Position in the league | Chance of a higher-league defender |
+| Position in the league | Mix |
 |---|---|
-| below 90% of the band | **0%** |
-| 95% | 25% |
-| at the ceiling | **50%** |
+| at the floor | **50% from the league below** |
+| 5% | 25% below |
+| **10% – 90%** | **pure league** |
+| 95% | 25% above |
+| at the ceiling | **50% from the league above** |
 
 **Position is measured against the league's own score range, not against the
 population.** It therefore depends only on the player's own score — nobody's
 matching changes because other people geared up, which is the same principle that
 made thresholds fixed rather than percentile.
 
-**Diamond has no league above it**, so the ramp does not apply there. It matters
-least anyway: Diamond spans only 1.17×, so there is barely a top to park at.
+**The end leagues bleed one way only.** Diamond has nothing above it and Bronze
+nothing below. Neither matters: Diamond spans just 1.17×, and every account
+starts at Bronze's floor, so its bottom is where the game begins rather than
+where anyone lands.
 
-#### It turns parking into a decision rather than a free ride
+#### Both edges together make the curve continuous
 
-That is the point, and it is worth more than the exploit it answers. A player at
-the ceiling of their league now faces a fork with no wrong answer:
+This is what the pair achieves that the upward ramp alone cannot. Take a player
+who beats league-mates below them ~65% of the time and those above them ~40%:
 
-- **Stay, and take the harder mix.** Half their opponents come from above. That
-  is a defensible choice — they hold a strong position on their league's board
-  and they are choosing the fight.
-- **Push, and tier up.** Place the shards, cross the threshold, and be properly
-  matched against people at their own level again.
-
-Either way the free lunch is gone: sitting at the top **costs** something now,
-where before it paid.
-
-**It is also a promotion on-ramp, which the flat version is not.** A player
-crossing into Silver has already been fighting Silver opponents up to half the
-time, so promotion is a gradient rather than a wall. That solves a problem
-fixed-threshold leagues would otherwise have — the moment of crossing takes a
-player from strongest-in-league to weakest-in-league in a single rune purchase,
-which without the ramp is the single worst-feeling moment in the progression.
-
-#### What it is worth, stated honestly
-
-For a parked player who beats their own league ~65% of the time and the league
-above ~40%:
-
-| | Win rate | Advantage over promoting |
+| Position | Mix | Win rate |
 |---|---|---|
-| No mixing | 65.0% | +25.0 pts |
-| **Graduated mixing** | **52.5%** | **+12.5 pts** |
-| A flat 5–10% for the top decile | 62.5% | +22.5 pts |
+| Top of Bronze | 50% Silver | **52.5%** |
+| **Bottom of Silver** | **50% Bronze** | **52.5%** |
+| Middle of any league | none | ~50% |
 
-**This halves the incentive rather than removing it.** Removing it entirely would
-mean matching on a band centred on the player's own score, which erases the
-boundary — and with it the league as a matching unit, the on-ramp above, and the
-leaderboard. The graduated ramp keeps league-pure matching for **90% of
-players**, and accepts a residual edge at the very top as the price of all three.
+**Crossing a threshold costs nothing**, because the two blends are the same
+blend. The upward ramp alone left a sawtooth — 52.5% at the top of Bronze
+dropping to 40% the moment a rune was placed — and that step *was* the reason to
+park. Removing the step removes the incentive rather than taxing it:
 
-**Two things carry the rest.** Parking costs real progress — shards accumulate
-with nowhere to go, since placing them is what promotes you. And the **rating
-axis** does what it exists for: a parked player wins more, their rating climbs,
-and they meet better-played opponents inside the same league.
+| | Parking advantage |
+|---|---|
+| No mixing | +25.0 pts |
+| Flat 5–10% for the top decile | +22.5 pts |
+| Upward ramp only | +12.5 pts |
+| **Both edges** | **0** |
 
-**The roll is not announced, but the opponent's league is labelled as always.** A
-player near the ceiling simply starts seeing higher-league names appear, which is
-honest feedback that they are outgrowing their band rather than a hidden
+So the design gets what a score band centred on the player would have given —
+a continuous difficulty curve with no cliff — **while keeping leagues as a real
+unit**: a name, a leaderboard, a threshold to earn, and pure same-league matching
+for the 80% of players who sit in the middle of their band.
+
+It also helps a thin league without a special case. Overlapping edges mean the
+pool at a boundary is drawn from two leagues at once.
+
+#### Promotion stops being a wall
+
+The larger win is not the exploit. **Fixed-threshold leagues have a problem
+nobody had named**: placing one rune takes a player from *strongest in their
+league* to *weakest in the next*, in a single purchase — plausibly the worst
+moment in the whole progression, and a direct disincentive to spend the currency
+the game is built around.
+
+Both ramps together remove it. A player crossing into Silver has already been
+fighting Silver opponents up to half the time, and on arrival still meets Bronze
+opponents half the time. **Promotion becomes a gradient with no felt edge.**
+
+That also makes the currency safe to spend. Without it, a careful player learns
+to hold shards near a threshold — which is the one behaviour a progression system
+built on *placing runes permanently* cannot afford to teach.
+
+> **The 65/40 figures above are illustrative, not measured.** The *shape* — a
+> continuous curve with no step at a threshold — holds for any pair of win rates,
+> because both edges blend the same two populations in the same proportion. The
+> magnitudes want checking against `packages/sim`.
+
+**The rating axis still carries what gear matching cannot.** Two players with
+identical scores are not equally dangerous, and only outcomes reveal which.
+
+**Neither roll is announced, but the opponent's league is labelled as always.** A
+player near either end simply starts seeing names from the neighbouring league,
+which is honest feedback about where they sit in their band rather than a hidden
 mechanic. Nothing is concealed and nothing is proclaimed.
 
 ### When a league is thin
