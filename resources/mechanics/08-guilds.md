@@ -228,6 +228,26 @@ This is easy to miss because creation does not feel like joining, and it is very
 reachable: a starter player earns **432/day**, so 650 is **1.5 days** — well
 inside their protected week.
 
+#### There is no guild tag — **settled 2026-07-28**
+
+A 2–4 character tag alongside the name was proposed by the guild-creation screen
+and is **removed.**
+
+> **It is the only free-text field in the design short enough to be
+> un-moderatable.** Everything else a player authors — a username, a recruiting
+> pitch, a chat message — can be *read in context* and judged. **Three characters
+> cannot be**, which is precisely why abbreviated tags are where slurs concentrate
+> in every game that has them. A blocklist does not fix it either: the whole point
+> of a tag is compression, and compression is what defeats matching.
+
+**Nothing is lost.** The **name** identifies a guild and the **emblem** expresses
+it — 36 icons across two palettes — so a tag adds a third identity field carrying
+no information the first two lack.
+
+**That leaves the guild name as the only player-authored string on a guild**, and
+it inherits the username model in `11-social.md` unchanged: **reportable, a forced
+rename is free, a voluntary one is sold.**
+
 #### A new guild is active for its first two weeks — **settled 2026-07-28**
 
 > **A guild founded within the last 14 days counts as active regardless of
