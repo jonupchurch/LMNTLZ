@@ -132,14 +132,14 @@ be the quietest queue in the game.
 
 #### A guild posts from a budget, and the budget is the rate limit
 
-> **An active guild receives a weekly allowance of guild funds — 70, enough for
-> 14 posts at 5 apiece, about two a day. It does not carry over, and it cannot be
-> topped up from a member's own shards.**
+> **An active guild receives 2 free ad credits a day. It may post up to 4 a day,
+> and the extra two are paid from its guild funds balance. Neither may be topped
+> up from a member's own shards.**
 
-**One mechanism doing two jobs.** The allowance funds the posting *and* caps it,
-so no separate hourly rule is needed. At two a day it is **12× tighter than a
-one-per-hour cap** — 14 posts a week against 168 — which is most of why the
-channel stays readable.
+**The free half keeps every active guild recruiting; the paid half is what a guild
+earns its way to.** At four a day the channel is still **6× tighter than a
+one-per-hour cap** — 28 posts a week against 168 — and a guild that never wins
+anything still gets two a day forever.
 
 **Nobody pays personally to do recruiting duty.** Guild ads are funded *only* from
 guild funds; a member cannot spend their own shards to post one. Recruiting is
@@ -148,16 +148,15 @@ this that quietly stops happening.
 
 | | |
 |---|---|
-| Weekly allowance | **70 guild funds** |
-| Cost per guild ad | 5 |
-| **Hard posting cap** | **2 guild ads per day — regardless of balance** |
-| Allowance carryover | **None.** Use it or lose it, reset weekly |
-| Personal top-up | **Not permitted** |
+| Free daily credits | **2/day** while active — **do not carry over** |
+| **Hard posting cap** | **4 guild ads per day — regardless of balance** |
+| Cost of a 3rd or 4th post | **5 guild funds** each, from the persistent balance |
+| Personal top-up | **Not permitted**, at either tier |
 
 ##### The cap is on the posting rate, not on the balance
 
-> **A guild may post two ads a day. Not two a day *on average*, and not more
-> because it is holding funds — two, whatever its balance says.**
+> **A guild may post four ads a day. Not four a day *on average*, and not more
+> because it is holding a large balance — four, whatever that balance says.**
 
 **This is what makes stockpiling structurally unable to become spam**, and it
 matters because **guilds recruit part-time.** A guild that goes quiet for a month
@@ -165,27 +164,32 @@ and then runs a recruitment drive is the normal case, not an abuse — and witho
 rate cap it is indistinguishable from a guild that saved up to flood the channel.
 Capping the *rate* lets the first happen and makes the second impossible.
 
-Two rules, doing different jobs:
+Three rules, doing different jobs:
 
-- **The allowance does not carry over**, and is sized to exactly the cap — 70 a
-  week is 14 posts is 2 a day. **An active guild is always funded to post at the
-  cap and can never accumulate from the allowance alone.**
-- **Event prizes do persist**, because a prize that evaporates is not a prize.
-  A guild can hold a large balance indefinitely — and **still posts twice a day**,
-  because the cap does not care. The surplus goes to logos and cosmetics, which
-  is the only other thing guild funds buy.
+- **The free credits do not carry over.** Two a day, granted daily, gone daily.
+  Granting them daily rather than weekly is what stops a quiet guild banking them
+  at all — there is no window in which they accumulate.
+- **Event prizes persist**, because a prize that evaporates is not a prize. They
+  fund the third and fourth post at 5 apiece.
+- **Four is the ceiling for everyone.** A guild holding 10,000 guild funds posts
+  exactly as often as one holding 10.
 
-> **So the answer to "what if they stockpile" is: nothing happens.** Holding funds
-> buys prestige, never reach. Separating the balance from the spend rate is what
-> lets event placements be meaningfully large without any of them turning into
-> channel volume.
+> **So the answer to "what if they stockpile" is: they reach four a day, the same
+> as the richest guild in the game, and then they stop.** Winning buys **bounded
+> reach** — double, never more — and everything past that goes to logos and
+> cosmetics. That bound is doing the work a balance limit would have done, without
+> ever making an event prize worth less than it says.
+
+**A guild that never wins anything still recruits forever**, which is the half
+worth protecting. Two free posts a day is not a consolation tier — it is most of
+the cap, and it is unconditional on anything but being active.
 
 **Guild funds are a separate balance from Rune Shards** — not transferable, not
 convertible, spendable only on guild-scoped purchases. Ads are the first; **guild
 logo changes are the obvious second** once logos exist, which is why this is
 funds rather than a bare post allowance.
 
-#### Two sources: the weekly allowance, and event placements
+#### Two sources: the free daily credits, and event placements
 
 > **A guild's event placement is paid in guild funds** — which is what the
 > guild-level reward in `08-guilds.md` has always been structurally, without a
@@ -231,8 +235,8 @@ tracking.
 **A player looking for a guild pays 5 personal shards per post — text or embed,
 no exceptions.** There is no free post in Guild Ads for anyone.
 
-> **The fee is the rate limit, for both sides.** A guild's allowance caps it at
-> ~2/day; an individual's own shards cap them by costing something every time.
+> **The fee is the rate limit, for both sides.** A guild is capped at 4/day
+> outright; an individual's own shards cap them by costing something every time.
 > **No separate rate-limit rule is needed anywhere in this channel**, which is
 > most of why it stays readable — the one place in chat where paying is the price
 > of admission rather than a surcharge on a richer message.
