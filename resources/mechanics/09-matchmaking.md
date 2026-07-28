@@ -629,6 +629,50 @@ beatable opponents, which is neither a fair head start nor an interesting week.
 day two should have them; a player who returns after leaving would be farming a
 pool built for beginners. One-way keeps it honest and needs no rule beyond a flag.
 
+#### Joining a guild is the third exit
+
+> **No member of a guild is ever in the starter league.** Accepting an invitation
+> graduates a player immediately, and leaving the guild later does not send them
+> back.
+
+**This gives the exit a reason rather than a button.** "Opt out" asks a player who
+has been playing for two days to judge whether they are ready; *joining a guild*
+is a thing they wanted to do anyway, and it answers the same question by
+implication. Finding people is the signal.
+
+**It also keeps one invariant clean.** Guild event assignments **lock when an
+event starts** (`08-guilds.md`), so a member graduating mid-event would change
+their own scoring context after the lock — a whole class of edge cases that simply
+cannot arise if guild membership and starter membership are mutually exclusive.
+
+> **It is not closing an event exploit, which is worth recording because it looks
+> like it should be.** A guild parking members in the bot pool gains essentially
+> nothing: a starter wins far more often but banks **no holds**, and the two
+> cancel to within 3% — **20.5 event points a day against a normal player's
+> 21.1.** The dormant defense pays for the easy opponents almost exactly.
+
+**Both doors carry the warning.** A guild has every reason to recruit new players,
+and this rule means recruiting ends their protection — so the cost is stated at
+**every point a player could cross the line, in either direction**:
+
+| Trigger | Must warn |
+|---|---|
+| Receiving a guild invitation | Before accepting |
+| **Applying to a guild** | Before submitting — the application itself is the commitment |
+
+The warning names both things that end, because they are not the same thing:
+**beginner status** — bot-only opponents, the protection — and **the beginner
+bonus** — the 1.5× on attack income. A player who reads only "you'll leave the
+starter league" has not been told their income drops.
+
+> **Warn on the application, not just on the acceptance.** A player who applies
+> and is admitted a day later would otherwise be graduated by someone else's
+> click, at a moment they were not present for. The application is where they are
+> actually making the decision, so that is where the decision has to be described.
+
+Accepting or applying is a confirmed action stating what it costs — never a
+one-click yes.
+
 > **This is the one carve-out from *The pool is every defender*.** That rule is
 > otherwise absolute, and the exception is deliberately bounded — a single week,
 > once per account, at the very start, opt-out at will. Naming it as an exception

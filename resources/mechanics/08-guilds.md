@@ -186,6 +186,29 @@ event sits idle for a long time. If events run long, this is the rule most likel
 to feel punishing to a new member, and the mitigation is a visible countdown to
 the next lock rather than a change to the rule.
 
+### No guild member is ever in the starter league — **settled 2026-07-28**
+
+> **Joining a guild ends a player's starter week immediately, and leaving the
+> guild later does not restore it.** Guild membership and starter membership are
+> mutually exclusive.
+
+Full reasoning in `09-matchmaking.md` → *Joining a guild is the third exit*. Two
+things it buys the guild system specifically:
+
+- **It removes a class of edge case from the list below.** Assignments **lock when
+  an event starts**, so a member graduating mid-event would change their own
+  scoring context *after* the lock. That cannot happen if the two states are
+  exclusive.
+- **It is not an anti-exploit rule**, which is worth knowing before anyone
+  "improves" it. Parking members in the bot pool gains a guild essentially nothing
+  — a starter wins far more often but banks **no holds**, and the two cancel to
+  within 3%.
+
+**Both doors warn**: receiving an invitation *and* applying to a guild. The
+warning must name **beginner status and the 1.5× beginner bonus separately**,
+since a player told only that they are leaving the starter league has not been
+told their income drops.
+
 ### Edge cases the rules still have to answer
 
 | Case | Question |
