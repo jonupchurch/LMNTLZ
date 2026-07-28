@@ -335,12 +335,21 @@ canned:
 > pairs is legible by construction.** Same principle as curating the set in the
 > first place: make the bad output impossible rather than validating against it.
 
-##### A solid block is allowed, as one deliberate click
+##### A solid block is allowed, and it is just one of the icons
 
-**A guild may set its icon colour to match its background**, producing a plain
-block of colour with the icon invisible. Since the palettes do not overlap, this
-cannot happen by accident — so it is **an explicit option**, not a combination
-found by wandering into it.
+**One of the 36 is blank.** Choosing it yields a plain field of the background
+colour and nothing else — so a guild that wants a solid block picks it the same
+way it would pick a wolf, with no toggle, no special case and no combination to
+stumble into.
+
+> **A blank entry in the set is a better mechanism than a "match background"
+> switch**, which was the alternative. It needs no new control, it cannot be
+> reached by accident, and it makes the plain field a **legitimate design choice
+> sitting among the others** rather than a loophole the system tolerates.
+
+The arithmetic follows from it: **35 icons × 12 inks × 12 grounds = 5,040**
+figured emblems, plus **12 solid fields** — since with the blank symbol the ink
+choice has nothing to colour.
 
 > **The curation exists to prevent what is *inappropriate*, not what is in poor
 > taste.** A monochrome emblem is silly; it is not harmful, it does not need
