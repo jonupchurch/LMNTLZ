@@ -844,11 +844,29 @@ Depth is answered in *Rewards*: a participation floor reaching every Wing that s
 The *shape* is settled — top Wings are paid directly, the guild gets a lesser
 reward on top. Two things inside that are not:
 
-- **How many Wings count as "top".** A hard cut (top 10) makes placement brutal
-  and most events unrewarding for most players; graded brackets (top 10 / 100 /
-  1000) keep a long tail of guilds playing. This is the tier curve from the
-  section above, and it is the same dial that decides whether guilds stack one
-  Wing or spread across three.
+- ~~**How many Wings count as "top".**~~ — **settled 2026-07-28: graded
+  brackets.** Four tiers, **top 10 · top 100 · top 1000 · participation floor**,
+  each paying meaningfully less than the one above. Sizes are still open (they
+  wait on `06-progression.md`); the *structure* is not.
+
+  **A hard cut was the alternative and it rewards the wrong thing.** With any real
+  population a top-10-only list leaves well over 99% of Wings on the floor, so an
+  event becomes a formality for nearly everyone — and it actively pushes a guild
+  to **stack one Wing and bench the rest**, since spreading across three
+  guarantees two of them place nowhere.
+
+  > **The curve has one hard constraint: three mid-tier placements must beat one
+  > top placement plus two floors.** That is the whole reason for grading, and it
+  > is a property of the *numbers*, not of the structure — so whoever sets the
+  > payout sizes has to check it explicitly. Get it wrong and graded brackets
+  > reward stacking exactly as a hard cut would.
+
+  **Fixed counts rather than percentiles**, because *top 100* is a target a player
+  can aim at during an event and *top 1%* is not. The cost is that the tiers are
+  sized for a mature population: at launch, when a few hundred Wings exist, top
+  1000 is everyone and the brackets collapse toward the floor. **That degrades in
+  the right direction** — early players find the higher tiers unusually reachable,
+  which is a good problem at launch and self-corrects as the population grows.
 - **Whether all eight members of a paid Wing are paid equally.** An even split is
   simple and rewards being *in* a good Wing. Splitting by contribution rewards
   playing well but stacks on top of question 0 — if score is a total *and* the
