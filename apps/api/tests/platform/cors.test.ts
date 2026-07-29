@@ -91,7 +91,7 @@ describe('which origins are answered', () => {
     // policy has no business refusing it.
     const res = await get();
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ status: 'ok' });
+    expect(await res.json()).toMatchObject({ status: 'ok' });
     expect(allow(res)).toBeNull();
   });
 

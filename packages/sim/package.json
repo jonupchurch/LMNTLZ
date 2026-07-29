@@ -4,10 +4,20 @@
   "private": true,
   "type": "module",
   "//": "NO root export, deliberately. `import from '@lmntlz/sim'` must fail to resolve, so nobody reaches the resolver through a barrel file. The seam is a resolution error, not a convention.",
+  "//exports": "Each subpath resolves types from the BUILD and runtime from source — see the long note in @lmntlz/content's package.json for why. The seam is unaffected: a missing subpath is still a resolution error, and `types` never adds a root export.",
   "exports": {
-    "./rules": "./rules/index.ts",
-    "./resolver": "./resolver/index.ts",
-    "./ai": "./ai/index.ts"
+    "./rules": {
+      "types": "./dist/rules/index.d.ts",
+      "default": "./rules/index.ts"
+    },
+    "./resolver": {
+      "types": "./dist/resolver/index.d.ts",
+      "default": "./resolver/index.ts"
+    },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "default": "./ai/index.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

@@ -13,6 +13,7 @@
   // ENTRY is rejected as an unknown key. That convention works in package.json
   // and not here.
   "globalEnv": [
+    "CORS_ALLOWED_ORIGINS",
     "DATABASE_URL",
     "DATABASE_URL_UNPOOLED",
     "GOOGLE_CLIENT_ID",
@@ -20,7 +21,8 @@
     "NODE_ENV",
     "VERCEL",
     "VERCEL_ENV",
-    "VERCEL_GIT_COMMIT_SHA"
+    "VERCEL_GIT_COMMIT_SHA",
+    "VITE_API_BASE_URL"
   ],
 
   // Neon's Vercel integration injects ~13 aliases of the same connection

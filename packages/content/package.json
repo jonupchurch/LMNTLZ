@@ -3,10 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "//types": "TYPES COME FROM THE BUILD, RUNTIME COMES FROM SOURCE. Pointing `types` at src/index.ts means every consumer's type-checker re-derives this package from scratch under ITS OWN compiler options — and one of those consumers is Vercel, which compiles the API entrypoint by naming the file, so TypeScript refuses to load any tsconfig and runs with `strict` OFF. Zod v4's inference collapses to `unknown` without strict, so the deploy died on five errors in validate.ts that exist nowhere else. A .d.ts has no inference left to get wrong. `default` stays on source so Vite and Vitest keep the fast loop, and declarationMap means go-to-definition still lands in the .ts.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

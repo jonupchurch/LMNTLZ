@@ -1,4 +1,4 @@
-name: content
+name: ci
 
 on:
   push:
@@ -6,6 +6,51 @@ on:
   pull_request:
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Will Vercel be able to build this?
+  #
+  # Added 2026-07-29, after the deployed API turned out to be a feature-005
+  # build. Feature 006's routes had never shipped — `/v1/roster` answered 404 in
+  # production while passing every test locally — and no deploy since 006 had
+  # succeeded. Nothing reported it, because the only endpoint ever checked was
+  # `/v1/health`, which exists in every build ever made and so cannot tell one
+  # from another.
+  #
+  # **Vercel compiles the API entrypoint by naming the file**, which makes
+  # TypeScript refuse to load tsconfig.json (TS5112) and run with `strict` off.
+  # Zod v4's inference collapses to `unknown` without strict. The fix was to stop
+  # exporting raw `.ts` from workspace packages, so nothing downstream re-derives
+  # our types; this job is what stops that regressing, and it needs no database,
+  # so it runs on a fork.
+  # ---------------------------------------------------------------------------
+  deployability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Declarations must exist before anything can type-check against them.
+      - run: pnpm build
+
+      - name: Compile the API the way Vercel does — without strict
+        run: |
+          if ! pnpm exec tsc -p apps/api/tsconfig.json --noEmit \
+                 --strict false --exactOptionalPropertyTypes false; then
+            echo ""
+            echo "::error::The API does not compile without 'strict', which is how"
+            echo "Vercel compiles it. The deploy will fail and production will keep"
+            echo "serving the last build that worked — silently. The usual cause is a"
+            echo "workspace package exporting raw .ts instead of built .d.ts; see"
+            echo "apps/api/tests/platform/deployability.test.ts."
+            exit 1
+          fi
+
   verify:
     runs-on: ubuntu-latest
     steps:

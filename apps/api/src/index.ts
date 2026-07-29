@@ -44,13 +44,31 @@ app.use('*', corsMiddleware());
 const v1 = new Hono();
 
 /**
- * Liveness only — it says the process is up, and deliberately nothing more.
+ * Liveness, **and which build is answering**.
  *
  * **It does not touch the database.** A health check that queries Postgres turns
  * a slow database into an outage on every platform that polls it, and it hands
  * an unauthenticated caller a way to generate load.
+ *
+ * ### Why it reports a commit, added 2026-07-29
+ *
+ * For two features it returned `{status: "ok"}` and nothing else, and that is
+ * exactly as much as it could ever say — **this route has existed since the
+ * first commit of the API, so its answer is identical in every build ever
+ * made.** Production spent feature 006 serving a feature-005 build, `/v1/health`
+ * answered 200 throughout, and the deploy failures were invisible because the
+ * one thing anybody checked could not tell two builds apart.
+ *
+ * `VERCEL_GIT_COMMIT_SHA` is injected by the platform. **The repository is
+ * public, so the SHA discloses nothing** — and locally there is no deployment to
+ * identify, hence `dev`.
  */
-v1.get('/health', (c) => c.json({ status: 'ok' }));
+v1.get('/health', (c) =>
+  c.json({
+    status: 'ok',
+    commit: process.env['VERCEL_GIT_COMMIT_SHA']?.slice(0, 7) ?? 'dev',
+  }),
+);
 
 v1.route('/', authRoutes);
 v1.route('/', squadRoutes);
