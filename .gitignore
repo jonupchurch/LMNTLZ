@@ -28,6 +28,11 @@ coverage/
 
 # Secrets
 .env*
+
+# ...except the template, which carries the NAMES and never the values. It is
+# the only record of what a fresh machine needs, and leaving it ignored means
+# the answer lives in one person's head.
+!.env.example
 !.env.example
 
 # OS

@@ -1,0 +1,23 @@
+{
+  "name": "@lmntlz/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "//": "The server half. It may import @lmntlz/sim/resolver and /ai; apps/client may not, and eslint.config.js enforces that on the client rather than here.",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "vercel dev",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests"
+  },
+  "dependencies": {
+    "@lmntlz/content": "workspace:*",
+    "@lmntlz/sim": "workspace:*",
+    "hono": "^4.11.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2"
+  }
+}
