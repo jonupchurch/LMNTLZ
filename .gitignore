@@ -45,3 +45,9 @@ Desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
