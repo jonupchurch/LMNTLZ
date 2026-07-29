@@ -27,11 +27,18 @@ import {
   assertAvailableForOffense,
   availableForOffense,
   defenseReadiness,
+  evictionImpact,
   isPowerRanking,
   validateSquadShape,
   type SquadShape,
 } from './allocation.js';
-import { loadSquads, saveDefenseSquad, saveOffenseSquad, type SeatInput } from './repository.js';
+import {
+  evictFromOffense,
+  loadSquads,
+  saveDefenseSquad,
+  saveOffenseSquad,
+  type SeatInput,
+} from './repository.js';
 
 export const squadRoutes = new Hono<AuthedEnv>();
 
@@ -216,12 +223,88 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
 
   const result = await saveDefenseSquad(accountId, zone, seats);
 
+  /**
+   * **Eviction on commit (T025).** Anyone newly committed to defense leaves
+   * every attack squad containing them, and each of those is marked invalid.
+   *
+   * After the save rather than before, and in its own transaction: the save is
+   * the thing that must not half-apply. If eviction failed here the squads would
+   * be stale rather than corrupt, and the next `GET /v1/roster` recomputes
+   * `forOffense` from the defense rows regardless — so the player still cannot
+   * attack with a defender.
+   */
+  const evicted = await evictFromOffense(
+    accountId,
+    seats.map((s) => s.heroId),
+  );
+
   return c.json({
     holdStreak: result.holdStreak,
     streakReset: result.streakReset,
+    evictedSquadIds: evicted,
     // US5 fills this with the reach and firing-profile notes. It is present and
     // empty now so a client written today does not branch on its absence.
     warnings: [],
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T024 — POST /v1/squads/defense/:zone/preview-move
+// ---------------------------------------------------------------------------
+
+/**
+ * **Called before committing, and it commits nothing.**
+ *
+ * Eviction is the one thing this feature blocks with a confirm, because it is
+ * destructive and non-obvious — unlike a self-defeating power ranking, which is
+ * surfaced and permitted because reopening a dropdown undoes it.
+ *
+ * A `POST` rather than a `GET` because it takes a body and is not cacheable;
+ * nothing is written.
+ */
+squadRoutes.post('/squads/defense/:zone/preview-move', async (c) => {
+  const { accountId } = requireContext(c);
+  const zone = c.req.param('zone');
+  if (!isZone(zone)) {
+    return c.json(apiError('not_found', `There is no "${zone}" zone.`), 404);
+  }
+
+  const body = (await c.req.json().catch(() => null)) as { heroId?: unknown } | null;
+  const heroId = body?.heroId;
+  if (typeof heroId !== 'string') {
+    return c.json(apiError('malformed_request', 'A `heroId` is required.'), 400);
+  }
+
+  try {
+    getHero(heroId);
+  } catch {
+    return c.json(apiError('unknown-hero', `There is no champion "${heroId}".`), 422);
+  }
+
+  const stored = await loadSquads(accountId);
+  const impact = evictionImpact(heroId, stored, getAllHeroes().length);
+
+  const current = stored.find((s) => s.kind === 'defense' && s.zone === zone);
+
+  return c.json({
+    heroId,
+    // **Never truncated.** Every affected squad, named, in slot order.
+    evicts: impact.squads.map((s) => ({
+      slot: s.slotIndex ?? 0,
+      name: s.name,
+      wasComplete: s.wasReady,
+      wouldBe: s.remaining,
+    })),
+    // The sentence no per-squad message conveys: why this keeps happening.
+    poolAfter: {
+      heroes: impact.poolAfter,
+      squads: impact.squadsNeeded,
+      seatsNeeded: impact.squadsNeeded * impact.squadSize,
+    },
+    // FR-014 — the streak cost is stated BEFORE the player commits. Any change
+    // to a defense squad's membership changes its canonical form, so a move
+    // into a zone that has a streak will always cost it.
+    streakAtRisk: current?.holdStreak ?? 0,
   });
 });
 

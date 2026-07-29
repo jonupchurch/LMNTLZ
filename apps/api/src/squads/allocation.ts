@@ -184,6 +184,42 @@ export function defenseReadiness(
   };
 }
 
+export class SquadCannotAttackError extends Error {
+  readonly status = 409 as const;
+  readonly code = 'squad_incomplete' as const;
+  readonly slot: number;
+  readonly seated: number;
+
+  constructor(slot: number, seated: number, name: string | undefined) {
+    super(
+      `${name ?? `Attack squad ${slot + 1}`} has ${seated} of ${SQUAD_SIZE} champions and cannot attack.`,
+    );
+    this.name = 'SquadCannotAttackError';
+    this.slot = slot;
+    this.seated = seated;
+  }
+}
+
+/**
+ * **An invalidated squad cannot attack until it is refilled to six** (T026,
+ * FR-009, SC-009).
+ *
+ * The squad most likely to be in this state is one *our own eviction rule*
+ * emptied a seat in, not one the player left unfinished — so letting it fight
+ * five-strong would be a loss caused by the game and invisible until the result
+ * came back. Refusing is the honest failure, and it is recoverable in one
+ * action: put somebody in the gap.
+ *
+ * **Nothing here repairs it (T027).** The squad is the player's plan; filling
+ * the gap for them substitutes a guess and hides that they are over-committed.
+ */
+export function assertSquadCanAttack(squad: SquadShape | undefined, slot: number): void {
+  const seated = squad?.seats.length ?? 0;
+  if (seated !== SQUAD_SIZE) {
+    throw new SquadCannotAttackError(slot, seated, squad?.name);
+  }
+}
+
 export interface EvictedSquad {
   readonly id: string;
   readonly slotIndex: number | undefined;

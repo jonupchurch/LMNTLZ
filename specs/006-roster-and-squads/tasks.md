@@ -95,9 +95,9 @@ plausible implementation gets backwards.
 > **Write T021 first.** plan.md is explicit: it is the case the warning exists for
 > and the one most likely to be built for a single squad and scaled badly.
 
-- [ ] T021 [US2] Write `apps/api/tests/squads/eviction.test.ts` — three complete attack squads with one hero in all three; `preview-move` lists **all three by name, untruncated**, and `poolAfter` reads `{ heroes: 14, squads: 3, seatsNeeded: 18 }` (SC-003)
-- [ ] T022 [P] [US2] Add the branches to `apps/api/tests/squads/eviction.test.ts` — a hero in **one** squad renders singular; a hero in **none** skips the confirm entirely. **The template is plural by default, so these are the paths that get less exercise**
-- [ ] T023 [P] [US2] Write `apps/api/tests/squads/streak.test.ts` from the quickstart table — a no-op save keeps the streak; a reorder back to the starting arrangement keeps it; **changing a targeting *fallback* resets it**; placing a rune on a defending hero keeps it
+- [x] T021 [US2] Write `apps/api/tests/squads/eviction.test.ts` — three complete attack squads with one hero in all three; `preview-move` lists **all three by name, untruncated**, and `poolAfter` reads `{ heroes: 14, squads: 3, seatsNeeded: 18 }` (SC-003)
+- [x] T022 [P] [US2] Add the branches to `apps/api/tests/squads/eviction.test.ts` — a hero in **one** squad renders singular; a hero in **none** skips the confirm entirely. **The template is plural by default, so these are the paths that get less exercise**
+- [x] T023 [P] [US2] Write `apps/api/tests/squads/streak.test.ts` from the quickstart table — a no-op save keeps the streak; a reorder back to the starting arrangement keeps it; **changing a targeting *fallback* resets it**; placing a rune on a defending hero keeps it
 
 > **T023's fallback line catches a lazy implementation.** The fallback is the rule
 > that actually fires 49–80% of the time, so it belongs in the hash as much as the
@@ -107,14 +107,14 @@ plausible implementation gets backwards.
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement `POST /v1/squads/defense/:zone/preview-move` in `apps/api/src/squads/routes.ts` — called **before** committing, returning `evicts` and `poolAfter`
-- [ ] T025 [US2] Implement eviction on commit in `apps/api/src/squads/allocation.ts` — remove the hero from **every** offense squad containing it and set `valid = false` on each (FR-008)
-- [ ] T026 [US2] Refuse an attack with an invalidated squad until it is refilled to six, in `apps/api/src/squads/allocation.ts` (FR-009, SC-009)
-- [ ] T027 [US2] **No auto-repair** in `apps/api/src/squads/allocation.ts` — nothing substitutes another hero into a gap. The squad is the player's plan, and filling it replaces the plan with a guess while hiding that the player is now over-committed
-- [ ] T028 [US2] Exclude rune placement and gear score from `canonicalForm` in `apps/api/src/squads/canonical.ts` — the streak measures **how long a plan has held**, and gear is not the plan. Including it would make "improve a defending hero" and "keep a streak" mutually exclusive
-- [ ] T029 [US2] Build `apps/client/src/features/squads/EvictionWarning.tsx` — **count first, then name**; **name every squad, never "and 2 others"**; and **state the remaining pool** (`You have 14 heroes left for 3 squads of 6`), which is the sentence that makes the constraint legible
-- [ ] T030 [US2] Render the warning as a **confirm** in `apps/client/src/features/squads/EvictionWarning.tsx` — eviction is the one thing this feature blocks, because it is destructive and non-obvious, unlike a self-defeating ranking which is recoverable by reopening a dropdown
-- [ ] T031 [US2] State the streak reset **before** the player commits, in `apps/client/src/features/squads/SquadBuilder.tsx` (FR-014)
+- [x] T024 [US2] Implement `POST /v1/squads/defense/:zone/preview-move` in `apps/api/src/squads/routes.ts` — called **before** committing, returning `evicts` and `poolAfter`
+- [x] T025 [US2] Implement eviction on commit in `apps/api/src/squads/allocation.ts` — remove the hero from **every** offense squad containing it and set `valid = false` on each (FR-008)
+- [x] T026 [US2] Refuse an attack with an invalidated squad until it is refilled to six, in `apps/api/src/squads/allocation.ts` (FR-009, SC-009)
+- [x] T027 [US2] **No auto-repair** in `apps/api/src/squads/allocation.ts` — nothing substitutes another hero into a gap. The squad is the player's plan, and filling it replaces the plan with a guess while hiding that the player is now over-committed
+- [x] T028 [US2] Exclude rune placement and gear score from `canonicalForm` in `apps/api/src/squads/canonical.ts` — the streak measures **how long a plan has held**, and gear is not the plan. Including it would make "improve a defending hero" and "keep a streak" mutually exclusive
+- [x] T029 [US2] Build `apps/client/src/features/squads/EvictionWarning.tsx` — **count first, then name**; **name every squad, never "and 2 others"**; and **state the remaining pool** (`You have 14 heroes left for 3 squads of 6`), which is the sentence that makes the constraint legible
+- [x] T030 [US2] Render the warning as a **confirm** in `apps/client/src/features/squads/EvictionWarning.tsx` — eviction is the one thing this feature blocks, because it is destructive and non-obvious, unlike a self-defeating ranking which is recoverable by reopening a dropdown
+- [x] T031 [US2] State the streak reset **before** the player commits, in `apps/client/src/features/squads/SquadBuilder.tsx` (FR-014)
 
 **Checkpoint**: No player loses three attack squads without being told first.
 

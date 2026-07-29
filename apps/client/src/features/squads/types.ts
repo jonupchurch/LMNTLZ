@@ -23,6 +23,25 @@ export interface OffenseSquadState {
   readonly valid: boolean;
 }
 
+/** `POST /v1/squads/defense/:zone/preview-move`. Computed server-side only. */
+export interface EvictionPreview {
+  readonly heroId: string;
+  /** **Every** affected squad. The server never truncates and neither does the UI. */
+  readonly evicts: readonly {
+    readonly slot: number;
+    readonly name: string | null;
+    readonly wasComplete: boolean;
+    readonly wouldBe: number;
+  }[];
+  readonly poolAfter: {
+    readonly heroes: number;
+    readonly squads: number;
+    readonly seatsNeeded: number;
+  };
+  /** Stated before the commit, per FR-014. `0` when there is nothing to lose. */
+  readonly streakAtRisk: number;
+}
+
 export interface RosterResponse {
   readonly heroes: readonly Hero[];
   readonly assignments: {
