@@ -89,5 +89,17 @@ export type { Conclusion } from './ending.js';
  * and a battle record carries both. The `e` prefix mirrors content's `c` so a
  * swapped pair is visible on sight rather than six months later, when the
  * record can no longer be backfilled.
+ *
+ * **The generator is named in the stamp** (feature 003, T008/FR-004), because
+ * changing it changes every in-flight battle: the same seed and the same log
+ * would produce a different sequence of draws and therefore a different past.
+ * That makes a generator swap an *engine* change, indistinguishable in
+ * consequence from rewriting the damage formula — so it must be visible in the
+ * one field that says which engine ran.
+ *
+ * Draw *order* is part of the same contract. Adding, removing or reordering a
+ * draw within an action has the identical effect and needs the identical bump.
  */
-export const engineVersion = (): string => 'e0.1.0';
+export const ENGINE_RNG = 'splitmix64';
+
+export const engineVersion = (): string => `e0.1.0-${ENGINE_RNG}`;
