@@ -69,7 +69,7 @@ is not.
 - [ ] T001 Create `apps/api/src/matchmaking/` and register `/v1/matchmaking` and `/v1/me/standing` in `apps/api/src/index.ts`
 - [x] T002 Define `player_ratings` in `apps/api/src/db/schema/ratings.ts` — `rating` starting at 1000, `rated_battles` driving the K band (≤30 → 40, ≤200 → 20, else 10), `attack_streak`, `gear_score`, `last_activity_at`
 - [x] T003 [P] Add a `matchmaking` test project to `apps/api/vitest.config.ts`
-- [ ] T004 **Build the simulated-population harness** in `apps/api/tests/matchmaking/population.ts` — league shares, bleed behaviour and bot sufficiency are all population questions, and reasoning will not settle them
+- [x] T004 **Build the simulated-population harness** in `apps/api/tests/matchmaking/population.ts` — league shares, bleed behaviour and bot sufficiency are all population questions, and reasoning will not settle them
 
 ---
 
@@ -79,9 +79,9 @@ is not.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Implement `gearScore(accountId)` in `apps/api/src/matchmaking/gearScore.ts` as `2.5 × effective stat points` over every rune **currently placed** (FR-001)
-- [ ] T006 Implement `recordPlacement(accountId)` in `apps/api/src/matchmaking/gearScore.ts` triggering the recompute **on placement, immediately** — not on request, and never accumulated
-- [ ] T007 Exclude banked shards from gear score in `apps/api/src/matchmaking/gearScore.ts` (FR-002)
+- [x] T005 Implement `gearScore(accountId)` in `apps/api/src/matchmaking/gearScore.ts` as `2.5 × effective stat points` over every rune **currently placed** (FR-001)
+- [x] T006 Implement `recordPlacement(accountId)` in `apps/api/src/matchmaking/gearScore.ts` triggering the recompute **on placement, immediately** — not on request, and never accumulated
+- [x] T007 Exclude banked shards from gear score in `apps/api/src/matchmaking/gearScore.ts` (FR-002)
 
 > **Read runes currently on heroes, never lifetime spend.** Ten rebuilds of one
 > slot is 6,500 shards for 125 of power, and a cumulative score would rate that

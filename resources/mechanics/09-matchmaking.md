@@ -39,8 +39,19 @@ Rune stages grant 20, then 10, then 5 stat points, then a utility effect:
 |---|---|---|---|---|
 | 1 | +20 | 20 | **50** | 150 |
 | 2 | +20 +10 | 30 | **75** | 300 |
-| 3 | +20 +10 +5 | 35 | **90** | 450 |
+| 3 | +20 +10 +5 | 35 | **87.5** | 450 |
 | 4 | + utility effect | 35 + **15** | **125** | 650 |
+
+> **⚠️ Stage 3 read `90` until 2026-07-29 and that was an arithmetic slip.** The
+> formula gives `2.5 × 35 = 87.5`; `90` implies 36 effective points, which no stage
+> grants. The other three rows agree with the formula exactly, and **nothing
+> load-bearing was affected** — both anchors below are built on stage 4, and both
+> are league boundaries. Found by `apps/api/tests/matchmaking/gearScore.test.ts`,
+> which asserts 88 (the rounded total) and carries the reasoning.
+>
+> **Rounding happens once, on the total**, not per rune: the score sums effective
+> points across every placed rune and multiplies by 2.5 once. Rounding each rune
+> would drift — forty stage-3 runes would gain 20 points of phantom power.
 
 | | Score |
 |---|---|
