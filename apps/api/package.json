@@ -11,9 +11,9 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src tests",
-    "//db": "Both --env-file-if-exists paths are checked so DATABASE_URL can live at the repo root (where .env.example is) or beside this app (where `vercel dev` looks). Neither file is committed.",
+    "//db": "ONE canonical env location: .env.local at the repo root, beside .env.example. A second --env-file-if-exists pointing here printed 'not found' on every run for a file we deliberately do not have, and tsx echoed it once per process it spawns — three lines of noise claiming the env had not loaded when it had. A warning that is always wrong is worse than no warning.",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local src/db/migrate.ts"
+    "db:migrate": "tsx --env-file-if-exists=../../.env.local src/db/migrate.ts"
   },
   "dependencies": {
     "@lmntlz/content": "workspace:*",
