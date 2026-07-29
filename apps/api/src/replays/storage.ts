@@ -134,14 +134,31 @@ export function vercelBlobStorage(): ReplayStorage {
       /**
        * **`fetch` with the read-write token rather than an SDK helper.** A
        * private blob is an authenticated GET against
-       * `https://<store>.private.blob.vercel-storage.com/<path>`, and the token
-       * is the same one `put` and `del` use.
+       * `https://<store>.private.blob.vercel-storage.com/<path>`.
        *
-       * `VERCEL_OIDC_TOKEN` is the better credential when running on Vercel —
-       * it rotates automatically — so it is preferred when present and the
-       * static token is the fallback for local and test runs.
+       * ### The read uses the same credential as the write, on purpose
+       *
+       * Vercel documents `VERCEL_OIDC_TOKEN` as the better choice for code running
+       * on Vercel, because it rotates. This deliberately prefers
+       * `BLOB_READ_WRITE_TOKEN` anyway, and the reason is consistency across the
+       * three operations: **`put` and `del` go through the SDK, which defaults to
+       * `BLOB_READ_WRITE_TOKEN`.** If reads authenticated differently, a
+       * credential problem would surface on exactly one of the three — replays
+       * writing fine and refusing to open, or the reverse — which is a far worse
+       * thing to debug than a missing variable.
+       *
+       * OIDC is kept as the fallback rather than dropped, so the rotating
+       * credential still works if the static token is ever removed. Using it as
+       * the *primary* would also mean depending on `BLOB_STORE_ID` being set and
+       * on OIDC being enabled for the project, which is two more things that can
+       * be absent in exactly one environment.
+       *
+       * **Operationally: one variable, on the API project only.** The client never
+       * touches the blob store — reads go through a Function so a browser never
+       * holds a blob URL — so putting this credential anywhere near the client
+       * bundle would be a write token in shipped JavaScript.
        */
-      const token = process.env.VERCEL_OIDC_TOKEN ?? process.env.BLOB_READ_WRITE_TOKEN;
+      const token = process.env.BLOB_READ_WRITE_TOKEN ?? process.env.VERCEL_OIDC_TOKEN;
       if (!token) throw new Error('no blob credential: set BLOB_READ_WRITE_TOKEN');
 
       const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });

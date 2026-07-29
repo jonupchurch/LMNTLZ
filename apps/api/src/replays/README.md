@@ -163,8 +163,21 @@ view cannot ship unconsidered.
 
 ## Operational note
 
-`BLOB_READ_WRITE_TOKEN` must be present in the API's environment for replays to be
-written. Without it, `writeReplayBlob` logs and gives up — every battle still
-settles and records correctly, and every replay reports `watchable: false`. That is
-a degradation rather than an outage, by design, but it is silent apart from the log
-line.
+**One variable, on the API project only: `BLOB_READ_WRITE_TOKEN`.**
+
+The client never touches the blob store. Reads are served through a Function so a
+browser never holds a blob URL, which is the whole reason the store is private — so
+this credential anywhere near the client build would be a write token in shipped
+JavaScript.
+
+All three operations use the same credential deliberately. `put` and `del` go
+through the SDK, which defaults to `BLOB_READ_WRITE_TOKEN`; the raw `GET` for a
+private blob could have used the rotating `VERCEL_OIDC_TOKEN` instead, and does not.
+If reads authenticated differently from writes, a credential problem would surface
+on exactly one of the three — replays writing fine and refusing to open, or the
+reverse — which is much worse to debug than a missing variable. OIDC stays as a
+fallback.
+
+Without the token, `writeReplayBlob` logs and gives up: every battle still settles
+and records correctly, and every replay reports `watchable: false`. A degradation
+rather than an outage, by design — but silent apart from the log line.
