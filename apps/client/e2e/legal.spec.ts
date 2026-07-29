@@ -19,6 +19,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { mockApi } from './fixtures.js';
 
 const PAGES = [
   { file: 'pricing.html', label: 'Passes', heading: 'Passes & Pricing' },
@@ -99,6 +100,58 @@ test.describe('they are reachable from the game, not just by typing a URL', () =
       await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
     });
   }
+});
+
+/**
+ * **The privacy page makes a claim about the browser, so a browser has to check it.**
+ *
+ * It said *"the game sets no cookies and stores nothing in your browser's local
+ * storage"* from the day it was written, and by then it was already half wrong:
+ * `lib/session.ts` keeps a thirty-day renewal token in `localStorage`, on purpose,
+ * with a long note explaining the trade. Nobody was careless — the sentence was
+ * true when it was published and the session wiring landed afterwards. A
+ * published promise nothing tests is a promise that drifts, so it now has these.
+ *
+ * The claim is deliberately split in two, because only one half is absolute: **no
+ * cookies, ever** — that one is worth failing a build over — and **exactly one
+ * item in local storage**, which is a number that must not grow quietly.
+ *
+ * **What these do not cover.** `playwright.config.ts` runs `pnpm dev`, so
+ * `import.meta.env.PROD` is false and `analyticsEnabled()` keeps `<Analytics/>`
+ * unmounted here. These specs therefore prove what *our* code stores, not what
+ * Vercel's script would. That half rests on Vercel's documented mechanism — a
+ * request hash, server side, no client storage — and on the deployed site, which
+ * is where to look if the sentence is ever challenged.
+ */
+test.describe('the storage promise on the privacy page', () => {
+  const keys = (page: import('@playwright/test').Page) =>
+    page.evaluate(() => ({
+      cookie: document.cookie,
+      local: Object.keys(localStorage),
+      session: Object.keys(sessionStorage),
+    }));
+
+  test('a visitor who never signs in leaves no trace at all', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1, name: 'LMNTLZ' })).toBeVisible();
+
+    expect(await keys(page)).toEqual({ cookie: '', local: [], session: [] });
+  });
+
+  test('a signed-in player stores exactly one item, and still no cookies', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+    // Waiting on the sign-out control rather than a timeout: it renders only
+    // once restore has finished, which is also when the rotated renewal token
+    // has been written back.
+    await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+
+    expect(await keys(page)).toEqual({
+      cookie: '',
+      local: ['lmntlz.renewal'],
+      session: [],
+    });
+  });
 });
 
 test.describe('a reader can move between the policies', () => {

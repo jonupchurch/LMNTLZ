@@ -44,9 +44,11 @@
           <strong>Two things worth saying at the top.</strong>
           We never see your card details — our reseller Paddle handles payment and
           we receive only the fact that an order completed. And
-          <strong>the game sets no cookies and stores nothing in your
-          browser's local storage</strong>; your session token is held in memory
-          and is gone when you close the tab.
+          <strong>the game sets no cookies at all</strong> — not for sign-in, not
+          for counting visits, not for advertising. Your session token is held in
+          memory and is gone when you close the tab. If you sign in, one item is
+          kept in your browser's local storage: a renewal token, so that you do
+          not have to sign in again for thirty days. Signing out deletes it.
         </p>
       </div>
 
@@ -119,6 +121,18 @@
           <strong>Error reports</strong> when something breaks, which can include the
           page you were on and what the client was doing.
         </li>
+        <li>
+          <strong>Anonymous visit counts.</strong> We count page views so we know
+          how many people reach the site and roughly where they arrived from. This
+          uses Vercel Web Analytics, which sets no cookies and builds no profile
+          that follows you between sites: a visit is identified by a one-way hash
+          of the request, which is discarded after 24 hours. It records the page,
+          the referring site, and coarse details like country, browser and whether
+          you are on a desktop. <strong>Before a page view is recorded we cut the
+          address down to the page itself</strong>, so anything a link carried after
+          it — a sign-in code, a search term — is removed before it leaves your
+          browser. A visit can never be connected to your account.
+        </li>
       </ul>
 
       <h2>Why we are allowed to hold it</h2>
@@ -141,6 +155,7 @@
             <tr><td>Taking payment and granting what you bought</td><td>Performance of a contract</td></tr>
             <tr><td>Preventing cheating, multi-accounting, harassment and fraud</td><td>Legitimate interests</td></tr>
             <tr><td>Balancing and improving the game</td><td>Legitimate interests</td></tr>
+            <tr><td>Counting anonymous visits to this site</td><td>Legitimate interests</td></tr>
             <tr><td>Keeping tax and transaction records</td><td>Legal obligation</td></tr>
             <tr><td>Optional email you have asked for</td><td>Consent — withdrawable at any time</td></tr>
           </tbody>
@@ -162,7 +177,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td>Vercel</td><td>Hosting the site and the API; storing replay files</td></tr>
+            <tr><td>Vercel</td><td>Hosting the site and the API; storing replay files; counting anonymous visits</td></tr>
             <tr><td>Neon</td><td>The database</td></tr>
             <tr><td>Google</td><td>Sign-in</td></tr>
             <tr><td>Paddle</td><td>Payment, tax and invoicing, as merchant of record</td></tr>

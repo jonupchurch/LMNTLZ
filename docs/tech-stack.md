@@ -35,7 +35,7 @@ outcome.
 | Chat moderation | **Claude Haiku 4.5** via the batch API, behind an interface |
 | Error monitoring | **Sentry** — client and API |
 | Game telemetry | **Postgres** — SQL against the battle metadata row. *No analytics vendor.* |
-| Web funnel | **Vercel Web Analytics** — enabled at launch |
+| Web funnel | **Vercel Web Analytics** — live on both projects since 2026-07-29; page views only, no custom events |
 
 ## Layout
 
@@ -475,6 +475,38 @@ here that a vendor genuinely answers better. Revisit at traction. **Vercel Web
 Analytics** covers page views and the pre-signup funnel and is a dashboard toggle
 on an account we already have, so it is switched on at launch and costs nothing to
 have been wrong about.
+
+#### Switched on and wired — 2026-07-29
+
+Enabled on both Vercel projects and `@vercel/analytics` added to both apps. Three
+things about it are settled and worth not rediscovering:
+
+- **The client reports page views; the API reports nothing.** Web Analytics counts
+  what a browser script reports, and nothing `lmntlz-api` returns is a page, so
+  there will never be an API page view in the dashboard. Its package is installed
+  against `track()` for the two future browser-less events — the Paddle webhook
+  (013) and the cleanup cron (016) — and is deliberately unimported until one
+  exists. See the `//dependencies` note in `apps/api/package.json`.
+- **The client is a single URL, so a per-screen funnel does not exist to be
+  measured.** There is no router: every screen is conditional rendering at `/`,
+  and for an anonymous visitor the landing page and the sign-in panel render
+  *together*. The distinct paths are `/` plus the five policy pages — which does
+  answer *"did they open pricing before leaving"*. Visitors come from here,
+  sign-ups from `accounts.createdAt`, and their ratio is the conversion rate. What
+  is still invisible is a Google popup opened and abandoned; that needs two custom
+  events (`signin_started`, and `signup` off the `isNewAccount` the API already
+  returns), not routes. **Deferred, because it is plan-gated and has no
+  denominator until there is traffic.**
+- **Two guards on the mount, in `apps/client/src/lib/analytics.ts`.** It reports
+  only from a production build, and only from an `http(s)` origin — the Steam
+  bundle loads off disk with no origin the beacon's absolute path can resolve
+  against. `beforeSend` strips the query string and fragment from every URL,
+  wholesale rather than by name, because the parameters on the way are Steam's
+  `openid.sig` and an OAuth `code`.
+
+**Two things to confirm on the account, both independent of analytics.** Hobby's
+reporting window is one month, which forecloses a pre-launch baseline; and Hobby is
+non-commercial, which becomes a terms problem the day Paddle takes money.
 
 ### The consequence: the metadata row must be wider than currently specced
 

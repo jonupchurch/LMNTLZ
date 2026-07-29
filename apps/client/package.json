@@ -15,9 +15,11 @@
     "e2e": "playwright test",
     "//e2e": "NOT in `pnpm test` — it builds a bundle and drives a browser. Run it before a release and when the squad screen changes."
   },
+  "//dependencies": "@vercel/analytics lists vue, next, nuxt, svelte and remix as peers; every one is optional and only the react entry point is imported here. Expect pnpm to say nothing about them, and do not add any of them to satisfy a warning.",
   "dependencies": {
     "@lmntlz/content": "workspace:*",
     "@lmntlz/sim": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

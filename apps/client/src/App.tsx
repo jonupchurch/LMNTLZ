@@ -1,9 +1,11 @@
+import { Analytics } from '@vercel/analytics/react';
 import { useCallback, useEffect, useState, type JSX } from 'react';
 import { SiteFooter } from './components/SiteFooter.js';
 import { SignInPanel } from './features/auth/SignInPanel.js';
 import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
+import { analyticsEnabled, scrubEvent } from './lib/analytics.js';
 import {
   currentAccount,
   hasStoredSession,
@@ -115,6 +117,20 @@ export function App(): JSX.Element {
       </div>
 
       <SiteFooter />
+
+      {/**
+       * **Beside the footer for the same reason the footer is here** — it has to
+       * apply to every screen 009–016 adds, including the ones that do not exist
+       * yet, and anything mounted inside a screen is a thing to remember.
+       *
+       * It renders no markup; it injects a script. See `lib/analytics.ts` for
+       * why it is gated and what `beforeSend` removes. One caveat to know before
+       * reading the dashboard: **this app is a single URL**, so every screen
+       * reports as `/` and the five policy pages are the only distinct paths
+       * there are. A per-screen funnel needs routes or custom events, neither of
+       * which exists.
+       */}
+      {analyticsEnabled() ? <Analytics beforeSend={scrubEvent} /> : null}
     </div>
   );
 }

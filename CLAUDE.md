@@ -140,13 +140,16 @@ re-litigated.
 - **The stack is complete as of 2026-07-28 — no TBD rows.** Two decisions there
   carry beyond the vendor choice. **The realtime broker only fans out: clients
   subscribe and never publish**, because some chat postings cost shards and a
-  client that could publish directly would bypass the charge. And **there is no
-  analytics vendor** — every question the design promises to answer is a battle
+  client that could publish directly would bypass the charge. And **no vendor
+  measures the game** — every question the design promises to answer is a battle
   question, so the **battle metadata row is the analytics product**. It must carry
   turn count, squad composition, a bot flag and league-at-battle-time from the
   first battle ever recorded; like `engineVersion`, it cannot be backfilled.
   *Storing composition is not exposing it* — the CSV and embed rules govern what
-  leaves the system.
+  leaves the system. **Vercel Web Analytics is live on both projects and does not
+  contradict this**: it counts anonymous page views to answer the one question SQL
+  cannot see — the visitor who never signed up — and it never touches gameplay.
+  Page views only, no custom events, no cookies.
 - **Gameplay is server-authoritative.** The client sends an intent; the server
   resolves it. The RNG seed never leaves the server. `packages/sim` splits into
   *rules* (pure, shared, no RNG) and *resolver* (RNG, server only).
