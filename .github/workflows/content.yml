@@ -38,7 +38,12 @@ jobs:
       # Declarations must exist before anything can type-check against them.
       - run: pnpm build
 
-      - name: Compile the API the way Vercel does — without strict
+      # Two shapes, because they fail differently. The first keeps our config and
+      # drops only `strict` — that is the one that produced the five Zod errors.
+      # The second is the truer reproduction: name the entrypoint, so no config
+      # is read at all and only imports are followed. It is what catches a
+      # declaration reachable via `include` and by nothing else.
+      - name: Compile the API without strict, keeping the project config
         run: |
           if ! pnpm exec tsc -p apps/api/tsconfig.json --noEmit \
                  --strict false --exactOptionalPropertyTypes false; then
@@ -48,6 +53,20 @@ jobs:
             echo "serving the last build that worked — silently. The usual cause is a"
             echo "workspace package exporting raw .ts instead of built .d.ts; see"
             echo "apps/api/tests/platform/deployability.test.ts."
+            exit 1
+          fi
+
+      - name: Compile the API by naming the entrypoint, as Vercel does
+        run: |
+          if ! pnpm exec tsc apps/api/src/index.ts --noEmit --ignoreConfig \
+                 --types node --skipLibCheck \
+                 --module nodenext --moduleResolution nodenext --target es2022; then
+            echo ""
+            echo "::error::The API does not compile when the entrypoint is named on"
+            echo "the command line, which makes TypeScript ignore tsconfig.json"
+            echo "entirely (TS5112) and follow imports alone. Anything reachable only"
+            echo "through the config's 'include' is invisible here — an ambient .d.ts"
+            echo "needs a /// <reference path> from a file that is actually imported."
             exit 1
           fi
 

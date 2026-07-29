@@ -33,6 +33,23 @@
  * fails exactly the two that matter.
  */
 
+/**
+ * **Referenced explicitly, because `tsconfig.json`'s `include` is not always
+ * read.** The declaration lives in `src/types/` and nothing imports it, so it
+ * reaches a normal build only via `include` — and Vercel compiles this app by
+ * naming the entrypoint, which makes TypeScript ignore the config entirely and
+ * follow imports alone. A triple-slash reference is followed by both.
+ *
+ * Harmless today, since that compile also runs without `noImplicitAny` and so
+ * would not complain. Stated anyway: the two configurations differing at all is
+ * what let a broken deploy go unnoticed for two features.
+ */
+// `import` cannot express this. The referenced file is an ambient
+// `declare module` with no exports, so there is nothing to import *from* it; a
+// triple-slash reference is the only syntax that makes it reachable by
+// following imports rather than by tsconfig's `include`.
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../types/unicode-confusables.d.ts" />
 import { rectifyConfusion } from 'unicode-confusables';
 
 export const USERNAME_MIN = 3;

@@ -38,17 +38,20 @@ const PAGES = [
 ] as const;
 
 /**
- * **The complete set of unfilled blanks.** Each needs a fact about the business
- * that is not in this repository and must not be guessed:
+ * **The complete set of unfilled blanks — empty, as of 2026-07-29.**
  *
- * - `TRADING_NAME` — the legal or trading name that operates the game
- * - `SUPPORT_EMAIL` — an address a person actually reads
- * - `JURISDICTION` — the governing law for the terms
+ * All three were filled that day: `TRADING_NAME` → Gravytraining,
+ * `SUPPORT_EMAIL` → a monitored address, `JURISDICTION` → Ohio (which changed
+ * more than a name: the pages were drafted UK/EU-leaning and needed a US pass —
+ * governing law, venue, and the "we do not sell your personal information"
+ * statement US state law expects).
  *
- * Delete an entry here when its pages are filled in. The test fails either way
- * round: a new unreviewed token fails, and a filled-in one still listed fails.
+ * **The list stays.** Its value was never the three entries; it is that a
+ * *new* `[[TOKEN]]` in any page fails this test rather than shipping as
+ * finished copy. Add an entry when a page grows a blank, delete it when the
+ * blank is filled — the assertion fails in both directions.
  */
-const OPEN_BLANKS = ['JURISDICTION', 'SUPPORT_EMAIL', 'TRADING_NAME'];
+const OPEN_BLANKS: string[] = [];
 
 const page = (name: string) => readFileSync(join(PUBLIC, name), 'utf8');
 const css = () => readFileSync(join(PUBLIC, 'legal.css'), 'utf8');
@@ -103,6 +106,22 @@ describe('the unfilled blanks are enumerated rather than discovered', () => {
     // A new `[[SOMETHING]]` appearing in a page fails here rather than shipping
     // as copy. So does an entry left in this list after its pages were filled.
     expect([...found].sort()).toEqual(OPEN_BLANKS);
+  });
+
+  it('names the operator on every page', () => {
+    /**
+     * **The blanks test alone stopped meaning anything once it was empty.** It
+     * only ever looked for `[[TOKEN]]`, so deleting the operator's name outright
+     * — a stray edit, a bad merge — would pass it silently. Paddle will not
+     * verify a site that does not say who is selling, so this is asserted
+     * positively rather than inferred from the absence of a marker.
+     */
+    for (const [file] of PAGES) expect(prose(file), file).toContain('Gravytraining');
+  });
+
+  it('states a governing law and a way to reach a person', () => {
+    expect(prose('terms.html')).toContain('State of Ohio');
+    expect(page('contact.html')).toMatch(/href="mailto:[^"]+@[^"]+"/);
   });
 
   it('marks every blank visibly rather than inline in the prose', () => {
