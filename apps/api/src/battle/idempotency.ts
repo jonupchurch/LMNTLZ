@@ -60,16 +60,47 @@ import { db } from '../db/client.js';
 import { battleActions } from '../db/schema/battles.js';
 
 /**
+ * One hero turn: **what was chosen, and what came of it.**
+ *
+ * The intent is recorded, not just the outcome, and that is the whole point.
+ * A replay resolves from `actorInstanceId`/`powerId`/`targetInstanceId` as
+ * written here, so **the defense AI never runs during a replay** — only the
+ * resolver does, and its draw order is already pinned by `drawIndexBefore`.
+ *
+ * This is the same rule the schema already applies to draws: *recording the
+ * window makes the log the authority over the generator rather than the other
+ * way round.* Re-deriving the engine's choices instead would stake every replay
+ * on a ranking function with tiebreaks and iteration order continuing to answer
+ * identically — a bet worth avoiding when the alternative costs a few fields.
+ *
+ * It also makes divergence **detectable**: what the engine chose is on record,
+ * so it can be compared against what the engine would choose now.
+ */
+export interface TurnEvent {
+  readonly actorInstanceId: string;
+  /** `null` when the hero passed — no power it owned had a legal target. */
+  readonly powerId: string | null;
+  readonly targetInstanceId: string | null;
+  /** Who decided. `player` is the acted intent; every other turn is `engine`. */
+  readonly source: 'player' | 'engine';
+  readonly outcome: ResolvedPacket;
+}
+
+/**
  * What one `act` call resolves to: the acted turn, then **every forced turn and
  * every engine turn** up to the next real player choice.
  *
  * Several hero turns, one row. That is why `drawsConsumed` is recorded rather
- * than assumed, and why the log is 20–40 entries against a ~102-hero-turn
- * battle. The engine's own turns need no row of their own — the defense AI is
- * deterministic given `(seed, state)`, so a replay re-derives them.
+ * than assumed — it is the total across the whole packet, and per-event draw
+ * indices fall out of resolving the events in order from `drawIndexBefore`.
+ * **The total is therefore a checkable invariant**, and a mismatch is the
+ * cheapest divergence signal there is.
+ *
+ * ~20–40 of these per battle against ~102 hero turns, which is the ratio the
+ * packet boundary produces rather than a target anybody aimed at.
  */
 export interface ActionPacket {
-  readonly events: readonly ResolvedPacket[];
+  readonly events: readonly TurnEvent[];
   /** Seedless by construction — `BattleState` has no representation of one. */
   readonly state: BattleState;
   readonly conclusion: Conclusion | null;
