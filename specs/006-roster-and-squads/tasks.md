@@ -173,8 +173,8 @@ plausible implementation gets backwards.
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T045 [P] [US5] Write `apps/client/tests/squads/firingProfile.test.tsx` — **watch the network: nothing is requested** while a ranking widget is dragged; a ranking of `1·2·3·4·5·0` reports **both ultimates dead**; the profile is computed over **9 turns, not 60**
-- [ ] T046 [P] [US5] Write `apps/client/tests/squads/warnings.test.tsx` — a reach-1 hero in the back seat **warns and saves**; a ranking that kills two powers **warns and saves**
+- [x] T045 [P] [US5] Write `apps/client/tests/squads/firingProfile.test.tsx` — **watch the network: nothing is requested** while a ranking widget is dragged; a ranking of `1·2·3·4·5·0` reports **both ultimates dead**; the profile is computed over **9 turns, not 60**
+- [x] T046 [P] [US5] Write `apps/client/tests/squads/warnings.test.tsx` — a reach-1 hero in the back seat **warns and saves**; a ranking that kills two powers **warns and saves**
 
 > **T045 step 2 is the assertion.** `firingProfile` lives in `@lmntlz/sim/rules`
 > and the client imports it. **If a request appears, it moved back to `ai/`** — the
@@ -182,10 +182,10 @@ plausible implementation gets backwards.
 
 ### Implementation for User Story 5
 
-- [ ] T047 [US5] Build `apps/client/src/features/squads/DefenseConfig.tsx` — the targeting pair and power ranking on every defending row, and a **third** control only when the champion owns a friendly power (FR-021, FR-004 of feature 004)
-- [ ] T048 [US5] Build `apps/client/src/features/squads/FiringProfile.tsx` importing `firingProfile` from `@lmntlz/sim/rules` and **passing 9** — a hero takes ~8.5 turns in a real 6v6, and the number on the screen has to describe the game the player is about to play (FR-022)
-- [ ] T049 [US5] Apply `roleDefaults(role)` to any champion left unconfigured, in `apps/api/src/squads/allocation.ts` (FR-023)
-- [ ] T050 [US5] Emit the two non-blocking warnings from `PUT /v1/squads/defense/:zone` in `apps/api/src/squads/routes.ts` — `reach-1-back-seat` and `power-never-fires`, both naming the hero. **`warnings` never blocks** (Constitution XVIII)
+- [x] T047 [US5] Build `apps/client/src/features/squads/DefenseConfig.tsx` — the targeting pair and power ranking on every defending row, and a **third** control only when the champion owns a friendly power (FR-021, FR-004 of feature 004)
+- [x] T048 [US5] Build `apps/client/src/features/squads/FiringProfile.tsx` importing `firingProfile` from `@lmntlz/sim/rules` and **passing 9** — a hero takes ~8.5 turns in a real 6v6, and the number on the screen has to describe the game the player is about to play (FR-022)
+- [x] T049 [US5] Apply `roleDefaults(role)` to any champion left unconfigured, in `apps/api/src/squads/allocation.ts` (FR-023)
+- [x] T050 [US5] Emit the two non-blocking warnings from `PUT /v1/squads/defense/:zone` in `apps/api/src/squads/routes.ts` — `reach-1-back-seat` and `power-never-fires`, both naming the hero. **`warnings` never blocks** (Constitution XVIII)
 
 **Checkpoint**: All five stories independently functional.
 

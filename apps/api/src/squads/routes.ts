@@ -27,6 +27,7 @@ import { playerStreaks } from '../db/schema/streaks.js';
 import { accounts } from '../db/schema/accounts.js';
 import { serializeScoutView } from './scoutSerializer.js';
 import { ambushChance, ambushConfig } from './ambush.js';
+import { warningsFor } from './warnings.js';
 import {
   HeroUnavailableError,
   InvalidSquadError,
@@ -274,9 +275,15 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
     holdStreak: result.holdStreak,
     streakReset: result.streakReset,
     evictedSquadIds: evicted,
-    // US5 fills this with the reach and firing-profile notes. It is present and
-    // empty now so a client written today does not branch on its absence.
-    warnings: [],
+    /**
+     * **`warnings` never blocks** (T050, Constitution XVIII). Both of these are
+     * taste rather than harm: a reach-1 back seat is a priced decision and a
+     * self-defeating ranking is a lever. The save above already succeeded.
+     */
+    warnings: warningsFor(
+      seats.map((s) => ({ row: s.row, index: s.index, heroId: s.heroId })),
+      new Map(seats.filter((s) => s.config).map((s) => [s.heroId, s.config!])),
+    ),
   });
 });
 

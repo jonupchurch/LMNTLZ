@@ -28,6 +28,14 @@ import {
   type FormationFaultCode,
   type Seat,
 } from '@lmntlz/sim/rules';
+import { getHero } from '@lmntlz/content';
+/**
+ * **`@lmntlz/sim/ai` is server-only and this file is server-only**, which is why
+ * the import is safe here and would not be in `packages/sim/rules`. The client
+ * never sees a role default until the server sends one back — shipping the table
+ * would hand every player the exact ranking the engine uses against them.
+ */
+import { resolveConfig, type SquadMemberConfig } from '@lmntlz/sim/ai';
 import { MAX_ATTACK_SQUADS } from '../db/schema/squads.js';
 
 export type { Seat };
@@ -184,6 +192,31 @@ export function defenseReadiness(
   };
 }
 
+/**
+ * **A champion left unconfigured gets her Role's defaults** (T049, FR-023).
+ *
+ * Never an empty config and never "she does nothing". A defense squad is played
+ * by the engine whether or not the player opened the editor, so the only
+ * question is whether the fallback is *stated* or *accidental*. `roleDefaults`
+ * is feature 004's measured table — a Striker takes `lowest-current-hp` then
+ * `nearest`, a Tank `highest-might` then `nearest`, and so on — so an
+ * unconfigured squad plays sensibly rather than in seat order.
+ *
+ * The player is never told a default is "their" choice; it is what happens
+ * until they choose.
+ */
+export function configFor(heroId: string, saved: SquadMemberConfig | undefined): SquadMemberConfig {
+  return resolveConfig(getHero(heroId), saved);
+}
+
+/** Fill every seat's config, leaving explicit choices untouched. */
+export function withRoleDefaults(
+  seats: readonly Seat[],
+  saved: ReadonlyMap<string, SquadMemberConfig>,
+): Map<string, SquadMemberConfig> {
+  return new Map(seats.map((seat) => [seat.heroId, configFor(seat.heroId, saved.get(seat.heroId))]));
+}
+
 export class SquadCannotAttackError extends Error {
   readonly status = 409 as const;
   readonly code = 'squad_incomplete' as const;
@@ -260,6 +293,11 @@ export function evictionImpact(
 ): EvictionImpact {
   const affected = squads
     .filter((s) => s.kind === 'offense' && s.seats.some((seat) => seat.heroId === heroId))
+    // **Slot order, always.** Without this the list arrives in whatever order
+    // the database returned rows, which is unspecified and does change — and a
+    // confirm dialog whose list reshuffles between renders is the kind of thing
+    // that makes a player re-read it instead of trusting it.
+    .sort((a, b) => (a.slotIndex ?? 0) - (b.slotIndex ?? 0))
     .map<EvictedSquad>((s) => ({
       id: s.id,
       slotIndex: s.slotIndex,
