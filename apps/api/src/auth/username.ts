@@ -134,9 +134,44 @@ export function validateUsername(display: string): UsernameRejection | null {
   return null;
 }
 
-/** 3 changes per 30 days, **regardless of shards** (FR, T041). */
+/**
+ * 3 changes per 30 days, **regardless of shards** (T041).
+ *
+ * Not an anti-spend measure — a player who wants to pay for a fourth is still
+ * refused. A name that changes hourly defeats every human-scale mechanism that
+ * depends on recognising an opponent: the Battle Record, remembering who you
+ * keep losing to, and moderation reports naming somebody who no longer exists
+ * under that name.
+ */
 export const RENAMES_PER_WINDOW = 3;
 export const RENAME_WINDOW_DAYS = 30;
+
+/**
+ * What a voluntary rename costs, in shards (feature 010's ledger).
+ *
+ * **The first change is free** — a new account is created with a generated
+ * placeholder, so charging for the first real name would be charging somebody
+ * to undo something we did to them. A **moderation-forced** rename is also free
+ * (feature 015): the player did not choose it.
+ */
+export const RENAME_COST_SHARDS = 325;
+
+/** Why a collision was refused — surfaced so the player knows what to change. */
+export type CollisionRule = 'exact' | 'case' | 'confusable';
+
+/**
+ * Which rule made two names collide.
+ *
+ * The distinction is the whole value of the `409`. *"Taken"* tells a player
+ * nothing; *"that reads the same as an existing name"* tells them their Cyrillic
+ * `е` is doing something they did not intend — which they cannot possibly see by
+ * looking at it.
+ */
+export function collisionRule(attempted: string, existing: string): CollisionRule {
+  if (attempted === existing) return 'exact';
+  if (attempted.toLowerCase() === existing.toLowerCase()) return 'case';
+  return 'confusable';
+}
 
 /**
  * A username for an account that has just been created and has not chosen one.

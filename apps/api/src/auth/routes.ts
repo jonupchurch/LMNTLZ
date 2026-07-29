@@ -18,10 +18,14 @@ import { Hono, type Context } from 'hono';
 import { apiError } from '../errors.js';
 import { providerFor } from './providers.js';
 import { InvalidProviderTokenError } from './provider.js';
+import { SteamNotImplementedError } from './steam.js';
 import { assertNotBanned, accountView, BannedAccountError, resolveAccount } from './accounts.js';
 import { issuePair, renewPair, revokeFamily, TokenRejectedError } from './tokens.js';
+import { linkIdentity, LinkRejectedError, unlinkIdentity } from './link.js';
+import { PROVIDERS, type Provider } from './provider.js';
 import { requireContext, type AuthedEnv } from './context.js';
 import { requireSession } from './middleware.js';
+import { renameAccount, RenameRejectedError } from './rename.js';
 
 export const authRoutes = new Hono<AuthedEnv>();
 
@@ -186,10 +190,106 @@ authRoutes.post('/auth/revoke', async (c) => {
 });
 
 // ---------------------------------------------------------------------------
+// POST /v1/auth/link — attach a second provider to THIS account
+// ---------------------------------------------------------------------------
+
+authRoutes.post('/auth/link', requireSession, async (c) => {
+  // **The account comes from the session, never from the body** — see
+  // `context.ts`. A link endpoint that took an account id would let anybody
+  // attach their own Google identity to somebody else's account, which is the
+  // most direct account takeover in the whole API.
+  const { accountId } = requireContext(c);
+  const body = await jsonBody(c);
+  const provider = body?.['provider'];
+  const token = body?.['token'];
+
+  if (
+    typeof provider !== 'string' ||
+    !PROVIDERS.includes(provider as Provider) ||
+    typeof token !== 'string' ||
+    token.length === 0
+  ) {
+    return c.json(apiError('malformed_request', 'A `provider` and a `token` are required.'), 400);
+  }
+
+  try {
+    const identity = await providerFor(provider as Provider).verify(token);
+    await linkIdentity(accountId, identity);
+    return c.body(null, 204);
+  } catch (err) {
+    if (err instanceof LinkRejectedError) {
+      return c.json({ ...apiError(err.reason, err.message) }, 409);
+    }
+    if (err instanceof InvalidProviderTokenError) {
+      console.warn(`[auth] link token rejected: ${err.reason}`);
+      return c.json(apiError('unauthenticated', 'That sign-in token is not valid.'), 401);
+    }
+    if (err instanceof SteamNotImplementedError) {
+      return c.json(apiError('not_implemented', 'Steam sign-in is not available yet.'), 501);
+    }
+    throw err;
+  }
+});
+
+authRoutes.delete('/auth/link/:provider', requireSession, async (c) => {
+  const { accountId } = requireContext(c);
+  const provider = c.req.param('provider');
+
+  if (!PROVIDERS.includes(provider as Provider)) {
+    return c.json(apiError('malformed_request', 'Unknown provider.'), 400);
+  }
+
+  try {
+    await unlinkIdentity(accountId, provider as Provider);
+    return c.body(null, 204);
+  } catch (err) {
+    if (err instanceof LinkRejectedError) {
+      return c.json({ ...apiError(err.reason, err.message) }, 409);
+    }
+    throw err;
+  }
+});
+
+// ---------------------------------------------------------------------------
 // GET /v1/me
 // ---------------------------------------------------------------------------
 
 authRoutes.get('/me', requireSession, async (c) => {
   const { accountId } = requireContext(c);
   return c.json(await accountView(accountId), 200);
+});
+
+// ---------------------------------------------------------------------------
+// PUT /v1/me/username
+// ---------------------------------------------------------------------------
+
+authRoutes.put('/me/username', requireSession, async (c) => {
+  // `/me`, not `/accounts/:id`. The route shape itself carries the convention:
+  // there is no path parameter here that could name somebody else.
+  const { accountId } = requireContext(c);
+  const body = await jsonBody(c);
+  const username = body?.['username'];
+
+  if (typeof username !== 'string') {
+    return c.json(apiError('malformed_request', 'A `username` is required.'), 400);
+  }
+
+  try {
+    const result = await renameAccount(accountId, username);
+    return c.json(result, 200);
+  } catch (err) {
+    if (err instanceof RenameRejectedError) {
+      return c.json(
+        {
+          ...apiError(err.code, err.message),
+          // **Which rule matched**, on a 409 only. "Taken" tells a player
+          // nothing; "that reads the same as an existing name" tells them their
+          // Cyrillic `е` is doing something they cannot see by looking.
+          ...(err.rule ? { rule: err.rule } : {}),
+        },
+        err.status,
+      );
+    }
+    throw err;
+  }
 });
