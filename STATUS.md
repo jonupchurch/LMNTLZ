@@ -1,7 +1,8 @@
 ## Current phase
 
-**Features 001–005 are built. 231 of 767 tasks, and the API is deployed and
-serving.** 520 tests; lint, typecheck and build all clean.
+**Features 001–006 are built. 285 of 767 tasks, and the API is deployed and
+serving.** 640 unit tests + 12 Playwright end-to-end; lint, typecheck and build
+all clean.
 
 `https://lmntlz-jupchurch-7994s-projects.vercel.app/v1/health` returns
 `{"status":"ok"}`. Two migrations are applied to Neon and verified by querying
@@ -13,11 +14,18 @@ serving.** 520 tests; lint, typecheck and build all clean.
 | **002** sim-rules | 54/54 | pure and shared — purity gate, reach, targeting, damage, turn order, ending |
 | **003** sim-resolver | 40/40 | SplitMix64, seed custody, replay, re-derivation |
 | **004** defense-ai | 45/45 | firing profile, power choice, the five-step tiebreak, role defaults, reach window |
-| **005** auth | **48/49** | `apps/api` — Hono, Drizzle, Neon, Google, rotation, linking, usernames |
+| **005** auth | **49/49** | `apps/api` — Hono, Drizzle, Neon, Google, rotation, linking, usernames |
+| **006** roster & squads | **54/54** | `apps/client` — Vite/React/Tailwind · allocation, eviction, streaks, scout, defense config |
 
-**Only T049 remains in 005** — the manual quickstart pass, including the JWKS
-rotation check against a fixture. **Feature 006, the client, is next**, and it
-carries three prerequisites recorded below that appear in no `tasks.md`.
+**Features 001–006 are 100% complete.** Four migrations are applied to Neon and
+verified against the catalog rather than by trusting the migrator. **Feature 007,
+battle, is next.**
+
+> **006 ended by finding a gap in its own task list.** T018–T020 and T047–T048
+> each say "build this component"; nothing said "put them on a page". Every squad
+> component was complete and unit-tested while unreachable from the running app.
+> `SquadsScreen.tsx` now composes them. **Features 007–016 should each check that
+> something renders what they build** — the task template does not.
 
 Spec-Kit itself is finished; all sixteen features carry `tasks.md`.
 
