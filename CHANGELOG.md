@@ -2,13 +2,87 @@
 
 Dated log of **decisions that change the game or the build**, newest first.
 
-LMNTLZ has no code yet, so today that means design, stack and specification
-decisions — the things a future contributor would be surprised by and could not
-reconstruct from the diff. **Once `packages/sim` exists this becomes a log of code
-and feature changes**, in the usual way; routine process and setup work stays out
-of it either way (see `STATUS.md` and the commit history).
+**`packages/sim` now exists**, so this is a log of code and feature changes as
+well as design ones — the things a future contributor would be surprised by and
+could not reconstruct from the diff. Routine process and setup work stays out of
+it (see `STATUS.md` and the commit history).
 
 Versioned release notes start when Steam builds do.
+
+---
+
+## 2026-07-28 — The defense AI is built, and `legalTargets` does not apply a taunt
+
+### Fixed
+
+- **`decideAction` was silently dropping every taunt in the game.** It read
+  `legalTargets(...).candidates` and ignored `compelled`. Feature 002's
+  `legalTargets` **reports** a compulsion rather than applying it — it returns
+  `compelled` alongside the *full* candidate set — so the targeting preference
+  was sorting everybody and the taunt had nothing to point at.
+
+  Caught by `taunt.test.ts`, which drives the whole decision rather than only the
+  sorter. Narrowing to `[compelled]` before the sort is also what makes *"a taunt
+  beats a priority"* structural rather than a rule anybody wrote: by the time any
+  preference runs, there is one champion left to prefer.
+
+  **The API is not wrong** — separating the report from the application is what
+  lets the cancel-against-a-filter case fall out instead of being special-cased.
+  What was missing was a caller that used both halves, and the resolver's
+  documented pipeline order now names the caller's obligation explicitly.
+
+### Corrected
+
+- **The 12 safe orderings are *not* "the intersection of safe at both horizons" —
+  it is 11.** `4·3·2·1·5·0`, the published Tank default, is 60-turn safe and loses
+  tier 5 at nine turns on the fast `0·1·2·3·4·6` ladder. **This is not a fault**:
+  that ladder belongs to Cirrolan, Lucen, Umbriel and Silka Pinquick, and none of
+  them is a Tank. But it means *universally safe at 9 turns* is the wrong
+  tripwire, so the sweep now **reports** it rather than failing on it, and the
+  check that gates the defaults is the scoped one — each default against its own
+  role's heroes. All four pass.
+- **The Striker default silences tier 0 on 7 of 12 heroes, not 8.** The five with
+  the slower ladders fire it once each. The row's actual claim is unaffected.
+
+Both were in `specs/004-defense-ai/research.md`, and both are the **same shape**
+as the two defects already logged this week: a consequence reasoned out correctly
+for the common case and then written one step wider than it holds. That is now
+four instances. The habit that catches them is to find the domain a claim holds
+over, assert *that*, and write the domain into the test.
+
+### The horizon, which changes what a player is told
+
+**`firingProfile` defaults to 9 turns, not 60.** A hero takes about 8.5 turns in a
+real 6v6; the 60-turn figure in `07-defense-ai.md` is a measurement artifact and
+roughly seven times a battle. A 60-turn profile tells a player their auto-attack
+fires 5% of the time when in their actual battles it never fires at all — a
+warning that is wrong in the direction of false reassurance.
+
+At 9 turns **no** ordering keeps all six powers live, because tier 0 is
+structurally last and a battle is too short for the top five to be simultaneously
+on cooldown. Excluding the auto-attack, **32 of 720** keep tiers 1–5 live on all
+27. The 12 remain the right default *pool*; the "3% of orderings keep a whole kit
+working" figure is a 60-turn statement and should not be quoted about a battle.
+
+### Deviations from the written contract
+
+- **`chooseTarget` takes a `powerId` the contract omits**, and it cannot not:
+  tiebreak 3 is *best type matchup* and `least-mitigation` asks which wall
+  answers — both are questions about the power, and the contract's own text says
+  power preference resolves first precisely so the answer is available.
+- **`firingProfile` lives in `rules`, not `ai`** — as the contract intends, but
+  worth restating: it is arithmetic, and the squad builder needs it on every drag
+  of a ranking widget. It uses the engine's own `isPowerAvailable` and
+  `tickCooldowns`, both lifted out of `phases.ts`, so SC-003's agreement holds by
+  construction rather than by two implementations staying in step.
+
+### Still true, and it is the standing instruction
+
+**Re-run `pnpm sweep:orderings` before the hero-numbers pass locks.** A one-point
+*reduction* in the tier-4/5 cooldown ladder takes the safe set from 12 to **zero**.
+Re-pick every default from whatever it returns; do not assume these four survived.
+
+Recorded in `packages/sim/ai/README.md`.
 
 ---
 

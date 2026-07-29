@@ -4,8 +4,26 @@ _Snapshot; updated each work session. Last updated: 2026-07-28._
 
 ## Current phase
 
-**Spec-Kit is finished. All sixteen features carry `tasks.md`. The next thing
-that happens is code.**
+**Features 001, 002, 003 and 004 are BUILT and green — 182 of 767 tasks, and
+the whole rules half of the game.** 392 tests; lint, typecheck and a content
+rebuild all clean.
+
+> ### ⛔ Feature 005 is the infrastructure gate, and it is next.
+>
+> **Jon creates the Vercel project, the Neon project and the Google OAuth client
+> himself** — they are billable accounts in his name, and he asked to be told
+> when the moment arrived. **It has arrived.** `specs/005-auth/tasks.md` opens
+> with the STOP block listing all three. Nothing before this needed a database, a
+> host, a vendor account or a bill.
+
+| Feature | Tasks | State |
+|---|---|---|
+| **001** content-package | 43/43 | roster, derivation, effectiveness, `contentVersion`, CI regenerate-and-diff |
+| **002** sim-rules | 54/54 | pure and shared — purity gate, reach, targeting, damage, turn order, ending |
+| **003** sim-resolver | 40/40 | SplitMix64, seed custody, replay, re-derivation |
+| **004** defense-ai | 45/45 | firing profile, power choice, the five-step tiebreak, role defaults, the reach window |
+
+Spec-Kit itself is finished; all sixteen features carry `tasks.md`.
 
 Design and tech stack are both **complete and closed**; the constitution is
 LMNTLZ-specific at **v3.0.0**; **16 specs** are written with zero unchecked
@@ -103,6 +121,11 @@ expensive each would have been to find later:
   each. All 49 research questions answered.
 - **Two read-only analysis scripts committed** so every computed figure is
   reproducible: `tools/characterize-orderings.py` and `tools/verify-accuracy.py`.
+  The ordering sweep has since been **ported to `tools/characterize-orderings.ts`**
+  (feature 004 T003), reading `@lmntlz/content` and importing the engine's own
+  cooldown model instead of simulating it a second time. It reproduces every
+  recorded figure exactly. Run it with `pnpm sweep:orderings`; it is deliberately
+  **not** in CI.
 - **`tasks.md` for all 16** — 767 tasks, ordered by user story, each independently
   testable and each carrying the reasoning that would otherwise be lost between the
   plan and the diff.
