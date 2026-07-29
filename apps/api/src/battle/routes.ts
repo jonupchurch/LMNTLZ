@@ -31,6 +31,32 @@ import {
 import { CannotStartBattleError, createBattle } from './create.js';
 import { appendAction, SequenceGapError, type ActionPacket } from './idempotency.js';
 import { resolveToNextChoice } from './packet.js';
+import { settle } from './settle.js';
+import type { SquadZone } from '../db/schema/squads.js';
+
+/**
+ * Settle a battle that has ended, if nobody has yet.
+ *
+ * **Called from every route that observes a conclusion, and that is the design.**
+ * `settle` guards on `concluded_at IS NULL` in the same statement that writes
+ * it, so extra calls cost one `UPDATE` matching zero rows. What that buys is
+ * repair: a settlement interrupted by a cold serverless instance or a dropped
+ * connection is completed by whatever request comes next, instead of leaving a
+ * battle that finished and never paid.
+ */
+async function settleIfEnded(battle: LiveBattle): Promise<void> {
+  if (!battle.conclusion || battle.concludedAt) return;
+
+  await settle({
+    battleId: battle.id,
+    attackerId: battle.attackerId,
+    defenderId: battle.defenderId,
+    zone: battle.zone as SquadZone,
+    conclusion: battle.conclusion,
+    turnCount: battle.state.heroTurn,
+    wasAmbush: battle.zone === 'hidden',
+  });
+}
 
 export const battleRoutes = new Hono<AuthedEnv>();
 
@@ -256,6 +282,24 @@ battleRoutes.post('/battles/:battleId/act', async (c) => {
       };
     });
 
+    /**
+     * **Settlement is awaited, not fired and forgotten.** A serverless function
+     * is frozen the moment its response is returned, so a promise left running
+     * here is a promise that may never finish — and the thing it was finishing
+     * is the record every aggregate is computed from.
+     */
+    if (result.packet.conclusion) {
+      await settle({
+        battleId: battle.id,
+        attackerId: battle.attackerId,
+        defenderId: battle.defenderId,
+        zone: battle.zone as SquadZone,
+        conclusion: result.packet.conclusion,
+        turnCount: result.packet.state.heroTurn,
+        wasAmbush: battle.zone === 'hidden',
+      });
+    }
+
     return c.json(
       {
         sequence: intent.sequence,
@@ -293,6 +337,14 @@ battleRoutes.get('/battles/:battleId', async (c) => {
   if ('refusal' in loaded) return c.json(loaded.refusal.body, loaded.refusal.status);
 
   const { battle } = loaded;
+
+  /**
+   * **A read that repairs.** Ordinarily settlement happens on the final `act`;
+   * this catches the battle whose last request died between the append and the
+   * payout. Guarded to a no-op when there is nothing to do, so a `GET` on an
+   * ordinary battle in progress writes nothing.
+   */
+  await settleIfEnded(battle);
 
   return c.json({
     battleId: battle.id,
