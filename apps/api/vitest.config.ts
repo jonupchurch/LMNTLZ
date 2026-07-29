@@ -15,13 +15,17 @@ export default defineConfig({
         test: {
           name: 'auth',
           include: ['tests/auth/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
           environment: 'node',
         },
       },
     ],
-    // Playwright owns the end-to-end paths; without this, Vitest tries to run
-    // `.spec.ts` files it cannot drive and the failure looks like a broken test
-    // rather than a misrouted one.
-    exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**'],
+    // Two things excluded for two reasons. `dist/**` because `tsc` emits a .js
+    // twin of every test file, so one build gives Vitest two copies of each
+    // suite — and an `exclude` here does NOT reach the projects above, so it is
+    // repeated there. `tests/e2e/**` because Playwright owns those; without it
+    // Vitest tries to run `.spec.ts` files it cannot drive, and the failure
+    // reads like a broken test rather than a misrouted one.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**', 'tests/e2e/**'],
   },
 });
