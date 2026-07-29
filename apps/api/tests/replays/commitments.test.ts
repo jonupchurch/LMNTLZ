@@ -70,7 +70,15 @@ const POPULATION = [
 const ids: string[] = [];
 
 beforeAll(async () => {
-  const rows = [];
+  /**
+   * **Typed rather than inferred, and CI is why.** `const rows = []` infers
+   * `never[]` when TypeScript runs without `strict` — which is exactly how Vercel
+   * compiles this app (naming the entrypoint makes it ignore `tsconfig.json`), and
+   * the repo has a CI job reproducing that after a deploy silently served a
+   * two-features-old build for thirteen hours. It typechecks locally and fails
+   * there.
+   */
+  const rows: (typeof battleRecords.$inferInsert)[] = [];
   const startedAt = new Date('2026-07-01T00:00:00Z');
 
   for (const group of POPULATION) {
