@@ -1,14 +1,20 @@
 ## Current phase
 
-**Features 001–006 are built. 285 of 767 tasks, and the API is deployed and
-serving.** 697 unit tests + 25 Playwright end-to-end; lint, typecheck and build
-all clean.
+**Features 001–006 are built. 285 of 767 tasks, and both halves are live on
+their own domains.** 716 unit tests + 25 Playwright end-to-end; lint, typecheck
+and build all clean.
 
-**`https://lmntlz.vercel.app/v1/health` returns `{"status":"ok"}` to an
-anonymous request** — that is the production domain and the one to test against.
-The scoped alias `lmntlz-<scope>.vercel.app` answers `302 → vercel.com/sso-api`
-because Deployment Protection covers it; both point at the same deployment, so
-checking the wrong hostname reads as an outage that is not there.
+| | |
+|---|---|
+| **client** | `apps/client` → **`www.lmntlz.com`** (apex 308s to www) |
+| **api** | `apps/api` → **`api.lmntlz.com`** |
+
+`https://api.lmntlz.com/v1/health` returns `{"status":"ok","commit":"..."}`.
+**The commit is the point.** For two features that route returned `{"status":
+"ok"}` and nothing else, which is the same answer in every build ever made — and
+production spent 13 hours serving a feature-005 build while six deploys failed,
+invisibly, because that was the only thing anyone checked. `/v1/roster` answering
+**401 rather than 404** is what proves feature 006 actually shipped.
 
 Four migrations are applied to Neon and verified by querying `information_schema`
 rather than by trusting the migrator.
