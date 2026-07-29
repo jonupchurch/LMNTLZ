@@ -34,8 +34,8 @@ cheap now and a migration later.
 
 ## Phase 1: Setup
 
-- [ ] T001 Create `apps/api/src/battle/` and `apps/client/src/features/battle/` and register the `/v1/battles` router in `apps/api/src/index.ts`
-- [ ] T002 [P] Add a `battle` test project to `apps/api/vitest.config.ts` and a `battle` Playwright spec directory
+- [x] T001 Create `apps/api/src/battle/` and `apps/client/src/features/battle/` and register the `/v1/battles` router in `apps/api/src/index.ts`
+- [x] T002 [P] Add a `battle` test project to `apps/api/vitest.config.ts` and a `battle` Playwright spec directory
 
 ---
 
@@ -45,11 +45,11 @@ cheap now and a migration later.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Define the `battles` table in `apps/api/src/db/schema/battles.ts` — attacker, defender, `defenderIsBot`, zone, seed (server-only), `engine_version`, `content_version`, `build_sha`, `started_at`, `concluded_at`, winner, reason (FR-010)
-- [ ] T004 Define `battle_actions` in `apps/api/src/db/schema/battles.ts` with **`PRIMARY KEY (battle_id, sequence)`**, plus `draw_index_before`, `draws_consumed` and `resolved_packet` (research.md Q1)
-- [ ] T005 Define the defender snapshot column in `apps/api/src/db/schema/battles.ts` — the frozen squad **and** its per-champion configuration, so a mid-battle edit cannot reach it (FR-001)
-- [ ] T006 Generate and apply the battles migration from `apps/api/drizzle/`
-- [ ] T007 Add an abandonment counter to the account in `apps/api/src/db/schema/accounts.ts` — **not a battle row**, because recording *that* a battle was abandoned is not the same as recording a battle, and only the second would pollute the aggregates Constitution XVI protects
+- [x] T003 Define the `battles` table in `apps/api/src/db/schema/battles.ts` — attacker, defender, `defenderIsBot`, zone, seed (server-only), `engine_version`, `content_version`, `build_sha`, `started_at`, `concluded_at`, winner, reason (FR-010)
+- [x] T004 Define `battle_actions` in `apps/api/src/db/schema/battles.ts` with **`PRIMARY KEY (battle_id, sequence)`**, plus `draw_index_before`, `draws_consumed` and `resolved_packet` (research.md Q1)
+- [x] T005 Define the defender snapshot column in `apps/api/src/db/schema/battles.ts` — the frozen squad **and** its per-champion configuration, so a mid-battle edit cannot reach it (FR-001)
+- [x] T006 Generate and apply the battles migration from `apps/api/drizzle/`
+- [x] T007 Add an abandonment counter to the account in `apps/api/src/db/schema/accounts.ts` — **not a battle row**, because recording *that* a battle was abandoned is not the same as recording a battle, and only the second would pollute the aggregates Constitution XVI protects
 
 **Checkpoint**: The log is the only in-progress state, and its uniqueness is enforced by the database
 
@@ -63,20 +63,20 @@ cheap now and a migration later.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T008 [US2] Write `apps/api/tests/battle/idempotency.test.ts` from the quickstart ladder — `act(3)` gives packet P; `act(3)` again with the **same** body gives P **byte-identical**; `act(3)` again with a **different** body **still** gives P; `act(5)` skipping 4 gives `409` with `currentSequence: 4`
+- [x] T008 [US2] Write `apps/api/tests/battle/idempotency.test.ts` from the quickstart ladder — `act(3)` gives packet P; `act(3)` again with the **same** body gives P **byte-identical**; `act(3)` again with a **different** body **still** gives P; `act(5)` skipping 4 gives `409` with `currentSequence: 4`
 
 > **Line 3 is the one that catches a half-implementation.** Once `(battleId, 3)`
 > exists the **stored** packet is returned and the request body is irrelevant. An
 > implementation that recomputes on conflict passes lines 1–2 and fails line 3.
 
-- [ ] T009 [P] [US2] Write the connection-kill case in `apps/api/tests/battle/idempotency.test.ts` — send `act(3)`, destroy the socket before the response, re-read state, resubmit, and **assert on the action log**: `SELECT count(*) FROM battle_actions WHERE battle_id = ? AND sequence = 3` is exactly **1**
-- [ ] T010 [P] [US2] Write the concurrency case in `apps/api/tests/battle/idempotency.test.ts` — two identical submissions arriving simultaneously append exactly one entry (SC-004)
+- [x] T009 [P] [US2] Write the connection-kill case in `apps/api/tests/battle/idempotency.test.ts` — send `act(3)`, destroy the socket before the response, re-read state, resubmit, and **assert on the action log**: `SELECT count(*) FROM battle_actions WHERE battle_id = ? AND sequence = 3` is exactly **1**
+- [x] T010 [P] [US2] Write the concurrency case in `apps/api/tests/battle/idempotency.test.ts` — two identical submissions arriving simultaneously append exactly one entry (SC-004)
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] Implement `appendAction` in `apps/api/src/battle/idempotency.ts` as `INSERT … ON CONFLICT (battle_id, sequence) DO NOTHING RETURNING resolved_packet` — a row means first write; **no row means SELECT the stored packet and return that**
-- [ ] T012 [US2] **Return the stored packet, never a recomputed one**, in `apps/api/src/battle/idempotency.ts` — recomputing would be correct *by argument*; returning the stored one is correct *by construction*, and it survives a version change between the two calls
-- [ ] T013 [US2] Reject a skipped sequence in `apps/api/src/battle/idempotency.ts` — `sequence` must be exactly `max + 1`, and a gap returns `409` with `currentSequence` so the client resynchronises by re-reading
+- [x] T011 [US2] Implement `appendAction` in `apps/api/src/battle/idempotency.ts` as `INSERT … ON CONFLICT (battle_id, sequence) DO NOTHING RETURNING resolved_packet` — a row means first write; **no row means SELECT the stored packet and return that**
+- [x] T012 [US2] **Return the stored packet, never a recomputed one**, in `apps/api/src/battle/idempotency.ts` — recomputing would be correct *by argument*; returning the stored one is correct *by construction*, and it survives a version change between the two calls
+- [x] T013 [US2] Reject a skipped sequence in `apps/api/src/battle/idempotency.ts` — `sequence` must be exactly `max + 1`, and a gap returns `409` with `currentSequence` so the client resynchronises by re-reading
 
 **Checkpoint**: A duplicate is a constraint violation, not a race to detect. There is no window between a check and a write.
 

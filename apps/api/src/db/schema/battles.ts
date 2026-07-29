@@ -189,9 +189,17 @@ export const battleActions = pgTable(
      * the outcome would make the log un-re-derivable the moment a formula
      * changed; recording the draw window makes the log the authority over the
      * generator rather than the other way round.
+     *
+     * **`mode: 'bigint'`, because that is the type `@lmntlz/sim/resolver`
+     * already uses.** The counter is per battle and never comes near `Number`'s
+     * safe range, so `'number'` would also work — and would put a conversion at
+     * every boundary between the log and the resolver, which is precisely where
+     * a replay divergence would be hardest to see. Same type on both sides, no
+     * conversion. A `BigInt` also has no JSON representation, so these can never
+     * be serialised into a response by accident.
      */
-    drawIndexBefore: bigint('draw_index_before', { mode: 'number' }).notNull(),
-    drawsConsumed: bigint('draws_consumed', { mode: 'number' }).notNull(),
+    drawIndexBefore: bigint('draw_index_before', { mode: 'bigint' }).notNull(),
+    drawsConsumed: bigint('draws_consumed', { mode: 'bigint' }).notNull(),
 
     /**
      * The exact packet returned for this action.
