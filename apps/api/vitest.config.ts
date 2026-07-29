@@ -93,6 +93,25 @@ export default defineConfig({
           include: ['tests/replays/**/*.test.ts'],
           exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
           environment: 'node',
+          /**
+           * **The only project that runs its files one at a time, and it has to.**
+           *
+           * `cleanupExpired()` deliberately has no "only these battles" parameter —
+           * a job that can be scoped is a job somebody will scope by accident, and
+           * a scoped sweep silently stops deleting things. So it operates on every
+           * expired row in the table.
+           *
+           * Several files here create expired records on purpose (`list.test.ts`
+           * needs them for the `watchable` cases, `access.test.ts` for the `410`
+           * ones). Run in parallel, `cleanup.test.ts` deletes another file's
+           * fixtures mid-assertion and both fail intermittently — the classic
+           * shared-database flake that gets retried instead of read.
+           *
+           * Serial costs a few seconds. The alternative was making the job
+           * scopable for the tests' benefit, which would have weakened the thing
+           * being tested.
+           */
+          fileParallelism: false,
         },
       },
       {
