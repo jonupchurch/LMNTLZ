@@ -21,6 +21,7 @@ import { corsMiddleware } from './cors.js';
 import { authRoutes } from './auth/routes.js';
 import { squadRoutes } from './squads/routes.js';
 import { battleRoutes } from './battle/routes.js';
+import { replayRoutes } from './replays/routes.js';
 
 export { apiError } from './errors.js';
 export type { ApiError } from './errors.js';
@@ -74,6 +75,7 @@ v1.get('/health', (c) =>
 v1.route('/', authRoutes);
 v1.route('/', squadRoutes);
 v1.route('/', battleRoutes);
+v1.route('/', replayRoutes);
 
 app.route('/v1', v1);
 
