@@ -23,7 +23,7 @@
  * player would show them a name they did not choose.
  */
 
-import { index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 /** How wide a ban reaches. `null` in `banScope` means no ban has ever applied. */
 export const BAN_SCOPES = ['chat', 'guild', 'full'] as const;
@@ -79,6 +79,22 @@ export const accounts = pgTable(
 
     /** `null` unless `bannedUntil` is set. Feature 015 owns the values. */
     banScope: text('ban_scope', { enum: BAN_SCOPES }),
+
+    /**
+     * How many battles this account walked away from (007 T007, FR-013).
+     *
+     * **A counter here rather than a row in `battles`, and the distinction is
+     * not bookkeeping.** Recording *that* somebody abandoned a battle is a fact
+     * about the player; recording it as a battle would put a fight nobody
+     * finished into the table every aggregate in feature 008 reads — turn
+     * counts, hold rates, league thresholds, hero pick rates would all quietly
+     * include contests that never happened.
+     *
+     * Constitution XVI keeps those records forever, so a row added here in
+     * error cannot be reasoned away later. The cheap version is a number on the
+     * account, and the cheap version is also the correct one.
+     */
+    abandonedBattles: integer('abandoned_battles').notNull().default(0),
   },
   (table) => [
     uniqueIndex('accounts_username_key_unique').on(table.usernameKey),
