@@ -39,6 +39,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { Conclusion } from '@lmntlz/sim/rules';
 import { db } from '../db/client.js';
+import { accounts } from '../db/schema/accounts.js';
 import { battles, type BattleReason } from '../db/schema/battles.js';
 import { squads, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
@@ -199,5 +200,83 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
      */
 
     return { settled: true, winner: conclusion.winner, attackStreak, holdStreak };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// T038, T045 — the discard, which is a no-op with a refund
+// ---------------------------------------------------------------------------
+
+export type DiscardCause = 'expired' | 'maintenance' | 'engine-version';
+
+export interface DiscardResult {
+  readonly discarded: boolean;
+  /** True when this discard incremented the account's abandonment counter. */
+  readonly counted: boolean;
+}
+
+/**
+ * End a battle **without it having happened** (FR-013, FR-016).
+ *
+ * ### Three ways in, one behaviour
+ *
+ * A battle expires after 24 hours untouched, is dropped by a maintenance
+ * window, or becomes unresolvable because the engine moved under it. In every
+ * case the answer is the same and it is total: **no win, no loss, no shards, no
+ * rating movement, no ambush-streak change, no hold-streak change.**
+ *
+ * FR-016 lists rating, rewards *and* the attempt, and the reason it enumerates
+ * them is that a partial implementation refunding two of the three is the exact
+ * support ticket the rule exists to prevent — and it is invisible, because the
+ * two that worked look like the whole thing worked.
+ *
+ * ### Counting the discard is not recording the battle
+ *
+ * The battle row is deleted; the account's `abandonedBattles` counter goes up
+ * on an expiry. Those are different claims. A discarded battle left in
+ * `battles` would be counted by every aggregate feature 008 computes — and
+ * since those aggregates *are* the analytics product, a fight nobody finished
+ * would silently misreport the game forever. A counter says somebody walked
+ * away, which is a real operational signal and a plausible client-bug detector,
+ * without asserting that a battle took place.
+ *
+ * **Only `expired` counts.** A maintenance discard and a version discard are
+ * the operator's doing, not the player's, and counting them would put a mark on
+ * an account for something it did not do.
+ */
+export async function discard(
+  battleId: string,
+  cause: DiscardCause,
+  accountId: string | null,
+): Promise<DiscardResult> {
+  return db().transaction(async (tx) => {
+    /**
+     * **Guarded on `concluded_at IS NULL` exactly as `settle` is.** A battle
+     * that already paid out must never be deleted — that would erase a real
+     * result and leave the rewards it produced with nothing behind them.
+     */
+    const removed = await tx
+      .delete(battles)
+      .where(and(eq(battles.id, battleId), sql`${battles.concludedAt} is null`))
+      .returning({ id: battles.id });
+
+    if (removed.length === 0) return { discarded: false, counted: false };
+
+    /**
+     * The action log goes with it, by `on delete cascade`. Nothing else needs
+     * unwinding, and that is the design working rather than luck: a battle in
+     * progress has written to exactly one table, because in-progress state is
+     * never stored anywhere else.
+     */
+    if (cause === 'expired' && accountId) {
+      await tx
+        .update(accounts)
+        .set({ abandonedBattles: sql`${accounts.abandonedBattles} + 1` })
+        .where(eq(accounts.id, accountId));
+
+      return { discarded: true, counted: true };
+    }
+
+    return { discarded: true, counted: false };
   });
 }

@@ -146,12 +146,30 @@ describe('nothing in the battle module holds state between requests', () => {
   });
 
   it('declares no module-level `let`', () => {
-    // A `let` at module scope is state by definition. `db/client.ts` legitimately
-    // has one for its pool; nothing under `battle/` has any reason to.
+    /**
+     * A `let` at module scope is state by definition. `db/client.ts`
+     * legitimately has one for its pool; nothing under `battle/` has a reason to
+     * — with one exception, named here rather than allowed by a loose pattern.
+     *
+     * **`maintenance.ts` holds the flag's *source*, which is not battle state.**
+     * It is a swap point: feature 016 will point it at Vercel Edge Config, and a
+     * test points it at a fixed value. The flag itself is read on every request
+     * and never cached, which is the property this scan is really about. An
+     * exemption by filename is worse than a cleverer regex in exactly one way —
+     * it has to be justified — and that is why it is the right shape.
+     */
+    const allowed = new Set(['maintenance.ts']);
+
     for (const { file, text } of sources) {
+      if (allowed.has(file)) continue;
       const match = /^let\s+\w+/m.exec(text);
       expect(match?.[0] ?? null, `${file} declares a module-level \`let\``).toBeNull();
     }
+
+    // The exemption must not be dead: if `maintenance.ts` stops needing it, the
+    // list should shrink rather than sit there covering something new.
+    const maintenance = sources.find((s) => s.file === 'maintenance.ts')!;
+    expect(/^let\s+\w+/m.test(maintenance.text), 'the exemption is stale').toBe(true);
   });
 
   it('has no column that could hold a mid-battle board', () => {

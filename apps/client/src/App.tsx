@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type JSX } from 'react';
 import { SiteFooter } from './components/SiteFooter.js';
 import { SignInPanel } from './features/auth/SignInPanel.js';
+import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
 import {
@@ -95,7 +96,21 @@ export function App(): JSX.Element {
         ) : null}
 
         {phase.kind === 'signed-in' ? (
-          <SquadsScreen onUnauthenticated={onUnauthenticated} />
+          /**
+           * **A battle in progress outranks the squad builder**, because the
+           * one-at-a-time rule means a player with an open battle cannot start
+           * anything else — landing them on a builder whose only outcome is
+           * `409 battle_already_open` would be showing them the one screen they
+           * cannot use.
+           *
+           * This is also the only route into `BattleScreen` that exists. There
+           * is no "attack" button yet: choosing an opponent needs the candidate
+           * set, which is feature 009. See `ResumeBattle.tsx`.
+           */
+          <ResumeBattle
+            onUnauthenticated={onUnauthenticated}
+            fallback={<SquadsScreen onUnauthenticated={onUnauthenticated} />}
+          />
         ) : null}
       </div>
 

@@ -23,7 +23,7 @@
  */
 
 import { randomInt } from 'node:crypto';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { contentVersion } from '@lmntlz/content';
 import { engineVersion } from '@lmntlz/sim/rules';
 import { createSeed } from '@lmntlz/sim/resolver';
@@ -58,6 +58,43 @@ export class CannotStartBattleError extends Error {
     this.name = 'CannotStartBattleError';
     this.reason = reason;
   }
+}
+
+/**
+ * A battle is already open (T043–T044).
+ *
+ * ### One at a time, and the reason is an exploit rather than tidiness
+ *
+ * Several open battles lets a player start against many opponents, look at how
+ * each is going, and abandon the ones going badly. That turns the attack-income
+ * tiers and the ambush counter — both of which reward *consecutive wins* — into
+ * something farmed by selection rather than earned by playing well. The streak
+ * would measure which battles somebody chose to finish.
+ *
+ * **Carrying the open battle's id means "resume" needs no separate concept.**
+ * The client that gets this already knows where to go, so there is no
+ * `GET /battles/current` to build, keep consistent, or forget to call.
+ */
+export class BattleAlreadyOpenError extends Error {
+  readonly reason = 'battle-already-open';
+  readonly openBattleId: string;
+
+  constructor(openBattleId: string) {
+    super('You already have a battle open. Finish or abandon it before starting another.');
+    this.name = 'BattleAlreadyOpenError';
+    this.openBattleId = openBattleId;
+  }
+}
+
+/** The caller's unconcluded battle, if there is one. */
+export async function openBattleFor(accountId: string): Promise<string | null> {
+  const rows = await db()
+    .select({ id: battles.id })
+    .from(battles)
+    .where(and(eq(battles.attackerId, accountId), sql`${battles.concludedAt} is null`))
+    .limit(1);
+
+  return rows[0]?.id ?? null;
 }
 
 /**
@@ -136,6 +173,15 @@ export async function createBattle(
   if (attackerId === opponentId) {
     throw new CannotStartBattleError('opponent-is-self', 'You cannot attack your own defense.');
   }
+
+  /**
+   * **Checked first, before any squad is read or any seed is minted.** A
+   * refusal that had already done that work would be slower for no reason, and
+   * the partial-index on `(attacker_id) WHERE concluded_at IS NULL` makes this
+   * the cheapest question in the function.
+   */
+  const alreadyOpen = await openBattleFor(attackerId);
+  if (alreadyOpen) throw new BattleAlreadyOpenError(alreadyOpen);
 
   const offense = await loadSquadRow(attackerId, 'offense', { slotIndex: attackSquadSlot });
   if (!offense) {

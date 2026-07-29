@@ -39,6 +39,19 @@ describe('the app shell reaches the squad screen', () => {
             { status: 200, headers: { 'content-type': 'application/json' } },
           );
         }
+        /**
+         * **`204` — this player has no battle in progress** (007).
+         *
+         * The shell now asks before it renders anything for a signed-in player,
+         * because a battle outranks the squad builder: with one open, the
+         * builder's only outcome is `409 battle_already_open`. Left unanswered
+         * the shell waits forever and this test fails on a timeout — a symptom
+         * about the roster for a cause that has nothing to do with it.
+         */
+        if (String(input).includes('/battles/open')) {
+          return new Response(null, { status: 204 });
+        }
+
         // The roster never answers, so the screen stays in its loading state —
         // which is exactly what proves `App` is the screen, not a placeholder.
         return new Promise<Response>(() => undefined);

@@ -14,7 +14,7 @@
  */
 
 import { expect } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { getAllHeroes } from '@lmntlz/content';
 import { legalTargets } from '@lmntlz/sim/rules';
 import { usablePowers } from '../../src/battle/choicePoint.js';
@@ -272,7 +272,40 @@ export async function fightToTheEnd(a: Arena, started: StartedBattle, cap = 250)
   return { acts, bodies, conclusion, ms: Date.now() - began, perAct };
 }
 
+/**
+ * Remove the attacker's open battle, if any, so a fresh one can be started.
+ *
+ * ### Why every multi-battle suite needs this now
+ *
+ * **One battle open at a time** is a real rule and a real exploit fix — several
+ * open battles lets a player start against many opponents and abandon the ones
+ * going badly, which turns the attack streak into a measure of which fights
+ * somebody chose to finish. So `POST /v1/battles` answers `409` while one is
+ * open, and a test that wants a second battle has to say so.
+ *
+ * **Deleting rather than concluding**, deliberately. Concluding would settle it,
+ * moving both streaks — so a suite asserting on streak movement would be reading
+ * numbers its own setup had nudged. A delete leaves nothing behind, which is what
+ * a test's own bookkeeping should do.
+ */
+export async function clearOpenBattle(a: Arena): Promise<void> {
+  await db()
+    .delete(battles)
+    .where(and(eq(battles.attackerId, a.attacker.accountId), isNull(battles.concludedAt)));
+}
+
 export async function start(a: Arena, opponentId?: string): Promise<StartedBattle> {
+  /**
+   * **Cleared first, so a suite's battles do not block each other.** Every
+   * caller here wants "a battle to work with", never "a battle *in addition to*
+   * the one I left open" — and the one test that genuinely asserts the `409` is
+   * `ending.test.ts`, which posts to the route directly rather than through this.
+   */
+  await clearOpenBattle(a);
+  return startWithoutClearing(a, opponentId);
+}
+
+async function startWithoutClearing(a: Arena, opponentId?: string): Promise<StartedBattle> {
   const res = await app.request('/v1/battles', {
     method: 'POST',
     headers: a.attacker.headers(),

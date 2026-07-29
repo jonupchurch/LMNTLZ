@@ -24,14 +24,27 @@ import { apiError } from '../errors.js';
 import {
   assertLegalIntent,
   currentState,
+  expiryMs,
   IllegalIntentError,
   type CurrentState,
   type LiveBattle,
 } from './act.js';
-import { CannotStartBattleError, createBattle } from './create.js';
+import {
+  BattleAlreadyOpenError,
+  CannotStartBattleError,
+  createBattle,
+  openBattleFor,
+} from './create.js';
 import { appendAction, SequenceGapError, type ActionPacket } from './idempotency.js';
+import { expiryHours } from './expiry.js';
 import { resolveToNextChoice } from './packet.js';
-import { settle } from './settle.js';
+import { discard, settle } from './settle.js';
+import {
+  canAct,
+  canStartBattle,
+  maintenanceState,
+  MAINTENANCE_MESSAGE,
+} from './maintenance.js';
 import type { SquadZone } from '../db/schema/squads.js';
 
 /**
@@ -89,7 +102,8 @@ function refusal(result: CurrentState & { ok: false }) {
         status: 410 as const,
         body: apiError(
           'battle_expired',
-          'This battle expired after 24 hours without an action. Nothing was won or lost.',
+          `This battle expired after ${expiryHours()} hours without an action. ` +
+            'Nothing was won or lost.',
         ),
       };
     case 'version-mismatch':
@@ -103,7 +117,7 @@ function refusal(result: CurrentState & { ok: false }) {
         body: apiError(
           'engine_updated',
           'The game was updated while this battle was open, so it cannot be ' +
-            'continued. It will be discarded and nothing will be counted.',
+            'continued. It has been discarded — no win, no loss, nothing counted.',
         ),
       };
   }
@@ -121,7 +135,45 @@ async function loadForCaller(
   accountId: string,
 ): Promise<{ readonly battle: LiveBattle } | { readonly refusal: ReturnType<typeof refusal> }> {
   const result = await currentState(battleId);
-  if (!result.ok) return { refusal: refusal(result) };
+
+  if (!result.ok) {
+    /**
+     * **Ownership is checked before the discard, and that ordering is a
+     * security property rather than tidiness.** A refusal is safe to hand a
+     * stranger; the *action* attached to it is not. Discarding first would let
+     * anybody enumerate battle ids and destroy other players' fights in flight
+     * — and because a discard is a complete no-op, the victim would see their
+     * battle simply cease to exist with nothing recorded anywhere.
+     */
+    const mine = result.reason === 'not-found' || result.attackerId === accountId;
+
+    if (mine && result.reason === 'expired') {
+      /**
+       * **Discarded on the player's own next touch, not only by the job.**
+       *
+       * `expiry.ts` sweeps the battles nobody comes back to; this handles the
+       * one somebody *does* come back to, and it matters because the two
+       * answers differ. Left for the job, a returning player would get `410`
+       * now and `404` after the next sweep — the same event described two ways
+       * depending on timing. Discarding here makes it `410` once and `404`
+       * thereafter, which is at least a story.
+       */
+      await discard(battleId, 'expired', result.attackerId);
+    }
+
+    if (mine && result.reason === 'version-mismatch') {
+      /**
+       * **Reported, never resolved** (FR-017), and then discarded rather than
+       * left. The battle is genuinely unresolvable — its engine no longer
+       * exists — so "come back later" would be a lie about a fight that will
+       * never work again. The discard is total, so nothing is lost by taking
+       * it now rather than waiting 24 hours for expiry to do the same thing.
+       */
+      await discard(battleId, 'engine-version', result.attackerId);
+    }
+
+    return { refusal: refusal(result) };
+  }
 
   if (result.battle.attackerId !== accountId) {
     return { refusal: { status: 404 as const, body: apiError('not_found', 'No such battle.') } };
@@ -139,6 +191,22 @@ async function loadForCaller(
  */
 battleRoutes.post('/battles', async (c) => {
   const { accountId } = requireContext(c);
+
+  /**
+   * **Checked before anything is read, let alone written.** A `draining` window
+   * refuses new battles and lets open ones finish (FR-015); `down` refuses
+   * both. The order matters only in that a refusal must cost nothing — a
+   * request that snapshotted two squads and minted a seed before noticing the
+   * window would leave a battle row nobody can play.
+   */
+  const maintenance = await maintenanceState();
+  if (!canStartBattle(maintenance)) {
+    return c.json(
+      apiError('maintenance', MAINTENANCE_MESSAGE[maintenance as 'draining' | 'down']),
+      503,
+    );
+  }
+
   const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
 
   const opponentId = body?.['opponentId'];
@@ -164,11 +232,48 @@ battleRoutes.post('/battles', async (c) => {
       201,
     );
   } catch (err) {
+    /**
+     * **`409` carrying the open battle's id, which is why "resume" needs no
+     * separate concept.** The client that gets this already knows where to go.
+     */
+    if (err instanceof BattleAlreadyOpenError) {
+      return c.json(
+        { ...apiError('battle_already_open', err.message), openBattleId: err.openBattleId },
+        409,
+      );
+    }
     if (err instanceof CannotStartBattleError) {
       return c.json(apiError(err.reason.replaceAll('-', '_'), err.message), 422);
     }
     throw err;
   }
+});
+
+/**
+ * `GET /v1/battles/open` — resume, or `204`.
+ *
+ * The other half of the one-at-a-time rule: a client that reconnects needs to
+ * know whether it is mid-battle, and this is the question with no id to ask it
+ * about.
+ */
+battleRoutes.get('/battles/open', async (c) => {
+  const { accountId } = requireContext(c);
+  const battleId = await openBattleFor(accountId);
+  if (!battleId) return c.body(null, 204);
+
+  const loaded = await loadForCaller(battleId, accountId);
+  /**
+   * **An expired open battle is discarded by the load above and reported as
+   * nothing here.** Answering `410` to "do I have a battle?" would be strange —
+   * the honest answer to that question is no.
+   */
+  if ('refusal' in loaded) return c.body(null, 204);
+
+  return c.json({
+    battleId: loaded.battle.id,
+    startedAt: loaded.battle.startedAt.toISOString(),
+    expiresAt: new Date(loaded.battle.lastActivityAt.getTime() + expiryMs()).toISOString(),
+  });
 });
 
 /**
@@ -192,6 +297,17 @@ battleRoutes.post('/battles', async (c) => {
 battleRoutes.post('/battles/:battleId/act', async (c) => {
   const { accountId } = requireContext(c);
   const battleId = c.req.param('battleId');
+
+  /**
+   * **`draining` still resolves this**, which is the whole point of having a
+   * third state. Only `down` refuses an action, and a battle refused here is
+   * not lost — it stays open and its 24-hour window is untouched.
+   */
+  const maintenance = await maintenanceState();
+  if (!canAct(maintenance)) {
+    return c.json(apiError('maintenance', MAINTENANCE_MESSAGE.down), 503);
+  }
+
   const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
 
   const sequence = body?.['sequence'];

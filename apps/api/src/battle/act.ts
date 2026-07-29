@@ -56,6 +56,7 @@ import type { ActionIntent, Seed } from '@lmntlz/sim/resolver';
 import { db } from '../db/client.js';
 import { battleActions, battles } from '../db/schema/battles.js';
 import { buildInitialState } from './board.js';
+import { expiryMs } from './expiry.js';
 import { usablePowers } from './choicePoint.js';
 import { openingPacket, resolveToNextChoice, type DefenderConfigs } from './packet.js';
 import { decodeSeed } from './seedStore.js';
@@ -70,13 +71,13 @@ import {
 /**
  * How long an untouched battle stays open.
  *
- * **A window, not a deadline from the start.** A player who is actively fighting
- * never meets it; a player who walked away meets it 24 hours after they walked
- * away. T047 moves this into configuration — it is a constant here because the
- * expiry *job* does not exist yet and a config knob with one caller is a knob
- * nobody has tested.
+ * **A window, not a deadline from the start.** A player who is actively
+ * fighting never meets it; a player who walked away meets it 24 hours after
+ * they walked away. The value lives in `expiry.ts` because the sweep and this
+ * check must agree — two copies of the number is how a battle gets refused here
+ * and left behind by the job, or the reverse.
  */
-export const EXPIRY_MS = 24 * 60 * 60 * 1000;
+export { expiryMs };
 
 /** Everything a request needs about a battle in flight. Never serialised whole. */
 export interface LiveBattle {
@@ -109,13 +110,23 @@ export interface LiveBattle {
 export type CurrentState =
   | { readonly ok: true; readonly battle: LiveBattle }
   | { readonly ok: false; readonly reason: 'not-found' }
-  | { readonly ok: false; readonly reason: 'expired' }
+  | { readonly ok: false; readonly reason: 'expired'; readonly attackerId: string | null }
   | {
       readonly ok: false;
       readonly reason: 'version-mismatch';
       readonly field: 'engine' | 'content';
       readonly was: string;
       readonly now: string;
+      /**
+       * **Carried so the caller can check ownership before acting on this.**
+       *
+       * A version mismatch ends in a discard, and a discard deletes a row. If
+       * that ran before the caller knew whose battle it was, anybody could
+       * enumerate ids and destroy other players' battles in flight — a
+       * refusal that is safe to return to a stranger is not the same as an
+       * action that is safe to take for one.
+       */
+      readonly attackerId: string | null;
     };
 
 /**
@@ -144,7 +155,18 @@ export class ReplayDivergenceError extends Error {
  * comes first of all, since an expired battle is not going to be resolved either
  * way and replaying it is wasted work.
  */
+/**
+ * How slow a replay has to be before it is worth a log line.
+ *
+ * Measured over a full battle on 2026-07-29: **~70ms per request, and only 1.1×
+ * from the first ten to the last ten** across 81 actions — the two database
+ * round trips dominate, not the fold. So anything past this is a battle that has
+ * grown beyond what the design assumes, which is the signal worth having.
+ */
+const REPLAY_WARN_MS = 400;
+
 export async function currentState(battleId: string, now: Date = new Date()): Promise<CurrentState> {
+  const startedReplayAt = Date.now();
   const rows = await db().select().from(battles).where(eq(battles.id, battleId)).limit(1);
   const row = rows[0];
   if (!row) return { ok: false, reason: 'not-found' };
@@ -161,8 +183,8 @@ export async function currentState(battleId: string, now: Date = new Date()): Pr
    * **A concluded battle never expires.** It is history, and history is kept
    * forever (Constitution XVI). Only an open battle has a window to miss.
    */
-  if (!row.concludedAt && now.getTime() - lastActivityAt.getTime() > EXPIRY_MS) {
-    return { ok: false, reason: 'expired' };
+  if (!row.concludedAt && now.getTime() - lastActivityAt.getTime() > expiryMs()) {
+    return { ok: false, reason: 'expired', attackerId: row.attackerId };
   }
 
   const engineNow = engineVersion();
@@ -173,6 +195,7 @@ export async function currentState(battleId: string, now: Date = new Date()): Pr
       field: 'engine',
       was: row.engineVersion,
       now: engineNow,
+      attackerId: row.attackerId,
     };
   }
 
@@ -184,6 +207,7 @@ export async function currentState(battleId: string, now: Date = new Date()): Pr
       field: 'content',
       was: row.contentVersion,
       now: contentNow,
+      attackerId: row.attackerId,
     };
   }
 
@@ -246,6 +270,27 @@ export async function currentState(battleId: string, now: Date = new Date()): Pr
     state = result.packet.state;
     conclusion = result.packet.conclusion;
     drawIndex += result.drawsConsumed;
+  }
+
+  /**
+   * **The number that decides whether no-stored-state stays correct** (T048).
+   *
+   * Every request replays the whole log, so cost is quadratic in the action
+   * count by construction. That is a known, accepted trade — one source of
+   * truth, no cache, no invalidation — and the thing that would change the
+   * answer is a battle long enough that the replay stops being cheap.
+   *
+   * Recorded from the first battle ever fought rather than added when somebody
+   * notices latency, because by then there is nothing to compare against.
+   * `console.info` is the whole implementation: Vercel captures stdout, and a
+   * metrics vendor for one number would be a vendor to price, gate and mock.
+   * The threshold keeps a healthy battle silent so the log means something.
+   */
+  const replayMs = Date.now() - startedReplayAt;
+  if (replayMs > REPLAY_WARN_MS) {
+    console.info(
+      `[replay] battle=${battleId} actions=${log.length} turns=${state.heroTurn} ms=${replayMs}`,
+    );
   }
 
   return {

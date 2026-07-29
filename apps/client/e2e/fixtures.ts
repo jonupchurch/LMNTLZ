@@ -90,6 +90,17 @@ export async function signedIn(page: Page): Promise<void> {
     window.localStorage.setItem('lmntlz.renewal', 'e2e-renewal');
   });
 
+  /**
+   * **"No battle in progress" is answered explicitly, on every spec.**
+   *
+   * The shell asks this before it renders anything for a signed-in player,
+   * because a battle in progress outranks the squad builder. Left unmocked the
+   * request escapes to a real API, and the spec that was about a squad seat
+   * fails on a network error — or worse, passes slowly. `battle.spec.ts`
+   * overrides this route with its own answer.
+   */
+  await page.route('**/v1/battles/open', (route) => route.fulfill({ status: 204, body: '' }));
+
   await page.route('**/v1/auth/renew', (route) =>
     route.fulfill({
       json: {

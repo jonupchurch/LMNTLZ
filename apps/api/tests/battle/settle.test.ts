@@ -19,7 +19,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import app from '../../src/index.js';
 import { closeDb, db } from '../../src/db/client.js';
 import { battles } from '../../src/db/schema/battles.js';
@@ -234,4 +234,93 @@ describe('settling twice does nothing twice', () => {
     expect(await attackStreakOf(a.attacker.accountId)).toBe(before);
     expect((await battleRow(started.battleId)).turnCount).toBe(row.turnCount);
   });
+});
+
+describe('settlement is all-or-nothing (T049)', () => {
+  /**
+   * ### Why a partial settlement is the worst outcome available
+   *
+   * A battle that concludes but fails to move the streaks is a result the game
+   * recorded and did not act on. A battle that moves the streaks but fails to
+   * conclude is worse still — it stays open, so the one-at-a-time rule locks the
+   * player out while they have already been paid for it.
+   *
+   * Neither is detectable afterwards. There is no field that says "this
+   * settlement finished", and Constitution XVI means the battle row cannot be
+   * re-derived from anything. So the guarantee has to be the transaction, and
+   * this is the test that the transaction is real rather than five statements
+   * that happen to run in order.
+   */
+  it('rolls the whole thing back when a write inside it fails', async () => {
+    const started = await start(a);
+    const fought = await fightToTheEnd(a, started);
+    expect(fought.conclusion).not.toBeNull();
+
+    /**
+     * **Force the failure at the last write, not the first.** A rollback that
+     * only worked when the *opening* statement failed would be indistinguishable
+     * from no transaction at all — nothing had happened yet. Breaking the hold
+     * streak means `battles`, the attack streak and the metadata columns have
+     * all already been written inside the transaction when it dies.
+     */
+    const zone = started.zone as 'visible' | 'hidden';
+    const before = {
+      row: await battleRow(started.battleId),
+      attack: await attackStreakOf(a.attacker.accountId),
+      hold: await holdStreakOf(a.defender.accountId, zone),
+    };
+
+    // Reopen it so `settle` has work to do again.
+    await db()
+      .update(battles)
+      .set({ concludedAt: null, winner: null, reason: null, turnCount: null })
+      .where(eq(battles.id, started.battleId));
+
+    await db().execute(
+      sql`alter table squads add constraint settle_test_break check (hold_streak < 0) not valid`,
+    );
+
+    try {
+      await expect(
+        settle({
+          battleId: started.battleId,
+          attackerId: a.attacker.accountId,
+          defenderId: a.defender.accountId,
+          zone,
+          conclusion: { winner: 'defender', reason: 'wipe' },
+          turnCount: 123,
+          wasAmbush: false,
+        }),
+      ).rejects.toThrow();
+    } finally {
+      await db().execute(sql`alter table squads drop constraint settle_test_break`);
+    }
+
+    /**
+     * **Nothing landed — including the `battles` update that ran first.** And
+     * the battle is still playable, which is what lets the client simply retry
+     * the final action rather than being told a battle it won has no result.
+     */
+    const after = await battleRow(started.battleId);
+    expect(after.concludedAt).toBeNull();
+    expect(after.winner).toBeNull();
+    expect(after.turnCount).toBeNull();
+
+    expect(await attackStreakOf(a.attacker.accountId)).toBe(before.attack);
+    expect(await holdStreakOf(a.defender.accountId, zone)).toBe(before.hold);
+
+    // And settling properly afterwards still works.
+    const retried = await settle({
+      battleId: started.battleId,
+      attackerId: a.attacker.accountId,
+      defenderId: a.defender.accountId,
+      zone,
+      conclusion: fought.conclusion as never,
+      turnCount: before.row.turnCount ?? 100,
+      wasAmbush: false,
+    });
+
+    expect(retried.settled).toBe(true);
+    expect((await battleRow(started.battleId)).concludedAt).not.toBeNull();
+  }, 300_000);
 });

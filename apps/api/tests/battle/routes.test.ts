@@ -24,7 +24,14 @@ import app from '../../src/index.js';
 import { closeDb, db } from '../../src/db/client.js';
 import { battleActions } from '../../src/db/schema/battles.js';
 import { usablePowers } from '../../src/battle/choicePoint.js';
-import { arena, start, type Arena, type BattleShape, type StartedBattle } from './live.js';
+import {
+  arena,
+  clearOpenBattle,
+  start,
+  type Arena,
+  type BattleShape,
+  type StartedBattle,
+} from './live.js';
 
 let a: Arena;
 let started: StartedBattle;
@@ -73,28 +80,6 @@ describe('POST /v1/battles', () => {
     expect(started.sequence).toBe(0);
     expect(started.packet.state.turnOfInstance).not.toBeNull();
     expect(['visible', 'hidden']).toContain(started.zone);
-  });
-
-  it('refuses a squad slot that does not exist', async () => {
-    const res = await app.request('/v1/battles', {
-      method: 'POST',
-      headers: a.attacker.headers(),
-      body: JSON.stringify({ opponentId: a.defender.accountId, attackSquadSlot: 2 }),
-    });
-
-    expect(res.status).toBe(422);
-    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('no_attack_squad');
-  });
-
-  it('refuses attacking yourself', async () => {
-    const res = await app.request('/v1/battles', {
-      method: 'POST',
-      headers: a.attacker.headers(),
-      body: JSON.stringify({ opponentId: a.attacker.accountId, attackSquadSlot: 0 }),
-    });
-
-    expect(res.status).toBe(422);
-    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('opponent_is_self');
   });
 });
 
@@ -268,5 +253,45 @@ describe('GET /v1/battles/:battleId', () => {
       headers: a.defender.headers(),
     });
     expect(res.status).toBe(404);
+  });
+});
+
+describe('creating a battle validates the request (with nothing open)', () => {
+  /**
+   * ### Why these two clear the open battle first
+   *
+   * **`409 battle_already_open` outranks a bad request body, and that ordering
+   * is right.** A client that has a battle open and also sent a wrong slot has
+   * exactly one useful thing to be told: where the battle is. `422 no attack
+   * squad in slot 2` is true and gets them nowhere.
+   *
+   * So these are tests about *request validation*, and they have to run with
+   * nothing open or they are really testing the state check again — which
+   * `ending.test.ts` covers properly.
+   */
+  it('refuses a squad slot that does not exist', async () => {
+    await clearOpenBattle(a);
+
+    const res = await app.request('/v1/battles', {
+      method: 'POST',
+      headers: a.attacker.headers(),
+      body: JSON.stringify({ opponentId: a.defender.accountId, attackSquadSlot: 2 }),
+    });
+
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('no_attack_squad');
+  });
+
+  it('refuses attacking yourself', async () => {
+    await clearOpenBattle(a);
+
+    const res = await app.request('/v1/battles', {
+      method: 'POST',
+      headers: a.attacker.headers(),
+      body: JSON.stringify({ opponentId: a.attacker.accountId, attackSquadSlot: 0 }),
+    });
+
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('opponent_is_self');
   });
 });

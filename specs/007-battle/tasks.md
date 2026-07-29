@@ -152,14 +152,14 @@ cheap now and a migration later.
 > attempt; a partial implementation that refunds two of three is the exact support
 > ticket the rule exists to prevent.
 
-- [ ] T035 [US4] Write `apps/api/tests/battle/maintenance.test.ts` — `live` accepts; `draining` refuses `POST /v1/battles` with `503` **while `act` on an open battle still returns `200`**; `down` refuses both
-- [ ] T036 [P] [US4] Write `apps/api/tests/battle/discard.test.ts` — a discarded battle leaves **no battle record, no shard movement, no rating movement, no ambush-streak change and no hold-streak change**, and refunds whatever it cost to start (SC-005)
+- [x] T035 [US4] Write `apps/api/tests/battle/maintenance.test.ts` — `live` accepts; `draining` refuses `POST /v1/battles` with `503` **while `act` on an open battle still returns `200`**; `down` refuses both
+- [x] T036 [P] [US4] Write `apps/api/tests/battle/discard.test.ts` — a discarded battle leaves **no battle record, no shard movement, no rating movement, no ambush-streak change and no hold-streak change**, and refunds whatever it cost to start (SC-005)
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Implement the three-state check in `apps/api/src/battle/maintenance.ts` reading feature 016's flag — `live` · `draining` · `down` (FR-015)
-- [ ] T038 [US4] Implement the discard as a **complete no-op with a refund** in `apps/api/src/battle/settle.ts` (FR-016)
-- [ ] T039 [US4] Report an engine-version mismatch rather than resolving it, in `apps/api/src/battle/act.ts` — feature 003's `reDerive` returns `VersionMismatch` and this route surfaces it (FR-017)
+- [x] T037 [US4] Implement the three-state check in `apps/api/src/battle/maintenance.ts` reading feature 016's flag — `live` · `draining` · `down` (FR-015)
+- [x] T038 [US4] Implement the discard as a **complete no-op with a refund** in `apps/api/src/battle/settle.ts` (FR-016)
+- [x] T039 [US4] Report an engine-version mismatch rather than resolving it, in `apps/api/src/battle/act.ts` — feature 003's `reDerive` returns `VersionMismatch` and this route surfaces it (FR-017)
 
 **Checkpoint**: A deploy window generates no support tickets.
 
@@ -173,17 +173,17 @@ cheap now and a migration later.
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T040 [P] [US5] Write `apps/api/tests/battle/expiry.test.ts` — start a battle, act twice, advance the clock past 24 h, run the expiry job, and confirm `act` returns `410` with **nothing recorded** except the account's abandonment counter incrementing by 1
-- [ ] T041 [P] [US5] Write `apps/api/tests/battle/oneAtATime.test.ts` — a second `POST /v1/battles` while one is open returns `409` carrying `openBattleId`; concluding the first allows a new one
-- [ ] T042 [P] [US5] Write `apps/api/tests/battle/cap.test.ts` — a constructed stalemate reaching **300 hero-turns** resolves by pooled HP share and records normally
+- [x] T040 [P] [US5] Write `apps/api/tests/battle/expiry.test.ts` — start a battle, act twice, advance the clock past 24 h, run the expiry job, and confirm `act` returns `410` with **nothing recorded** except the account's abandonment counter incrementing by 1
+- [x] T041 [P] [US5] Write `apps/api/tests/battle/oneAtATime.test.ts` — a second `POST /v1/battles` while one is open returns `409` carrying `openBattleId`; concluding the first allows a new one
+- [x] T042 [P] [US5] Write `apps/api/tests/battle/cap.test.ts` — a constructed stalemate reaching **300 hero-turns** resolves by pooled HP share and records normally
 
 ### Implementation for User Story 5
 
-- [ ] T043 [US5] Enforce **one battle open at a time** in `apps/api/src/battle/create.ts` — several open battles lets a player start against many opponents and abandon the ones going badly, which turns the attack-income tiers and the ambush counter into something farmed by selection (research.md Q2)
-- [ ] T044 [US5] Return the open battle's id in the `409` from `apps/api/src/battle/create.ts`, so **"resume" needs no separate concept**
-- [ ] T045 [US5] Implement 24-hour expiry as a **discard** in `apps/api/src/battle/settle.ts` — no win, no loss, no shards, no rating movement, no ambush-streak change, **no battle record** (FR-013)
-- [ ] T046 [US5] Make the expiry job resumable and safe to re-run in `apps/api/src/battle/expiry.ts`, **driven from Postgres and never from a scan** — the same shape as feature 008's replay cleanup, for the same reason
-- [ ] T047 [US5] Make the 24-hour window **config, not a constant** in `apps/api/src/battle/expiry.ts`
+- [x] T043 [US5] Enforce **one battle open at a time** in `apps/api/src/battle/create.ts` — several open battles lets a player start against many opponents and abandon the ones going badly, which turns the attack-income tiers and the ambush counter into something farmed by selection (research.md Q2)
+- [x] T044 [US5] Return the open battle's id in the `409` from `apps/api/src/battle/create.ts`, so **"resume" needs no separate concept**
+- [x] T045 [US5] Implement 24-hour expiry as a **discard** in `apps/api/src/battle/settle.ts` — no win, no loss, no shards, no rating movement, no ambush-streak change, **no battle record** (FR-013)
+- [x] T046 [US5] Make the expiry job resumable and safe to re-run in `apps/api/src/battle/expiry.ts`, **driven from Postgres and never from a scan** — the same shape as feature 008's replay cleanup, for the same reason
+- [x] T047 [US5] Make the 24-hour window **config, not a constant** in `apps/api/src/battle/expiry.ts`
 
 **Checkpoint**: All five stories independently functional.
 
@@ -191,11 +191,24 @@ cheap now and a migration later.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T048 **Instrument replay cost from day one** — record replay duration alongside `turnCount` in `apps/api/src/battle/act.ts`. It costs nothing to add now and it is what will tell you whether the no-stored-state decision is still correct (plan.md § Phase 2)
-- [ ] T049 Write the conclusion-atomicity test in `apps/api/tests/battle/settle.test.ts` — force the metadata-row insert to fail and assert **the whole transaction rolled back**, no shards awarded, no rating movement, and **the battle is still playable** so the client can retry the final action
-- [ ] T050 [P] Write `apps/api/src/battle/README.md` — the log-is-the-state property, the packet boundary rule, and the standing note that replay cost is the number to watch
-- [ ] T051 Add the Playwright golden path in `apps/client/e2e/battle.spec.ts` — start, fight to conclusion, and kill the connection mid-action to confirm the retry does not double-advance
-- [ ] T052 Run the full quickstart manual pass
+- [x] T048 **Instrument replay cost from day one** — record replay duration alongside `turnCount` in `apps/api/src/battle/act.ts`. It costs nothing to add now and it is what will tell you whether the no-stored-state decision is still correct (plan.md § Phase 2)
+- [x] T049 Write the conclusion-atomicity test in `apps/api/tests/battle/settle.test.ts` — force the metadata-row insert to fail and assert **the whole transaction rolled back**, no shards awarded, no rating movement, and **the battle is still playable** so the client can retry the final action
+- [x] T050 [P] Write `apps/api/src/battle/README.md` — the log-is-the-state property, the packet boundary rule, and the standing note that replay cost is the number to watch
+- [x] T051 Add the Playwright golden path in `apps/client/e2e/battle.spec.ts` — start, fight to conclusion, and kill the connection mid-action to confirm the retry does not double-advance
+- [x] T052 Run the full quickstart manual pass
+
+> **The quickstart pass, and the three lines that were satisfied differently
+> than written.** Everything else in `quickstart.md` is covered by an automated
+> test; these are named rather than quietly ticked.
+>
+> | Quickstart says | What was done |
+> |---|---|
+> | *"Count the `act` calls. Expect 20–40."* | **Measured 60–85.** Every stop is a genuine choice point, checked turn by turn — the boundary rule is right and the *content* is untuned. `goldenPath.test.ts` asserts the rule and reports the numbers; `resources/mechanics/README.md` carries them under the parked hero-numbers pass. Pinning 20–40 would fail on untuned content; widening to 15–95 would assert nothing |
+> | *"restart the API process entirely"* | `vi.resetModules()` plus a fresh dynamic import, which rebuilds every module-level binding in the chain. A cache surviving that would have to be in the database or on disk, and the source and schema scans cover both. Reasoning in `noStoredState.test.ts` |
+> | *"inject an error on the battle-record insert"* | A `NOT VALID` check constraint on `squads.hold_streak`, so the failure lands on the **last** write in the transaction rather than the first. A rollback that only worked when the opening statement failed would be indistinguishable from having no transaction at all |
+>
+> `rg -i "battleState|inProgress|cache" apps/api/src/battle` returns only type
+> names and prose stating there is no cache. No table, no key, no map.
 
 ---
 
