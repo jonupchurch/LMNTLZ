@@ -57,6 +57,7 @@ import { db } from '../db/client.js';
 import { battleActions, battles } from '../db/schema/battles.js';
 import { buildInitialState } from './board.js';
 import { expiryMs } from './expiry.js';
+import type { TurnEvent } from './idempotency.js';
 import { usablePowers } from './choicePoint.js';
 import { openingPacket, resolveToNextChoice, type DefenderConfigs } from './packet.js';
 import { decodeSeed } from './seedStore.js';
@@ -97,6 +98,21 @@ export interface LiveBattle {
   readonly configs: DefenderConfigs;
   readonly state: BattleState;
   readonly conclusion: Conclusion | null;
+  /**
+   * The turns that resolved **before the player's first choice**, which are not
+   * in `battle_actions` and never were.
+   *
+   * Carried out of the fold because **feature 008's replay would otherwise begin
+   * mid-battle**. A battle does not start with the player acting — turn order may
+   * put a defender first, and several turns can resolve before anybody is asked
+   * anything. Those events are part of what happened and a viewer must see them.
+   *
+   * **Free, and not a second simulation.** The fold above computes them on every
+   * request already and used to discard them; this is the same values, kept. The
+   * alternative — storing them as a row at creation — would persist something
+   * derivable and give action 0 two possible meanings.
+   */
+  readonly openingEvents: readonly TurnEvent[];
   /** The sequence the next action must carry: one past the highest written. */
   readonly sequence: number;
   /** Where the next packet's draws begin. Server-only, like the seed. */
@@ -307,6 +323,7 @@ export async function currentState(battleId: string, now: Date = new Date()): Pr
       configs,
       state,
       conclusion,
+      openingEvents: opening.packet.events,
       sequence: log.length === 0 ? 0 : log[log.length - 1]!.sequence + 1,
       drawIndex,
       startedAt: row.startedAt,

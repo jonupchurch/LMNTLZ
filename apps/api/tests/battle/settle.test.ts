@@ -23,6 +23,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import app from '../../src/index.js';
 import { closeDb, db } from '../../src/db/client.js';
 import { battles } from '../../src/db/schema/battles.js';
+import { battleRecords } from '../../src/db/schema/battleRecords.js';
 import { squads } from '../../src/db/schema/squads.js';
 import { playerStreaks } from '../../src/db/schema/streaks.js';
 import { reasonOf, settle } from '../../src/battle/settle.js';
@@ -270,11 +271,31 @@ describe('settlement is all-or-nothing (T049)', () => {
       hold: await holdStreakOf(a.defender.accountId, zone),
     };
 
-    // Reopen it so `settle` has work to do again.
+    /**
+     * Reopen it so `settle` has work to do again.
+     *
+     * ### The record has to be removed too, and that discovered a property
+     *
+     * Feature 008 made `battle_records.battle_id` a primary key, so **the record
+     * is a second, independent once-only guard** alongside `concluded_at`. Left
+     * in place, the re-settlement below fails on a duplicate key instead of
+     * reaching the write this test is about.
+     *
+     * That is the right behaviour and not something to work around: **it means a
+     * settlement that somehow ran twice could never rewrite history**, even with
+     * a different conclusion. Constitution XVI enforced by the database rather
+     * than by the guard remembering to hold. `replays/immutable.test.ts` asserts
+     * it directly.
+     *
+     * Production never reaches this state — `concluded_at` is only ever set, and
+     * `discard` is guarded on it being null. Reopening is a fiction this test
+     * needs, so the fiction has to be complete.
+     */
     await db()
       .update(battles)
       .set({ concludedAt: null, winner: null, reason: null, turnCount: null })
       .where(eq(battles.id, started.battleId));
+    await db().delete(battleRecords).where(eq(battleRecords.battleId, started.battleId));
 
     await db().execute(
       sql`alter table squads add constraint settle_test_break check (hold_streak < 0) not valid`,

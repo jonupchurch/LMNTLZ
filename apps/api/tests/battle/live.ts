@@ -22,6 +22,8 @@ import app from '../../src/index.js';
 import { db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
 import { battles } from '../../src/db/schema/battles.js';
+import { battleRecords } from '../../src/db/schema/battleRecords.js';
+import { memoryStorage, setReplayStorage } from '../../src/replays/storage.js';
 import { overrideProvider } from '../../src/auth/providers.js';
 import { InvalidProviderTokenError, type IdentityProvider } from '../../src/auth/provider.js';
 
@@ -86,6 +88,15 @@ export interface Arena {
   /** Everything created, for the teardown the run-level audit checks. */
   readonly createdAccounts: readonly string[];
   readonly createdBattles: string[];
+  /**
+   * The in-memory replay store this arena installed.
+   *
+   * Exposed so feature 008's tests can read what was written without reaching
+   * for the live store. `blobs` is keyed by URL, which is also what
+   * `battle_records.replay_blob_url` holds — so a test can join the two and
+   * catch a bug that mangles the URL between them.
+   */
+  readonly storage: ReturnType<typeof memoryStorage>;
   close(): Promise<void>;
 }
 
@@ -119,6 +130,22 @@ async function signUp(subject: string): Promise<Player> {
  */
 export async function arena(tag: string): Promise<Arena> {
   const restore = overrideProvider('google', provider);
+
+  /**
+   * **No battle test writes to the real blob store** (008).
+   *
+   * Concluding a battle now writes a replay, so without this every run of the
+   * battle suite would upload real blobs to the production store — paid for,
+   * counted, and cleaned up by a job that is looking for battles older than
+   * seven days rather than for test litter.
+   *
+   * `memoryStorage()` is a real implementation of `ReplayStorage`, not a mock, so
+   * `record.ts` runs the same code path it does in production. The vendor half is
+   * covered separately and for real by `tests/replays/store.test.ts`, which is
+   * the only file that talks to the live store.
+   */
+  const storage = memoryStorage();
+  const restoreStorage = setReplayStorage(storage);
   const run = `${tag}-${process.pid}${Math.floor(Math.random() * 1e6)}`;
 
   const attacker = await signUp(`atk-${run}`);
@@ -148,16 +175,29 @@ export async function arena(tag: string): Promise<Arena> {
     defender,
     createdAccounts: [attacker.accountId, defender.accountId],
     createdBattles,
+    storage,
     async close() {
       restore();
+      restoreStorage();
       /**
        * **Battles are deleted explicitly, not left to the account cascade.**
        * `battles.attacker_id` is `set null` on purpose — a real player's history
        * outlives their account — so deleting the accounts would leave the rows
        * behind, unowned and permanent, in the table Constitution XVI makes
        * un-cleanable.
+       *
+       * **`battle_records` first, and it needs its own delete for a stronger
+       * reason than `battles` does.** Feature 008 gave the record *no foreign key
+       * to `battles`* — a record outlives the battle row it came from, so pruning
+       * the action log can never take history with it. The cost of that is here:
+       * nothing cascades, so a test that concludes a battle and only cleans up
+       * `battles` leaves a permanent row in the analytics table. Every aggregate
+       * feature 008 computes would then be measuring the test suite.
        */
-      for (const id of createdBattles) await db().delete(battles).where(eq(battles.id, id));
+      for (const id of createdBattles) {
+        await db().delete(battleRecords).where(eq(battleRecords.battleId, id));
+        await db().delete(battles).where(eq(battles.id, id));
+      }
       for (const id of [attacker.accountId, defender.accountId]) {
         await db().delete(accounts).where(eq(accounts.id, id));
       }

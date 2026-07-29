@@ -18,7 +18,10 @@
  */
 
 import { Hono } from 'hono';
+import { contentVersion } from '@lmntlz/content';
+import { engineVersion, type Conclusion } from '@lmntlz/sim/rules';
 import { requireSession } from '../auth/middleware.js';
+import { writeReplayBlob } from '../replays/record.js';
 import { requireContext, type AuthedEnv } from '../auth/context.js';
 import { apiError } from '../errors.js';
 import {
@@ -57,18 +60,67 @@ import type { SquadZone } from '../db/schema/squads.js';
  * connection is completed by whatever request comes next, instead of leaving a
  * battle that finished and never paid.
  */
-async function settleIfEnded(battle: LiveBattle): Promise<void> {
-  if (!battle.conclusion || battle.concludedAt) return;
-
-  await settle({
+async function settleAndRecord(
+  battle: LiveBattle,
+  conclusion: Conclusion,
+  turnCount: number,
+): Promise<void> {
+  const result = await settle({
     battleId: battle.id,
     attackerId: battle.attackerId,
     defenderId: battle.defenderId,
     zone: battle.zone as SquadZone,
-    conclusion: battle.conclusion,
-    turnCount: battle.state.heroTurn,
+    conclusion,
+    turnCount,
     wasAmbush: battle.zone === 'hidden',
   });
+
+  /**
+   * **The replay blob, after the commit and only for the request that settled.**
+   *
+   * Two separate conditions, both load-bearing:
+   *
+   * - **After** `settle` returns, so the transaction is closed. A blob write is a
+   *   network call to a third party; holding a Postgres transaction across it
+   *   would turn a Blob outage into an inability to finish battles.
+   * - Only when `settled` is true. Settlement is called by every request that
+   *   observes a conclusion — the final `act`, a retry of it, a later `GET` — and
+   *   all but the first match zero rows. Writing the blob on each of those would
+   *   re-upload the same 5 KB for every subsequent read of a finished battle.
+   *
+   * `writeReplayBlob` never throws for an ordinary failure, so no `catch` here:
+   * the battle is over and the only thing left to lose is the ability to watch
+   * it, which is the same outcome as expiry.
+   */
+  if (result.settled) {
+    await writeReplayBlob({
+      battleId: battle.id,
+      engineVersion: engineVersion(),
+      contentVersion: contentVersion(),
+      openingEvents: battle.openingEvents,
+      conclusion,
+    });
+  }
+}
+
+/**
+ * The `GET` variant: settle only if this battle has ended and nobody has yet.
+ *
+ * **Both callers go through `settleAndRecord`, and that is the whole reason this
+ * wrapper exists rather than a second `settle` call.** The two used to be
+ * separate — the `act` route settled inline and only the `GET` used a helper —
+ * and adding the replay write to the helper therefore reached the *repair* path
+ * while missing the path that settles every real battle. Every battle got a
+ * record and none got a replay, and nothing failed: the record is what the game
+ * reads, so the gap was invisible until a test opened the blob store and found it
+ * empty.
+ *
+ * A second call site for an operation that keeps acquiring steps is a defect
+ * waiting for the next step.
+ */
+async function settleIfEnded(battle: LiveBattle): Promise<void> {
+  if (!battle.conclusion || battle.concludedAt) return;
+  await settleAndRecord(battle, battle.conclusion, battle.state.heroTurn);
 }
 
 export const battleRoutes = new Hono<AuthedEnv>();
@@ -405,15 +457,7 @@ battleRoutes.post('/battles/:battleId/act', async (c) => {
      * is the record every aggregate is computed from.
      */
     if (result.packet.conclusion) {
-      await settle({
-        battleId: battle.id,
-        attackerId: battle.attackerId,
-        defenderId: battle.defenderId,
-        zone: battle.zone as SquadZone,
-        conclusion: result.packet.conclusion,
-        turnCount: result.packet.state.heroTurn,
-        wasAmbush: battle.zone === 'hidden',
-      });
+      await settleAndRecord(battle, result.packet.conclusion, result.packet.state.heroTurn);
     }
 
     return c.json(

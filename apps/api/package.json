@@ -21,6 +21,7 @@
     "@lmntlz/content": "workspace:*",
     "@lmntlz/sim": "workspace:*",
     "@neondatabase/serverless": "^1.1.0",
+    "@vercel/blob": "^2.6.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.11.7",
     "jose": "^6.2.4",

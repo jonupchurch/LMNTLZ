@@ -43,6 +43,7 @@ import { accounts } from '../db/schema/accounts.js';
 import { battles, type BattleReason } from '../db/schema/battles.js';
 import { squads, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
+import { insertRecord } from '../replays/record.js';
 import { nextAttackStreak } from '../squads/ambush.js';
 
 /**
@@ -94,7 +95,28 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
         turnCount,
       })
       .where(and(eq(battles.id, battleId), sql`${battles.concludedAt} is null`))
-      .returning({ id: battles.id });
+      /**
+       * **Returning the record's source columns rather than selecting them.**
+       *
+       * Feature 008's permanent record is built from these, and a separate
+       * `SELECT` would be a second observation of the same row — leaving the
+       * record able to disagree with the settlement describing it. Since the
+       * record is the analytics product and cannot be corrected after the fact,
+       * "provably the same row" is worth more than a shorter returning clause.
+       */
+      .returning({
+        id: battles.id,
+        startedAt: battles.startedAt,
+        attackerId: battles.attackerId,
+        defenderId: battles.defenderId,
+        defenderIsBot: battles.defenderIsBot,
+        zone: battles.zone,
+        attackerSquad: battles.attackerSquad,
+        defenderSnapshot: battles.defenderSnapshot,
+        engineVersion: battles.engineVersion,
+        contentVersion: battles.contentVersion,
+        buildSha: battles.buildSha,
+      });
 
     if (concluded.length === 0) {
       const [already] = await tx
@@ -110,6 +132,25 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
         holdStreak: 0,
       };
     }
+
+    /**
+     * **The permanent record, inside this transaction** (008 T014).
+     *
+     * First among the writes that follow, and that ordering is deliberate: it is
+     * the only one that can never be reconstructed. Streaks can be recomputed
+     * from records; a record cannot be recomputed from anything.
+     *
+     * The **replay blob** is written by the caller *after* this commits — see
+     * `replays/record.ts` for why the two must not share a code path. In short: a
+     * blob write is a network call to a third party, and a transaction held open
+     * across it makes a Blob outage into an inability to finish battles.
+     */
+    await insertRecord(tx, {
+      source: { ...concluded[0]!, battleId },
+      conclusion,
+      turnCount,
+      concludedAt: now,
+    });
 
     let attackStreak = 0;
 
