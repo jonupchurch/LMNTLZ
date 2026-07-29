@@ -56,6 +56,27 @@ jobs:
             exit 1
           fi
 
+      # Compiling proves nothing about running. The deploy that finally built
+      # clean then answered FUNCTION_INVOCATION_FAILED on every request, because
+      # a workspace package's runtime export still pointed at a .ts file and
+      # Node cannot execute one. A successful build reported success.
+      - name: Import the built API and serve a request
+        run: |
+          node --input-type=module -e "
+            const app = (await import('./apps/api/dist/src/index.js')).default;
+            const res = await app.request('/v1/health');
+            if (res.status !== 200) {
+              console.error('::error::/v1/health returned ' + res.status);
+              process.exit(1);
+            }
+            const roster = await app.request('/v1/roster');
+            if (roster.status === 404) {
+              console.error('::error::/v1/roster is missing from the built artifact.');
+              process.exit(1);
+            }
+            console.log('served', await res.text());
+          "
+
       - name: Compile the API by naming the entrypoint, as Vercel does
         run: |
           if ! pnpm exec tsc apps/api/src/index.ts --noEmit --ignoreConfig \

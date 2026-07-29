@@ -60,10 +60,50 @@ function typeEntries(pkg: Manifest): string[] {
   return found;
 }
 
+/** Every value a *runtime* will actually try to load: `main`, and each
+ *  non-`types` export condition. */
+function runtimeEntries(pkg: Manifest & { main?: string }): string[] {
+  const found: string[] = [];
+  if (pkg.main) found.push(pkg.main);
+  for (const target of Object.values(pkg.exports ?? {})) {
+    if (typeof target === 'string') found.push(target);
+    else if (target && typeof target === 'object') {
+      for (const [condition, value] of Object.entries(target)) {
+        if (condition !== 'types' && typeof value === 'string') found.push(value);
+      }
+    }
+  }
+  return found;
+}
+
 describe('no package hands its raw source to a consumer type-checker', () => {
   it.each(PACKAGES)('%s declares types as .d.ts, never .ts', (dir) => {
     for (const entry of typeEntries(manifest(dir))) {
       expect(entry, `${dir} → ${entry}`).toMatch(/\.d\.ts$/);
+    }
+  });
+
+  /**
+   * **Libraries only.** `apps/api`'s own `main` is `src/index.ts` and must stay
+   * that way — it is not something another package imports, it is how Vercel's
+   * Hono preset *finds the entrypoint to compile*. Pointing it at built JS would
+   * be telling the platform there is nothing to build.
+   */
+  it.each(['packages/content', 'packages/sim'] as const)(
+    '%s serves runtime entries as .js, never .ts',
+    (dir) => {
+    /**
+     * **The other half, and it cost its own deploy.** Moving `types` to the
+     * built `.d.ts` fixed the build and left `default` pointing at
+     * `src/index.ts`, so the function compiled cleanly and then died on its
+     * first request: Node cannot execute TypeScript, and the `.js` specifiers
+     * inside the source resolve next to the `.ts` where nothing was emitted.
+     *
+     * `FUNCTION_INVOCATION_FAILED` rather than a build error — a *later* and
+     * more expensive place to find out, because the deploy reports success.
+     */
+    for (const entry of runtimeEntries(manifest(dir))) {
+      expect(entry, `${dir} → ${entry}`).not.toMatch(/\.tsx?$/);
     }
   });
 

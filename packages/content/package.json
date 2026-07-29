@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "//types": "TYPES COME FROM THE BUILD, RUNTIME COMES FROM SOURCE. Pointing `types` at src/index.ts means every consumer's type-checker re-derives this package from scratch under ITS OWN compiler options — and one of those consumers is Vercel, which compiles the API entrypoint by naming the file, so TypeScript refuses to load any tsconfig and runs with `strict` OFF. Zod v4's inference collapses to `unknown` without strict, so the deploy died on five errors in validate.ts that exist nowhere else. A .d.ts has no inference left to get wrong. `default` stays on source so Vite and Vitest keep the fast loop, and declarationMap means go-to-definition still lands in the .ts.",
-  "main": "./src/index.ts",
+  "//runtime": "`default` must be BUILT JAVASCRIPT, not source. Node cannot execute a .ts file, so pointing the runtime condition at src/index.ts produces a function that builds cleanly and then dies on its first request with ERR_MODULE_NOT_FOUND for `./heroes.generated.js` — the .js specifiers in the source resolve next to the .ts, where nothing was emitted. Everything therefore depends on `dist` existing before anything imports this package; turbo's `^build` guarantees that for test, typecheck and build alike.",
+  "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "default": "./src/index.ts"
+      "default": "./dist/src/index.js"
     }
   },
   "scripts": {

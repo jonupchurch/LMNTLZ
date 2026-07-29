@@ -8,15 +8,15 @@
   "exports": {
     "./rules": {
       "types": "./dist/rules/index.d.ts",
-      "default": "./rules/index.ts"
+      "default": "./dist/rules/index.js"
     },
     "./resolver": {
       "types": "./dist/resolver/index.d.ts",
-      "default": "./resolver/index.ts"
+      "default": "./dist/resolver/index.js"
     },
     "./ai": {
       "types": "./dist/ai/index.d.ts",
-      "default": "./ai/index.ts"
+      "default": "./dist/ai/index.js"
     }
   },
   "scripts": {
