@@ -117,9 +117,9 @@ is not.
 - [ ] T014 [US1] Implement `candidates(accountId)` in `apps/api/src/matchmaking/candidates.ts` — pool assembly, then rating **ORDER**. The signature takes no filter parameter (FR-011)
 - [ ] T015 [US1] Implement `GET /v1/matchmaking/candidates` in `apps/api/src/matchmaking/routes.ts` with `league`, `positionInLeague`, `gearScore`, `widened`, the candidate list, `ambushChance` and `consecutiveWins`
 - [ ] T016 [US1] Implement `GET /v1/me/standing` in `apps/api/src/matchmaking/routes.ts` — a player sees their own league and score. **An opponent's league is not named** unless the match was widened, because knowing your own already tells you every opponent's band (FR-006)
-- [ ] T017 [US1] Implement `ambushChance(accountId)` in `apps/api/src/matchmaking/candidates.ts` — `+2%` per consecutive attack win, capped at **90%**, **always displayed**, reset on a loss
-- [ ] T018 [US1] Implement `rollZone(seed, accountId)` in `apps/api/src/matchmaking/candidates.ts` — **the zone is the server's decision** and the field does not exist in any request body (Constitution XII)
-- [ ] T019 [US1] Serve every threshold, bleed constant and bot count from the server in `apps/api/src/matchmaking/config.ts` — **tunable without a client release**
+- [x] T017 [US1] **ALREADY BUILT BY 006** — `ambushChance(attackStreak)` in `apps/api/src/squads/ambush.js`, reused rather than reimplemented; `config.test.ts` asserts the reuse. Original text: Implement `ambushChance(accountId)` in `apps/api/src/matchmaking/candidates.ts` — `+2%` per consecutive attack win, capped at **90%**, **always displayed**, reset on a loss
+- [x] T018 [US1] **ALREADY BUILT BY 007** — the zone roll lives in `apps/api/src/battle/create.ts` and no request body carries a zone field. Original text: Implement `rollZone(seed, accountId)` in `apps/api/src/matchmaking/candidates.ts` — **the zone is the server's decision** and the field does not exist in any request body (Constitution XII)
+- [x] T019 [US1] Serve every threshold, bleed constant and bot count from the server in `apps/api/src/matchmaking/config.ts` — **tunable without a client release**
 
 **Checkpoint**: The loop that feeds every other loop works, inside its bound.
 
