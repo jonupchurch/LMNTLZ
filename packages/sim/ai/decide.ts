@@ -55,13 +55,22 @@ export function decideAction(
 
   const actor = heroStateOf(state, actorInstanceId);
   const power = getHero(actor.heroId).powers.find((p) => p.id === choice.powerId)!;
-  const { candidates } = legalTargets(
+  const legal = legalTargets(
     state,
     actorInstanceId,
     choice.powerId,
     context.filters ?? [],
     context.compulsion ?? null,
   );
+
+  // **Stage 3 is applied here, and it has to be.** `legalTargets` reports
+  // `compelled` alongside `candidates` rather than narrowing the set itself, so
+  // a caller that read `candidates` alone would silently drop every taunt in the
+  // game — the preference would sort the full pool and the compulsion would
+  // have no effect it could point at. Narrowing before the sort is also what
+  // makes "a taunt beats a priority" structural rather than a rule: by the time
+  // any preference runs, there is one champion left to prefer.
+  const candidates = legal.compelled === null ? legal.candidates : [legal.compelled];
 
   const chosen = power.friendly
     ? chooseAlly(state, seed, drawIndex, actorInstanceId, choice.powerId, config, candidates)

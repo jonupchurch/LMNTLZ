@@ -25,6 +25,7 @@ export {
   ROLE_DEFAULTS,
   SAFE_ORDERINGS,
   defaultConfigFor,
+  resolveConfig,
   roleDefaults,
   safeOrderings,
 } from './defaults.js';

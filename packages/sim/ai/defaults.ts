@@ -163,3 +163,34 @@ export function defaultConfigFor(hero: Hero): SquadMemberConfig {
   const { allyRule: _omitted, ...withoutAlly } = base;
   return Object.freeze(withoutAlly);
 }
+
+/**
+ * **Any explicit selection overrides the default** (FR-016).
+ *
+ * Field by field, not all-or-nothing: a player who set a ranking and never
+ * touched targeting keeps the role's targeting pair, rather than dropping to
+ * something arbitrary because one control was used. Partial configuration is the
+ * common case — the two lists are independent and there is no reason opening one
+ * should commit somebody to the other.
+ *
+ * The `allyRule` still comes off if the champion owns no friendly power, **even
+ * when one was saved**. A stale rule on a champion that cannot heal is a stored
+ * decision nothing will read, and leaving it would let a config survive a roster
+ * change looking meaningful.
+ */
+export function resolveConfig(hero: Hero, saved?: Partial<SquadMemberConfig>): SquadMemberConfig {
+  const base = defaultConfigFor(hero);
+  if (!saved) return base;
+
+  const merged: SquadMemberConfig = {
+    ...base,
+    ...(saved.targeting ? { targeting: saved.targeting } : {}),
+    ...(saved.ranking ? { ranking: saved.ranking } : {}),
+    ...(saved.allyRule ? { allyRule: saved.allyRule } : {}),
+  };
+
+  if (needsAllyRule(hero)) return Object.freeze(merged);
+
+  const { allyRule: _omitted, ...withoutAlly } = merged;
+  return Object.freeze(withoutAlly);
+}

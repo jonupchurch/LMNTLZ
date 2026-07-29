@@ -21,7 +21,6 @@ import { decideAction } from '../../ai/decide.js';
 import { atTurn, board, bytes, config, fixedSeed, powerOfTier } from './fixtures.js';
 
 const AI_DIR = join(import.meta.dirname, '../../ai');
-const SIX = ['h01', 'h02', 'h14', 'h19', 'h23', 'h25'];
 
 /** Six identical champions at identical HP in identical rows: nothing above
  *  tiebreak 5 can separate them, so the draw is forced to decide. */
