@@ -212,6 +212,31 @@ accounts and the rename mechanism, 12 (`profiles`) supplies avatars, 08
 
 **Downstream**: 16 (`ops-admin`) provides the surface a moderator works in.
 
+### This feature builds operator identity, because nothing else has
+
+**05 supplies accounts; it does not supply moderators.** Feature 005 shipped with
+no role, no permission and no operator concept at all. **This feature is the
+first that needs to authorise an action**, so the mechanism lands here — an
+action nobody can be authorised to take is not a feature.
+
+**Settled 2026-07-29: an environment allowlist mints a separate, short-lived
+operator token.** `OPERATOR_ACCOUNT_IDS` names who may become an operator; they
+exchange a gameplay session for an operator token carrying its scopes, and every
+moderation endpoint asks `requireOperator(capability)`. The full argument — and
+why *which token is trusted* is the only part that cannot be retrofitted — is in
+[016's spec](../016-ops-admin/spec.md#operator-identity--settled-2026-07-29-and-05-does-not-supply-it).
+
+Two rules for building it here:
+
+- **No moderation endpoint accepts a gameplay JWT.** Not one, not temporarily.
+  The whole value of the decision is that a stolen player session can never ban
+  anybody, and a single endpoint that shortcuts it removes that property for all
+  of them.
+- **`requireOperator` takes a capability from the first line written**, even
+  while every operator holds every capability. Adding the argument later means
+  editing every call site; passing it now means scoping is a change to one
+  function.
+
 ## Constitution Notes
 
 | # | Constraint | Bearing |

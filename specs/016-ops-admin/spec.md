@@ -186,26 +186,57 @@ and legible.
 ## Dependencies
 
 **Upstream**: 07 (`battle`) honours the flag, 08 (`replays`) defines what cleanup
-selects, 15 (`moderation`) defines the actions, 13 (`guilds`) defines succession,
-05 (`auth`) supplies operator identity.
+selects, 15 (`moderation`) defines the actions, 13 (`guilds`) defines succession.
 
-> **OPEN — 05 does not, in fact, supply operator identity.** Noted 2026-07-29,
-> when the first real account was created and there was no way to mark it as an
-> operator. Feature 005 shipped complete with **no role, no permission and no
-> operator concept of any kind**: `accounts` carries `username`, ban fields and
-> counters, and nothing else. This spec assumes that dependency is met and never
-> states what it is asking for.
->
-> **This has to be decided before 015, not before 016.** Feature 15 defines the
-> moderation actions, and an action nobody can be authorised to take is not a
-> feature. It is also the one place in the set where getting it wrong is a
-> security bug rather than a balance bug, so it deserves the argument on paper:
-> a role column, an environment allowlist of account ids, and a separate
-> operator credential are three genuinely different answers with different blast
-> radii — and the middle one needs no migration and no UI, which is worth
-> weighing against how it scales past one operator.
->
-> Nothing in 007–014 is blocked by it.
+### Operator identity — settled 2026-07-29, and 05 does not supply it
+
+**This spec used to claim 05 (`auth`) supplied operator identity. It does not.**
+Feature 005 shipped complete with **no role, no permission and no operator
+concept of any kind** — `accounts` carries `username`, the ban fields and
+counters, and nothing else. Discovered when the first real account was created
+and there was no way to mark it as an operator.
+
+**The decision: an environment allowlist mints a separate, short-lived operator
+token.**
+
+```
+gameplay JWT ──► POST /v1/operator/session      id ∈ OPERATOR_ACCOUNT_IDS ?
+                        │
+                        ▼
+                 operator token — short TTL, carries its scopes
+                        │
+                        ▼
+   POST /v1/moderation/*      requireOperator('ban')
+```
+
+Three things decided at once, and the third is the load-bearing one:
+
+- **Who** — an env allowlist of account ids, so **no database write can grant
+  operator authority**. A role column would move authority into a row the
+  application already writes, making any mass-update bug or future
+  account-editing endpoint a privilege-escalation path.
+- **Scope** — carried on the token, satisfying FR-010. It can start
+  all-or-nothing and grow into per-capability scopes **without touching a single
+  endpoint**, because the endpoints ask `requireOperator(capability)` from the
+  first line of code written.
+- **Which token is trusted** — *not* the gameplay JWT. This is the part that
+  cannot be retrofitted. Where the allowlist lives is one function and is
+  swappable at any time; **what the check trusts is inherited by every endpoint
+  that gets written against it.** If moderation ever accepts an ordinary
+  gameplay session, a stolen game session is permanently full admin, and undoing
+  it means revisiting all of them.
+
+Two requirements in this spec become expressible only because of the split.
+FR-009's *actor* is unambiguous — an operator token names one. And the edge case
+*"an operator acting on their own account"* is checkable at all, because
+operator and player stop being the same thing. It also answers the assumption
+that **the operator may be an agent rather than a person**: an agent holding a
+short-lived scoped token is a materially different thing to hold than one
+holding a credential that is also a player identity.
+
+**Built in 015, not here.** Feature 15 defines the moderation actions and is the
+first feature that needs to authorise one; this feature consumes the result.
+Nothing in 007–014 is blocked by it.
 
 **Downstream**: none — this is the top of the graph.
 

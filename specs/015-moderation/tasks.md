@@ -20,7 +20,16 @@ property of the feature and is trivial to assert — so it is written early.
 
 ## Path Conventions
 
-`apps/api/src/moderation/`, `workers/classify.ts`, `apps/api/src/db/schema/`.
+`apps/api/src/moderation/`, `apps/api/src/operator/`, `workers/classify.ts`,
+`apps/api/src/db/schema/`.
+
+> **This feature builds operator identity (T049–T053, Phase 2), because nothing
+> else has.** Feature 005 supplies accounts, not moderators — it shipped with no
+> role, no permission and no operator concept at all. This is the first feature
+> that needs to *authorise* an action, so the mechanism lands here. **An
+> environment allowlist mints a separate, short-lived operator token**; no
+> moderation route ever accepts a gameplay JWT. The argument is in
+> [016's spec](../016-ops-admin/spec.md#operator-identity--settled-2026-07-29-and-05-does-not-supply-it).
 
 > **The governing rule**: *no automated action is ever taken on a message or an
 > account. **A model scores; a human decides.*** That is a policy choice first — and
@@ -55,9 +64,30 @@ property of the feature and is trivial to assert — so it is written early.
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: A classifier with **no write access**, and an `issueBan` that cannot be called without an actor.
+**Purpose**: Operator identity, a classifier with **no write access**, and an `issueBan` that cannot be called without an actor.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
+
+#### Operator identity — T049–T053, first in build order
+
+> **Numbered out of sequence on purpose.** These five were added on 2026-07-29,
+> after this list was generated, when the decision recorded in `spec.md` settled.
+> They take the **highest** ids and the **earliest** position because renumbering
+> T006–T048 would silently invalidate every task id referenced in *Phase
+> Dependencies* below. Read the ids as identifiers, not as order.
+>
+> **T009 already assumes these exist.** `issueBan` cannot be called without an
+> actor — and until an operator can be identified, there is no actor to pass.
+
+- [ ] T049 Define `OPERATOR_ACCOUNT_IDS` parsing in `apps/api/src/operator/allowlist.ts` — a comma-separated env list, **read fresh rather than cached at module load**, so revoking an operator does not wait for a deploy. Follow the fail-closed shape of `battle/maintenance.ts`, inverted: **an unparseable list grants nobody**
+- [ ] T050 Define `OperatorCapability` and `mintOperatorToken(accountId, capabilities)` in `apps/api/src/operator/token.ts` — short TTL, scopes on the token, **and no path that produces one from a gameplay JWT alone** (016 FR-010)
+- [ ] T051 Add `POST /v1/operator/session` in `apps/api/src/operator/routes.ts` — exchanges a gameplay session for an operator token **only** for an id in the allowlist; **404 rather than 403** for everyone else, matching the battle routes' rule that a refusal must not confirm what it refused
+- [ ] T052 Implement `requireOperator(capability)` middleware in `apps/api/src/operator/require.ts` — **takes a capability argument from the first line written**, even while every operator holds every capability. Adding the parameter later means editing every call site; passing it now makes scoping a change to one function
+- [ ] T053 Write `apps/api/tests/operator/boundary.test.ts` — a valid **gameplay JWT gets 401 on every moderation route**, an operator token gets through, an expired one does not, and `rg -n "requireAuth" apps/api/src/moderation` returns **nothing**. This is the assertion that cannot be retrofitted: the day one moderation endpoint accepts a player session, a stolen session is permanently full admin
+
+**Checkpoint**: An operator exists, is distinguishable from a player, and no moderation route trusts a gameplay session
+
+#### The classifier and the action boundary
 
 - [ ] T006 Define the `Classifier` interface in `apps/api/src/moderation/classifier.ts` — **batching is an implementation detail**, and the interface returns scores and nothing else (FR-006, Constitution XIX)
 - [ ] T007 Give `classify` **no write access to messages at all** in `apps/api/src/moderation/classifier.ts` — FR-003 **by capability rather than by discipline**. The cheapest way to guarantee a model never acts is to give it nothing to act with
@@ -204,9 +234,14 @@ property of the feature and is trivial to assert — so it is written early.
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: needs features 005, 008, 012, 014
-- **Foundational (Phase 2)**: the capability boundaries — **blocks all four stories**
+- **Foundational (Phase 2)**: the capability boundaries — **blocks all four stories**.
+  Within the phase, **operator identity (T049–T053) comes before T006–T009**: T009
+  forbids an actorless ban, and until an operator can be identified there is no
+  actor to pass
 - **US1 (Phase 3)**: Foundational only
-- **US3 (Phase 4)**: needs the action signatures (T008, T009)
+- **US3 (Phase 4)**: needs the action signatures (T008, T009) **and `requireOperator`
+  (T052)** — a ban route with no operator gate is the one shortcut that cannot be
+  taken back
 - **US2 (Phase 5)**: needs the classifier interface (T006) and feature 014's enqueue
 - **US4 (Phase 6)**: needs US3's actions and feature 012's avatar queue
 - **Polish (Phase 7)**: depends on US1 and US3; **T044 additionally needs feature 008 running**
@@ -255,7 +290,7 @@ on them.** Stop after Phase 4 and validate — a classifier run changes not one 
 the harm queue cannot contain friction, and a three-argument `issueBan` does not
 compile.
 
-1. Phase 2: **no write access, and no actorless ban**
+1. Phase 2: **an operator who is not a player, no write access, and no actorless ban**
 2. Phase 3: US1 — the queue
 3. Phase 4: US3 — **STOP and VALIDATE** the mute threshold's one-guild case
 4. Phase 5–6: proactive scanning and notices

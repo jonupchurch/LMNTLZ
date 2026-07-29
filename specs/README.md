@@ -75,7 +75,7 @@ Nothing here may be implemented until every row is specified and planned.
 | 12 | **profiles** | The public profile, the **last 20 Visible battles selected rather than filtered**, CSV export with no squad composition. | `11` |
 | 13 | **guilds** | Founding at 650, three roles, invites, concurrent applications with first-acceptance-wins, succession, the emblem. | `08` |
 | 14 | **chat** | Six scopes, Ably as **fan-out only**, the synchronous blocklist gate, paid embeds at 5/10/25. | `11` |
-| 15 | **moderation** | The **asynchronous** classifier, reports, automatic mutes and human bans, Envoys with no powers. | `11` |
+| 15 | **moderation** | The **asynchronous** classifier, reports, automatic mutes and human bans, Envoys with no powers. **Also builds operator identity** — 005 supplies accounts, not moderators, and this is the first feature that authorises an action. | `11` |
 
 ### Layer 6 — operations
 
