@@ -16,19 +16,11 @@
  */
 
 import { Hono } from 'hono';
+import { apiError } from './errors.js';
+import { authRoutes } from './auth/routes.js';
 
-export interface ApiError {
-  readonly error: {
-    /** Stable, machine-readable, `snake_case`. Clients branch on this. */
-    readonly code: string;
-    /** Human-readable and safe to show. **Never** carries internal detail. */
-    readonly message: string;
-  };
-}
-
-export const apiError = (code: string, message: string): ApiError => ({
-  error: { code, message },
-});
+export { apiError } from './errors.js';
+export type { ApiError } from './errors.js';
 
 const app = new Hono();
 
@@ -47,6 +39,8 @@ const v1 = new Hono();
  * an unauthenticated caller a way to generate load.
  */
 v1.get('/health', (c) => c.json({ status: 'ok' }));
+
+v1.route('/', authRoutes);
 
 app.route('/v1', v1);
 

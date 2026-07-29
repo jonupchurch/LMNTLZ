@@ -1,0 +1,195 @@
+/**
+ * `/v1/auth/*` and `/v1/me`.
+ *
+ * **Every status in the contract's table is produced here deliberately**, and
+ * the distinctions matter more than they look:
+ *
+ * - `400` is *malformed* — no token, wrong type, not three segments. It says
+ *   "your request is wrong".
+ * - `401` is *unverified* — a real-looking token that failed a check. It says
+ *   "your credential is wrong", and it says **nothing about which check**, because
+ *   a caller that learns its `aud` was wrong while its signature was fine has
+ *   been handed an oracle.
+ * - `403` is *banned*, and it is the one that carries detail, because the player
+ *   needs to know the scope and when it lifts.
+ */
+
+import { Hono, type Context } from 'hono';
+import { apiError } from '../errors.js';
+import { providerFor } from './providers.js';
+import { InvalidProviderTokenError } from './provider.js';
+import { assertNotBanned, accountView, BannedAccountError, resolveAccount } from './accounts.js';
+import { issuePair, renewPair, revokeFamily, TokenRejectedError } from './tokens.js';
+import { requireContext, type AuthedEnv } from './context.js';
+import { requireSession } from './middleware.js';
+
+export const authRoutes = new Hono<AuthedEnv>();
+
+/** The body shape both token endpoints share, minus `isNewAccount`. */
+const pairBody = (
+  pair: Awaited<ReturnType<typeof issuePair>>,
+  account: { id: string; username: string; createdAt: Date },
+) => ({
+  session: {
+    token: pair.accessToken,
+    expiresAt: new Date(Date.now() + pair.expiresIn * 1000).toISOString(),
+  },
+  renewal: { token: pair.renewalToken },
+  account: {
+    id: account.id,
+    username: account.username,
+    createdAt: account.createdAt.toISOString(),
+  },
+});
+
+/**
+ * Parse a JSON body, or `null`.
+ *
+ * **Returns `null` rather than throwing** so a malformed body becomes a 400 the
+ * route writes itself, not a 500 from the global handler. A client sending
+ * broken JSON has made a client error, and telling them it was a server error
+ * sends them looking in the wrong place.
+ */
+async function jsonBody(c: Context): Promise<Record<string, unknown> | null> {
+  try {
+    const parsed: unknown = await c.req.json();
+    return typeof parsed === 'object' && parsed !== null
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// POST /v1/auth/google
+// ---------------------------------------------------------------------------
+
+authRoutes.post('/auth/google', async (c) => {
+  const body = await jsonBody(c);
+  const idToken = body?.['idToken'];
+
+  if (typeof idToken !== 'string' || idToken.length === 0) {
+    return c.json(apiError('malformed_request', 'An `idToken` is required.'), 400);
+  }
+
+  try {
+    const identity = await providerFor('google').verify(idToken);
+    const { account, isNewAccount } = await resolveAccount(identity);
+    assertNotBanned(account);
+
+    const pair = await issuePair(account.id);
+    return c.json({ ...pairBody(pair, account), isNewAccount }, 200);
+  } catch (err) {
+    if (err instanceof InvalidProviderTokenError) {
+      // `err.reason` names the failed check and goes to the log, not the wire.
+      console.warn(`[auth] google token rejected: ${err.reason}`);
+      return c.json(apiError('unauthenticated', 'The sign-in token is not valid.'), 401);
+    }
+    if (err instanceof BannedAccountError) {
+      return c.json(
+        {
+          ...apiError('account_suspended', 'This account is suspended.'),
+          scope: err.scope,
+          until: err.until.toISOString(),
+        },
+        403,
+      );
+    }
+    throw err;
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/auth/steam — the seam, built and dormant
+// ---------------------------------------------------------------------------
+
+authRoutes.post('/auth/steam', (c) =>
+  c.json(
+    apiError(
+      'not_implemented',
+      'Steam sign-in is not available yet. The route exists so that adding it ' +
+        'later changes nothing outside this feature.',
+    ),
+    501,
+  ),
+);
+
+// ---------------------------------------------------------------------------
+// POST /v1/auth/renew
+// ---------------------------------------------------------------------------
+
+authRoutes.post('/auth/renew', async (c) => {
+  const body = await jsonBody(c);
+  const renewal = body?.['renewal'];
+
+  if (typeof renewal !== 'string' || renewal.length === 0) {
+    return c.json(apiError('malformed_request', 'A `renewal` token is required.'), 400);
+  }
+
+  try {
+    const pair = await renewPair(renewal);
+    const account = await accountView(pairAccountId(pair.accessToken));
+    return c.json(
+      {
+        session: {
+          token: pair.accessToken,
+          expiresAt: new Date(Date.now() + pair.expiresIn * 1000).toISOString(),
+        },
+        renewal: { token: pair.renewalToken },
+        account: {
+          id: account.id,
+          username: account.username,
+          createdAt: account.createdAt,
+        },
+      },
+      200,
+    );
+  } catch (err) {
+    if (err instanceof TokenRejectedError) {
+      console.warn(`[auth] renewal rejected: ${err.reason}`);
+      return c.json(apiError('unauthenticated', 'The renewal token is not valid.'), 401);
+    }
+    throw err;
+  }
+});
+
+/**
+ * Read the subject out of a token we just signed ourselves.
+ *
+ * Decoding without verifying is normally the cardinal sin of this module. It is
+ * safe **only** because this token did not come from a caller — it was produced
+ * three lines ago by `renewPair`, from a key only this server holds. Anything
+ * arriving over the wire goes through `jwtVerify`, always.
+ */
+function pairAccountId(accessToken: string): string {
+  const [, payload] = accessToken.split('.');
+  return JSON.parse(Buffer.from(payload!, 'base64url').toString('utf8')).sub as string;
+}
+
+// ---------------------------------------------------------------------------
+// POST /v1/auth/revoke
+// ---------------------------------------------------------------------------
+
+authRoutes.post('/auth/revoke', async (c) => {
+  const body = await jsonBody(c);
+  const renewal = body?.['renewal'];
+
+  if (typeof renewal !== 'string' || renewal.length === 0) {
+    return c.json(apiError('malformed_request', 'A `renewal` token is required.'), 400);
+  }
+
+  // Idempotent, and silent about tokens it does not recognise — a 404 here
+  // would let anybody probe which tokens are real.
+  await revokeFamily(renewal);
+  return c.body(null, 204);
+});
+
+// ---------------------------------------------------------------------------
+// GET /v1/me
+// ---------------------------------------------------------------------------
+
+authRoutes.get('/me', requireSession, async (c) => {
+  const { accountId } = requireContext(c);
+  return c.json(await accountView(accountId), 200);
+});
