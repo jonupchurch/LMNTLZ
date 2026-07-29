@@ -71,6 +71,34 @@ export function phasesFor(
 }
 
 /**
+ * One unconditional tick of a cooldown record — the whole of the rule, in one
+ * place (feature 004 T015).
+ *
+ * Lifted out of `cooldownsAfterResolution` so that `firingProfile` can simulate
+ * with **the engine's own semantics rather than a second copy of them**. Feature
+ * 004's SC-003 requires the squad builder's prediction and the engine's
+ * behaviour to agree on every hero and every ordering; two implementations
+ * agreeing is a thing that has to be maintained, one implementation agreeing is
+ * a thing that cannot drift.
+ *
+ * A cooldown reaching zero is **removed** rather than stored as `0`. Absent and
+ * zero mean the same thing to every reader (`?? 0`), so keeping both would be
+ * two representations of one state.
+ */
+export function tickCooldowns(
+  cooldowns: Readonly<Record<string, number>>,
+): Readonly<Record<string, number>> {
+  const next: Record<string, number> = {};
+
+  for (const [powerId, remaining] of Object.entries(cooldowns)) {
+    const ticked = remaining - 1;
+    if (ticked > 0) next[powerId] = ticked;
+  }
+
+  return Object.freeze(next);
+}
+
+/**
  * Cooldowns after Resolution — integer turns, ticking **unconditionally**
  * (FR-024, FR-025).
  *
@@ -81,15 +109,7 @@ export function cooldownsAfterResolution(
   state: BattleState,
   instanceId: string,
 ): Readonly<Record<string, number>> {
-  const hero = heroStateOf(state, instanceId);
-  const next: Record<string, number> = {};
-
-  for (const [powerId, remaining] of Object.entries(hero.cooldowns)) {
-    const ticked = remaining - 1;
-    if (ticked > 0) next[powerId] = ticked;
-  }
-
-  return Object.freeze(next);
+  return tickCooldowns(heroStateOf(state, instanceId).cooldowns);
 }
 
 /** `04-turns.md`: tier 4 opens at turn 3, tier 5 at turn 5, everything else at 1. */
@@ -106,9 +126,23 @@ export function gateTurnFor(tier: number): number {
  */
 export function availablePowers(state: BattleState, instanceId: string): readonly Power[] {
   const hero = heroStateOf(state, instanceId);
-  const turn = state.heroTurn;
 
-  return getHero(hero.heroId).powers.filter(
-    (power) => (hero.cooldowns[power.id] ?? 0) <= 0 && turn >= gateTurnFor(power.tier),
+  return getHero(hero.heroId).powers.filter((power) =>
+    isPowerAvailable(power, hero.cooldowns, state.heroTurn),
   );
+}
+
+/**
+ * The availability test, as one predicate (feature 004 T015).
+ *
+ * Takes a cooldown record and a battle turn rather than a `BattleState`, so
+ * `firingProfile` can ask the same question of a simulated ladder that the
+ * engine asks of a real board. Same function, same answer, by construction.
+ */
+export function isPowerAvailable(
+  power: Power,
+  cooldowns: Readonly<Record<string, number>>,
+  battleTurn: number,
+): boolean {
+  return (cooldowns[power.id] ?? 0) <= 0 && battleTurn >= gateTurnFor(power.tier);
 }

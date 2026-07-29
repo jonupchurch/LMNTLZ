@@ -140,6 +140,30 @@ Buffers and one Striker, **none of whom receive the Tank ordering**.
 sweep** and report both horizons, because the squad builder's warning (FR-018) is
 a claim about the player's actual battles, not about a 60-turn asymptote.
 
+### Two corrections from the TypeScript port *(2026-07-28, T003–T006)*
+
+`tools/characterize-orderings.ts` reproduces **every** headline figure above
+exactly — the greedy shares to the decimal, the `16.7/16.7/19.2/24.4/20.2/3.0%`
+histogram, 12 universally safe orderings, median 13 per hero, 32 of 720 keeping
+tiers 1–5 live at 9 turns, and all 12 ending in tier 0. Two of the supporting
+numbers in this section do not survive:
+
+1. **"The 12 … are the intersection of safe at both horizons" is wrong — it is
+   11.** `4·3·2·1·5·0` is 60-turn safe only; at 9 turns it loses tier 5 on the
+   four heroes carrying the fast `0·1·2·3·4·6` ladder — Cirrolan, Lucen, Umbriel
+   and Silka Pinquick. **This is not a fault**, and the paragraph three lines
+   above says why: none of those four receive the Tank ordering. But it means
+   *universally safe at 9 turns* is the wrong tripwire, and the sweep reports it
+   rather than failing on it. **The check that matters is the scoped one** — each
+   default against its own role's heroes — and all four pass.
+2. **"tier 0 on 8 of 12" for the Striker default is 7 of 12.** The five with the
+   slower `…6·8` and `…7·9` ladders (Kaellis, Reyna, Vantric, Boldrek, Hettamar)
+   fire tier 0 once each. The row's actual claim — *tier 0 only; nothing else* —
+   is unaffected.
+
+Both are the same shape as the defect Finding 1 found: a consequence reasoned out
+correctly for the common case and then stated one step wider than it holds.
+
 ---
 
 ## Q2 — How the firing profile is computed *(computed)*

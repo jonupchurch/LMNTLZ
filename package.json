@@ -11,9 +11,14 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "format": "prettier --write .",
-    "content:build": "tsx tools/build-content.ts"
+    "content:build": "tsx tools/build-content.ts",
+    "//sweep": "Feature 004's characterisation. NOT in CI — 19,440 pairs at two horizons is an offline measurement; CI runs the 324 fast cases in packages/sim/tests/ai/. Re-run before the hero-numbers pass locks.",
+    "sweep:orderings": "tsx tools/characterize-orderings.ts"
   },
+  "//devDependencies": "@lmntlz/content and @lmntlz/sim are here because tools/ belongs to this package: characterize-orderings.ts imports the roster and the shared cooldown model rather than re-reading the workbook and re-simulating them.",
   "devDependencies": {
+    "@lmntlz/content": "workspace:*",
+    "@lmntlz/sim": "workspace:*",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",

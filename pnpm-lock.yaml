@@ -11,6 +11,12 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
+      '@lmntlz/content':
+        specifier: workspace:*
+        version: link:packages/content
+      '@lmntlz/sim':
+        specifier: workspace:*
+        version: link:packages/sim
       '@types/node':
         specifier: ^26.1.2
         version: 26.1.2

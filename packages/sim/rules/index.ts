@@ -68,9 +68,33 @@ export {
   cooldownsAfterResolution,
   gateTurnFor,
   isIncapacitated,
+  isPowerAvailable,
   phasesFor,
+  tickCooldowns,
 } from './phases.js';
 export type { EffectStep, Phase } from './phases.js';
+
+/**
+ * **Feature 004's one client-visible export** (T014).
+ *
+ * Everything else in that feature is a *choice* and lives behind the server-only
+ * `@lmntlz/sim/ai`. A firing profile is arithmetic, and the squad builder needs
+ * it on every drag of a ranking widget — so it belongs here, where the client
+ * can import it.
+ */
+export {
+  BATTLE_TURNS,
+  InvalidRankingError,
+  LIVE_SHARE_THRESHOLD,
+  SWEEP_TURNS,
+  chargeAfterFiring,
+  firingProfile,
+  isSafeOrdering,
+  isSafeOrderingFor,
+  nextAvailableTurn,
+  rankOneFiringCount,
+} from './firingProfile.js';
+export type { FiringProfileEntry, PowerRanking } from './firingProfile.js';
 
 export {
   HERO_TURN_CAP,
