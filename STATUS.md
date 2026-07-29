@@ -154,8 +154,30 @@ arrives. **Tell him at the boundary, not when T001 fails.**
 **Neon is the database for every environment**, tests included. Local PostgreSQL 15
 exists on the machine as a fallback if the DB suite ever gets slow; it is not part
 of the design. Vendors after that: **Vercel Blob** at 008, **Paddle** and **Resend**
-at 011, **Ably** at 014. **Paddle is the one with real lead time** — merchant-of-record
-vetting takes days, so start it during stage 3, not on the day 011 begins.
+at 011, **Ably** at 014.
+
+> ### ⚠️ Paddle verification is gated on a live website, not on a queue
+>
+> **Corrected 2026-07-28.** The earlier note here said to start merchant-of-record
+> vetting early because it takes days. That is true and it is not the binding
+> constraint: **Paddle will not verify an account until there is a public site to
+> review** — so it cannot be started early, however much anyone wants to.
+>
+> The **sandbox is set up and is enough to build all of feature 011 against**:
+> its own keys, its own test cards, the full API. So nothing is blocked today.
+>
+> **The risk is at the far end.** 011 gets built, everything passes in sandbox,
+> and then going live stalls on a review that could not begin until the client
+> shipped. To avoid that, treat the pages Paddle needs as **part of feature 006**
+> rather than as launch paperwork:
+>
+> - a real product/pricing page describing what is sold and for how much
+> - terms of service · privacy policy · **refund policy**
+> - a contact route that reaches a person
+>
+> None of those are in any `tasks.md` today. **Feature 006 is where they belong**,
+> and the moment its client is deployed with them, the verification can start and
+> run in parallel with 007–010 instead of blocking after 011.
 
 ### What each feature's MVP stops at
 
