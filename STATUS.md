@@ -1,27 +1,23 @@
-# LMNTLZ — Status
-
-_Snapshot; updated each work session. Last updated: 2026-07-28._
-
 ## Current phase
 
-**Features 001, 002, 003 and 004 are BUILT and green — 182 of 767 tasks, and
-the whole rules half of the game.** 392 tests; lint, typecheck and a content
-rebuild all clean.
+**Features 001–005 are built. 231 of 767 tasks, and the API is deployed and
+serving.** 520 tests; lint, typecheck and build all clean.
 
-> ### ⛔ Feature 005 is the infrastructure gate, and it is next.
->
-> **Jon creates the Vercel project, the Neon project and the Google OAuth client
-> himself** — they are billable accounts in his name, and he asked to be told
-> when the moment arrived. **It has arrived.** `specs/005-auth/tasks.md` opens
-> with the STOP block listing all three. Nothing before this needed a database, a
-> host, a vendor account or a bill.
+`https://lmntlz-jupchurch-7994s-projects.vercel.app/v1/health` returns
+`{"status":"ok"}`. Two migrations are applied to Neon and verified by querying
+`information_schema` rather than by trusting the migrator.
 
 | Feature | Tasks | State |
 |---|---|---|
 | **001** content-package | 43/43 | roster, derivation, effectiveness, `contentVersion`, CI regenerate-and-diff |
 | **002** sim-rules | 54/54 | pure and shared — purity gate, reach, targeting, damage, turn order, ending |
 | **003** sim-resolver | 40/40 | SplitMix64, seed custody, replay, re-derivation |
-| **004** defense-ai | 45/45 | firing profile, power choice, the five-step tiebreak, role defaults, the reach window |
+| **004** defense-ai | 45/45 | firing profile, power choice, the five-step tiebreak, role defaults, reach window |
+| **005** auth | **48/49** | `apps/api` — Hono, Drizzle, Neon, Google, rotation, linking, usernames |
+
+**Only T049 remains in 005** — the manual quickstart pass, including the JWKS
+rotation check against a fixture. **Feature 006, the client, is next**, and it
+carries three prerequisites recorded below that appear in no `tasks.md`.
 
 Spec-Kit itself is finished; all sixteen features carry `tasks.md`.
 
