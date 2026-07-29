@@ -3,7 +3,28 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "types": ["node"]
+    "types": ["node"],
+
+    // Overridden from the base config, and only here.
+    //
+    // Vercel's Hono builder compiles `src/index.ts` by NAMING THE FILE, and
+    // TypeScript then refuses to load tsconfig.json at all — it says so:
+    //   TS5112: tsconfig.json is present but will not be loaded if files are
+    //           specified on commandline.
+    // So that compile runs without `skipLibCheck` and without `types: ["node"]`,
+    // and immediately reports ~25 errors that are nothing to do with our code:
+    // every `process` and `Buffer` reference, plus drizzle-orm's own .d.ts files
+    // for the MySQL and Gel dialects we do not use.
+    //
+    // With `noEmitOnError: true` those become `Error: src/index.ts: Emit
+    // skipped` and the deploy fails with no errors printed — which is why this
+    // took a local repro to find rather than a reading of the log.
+    //
+    // **Nothing is lost by turning it off.** `tsc` still exits non-zero on a
+    // real error, so `pnpm build`, Turbo and CI all still fail; the only change
+    // is that output may be written alongside the failure. The protection was
+    // against stale JS in `dist/`, and the exit code already provides it.
+    "noEmitOnError": false
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"]
 }
