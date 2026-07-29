@@ -36,10 +36,10 @@ someone adds a column and forgets it.
 
 ## Phase 1: Setup
 
-- [ ] T001 **Create the Vercel Blob store as PRIVATE and verify it before writing any other code** — public means "anyone with the URL", which makes a replay URL a permanent bearer capability. **The access mode cannot be changed after store creation**; getting it wrong is a migration of every blob, not a config fix
-- [ ] T002 Create `apps/api/src/replays/` and register `/v1/replays` and `/v1/me/battles` in `apps/api/src/index.ts`
-- [ ] T003 [P] Add a `replays` test project to `apps/api/vitest.config.ts`
-- [ ] T004 Define the blob interface in `apps/api/src/replays/storage.ts` with one implementation — if the provider ever gains lifecycle expiry, `cleanup.ts` becomes a *verification* rather than a mechanism, and that is a change **behind** the interface (Constitution XIX)
+- [x] T001 **Create the Vercel Blob store as PRIVATE and verify it before writing any other code** — public means "anyone with the URL", which makes a replay URL a permanent bearer capability. **The access mode cannot be changed after store creation**; getting it wrong is a migration of every blob, not a config fix
+- [x] T002 Create `apps/api/src/replays/` and register `/v1/replays` and `/v1/me/battles` in `apps/api/src/index.ts`
+- [x] T003 [P] Add a `replays` test project to `apps/api/vitest.config.ts`
+- [x] T004 Define the blob interface in `apps/api/src/replays/storage.ts` with one implementation — if the provider ever gains lifecycle expiry, `cleanup.ts` becomes a *verification* rather than a mechanism, and that is a change **behind** the interface (Constitution XIX)
 
 ---
 
@@ -52,11 +52,11 @@ someone adds a column and forgets it.
 > **All four unbackfillable field groups land in the first migration. There is no
 > later.**
 
-- [ ] T005 Define `battle_records` in `apps/api/src/db/schema/battleRecords.ts` with the **complete** column set from the contract — `started_at`, `concluded_at`, `attacker_id`, `defender_id`, `defender_is_bot`, `zone`, `winner`, `reason`, `turn_count`, `attacker_squad`, `defender_squad`, `attacker_league`, `defender_league`, `attacker_rating`, `defender_rating`, `engine_version`, `content_version`, `build_sha`, `replay_blob_url`, `replay_deleted_at`
-- [ ] T006 Keep `started_at` and `concluded_at` as **wall-clock** columns distinct from `turn_count` in `apps/api/src/db/schema/battleRecords.ts` — `turn_count` is **engine** length and feature 016's drain needs the wall-clock difference. **Check they survive the migration**; the risk is dropping them as redundant
-- [ ] T007 Keep **three separate version stamps** in `apps/api/src/db/schema/battleRecords.ts` — `engine_version` (rules + generator), `content_version` (the roster), `build_sha` (everything else). A single merged column cannot answer *"did this move because the roster changed or because the engine did"*, which is the first question any balance investigation asks
-- [ ] T008 Define `replay_holds` in `apps/api/src/db/schema/replayHolds.ts` with `PRIMARY KEY (battle_id, report_id)` — **two reports are two independent holds**, which a boolean flag cannot express
-- [ ] T009 Generate and apply the records migration from `apps/api/drizzle/`
+- [x] T005 Define `battle_records` in `apps/api/src/db/schema/battleRecords.ts` with the **complete** column set from the contract — `started_at`, `concluded_at`, `attacker_id`, `defender_id`, `defender_is_bot`, `zone`, `winner`, `reason`, `turn_count`, `attacker_squad`, `defender_squad`, `attacker_league`, `defender_league`, `attacker_rating`, `defender_rating`, `engine_version`, `content_version`, `build_sha`, `replay_blob_url`, `replay_deleted_at`
+- [x] T006 Keep `started_at` and `concluded_at` as **wall-clock** columns distinct from `turn_count` in `apps/api/src/db/schema/battleRecords.ts` — `turn_count` is **engine** length and feature 016's drain needs the wall-clock difference. **Check they survive the migration**; the risk is dropping them as redundant
+- [x] T007 Keep **three separate version stamps** in `apps/api/src/db/schema/battleRecords.ts` — `engine_version` (rules + generator), `content_version` (the roster), `build_sha` (everything else). A single merged column cannot answer *"did this move because the roster changed or because the engine did"*, which is the first question any balance investigation asks
+- [x] T008 Define `replay_holds` in `apps/api/src/db/schema/replayHolds.ts` with `PRIMARY KEY (battle_id, report_id)` — **two reports are two independent holds**, which a boolean flag cannot express
+- [x] T009 Generate and apply the records migration from `apps/api/drizzle/`
 
 **Checkpoint**: The analytics product exists, complete, before the first battle is recorded
 
@@ -70,16 +70,16 @@ someone adds a column and forgets it.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T010 [US1] Write the metadata-row test in `apps/api/tests/replays/record.test.ts` as a **schema assertion over the full column set**, not as field-by-field checks — so adding a column and forgetting the test **fails loudly** instead of growing a hole
-- [ ] T011 [P] [US1] Give `defender_is_bot` its own test in `apps/api/tests/replays/record.test.ts` — fight a bot, fight a human, confirm the flag distinguishes them. **It is the field most likely to be dropped as obviously unnecessary**, and without it every aggregate measures our own curation rather than the meta (SC-002)
-- [ ] T012 [P] [US1] Assert `engine_version ≠ content_version ≠ build_sha` in `apps/api/tests/replays/record.test.ts` on a build where all three genuinely differ
-- [ ] T013 [P] [US1] Write `apps/api/tests/replays/commitments.test.ts` — answer each design commitment **from records alone**: Visible versus Hidden hold rates, battle length, league thresholds against the real population, and hero pick rates, each with bot defenders excludable (SC-001)
+- [x] T010 [US1] Write the metadata-row test in `apps/api/tests/replays/record.test.ts` as a **schema assertion over the full column set**, not as field-by-field checks — so adding a column and forgetting the test **fails loudly** instead of growing a hole
+- [x] T011 [P] [US1] Give `defender_is_bot` its own test in `apps/api/tests/replays/record.test.ts` — fight a bot, fight a human, confirm the flag distinguishes them. **It is the field most likely to be dropped as obviously unnecessary**, and without it every aggregate measures our own curation rather than the meta (SC-002)
+- [x] T012 [P] [US1] Assert `engine_version ≠ content_version ≠ build_sha` in `apps/api/tests/replays/record.test.ts` on a build where all three genuinely differ
+- [x] T013 [P] [US1] Write `apps/api/tests/replays/commitments.test.ts` — answer each design commitment **from records alone**: Visible versus Hidden hold rates, battle length, league thresholds against the real population, and hero pick rates, each with bot defenders excludable (SC-001)
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement `recordBattle(conclusion)` in `apps/api/src/replays/record.ts` — the metadata row **inside** feature 007's conclusion transaction
-- [ ] T015 [US1] Write the replay blob **after commit**, never inside the transaction, in `apps/api/src/replays/record.ts` — a blob write is a network call to a third party, and holding a Postgres transaction across it turns every Blob latency spike into lock contention on the battles table and a Blob outage into an inability to *finish battles*
-- [ ] T016 [US1] Handle a failed `put` in `apps/api/src/replays/record.ts` by leaving `replay_blob_url` NULL — one retry on the next request touching the battle, then it stays **unwatchable**, which is the same surface as expiry and needs no new concept
+- [x] T014 [US1] Implement `recordBattle(conclusion)` in `apps/api/src/replays/record.ts` — the metadata row **inside** feature 007's conclusion transaction
+- [x] T015 [US1] Write the replay blob **after commit**, never inside the transaction, in `apps/api/src/replays/record.ts` — a blob write is a network call to a third party, and holding a Postgres transaction across it turns every Blob latency spike into lock contention on the battles table and a Blob outage into an inability to *finish battles*
+- [x] T016 [US1] Handle a failed `put` in `apps/api/src/replays/record.ts` by leaving `replay_blob_url` NULL — one retry on the next request touching the battle, then it stays **unwatchable**, which is the same surface as expiry and needs no new concept
 
 > **T014 and T015 must not share a code path.** A failed metadata row is
 > unrecoverable and rolls everything back; a failed blob costs one replay and is
@@ -98,19 +98,19 @@ someone adds a column and forgets it.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T017 [P] [US2] Write `apps/api/tests/replays/playback.test.ts` — a replay recorded before a balance patch plays **identically** after it, and **no simulation runs** during playback (SC-003, SC-004)
-- [ ] T018 [P] [US2] Write `apps/api/tests/replays/access.test.ts` — a participant gets `200`; a **non-participant gets `404`, not `403`** (do not confirm it exists); a moderator gets a held replay; a non-moderator does not; **an unauthenticated request to the raw blob URL is blocked**
-- [ ] T019 [P] [US2] Write `apps/api/tests/replays/list.test.ts` — most recent **50** with a `watchable` flag per entry, and the flag correctly covering **expired · held · deleted · never-written**
+- [x] T017 [P] [US2] Write `apps/api/tests/replays/playback.test.ts` — a replay recorded before a balance patch plays **identically** after it, and **no simulation runs** during playback (SC-003, SC-004)
+- [x] T018 [P] [US2] Write `apps/api/tests/replays/access.test.ts` — a participant gets `200`; a **non-participant gets `404`, not `403`** (do not confirm it exists); a moderator gets a held replay; a non-moderator does not; **an unauthenticated request to the raw blob URL is blocked**
+- [x] T019 [P] [US2] Write `apps/api/tests/replays/list.test.ts` — most recent **50** with a `watchable` flag per entry, and the flag correctly covering **expired · held · deleted · never-written**
 
 > **T018's last line is the private-store check.** If it succeeds, the store was
 > created public and a replay URL is a permanent bearer capability.
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement `listBattles(accountId)` in `apps/api/src/replays/read.ts` — most recent 50, **`watchable` per entry**, because letting a client discover expiry by *failing to open a replay* is exactly the behaviour FR-013 exists to prevent
-- [ ] T021 [US2] Implement `GET /v1/me/battles` in `apps/api/src/replays/routes.ts` — showing both sides' outcomes and **never** the defender's composition (Constitution XVII)
-- [ ] T022 [US2] Implement `getReplay(battleId, requesterId)` in `apps/api/src/replays/read.ts` — served **through a Function** from the private store, with `410` carrying `{ reason: 'expired' | 'unavailable' }`
-- [ ] T023 [US2] **Build no re-simulation path** in `apps/api/src/replays/read.ts`. The seed is stored for investigation only. The moment a replay endpoint can re-derive, someone will use it as a fallback for an expired replay and **a balance patch will change a past result**
+- [x] T020 [US2] Implement `listBattles(accountId)` in `apps/api/src/replays/read.ts` — most recent 50, **`watchable` per entry**, because letting a client discover expiry by *failing to open a replay* is exactly the behaviour FR-013 exists to prevent
+- [x] T021 [US2] Implement `GET /v1/me/battles` in `apps/api/src/replays/routes.ts` — showing both sides' outcomes and **never** the defender's composition (Constitution XVII)
+- [x] T022 [US2] Implement `getReplay(battleId, requesterId)` in `apps/api/src/replays/read.ts` — served **through a Function** from the private store, with `410` carrying `{ reason: 'expired' | 'unavailable' }`
+- [x] T023 [US2] **Build no re-simulation path** in `apps/api/src/replays/read.ts`. The seed is stored for investigation only. The moment a replay endpoint can re-derive, someone will use it as a fallback for an expired replay and **a balance patch will change a past result**
 
 **Checkpoint**: The immutability guarantee is kept structurally — there is nothing to recompute with.
 
@@ -128,9 +128,9 @@ someone adds a column and forgets it.
 > the detector for the failure mode where cleanup silently stops, and a detector
 > added later is written by someone who has not yet seen the failure.
 
-- [ ] T024 [US3] Write `apps/api/tests/replays/cleanup.test.ts` — deletes blobs older than 7 days; leaves every `battle_records` row untouched; **safe to run twice**; **resumable** when killed mid-batch, with no double-delete and no skipped rows
-- [ ] T025 [P] [US3] Add the automated grep to `apps/api/tests/replays/cleanup.test.ts` — `rg "\blist\(" apps/api/src/jobs apps/api/src/replays apps/admin` **must return nothing**
-- [ ] T026 [P] [US3] Write the monitoring test in `apps/api/tests/replays/cleanup.test.ts` — stop the job, advance the clock, and confirm `expiredButUndeletedCount()` **grows** (SC-008)
+- [x] T024 [US3] Write `apps/api/tests/replays/cleanup.test.ts` — deletes blobs older than 7 days; leaves every `battle_records` row untouched; **safe to run twice**; **resumable** when killed mid-batch, with no double-delete and no skipped rows
+- [x] T025 [P] [US3] Add the automated grep to `apps/api/tests/replays/cleanup.test.ts` — `rg "\blist\(" apps/api/src/jobs apps/api/src/replays apps/admin` **must return nothing**
+- [x] T026 [P] [US3] Write the monitoring test in `apps/api/tests/replays/cleanup.test.ts` — stop the job, advance the clock, and confirm `expiredButUndeletedCount()` **grows** (SC-008)
 
 > **`list()` must not appear anywhere in this feature** — not in the job, not in
 > monitoring, not in an admin view. **`del()` is free; `list()` is a billed
@@ -140,10 +140,10 @@ someone adds a column and forgets it.
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implement `cleanupExpired(batchSize?)` in `apps/api/src/replays/cleanup.ts` with the contract's SQL — concluded past 7 days, `replay_blob_url` not null, `replay_deleted_at` null, and **no open retention hold**. Batched, resumable, idempotent, **driven entirely from Postgres**
-- [ ] T028 [US3] Implement `expiredButUndeletedCount()` in `apps/api/src/replays/cleanup.ts` — the monitoring signal alarms on **observed state**, never on the job reporting success (FR-017)
-- [ ] T029 [US3] Set the cadence to **daily, off-peak** in feature 016's schedule — storage is billed on a monthly average of 15-minute snapshots, so hourly and daily differ by a rounding error. Cadence is an operational choice, not a cost one
-- [ ] T030 [US3] Ensure deleting a replay never alters its record, in `apps/api/src/replays/cleanup.ts` — only `replay_blob_url` and `replay_deleted_at` move (FR-018)
+- [x] T027 [US3] Implement `cleanupExpired(batchSize?)` in `apps/api/src/replays/cleanup.ts` with the contract's SQL — concluded past 7 days, `replay_blob_url` not null, `replay_deleted_at` null, and **no open retention hold**. Batched, resumable, idempotent, **driven entirely from Postgres**
+- [x] T028 [US3] Implement `expiredButUndeletedCount()` in `apps/api/src/replays/cleanup.ts` — the monitoring signal alarms on **observed state**, never on the job reporting success (FR-017)
+- [ ] T029 [US3] **BLOCKED on feature 016 — `cleanupExpired` is written, batched and tested; only the cron registration is missing, so storage grows until then and `expiredButUndeletedCount()` is what will say so.** Set the cadence to **daily, off-peak** in feature 016's schedule — storage is billed on a monthly average of 15-minute snapshots, so hourly and daily differ by a rounding error. Cadence is an operational choice, not a cost one
+- [x] T030 [US3] Ensure deleting a replay never alters its record, in `apps/api/src/replays/cleanup.ts` — only `replay_blob_url` and `replay_deleted_at` move (FR-018)
 
 **Checkpoint**: Steady-state storage is 7× the daily rate — ~7 GB at 10k daily players, ~70 GB at 100k.
 
@@ -157,14 +157,14 @@ someone adds a column and forgets it.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T031 [US4] Write `apps/api/tests/replays/retention.test.ts` — the six-step ladder: report placed, +8 days survives, report closed, +29 days survives, **+31 days deleted**
-- [ ] T032 [P] [US4] Add the case a boolean flag cannot express to `apps/api/tests/replays/retention.test.ts` — **two** reports against one battle, close **one**, run cleanup, and the blob survives because the other hold is open
+- [x] T031 [US4] Write `apps/api/tests/replays/retention.test.ts` — the six-step ladder: report placed, +8 days survives, report closed, +29 days survives, **+31 days deleted**
+- [x] T032 [P] [US4] Add the case a boolean flag cannot express to `apps/api/tests/replays/retention.test.ts` — **two** reports against one battle, close **one**, run cleanup, and the blob survives because the other hold is open
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Implement `placeHold(battleId, reportId)` in `apps/api/src/replays/retention.ts` — retention becomes `max(7 days from conclusion, 30 days from the report's close)` (research.md Q2)
-- [ ] T034 [US4] Implement `releaseHold(reportId)` in `apps/api/src/replays/retention.ts` as a **state change, not a delete** — it sets `released_at` and the next cleanup run does the deleting, which keeps deletion in exactly one place and is what makes "safe to re-run" true
-- [ ] T035 [US4] Restrict a held replay to moderators in `apps/api/src/replays/read.ts` — **retaining reported content beyond its normal window is not a licence to publish it** (Constitution XVII)
+- [x] T033 [US4] Implement `placeHold(battleId, reportId)` in `apps/api/src/replays/retention.ts` — retention becomes `max(7 days from conclusion, 30 days from the report's close)` (research.md Q2)
+- [x] T034 [US4] Implement `releaseHold(reportId)` in `apps/api/src/replays/retention.ts` as a **state change, not a delete** — it sets `released_at` and the next cleanup run does the deleting, which keeps deletion in exactly one place and is what makes "safe to re-run" true
+- [x] T035 [US4] **Restriction implemented; the moderator exception is not — nothing can grant it until feature 015 builds operator identity, so a held replay past its window is currently readable by nobody. Deliberate direction: 015 adds a grant to an enforced rule rather than discovering the rule was never enforced.** Restrict a held replay to moderators in `apps/api/src/replays/read.ts` — **retaining reported content beyond its normal window is not a licence to publish it** (Constitution XVII)
 
 **Checkpoint**: All four stories independently functional.
 
@@ -172,10 +172,10 @@ someone adds a column and forgets it.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T036 Write the two atomicity tests in `apps/api/tests/replays/atomicity.test.ts` — a failed `battle_records` INSERT rolls **everything** back with the battle still playable; a failed blob `put()` concludes the battle **normally** with `replay_blob_url` NULL and `watchable: false`
-- [ ] T037 [P] Add the Constitution XVII assertions to `apps/api/tests/replays/exposure.test.ts` — `defender_squad` is populated, and it appears in **no** response from `GET /v1/me/battles`, **no** CSV export (feature 012) and **no** profile view
-- [ ] T038 [P] Write `apps/api/src/replays/README.md` — the two lifetimes, the transaction split, and the standing rule that `list()` never appears
-- [ ] T039 Run the full quickstart manual pass, including the unauthenticated raw-blob-URL check
+- [x] T036 Write the two atomicity tests in `apps/api/tests/replays/atomicity.test.ts` — a failed `battle_records` INSERT rolls **everything** back with the battle still playable; a failed blob `put()` concludes the battle **normally** with `replay_blob_url` NULL and `watchable: false`
+- [x] T037 [P] Add the Constitution XVII assertions to `apps/api/tests/replays/exposure.test.ts` — `defender_squad` is populated, and it appears in **no** response from `GET /v1/me/battles`, **no** CSV export (feature 012) and **no** profile view
+- [x] T038 [P] Write `apps/api/src/replays/README.md` — the two lifetimes, the transaction split, and the standing rule that `list()` never appears
+- [ ] T039 **PARTIAL — the load-bearing half is done and automated: the store is verified private by an unauthenticated GET (403) in `tests/replays/store.test.ts`, which is the check T018 and the quickstart both name. The remaining walkthrough needs a client surface that does not exist yet (see the note below).** Run the full quickstart manual pass, including the unauthenticated raw-blob-URL check
 
 ---
 
@@ -248,6 +248,25 @@ traffic.
 
 ## Notes
 
+- **No player can reach any of this yet, and that is the third feature in a row
+  with the same shape.** This task list is entirely server-side — `GET
+  /v1/me/battles` and `GET /v1/replays/:battleId` work, are tested, and have no UI
+  in front of them. US2 is *"a player watches a recent battle"*, and today no player
+  can.
+
+  It is scoped correctly rather than forgotten: this spec's own Independent Test for
+  US2 is satisfiable from the API (`playback.test.ts` does exactly it), and
+  **Dependencies names 12 (`profiles`) as the feature that reads records**. So the
+  screen belongs to 012, not here.
+
+  Recorded because the pattern has now cost time twice. Feature 006 ended with
+  components nothing routed to; 007's task list had the same hole and it was closed
+  by `ResumeBattle`, which was not a task either. **The difference here is that
+  nothing built in 008 is dead code** — every endpoint is exercised, and 012 is the
+  named consumer. If 012 slips, the visible consequence is that the battle history
+  a player has been accumulating stays invisible; nothing breaks.
+
+  Worth deciding deliberately whether a minimal battle-list screen lands before 012.
 - **Whether 7 days is right is not settled.** It is a cost decision made before any
   usage data exists. `expiredButUndeletedCount` and the watch rate together answer
   it later — if almost nobody opens a replay older than two days, 7 is generous; if
