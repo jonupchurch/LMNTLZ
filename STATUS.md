@@ -187,12 +187,21 @@ at 011, **Ably** at 014.
    previews private and makes production public. Settings → Deployment
    Protection.
 2. **Google's authorized JavaScript origins need the client's real domain.**
-   Only `http://localhost:5173` is registered today, because the client project
-   does not exist. Google does **not** support wildcard origins and Vercel gives
-   every preview deployment a unique URL, so preview deploys cannot do Google
-   sign-in unless a stable branch domain or custom domain is registered. Decide
-   which at 006; the fallback is that sign-in works locally and in production
-   only.
+   `http://localhost:5173` and a Vercel origin are registered as of 2026-07-28.
+
+   **The origin Google checks is the one serving the page, not the one serving
+   the API.** Google Identity Services validates the browser origin the sign-in
+   button is rendered from; the API is called afterwards with the resulting
+   token and its own hostname never comes into it. So an API-only Vercel URL in
+   that list is harmless and does nothing — **the entry that has to be there is
+   wherever `apps/client` is served from**, which is a second Vercel project that
+   does not exist yet. Confirm the registered origin matches the client once 006
+   deploys.
+
+   Google does **not** support wildcard origins and Vercel gives every preview
+   deployment a unique URL, so preview deploys cannot do Google sign-in unless a
+   stable branch domain or custom domain is registered. Decide which at 006; the
+   fallback is that sign-in works locally and in production only.
 
 ### What each feature's MVP stops at
 

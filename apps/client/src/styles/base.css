@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+
+/*
+ * The Elemental Spectrum, transcribed from `resources/designsystem/LMNTLZ Brand
+ * Book.dc.html`.
+ *
+ * **These nine are not a palette choice, they are the brand** — every damage
+ * type, every counter arrow, every effectiveness badge reads from them, so they
+ * live here once rather than as hex literals scattered through components.
+ *
+ * Each force has three stops: the base, a lit tint for emphasis and small text
+ * on dark, and a shade for fills behind content. The `counter` relationships
+ * (Earth<->Air, Fire<->Water, Light<->Dark, Crush->Slash->Pierce->Crush) are NOT
+ * encoded here — they are derived in `@lmntlz/content` and colour must never
+ * become a second source of truth for a rule (Constitution XV).
+ */
+@theme {
+  /* Grounds and neutrals */
+  --color-void: #0e0c17;
+  --color-bg: #141221;
+  --color-surface: #1c1930;
+  --color-raised: #241f38;
+  --color-line: #3a3357;
+  --color-parchment: #f4efe4;
+  --color-muted: #b4aecb;
+  --color-faint: #8e87a8;
+
+  /* Primary accent — hero moments and the single call to action on a screen */
+  --color-gold: #f2c744;
+
+  /* The six arcane — the ring */
+  --color-earth: #4e7c3a; /* the Rooted Deep */
+  --color-earth-lit: #c9922e;
+  --color-earth-deep: #2c4620;
+
+  --color-air: #8fcfe0; /* the Untethered Breath */
+  --color-air-lit: #dce6ea;
+  --color-air-deep: #4a7383;
+
+  --color-fire: #e8552b; /* the Hungry Bloom */
+  --color-fire-lit: #ffb347;
+  --color-fire-deep: #8c2a12;
+
+  --color-water: #2a7fb8; /* the Patient Tide */
+  --color-water-lit: #4fc3d6;
+  --color-water-deep: #164a6e;
+
+  --color-light: #f2c744; /* the First Word */
+  --color-light-lit: #fff6d6;
+  --color-light-deep: #8a6a15;
+
+  --color-dark: #7a3fa0; /* the Last Silence */
+  --color-dark-lit: #c64bb0;
+  --color-dark-deep: #42215b;
+
+  /* The three martial — the triangle */
+  --color-slash: #c0313a; /* the Open Line */
+  --color-slash-lit: #f06a72;
+  --color-slash-deep: #77161c;
+
+  --color-pierce: #3b5bd1; /* the Single Point */
+  --color-pierce-lit: #7b93f0;
+  --color-pierce-deep: #1f3280;
+
+  --color-crush: #b5732e; /* the Falling Weight */
+  --color-crush-lit: #e0a15a;
+  --color-crush-deep: #6e4317;
+
+  --font-display: 'Chakra Petch', system-ui, sans-serif;
+  --font-sans: 'Barlow', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * The viewport floor (T003)
+ *
+ * **Desktop only, and that is a decision rather than an omission** — mouse and
+ * keyboard, minimum window 1280x720, designed for 1600x900. No mobile, no
+ * touch, no gamepad. See docs/tech-stack.md.
+ * ---------------------------------------------------------------------------
+ */
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  /* Below the floor the layout does not reflow, it scrolls. A squad is six
+     heroes in a fixed 2/3/1 formation and a defense screen shows two of them
+     side by side; compressing that into a phone column would be a different
+     interface, not a smaller one. Scrolling is the honest failure. */
+  min-width: 1280px;
+  background-color: var(--color-bg);
+  color: var(--color-parchment);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * **Focus rings are mandatory and are never removed.**
+ *
+ * This is a keyboard-and-mouse game with no touch input, so the focus ring is
+ * not an accessibility afterthought — it is the only thing telling a keyboard
+ * player where they are. `:focus-visible` rather than `:focus` so a mouse click
+ * does not leave a ring behind, which is the reason people reach for
+ * `outline: none` in the first place.
+ */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Pointer devices only: no 44px touch targets, no hover-is-tap workarounds. */
+@media (hover: none) {
+  body::before {
+    content: 'LMNTLZ is a mouse-and-keyboard game. A touch device is not supported.';
+    display: block;
+    padding: 1rem;
+    background: var(--color-slash-deep);
+    color: var(--color-parchment);
+    font-family: var(--font-display);
+    text-align: center;
+  }
+}

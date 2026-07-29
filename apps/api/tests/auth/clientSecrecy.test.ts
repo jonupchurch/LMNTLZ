@@ -11,9 +11,11 @@
  * exchange, precisely so there is no client secret to ship. Steam's publisher
  * key stays server-side. Our own signing key never leaves `apps/api`.
  *
- * `apps/client` does not exist until feature 006, so this scans what exists now
- * — the API source and its configuration — and is written to keep working once
- * a bundle appears.
+ * Written before `apps/client` existed, to scan the API source and its
+ * configuration and then **widen by itself** the day a bundle appeared. Feature
+ * 006 built one on 2026-07-28 and the bundle scan below went from skipped to
+ * green with no edit here — which was the design, and is the reason it was not
+ * written as a `TODO` somebody had to come back for.
  */
 
 import { describe, expect, it } from 'vitest';

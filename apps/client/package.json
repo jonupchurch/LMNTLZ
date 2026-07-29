@@ -1,0 +1,35 @@
+{
+  "name": "@lmntlz/client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "//": "The browser half. It may import @lmntlz/sim/rules and NEVER @lmntlz/sim/resolver or /ai — the resolver holds the RNG and the seed, and the AI is the ranking the engine will use against the player. The ban is in the root eslint.config.js, and packages/sim's purity.test.ts walks the whole graph behind it.",
+  "//build": "`vite build` does not typecheck, so `tsc --noEmit` runs first or a type error ships as a green build.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@lmntlz/content": "workspace:*",
+    "@lmntlz/sim": "workspace:*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.16",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "jsdom": "^28.0.0",
+    "tailwindcss": "^4.1.16",
+    "vite": "^8.1.5"
+  }
+}

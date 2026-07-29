@@ -34,11 +34,11 @@ plausible implementation gets backwards.
 
 ## Phase 1: Setup (the client app, once)
 
-- [ ] T001 Scaffold `apps/client/` — Vite + React + TypeScript, `package.json` named `@lmntlz/client`, dependencies on `@lmntlz/content` and `@lmntlz/sim/rules` **only** (never `/resolver` or `/ai`)
-- [ ] T002 Add Tailwind to `apps/client/` with the design tokens from `resources/designsystem/`
-- [ ] T003 [P] Set the viewport floor in `apps/client/src/styles/base.css` — minimum window **1280×720**, designed for **1600×900**, mouse and keyboard only, **mandatory keyboard focus rings**, no touch targets
-- [ ] T004 [P] Add a `squad-builder` test project to `apps/client/vitest.config.ts` and a `squads` project to `apps/api/vitest.config.ts`
-- [ ] T005 Create `apps/api/src/db/schema/squads.ts` — `squads` (accountId, kind, zone, slotIndex, name, valid, holdStreak, editedAt) and `squad_seats` (squadId, row, index, heroId), plus `squad_member_config` for the defense-only behaviour fields
+- [x] T001 Scaffold `apps/client/` — Vite + React + TypeScript, `package.json` named `@lmntlz/client`, dependencies on `@lmntlz/content` and `@lmntlz/sim/rules` **only** (never `/resolver` or `/ai`)
+- [x] T002 Add Tailwind to `apps/client/` with the design tokens from `resources/designsystem/`
+- [x] T003 [P] Set the viewport floor in `apps/client/src/styles/base.css` — minimum window **1280×720**, designed for **1600×900**, mouse and keyboard only, **mandatory keyboard focus rings**, no touch targets
+- [x] T004 [P] Add a `squad-builder` test project to `apps/client/vitest.config.ts` and a `squads` project to `apps/api/vitest.config.ts`
+- [x] T005 Create `apps/api/src/db/schema/squads.ts` — `squads` (accountId, kind, zone, slotIndex, name, valid, holdStreak, editedAt) and `squad_seats` (squadId, row, index, heroId), plus `squad_member_config` for the defense-only behaviour fields
 
 ---
 

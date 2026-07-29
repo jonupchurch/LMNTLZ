@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280" />
+    <title>LMNTLZ</title>
+    <!--
+      Fonts are self-hosted rather than fetched from Google Fonts: the Steam
+      build runs from disk and may have no network at all, and a webfont that
+      silently fails there would reflow the whole interface. Added with the
+      first screen that needs them; the stacks below fall back cleanly until.
+    -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

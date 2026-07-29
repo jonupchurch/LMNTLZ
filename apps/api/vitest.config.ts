@@ -37,11 +37,34 @@ try {
  */
 export default defineConfig({
   test: {
+    /**
+     * **The `projects` array below is honoured in-package and dropped by the
+     * root runner**, which declares `projects: ['apps/*']` — each app is itself
+     * a project, and Vitest does not nest one inside another. So
+     * `pnpm exec vitest run --project auth` works from `apps/api` and fails from
+     * the repo root.
+     *
+     * It is harmless here only because both projects want `node`, which is
+     * already the default. `apps/client` needs `jsdom` and therefore has to
+     * state its environment at this level too, or the root run has no DOM.
+     * Recorded here so the next person does not have to rediscover it from a
+     * `document is not defined` in an unrelated suite.
+     */
+    environment: 'node',
+
     projects: [
       {
         test: {
           name: 'auth',
           include: ['tests/auth/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+        },
+      },
+      {
+        test: {
+          name: 'squads',
+          include: ['tests/squads/**/*.test.ts'],
           exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
           environment: 'node',
         },

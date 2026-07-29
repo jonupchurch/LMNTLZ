@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+
+    // Nothing here is emitted by `tsc` — Vite owns the bundle and `tsc` is only
+    // ever run with `--noEmit` (see the `//build` note in package.json). Saying
+    // so explicitly keeps a stray `tsc -p .` from scattering .js next to .tsx.
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx", "*.config.ts"]
+}
