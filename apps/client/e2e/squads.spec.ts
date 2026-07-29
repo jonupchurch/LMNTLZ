@@ -9,7 +9,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { HEROES, IDS, mockApi, rosterPayload, THREE_SQUAD_PREVIEW } from './fixtures.js';
+import { HEROES, IDS, mockApi, rosterPayload, signedIn, THREE_SQUAD_PREVIEW } from './fixtures.js';
 
 const nameOf = (id: string) => HEROES.find((h) => h.id === id)!.name;
 
@@ -189,6 +189,10 @@ test.describe('keyboard only (T052)', () => {
 
 test.describe('the preview is never skipped silently', () => {
   test('a failed eviction check changes nothing and says so', async ({ page }) => {
+    // Routes its own mocks rather than using `mockApi`, so the session has to
+    // be seeded explicitly — otherwise this lands on the landing page and fails
+    // about the roster instead of about the preview.
+    await signedIn(page);
     await page.route('**/v1/roster', (route) => route.fulfill({ json: rosterPayload() }));
     await page.route('**/v1/squads/defense/*/preview-move', (route) => route.abort());
     await page.goto('/');

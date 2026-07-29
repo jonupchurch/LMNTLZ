@@ -53,16 +53,56 @@ export const setSessionToken = (token: string | null): void => {
   sessionToken = token;
 };
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+/**
+ * How to get a fresh session token when the current one has expired.
+ *
+ * **Installed by `session.ts` rather than implemented here**, because renewing
+ * means holding the renewal token, and this module deliberately holds nothing
+ * that survives a reload. Transport stays transport.
+ *
+ * Returns `true` when a new session token is now in place. Anything else — a
+ * revoked family, an expired renewal, no stored token at all — is `false`, and
+ * the original `401` is what the caller sees.
+ */
+let renewSession: (() => Promise<boolean>) | null = null;
+
+export const setRenewHandler = (fn: (() => Promise<boolean>) | null): void => {
+  renewSession = fn;
+};
+
+async function send<T>(path: string, init: RequestInit, mayRenew: boolean): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('content-type', 'application/json');
   if (sessionToken) headers.set('authorization', `Bearer ${sessionToken}`);
 
   const res = await fetch(`${BASE}/v1${path}`, { ...init, headers });
 
+  if (res.status === 401 && mayRenew && renewSession && (await renewSession())) {
+    // **Exactly once.** A second 401 after a successful renewal is not a stale
+    // session — it is a request the account is not allowed to make, and
+    // retrying it forever would turn one refusal into a loop.
+    return send<T>(path, init, false);
+  }
+
   if (res.status === 204) return undefined as T;
 
   const body = (await res.json().catch(() => null)) as unknown;
   if (!res.ok) throw new ApiError(res.status, body as ApiErrorBody | null);
   return body as T;
+}
+
+/** A request that renews and retries once if the session has expired. */
+export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return send<T>(path, init, true);
+}
+
+/**
+ * A request that never attempts renewal.
+ *
+ * **The auth endpoints themselves use this**, because renewing in order to
+ * renew is a loop with no base case — and because a `401` from `/auth/google`
+ * or `/auth/renew` is the answer, not a condition to recover from.
+ */
+export async function apiUnauthenticated<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return send<T>(path, init, false);
 }

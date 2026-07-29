@@ -18,7 +18,7 @@
  * hand. No API is involved, so these run with no database and no credentials.
  */
 
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const PAGES = [
   { file: 'pricing.html', label: 'Passes', heading: 'Passes & Pricing' },
@@ -58,24 +58,19 @@ test.describe('the front door', () => {
    * that shipped: a real bundle, a real fetch, no session.
    */
   /**
-   * **The 401 has to be stubbed, and that is not a shortcut.** Vite's dev server
-   * answers any unknown path with `index.html` for SPA routing, so `/v1/roster`
-   * comes back as 200 HTML locally and the screen simply never leaves its
-   * loading state — the production condition cannot occur here on its own. What
-   * is real is everything else: the built bundle, the actual fetch, the actual
-   * render.
+   * **This used to need a stubbed `401` and no longer needs anything.**
+   *
+   * The stub was real work, not a shortcut: Vite's dev server answers any
+   * unknown path with `index.html` for SPA routing, so `/v1/roster` came back
+   * as 200 HTML locally and the screen never left its loading state — the
+   * production condition could not occur here on its own.
+   *
+   * Sign-in removed the condition entirely. The app restores from a stored
+   * renewal token, a visitor has none, and **the front door is now reached
+   * without a request at all**. So the assertion got stronger by getting
+   * simpler: it no longer depends on the server saying the right thing.
    */
-  const anonymous = async (page: Page) => {
-    await page.route('**/v1/roster', (route) =>
-      route.fulfill({
-        status: 401,
-        json: { error: { code: 'unauthenticated', message: 'This endpoint requires a session token.' } },
-      }),
-    );
-  };
-
   test('an anonymous visitor gets a page, not a server error', async ({ page }) => {
-    await anonymous(page);
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1, name: 'LMNTLZ' })).toBeVisible();
 
@@ -87,7 +82,6 @@ test.describe('the front door', () => {
   test('the front door links to what is sold', async ({ page }) => {
     // Paddle's reviewer starts at the domain. A pricing page nothing links to
     // is a pricing page they do not find.
-    await anonymous(page);
     await page.goto('/');
     await page.getByRole('main').getByRole('link', { name: /see what is sold/i }).click();
     await expect(page).toHaveURL(/\/pricing\.html$/);

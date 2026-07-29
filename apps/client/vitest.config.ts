@@ -50,6 +50,23 @@ export default defineConfig({
       },
       {
         /**
+         * **Sign-in, which belongs to feature 005 and was built two features
+         * late.** 005 shipped the entire server half and nothing ever called
+         * it; 006 and 007 both assumed a session existed. The suite lives here
+         * rather than under `squads` because it is what every screen depends
+         * on, not what any one screen does.
+         */
+        plugins: [react()],
+        test: {
+          name: 'auth',
+          include: ['tests/auth/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
+      {
+        /**
          * **The site around the game**, which belongs to no feature: the five
          * static policy pages a payment provider requires, and the footer that
          * makes them reachable. `apps/api` has a `platform` project for the

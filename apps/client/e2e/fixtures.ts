@@ -62,10 +62,51 @@ export const THREE_SQUAD_PREVIEW = {
   streakAtRisk: 14,
 };
 
+/**
+ * Serve the squad screen's requests **and put a signed-in player behind them**.
+ *
+ * The session half is not decoration. The app restores from a stored renewal
+ * token before it renders anything, so without one every spec below would land
+ * on the marketing page and fail with `0 champions found` — an error message
+ * about the roster, for a cause that has nothing to do with it.
+ *
+ * `addInitScript` runs before the page's own scripts, which is what makes the
+ * token visible to the synchronous check `App` performs on its first render.
+ */
+/**
+ * Put a signed-in player on the page.
+ *
+ * **Every spec that expects the squad screen needs this**, including the ones
+ * that route their own mocks. The app restores from a stored renewal token
+ * before it renders anything, so without one a spec lands on the marketing page
+ * and fails with a message about the roster — a symptom with no connection to
+ * its cause.
+ *
+ * `addInitScript` runs before the page's own scripts, which is what makes the
+ * token visible to the synchronous check `App` performs on its first render.
+ */
+export async function signedIn(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('lmntlz.renewal', 'e2e-renewal');
+  });
+
+  await page.route('**/v1/auth/renew', (route) =>
+    route.fulfill({
+      json: {
+        session: { token: 'e2e-session', expiresAt: new Date(Date.now() + 9e5).toISOString() },
+        renewal: { token: 'e2e-renewal-2' },
+        account: { id: 'e2e', username: 'Reyna', createdAt: '2026-01-01T00:00:00.000Z' },
+      },
+    }),
+  );
+}
+
 export async function mockApi(
   page: Page,
   options: { roster?: ReturnType<typeof rosterPayload>; preview?: unknown } = {},
 ): Promise<void> {
+  await signedIn(page);
+
   await page.route('**/v1/roster', (route) =>
     route.fulfill({ json: options.roster ?? rosterPayload() }),
   );

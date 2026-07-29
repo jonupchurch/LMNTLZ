@@ -26,6 +26,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { App } from '../../src/App.js';
 import { LandingScreen } from '../../src/features/landing/LandingScreen.js';
+import { resetSessionForTests } from '../../src/lib/session.js';
 
 const jsonResponse = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -34,8 +35,38 @@ const UNAUTHENTICATED = jsonResponse(401, {
   error: { code: 'unauthenticated', message: 'This endpoint requires a session token.' },
 });
 
+const RENEWED = () =>
+  jsonResponse(200, {
+    session: { token: 's', expiresAt: new Date(Date.now() + 9e5).toISOString() },
+    renewal: { token: 'renewal-2' },
+    account: { id: 'a', username: 'Reyna', createdAt: '2026-01-01T00:00:00.000Z' },
+  });
+
+/**
+ * Put a signed-in player on the page: a stored renewal token that renews.
+ *
+ * `thenAnswer` covers everything after the renewal. Returning `null` leaves
+ * that request unanswered forever, which parks `SquadsScreen` in its loading
+ * state — the right stub when the assertion is about the shell around the
+ * screen rather than the screen. A half-shaped roster payload would instead
+ * make the screen throw, and the failure would name the wrong component.
+ */
+const signedIn = (thenAnswer: () => Response | null): void => {
+  localStorage.setItem('lmntlz.renewal', 'renewal-1');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      if (String(input).includes('/auth/renew')) return Promise.resolve(RENEWED());
+      const answer = thenAnswer();
+      return answer ? Promise.resolve(answer) : new Promise<Response>(() => undefined);
+    }),
+  );
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  localStorage.clear();
+  resetSessionForTests();
 });
 
 describe('an anonymous visitor', () => {
@@ -74,18 +105,51 @@ describe('a genuine failure is still reported', () => {
     // The fallback must be narrow. Routing every error to the landing page would
     // make an outage look like a logged-out session, and a player would sit on a
     // marketing page wondering why signing in did nothing.
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        jsonResponse(500, {
-          error: { code: 'internal_error', message: 'Something went wrong on our end.' },
-        }),
-      ),
+    signedIn(() =>
+      jsonResponse(500, {
+        error: { code: 'internal_error', message: 'Something went wrong on our end.' },
+      }),
     );
     render(<App />);
 
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(screen.queryByRole('heading', { level: 1, name: 'LMNTLZ' })).toBeNull();
+  });
+});
+
+describe('the way in', () => {
+  /**
+   * **The landing page has to offer a door, not only describe the building.**
+   * For two features the client could reach a fully-built server-side sign-in
+   * and had no control that called it — the gap was invisible precisely because
+   * every screen behind it was tested and worked.
+   */
+  it('offers sign-in to a visitor', async () => {
+    render(<App />);
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument(),
+    );
+  });
+
+  it('makes no request at all for somebody who was never signed in', () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+
+    render(<App />);
+
+    // Nothing stored means nothing to restore. A visitor reaches the front door
+    // without waiting on the network, and without a 401 in anybody's logs.
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('shows the signed-in player a way back out', async () => {
+    signedIn(() => null);
+    render(<App />);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument(),
+    );
+    expect(screen.getByText('Reyna')).toBeInTheDocument();
   });
 });
 
