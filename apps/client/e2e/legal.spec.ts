@@ -18,7 +18,7 @@
  * hand. No API is involved, so these run with no database and no credentials.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const PAGES = [
   { file: 'pricing.html', label: 'Passes', heading: 'Passes & Pricing' },
@@ -46,6 +46,51 @@ test.describe('every policy page is served', () => {
       .locator('body')
       .evaluate((el) => getComputedStyle(el).backgroundColor);
     expect(background).toBe('rgb(20, 18, 33)'); // --bg #141221
+  });
+});
+
+test.describe('the front door', () => {
+  /**
+   * **Found in production, not in a test.** The deployed homepage was the API's
+   * raw 401 — *"This endpoint requires a session token."* — rendered as the
+   * whole page, and it took loading the live site in a browser to see it. No
+   * API is stubbed here either, so this spec reproduces exactly the condition
+   * that shipped: a real bundle, a real fetch, no session.
+   */
+  /**
+   * **The 401 has to be stubbed, and that is not a shortcut.** Vite's dev server
+   * answers any unknown path with `index.html` for SPA routing, so `/v1/roster`
+   * comes back as 200 HTML locally and the screen simply never leaves its
+   * loading state — the production condition cannot occur here on its own. What
+   * is real is everything else: the built bundle, the actual fetch, the actual
+   * render.
+   */
+  const anonymous = async (page: Page) => {
+    await page.route('**/v1/roster', (route) =>
+      route.fulfill({
+        status: 401,
+        json: { error: { code: 'unauthenticated', message: 'This endpoint requires a session token.' } },
+      }),
+    );
+  };
+
+  test('an anonymous visitor gets a page, not a server error', async ({ page }) => {
+    await anonymous(page);
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1, name: 'LMNTLZ' })).toBeVisible();
+
+    const text = (await page.locator('body').innerText()).toLowerCase();
+    expect(text, 'the server’s wording must never greet a visitor').not.toContain('session token');
+    expect(text).not.toContain('endpoint');
+  });
+
+  test('the front door links to what is sold', async ({ page }) => {
+    // Paddle's reviewer starts at the domain. A pricing page nothing links to
+    // is a pricing page they do not find.
+    await anonymous(page);
+    await page.goto('/');
+    await page.getByRole('main').getByRole('link', { name: /see what is sold/i }).click();
+    await expect(page).toHaveURL(/\/pricing\.html$/);
   });
 });
 

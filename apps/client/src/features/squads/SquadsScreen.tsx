@@ -24,7 +24,21 @@ import type { EvictionPreview, RosterResponse, Zone } from './types.js';
 
 const ZONE_LABEL: Readonly<Record<Zone, string>> = { visible: 'Zone I', hidden: 'Zone II' };
 
-export function SquadsScreen() {
+export interface SquadsScreenProps {
+  /**
+   * Called when the roster comes back `401`.
+   *
+   * **Not signed in is not a failure**, it is the ordinary state of every
+   * visitor, and this screen is the wrong place to decide what to show them —
+   * so it reports upward rather than rendering an error. Before this existed,
+   * the site's homepage was the API's own sentence *"This endpoint requires a
+   * session token."*, which is true, unhelpful, and the first thing anybody
+   * judging the product saw.
+   */
+  readonly onUnauthenticated?: () => void;
+}
+
+export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
   const [roster, setRoster] = useState<RosterResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [zone, setZone] = useState<Zone>('visible');
@@ -40,9 +54,13 @@ export function SquadsScreen() {
       setRoster(await api<RosterResponse>('/roster'));
       setError(null);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        onUnauthenticated?.();
+        return;
+      }
       setError(err instanceof ApiError ? err.message : 'Could not load your roster.');
     }
-  }, []);
+  }, [onUnauthenticated]);
 
   useEffect(() => {
     void load();
