@@ -67,6 +67,23 @@ export default defineConfig({
       },
       {
         /**
+         * **The battle screen (007).** Its own project because the assertion
+         * that matters here is about *requests* — the turn queue must project
+         * locally and the screen must send exactly one call per choice — and a
+         * suite that shares a fetch stub with the squad builder cannot say
+         * whose call it was.
+         */
+        plugins: [react()],
+        test: {
+          name: 'battle',
+          include: ['tests/battle/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
+      {
+        /**
          * **The site around the game**, which belongs to no feature: the five
          * static policy pages a payment provider requires, and the footer that
          * makes them reachable. `apps/api` has a `platform` project for the

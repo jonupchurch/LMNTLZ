@@ -69,7 +69,30 @@ import {
 } from 'drizzle-orm/pg-core';
 import { accounts } from './accounts.js';
 
-/** Why a battle stopped. `elimination` and `turn_cap` are wins; the rest are not. */
+/**
+ * Why a battle stopped. `elimination` and `turn_cap` are wins; the rest are not.
+ *
+ * **These are NOT the engine's `Conclusion['reason']` values, and the difference
+ * is deliberate.** `@lmntlz/sim/rules` reports how the *fight* ended — `wipe`,
+ * `cap-hp-share`, `cap-champions-standing`, `cap-tiebreak` — four values that
+ * distinguish three ways the turn cap can be broken. This column records how the
+ * *battle record* ended, which additionally has to express `abandoned` and
+ * `discarded`, neither of which the engine has any concept of.
+ *
+ * So `settle` (T026) maps one onto the other:
+ *
+ * | `Conclusion.reason` | here |
+ * |---|---|
+ * | `wipe` | `elimination` |
+ * | `cap-hp-share`, `cap-champions-standing`, `cap-tiebreak` | `turn_cap` |
+ * | *(none — no conclusion)* | `abandoned`, `discarded` |
+ *
+ * **Collapsing the three cap reasons loses information Constitution XVI would
+ * otherwise keep**, and that is a decision to take on purpose rather than by
+ * omission: feature 008 asks how *often* battles reach the cap, not which
+ * tiebreak resolved them. If that changes, the tiebreak has to be recorded from
+ * the first battle onwards — it cannot be backfilled.
+ */
 export const BATTLE_REASONS = ['elimination', 'turn_cap', 'abandoned', 'discarded'] as const;
 export type BattleReason = (typeof BATTLE_REASONS)[number];
 
