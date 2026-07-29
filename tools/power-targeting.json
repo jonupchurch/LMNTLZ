@@ -5,23 +5,30 @@
     "Every power in the workbook's `Power List` sheet is single-target, hostile and",
     "non-reactive unless it appears here. The workbook has no column for any of the",
     "three, so this file carries what `resources/mechanics/03-powers.md` states",
-    "explicitly and nothing more.",
+    "explicitly, cross-checked against every power's `Prompt` text.",
     "",
-    "Provenance, so a reader can check it rather than trust it:",
-    "  targets  -> 03-powers.md, 'Multi-target powers' table",
-    "  friendly -> 03-powers.md, 'Healing' -- all healing sits in the three Buffers'",
-    "              tier-4 slot, one at each scale",
+    "MOST BUFFS ARE NOT FRIENDLY, and that is correct rather than an oversight.",
+    "About twenty powers grant a buff, but in every case bar one the buff is a",
+    "RIDER ON AN ATTACK and lands on the caster -- 'Might x3.5 single-target",
+    "Earth/Dark strike; Ossic also raises a wall of bone around himself'. The power",
+    "targets an enemy. Marking it friendly would make the engine aim a damaging",
+    "strike at an ally, so `friendly` tracks WHO THE POWER TARGETS and never",
+    "whether a buff happens to result.",
     "",
-    "KNOWN INCOMPLETE, and deliberately so: `friendly` is authored nowhere for BUFF",
-    "powers. 03-powers.md enumerates the heals but never lists which buffs target",
-    "allies, so every buff currently reads as hostile. That is wrong for any buff",
-    "that targets an ally and it cannot be fixed by deriving it from anything --",
-    "it needs authoring. It belongs with the hero-numbers pass, and the build fails",
-    "loudly if a name here is absent from the workbook, so this file cannot drift",
-    "quietly. See packages/content/README.md.",
+    "Provenance:",
+    "  targets  -> 03-powers.md 'Multi-target powers' + each power's Prompt text",
+    "  friendly -> the three heals in 03-powers.md 'Healing', plus Whisper from",
+    "              the High Reach, which is the roster's ONLY ally-targeting",
+    "              non-heal: 'No direct damage. Grants the whole squad a temporary",
+    "              Speed and Agility buff.'",
     "",
-    "This file should disappear. The right home for all three fields is three new",
-    "columns in `Power List`, at which point the reader drops the overlay entirely."
+    "KNOWN LIMIT: `friendly` is a boolean and The Unhidden Hour touches both sides",
+    "-- it cleanses the whole squad AND strips every enemy's buffs. It is recorded",
+    "as hostile because the contested half is the part that needs resolving against",
+    "a defender. A power that genuinely needs both wants a third value, not a lie.",
+    "",
+    "This file should disappear. The right home for all of it is three new columns",
+    "in `Power List`, at which point the reader drops the overlay entirely."
   ],
 
   "targets": {
@@ -29,12 +36,40 @@
     "Clear the Room": "row",
     "The Current Takes All": 3,
     "The Wide Reaping": "row",
+
     "Unmake the Wound": "single",
     "Fair Weather": "row",
-    "Enough Light for Everyone": "party"
+    "Enough Light for Everyone": "party",
+
+    "Whisper from the High Reach": "party",
+    "The Unhidden Hour": "party",
+    "The Undoing": "party"
   },
 
-  "friendly": ["Unmake the Wound", "Fair Weather", "Enough Light for Everyone"],
+  "friendly": [
+    "Unmake the Wound",
+    "Fair Weather",
+    "Enough Light for Everyone",
+    "Whisper from the High Reach"
+  ],
 
-  "reactive": []
+  "reactive": [],
+
+  "$noDamageComment": [
+    "03-powers.md: 'Three powers deal neither damage nor healing -- Whisper from",
+    "the High Reach, The Unhidden Hour, The Undoing. Their multiplier cell is",
+    "BLANK, NOT ZERO: zero would read as \"deals no damage\", when the truth is that",
+    "damage is not a thing these powers have.'",
+    "",
+    "The workbook disagrees. All three carry multiplier 5, the tier-5 default,",
+    "which says each deals Might x5. That is a live content bug, not a doc",
+    "mismatch: a sim reading it would have three tier-5 powers dealing full damage",
+    "that are specified to deal none.",
+    "",
+    "The build forces these to null and PRINTS A WARNING for as long as the",
+    "workbook still disagrees. Blank the three multiplier cells by hand and the",
+    "warning stops on its own -- the override becomes a no-op rather than needing",
+    "to be remembered and removed."
+  ],
+  "noDamage": ["Whisper from the High Reach", "The Unhidden Hour", "The Undoing"]
 }

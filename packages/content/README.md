@@ -79,19 +79,46 @@ to put Fault or the x0.80 secondary case. The signature is the enforcement.
 
 A dual-typed power resolves as the **better of its two types**.
 
+## `friendly` means *who it targets*, not *what it does*
+
+About twenty powers grant a buff. **All but one of them are correctly hostile**,
+because the buff is a rider on an attack and lands on the caster:
+
+> *Might ×3.5 single-target Earth/Dark strike, 5-turn cooldown; Ossic also raises
+> a wall of bone around himself, granting a temporary Magic Resist buff.*
+
+That power targets an enemy. Marking it friendly would point a damaging strike at
+an ally. So `friendly` tracks **who the power targets** and never whether a buff
+happens to result — a test locks fourteen of these self-buff riders as hostile.
+
+The four genuinely ally-targeting powers are the three heals plus **Whisper from
+the High Reach**, the roster's only ally-targeting non-heal: *"No direct damage.
+Grants the whole squad a temporary Speed and Agility buff."*
+
+**One limit worth knowing:** `friendly` is a boolean, and *The Unhidden Hour*
+touches both sides — it cleanses the whole squad *and* strips every enemy's
+buffs. It is recorded as hostile because the contested half is the part that
+needs resolving against a defender. A power that genuinely needs both wants a
+third value, not a lie.
+
 ## Known gaps
 
-These are real and recorded rather than hidden. Both belong with the
-hero-numbers pass.
+- **⚠️ Three multiplier cells in the workbook are wrong.** `03-powers.md` says
+  *Whisper from the High Reach*, *The Unhidden Hour* and *The Undoing* carry a
+  **blank** multiplier, because *"damage is not a thing these powers have."* The
+  workbook gives all three the tier-5 default of **5**. Left alone, three tier-5
+  powers would deal full damage that they are specified to deal none of.
 
-- **`friendly` is not authored for buff powers.** The workbook has no column for
-  it, and `03-powers.md` enumerates only the three heals. Every buff therefore
-  currently reads as hostile. Carried in `tools/power-targeting.json`, which
-  fails the build if it names a power the workbook doesn't have — so it can be
-  wrong, but it cannot drift quietly.
-- **`targets`, `friendly` and `reactive` have no workbook columns at all.** They
-  live in that same overlay file. The right fix is three new columns in
-  `Power List`, at which point the overlay is deleted.
+  The build overrides them to `null` and **prints a warning on every run** for as
+  long as the workbook disagrees. Blank the three cells in `Power List` and the
+  warning stops by itself — the override becomes a no-op rather than debt someone
+  has to remember to remove.
+
+- **`targets`, `friendly` and `reactive` have no workbook columns.** They live in
+  `tools/power-targeting.json`, which fails the build if it names a power the
+  workbook doesn't have — so it can be wrong, but it cannot drift quietly. The
+  right fix is three new columns in `Power List`, at which point the overlay is
+  deleted.
 
 ## A correction to the canon
 

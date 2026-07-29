@@ -294,6 +294,7 @@ interface Overlay {
   readonly targets: Record<string, 'single' | 'row' | 'party' | number>;
   readonly friendly: readonly string[];
   readonly reactive: readonly string[];
+  readonly noDamage: readonly string[];
 }
 
 function readOverlay(actives: ReadonlyMap<string, PowerDef>): Overlay {
@@ -305,6 +306,7 @@ function readOverlay(actives: ReadonlyMap<string, PowerDef>): Overlay {
     ...Object.keys(parsed.targets),
     ...parsed.friendly,
     ...parsed.reactive,
+    ...parsed.noDamage,
   ]) {
     if (!actives.has(name)) {
       note(
@@ -315,6 +317,38 @@ function readOverlay(actives: ReadonlyMap<string, PowerDef>): Overlay {
   }
 
   return parsed;
+}
+
+/**
+ * Self-clearing debt.
+ *
+ * `03-powers.md` says the three powers that deal neither damage nor healing
+ * carry a **blank** multiplier — *"zero would read as 'deals no damage', when
+ * the truth is that damage is not a thing these powers have."* The workbook
+ * gives all three the tier-5 default of 5 instead, which is a live content bug
+ * rather than a documentation mismatch.
+ *
+ * The override keeps the emitted content correct today. The warning fires on
+ * every build for as long as the workbook still disagrees, and stops by itself
+ * the moment the three cells are blanked — so nobody has to remember to come
+ * back and delete this.
+ */
+function warnOnUnclearedNoDamage(
+  overlay: Overlay,
+  actives: ReadonlyMap<string, PowerDef>,
+): void {
+  const stale = overlay.noDamage.filter((name) => actives.get(name)?.multiplier !== null);
+  if (stale.length === 0) return;
+
+  console.warn(
+    `\n  ! ${stale.length} power(s) specified to deal no damage still carry a multiplier ` +
+      `in the workbook:\n` +
+      stale
+        .map((n) => `      ${n} (multiplier ${String(actives.get(n)?.multiplier)})`)
+        .join('\n') +
+      `\n    Blank those cells in Power List and this warning stops.\n` +
+      `    Until then tools/power-targeting.json overrides them to null.\n`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -486,7 +520,9 @@ function readHeroes(
         id: powerName,
         name: powerName,
         tier: def.tier,
-        multiplier: def.multiplier,
+        // See warnOnUnclearedNoDamage: the workbook currently states a tier-5
+        // multiplier for three powers specified to have none at all.
+        multiplier: overlay.noDamage.includes(powerName) ? null : def.multiplier,
         cooldown: def.cooldown,
         gateTurn: gateTurnFor(def.tier),
         types: def.types,
@@ -655,6 +691,7 @@ async function main(): Promise<void> {
 
   const powerList = readPowerList(wb);
   const overlay = readOverlay(powerList.actives);
+  warnOnUnclearedNoDamage(overlay, powerList.actives);
   const heroPowers = readHeroPowers(wb);
   const heroes = readHeroes(wb, powerList, overlay, heroPowers);
 
