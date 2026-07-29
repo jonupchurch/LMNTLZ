@@ -87,6 +87,47 @@ export interface ReplayStorage {
 export const replayKey = (battleId: string): string => `battles/${battleId}.json`;
 
 /**
+ * The four members of a `fetch` response this module reads, declared locally.
+ *
+ * ### Why this exists instead of just using the ambient `Response`
+ *
+ * **The API's Vercel build failed five times on exactly that.** `tsc -p
+ * tsconfig.json` compiles clean locally and on CI, and the same command on Vercel
+ * reported:
+ *
+ * ```
+ * src/replays/storage.ts: error TS2339: Property 'status' does not exist on type 'Response'.
+ * ```
+ *
+ * …once for each of `status`, `ok`, `statusText` and `text`. This app sets
+ * `lib: ["ES2022"]` with no `DOM`, so `Response` comes from whatever `@types/node`
+ * resolves — and in Vercel's build environment that resolves to a `Response` without
+ * the fetch members, while locally it does not. `@types/node` is correctly declared
+ * in this package, so it is not a phantom dependency; the difference is in the build
+ * environment and is not observable from here.
+ *
+ * Rather than chase an environment we cannot see — the same conclusion the
+ * `strictNullChecks` note in `tsconfig.json` reached — **this depends on the
+ * runtime shape instead of on the ambient type.** The cast is safe because these
+ * four members are guaranteed by the Fetch standard, and it cannot break this way
+ * again regardless of which `Response` is in scope.
+ *
+ * Adding `"DOM"` to `lib` would also have fixed it and was rejected: it would put
+ * `window` and `document` in scope for a server-only app, so a genuine mistake
+ * would start typechecking.
+ *
+ * The SDK's own `get()` was the other candidate. It returns a
+ * `ReadableStream<Uint8Array>`, which is the *same* class of ambient global, so it
+ * would have traded a known problem for an unverifiable one.
+ */
+export interface FetchResponse {
+  readonly status: number;
+  readonly ok: boolean;
+  readonly statusText: string;
+  text(): Promise<string>;
+}
+
+/**
  * The real store.
  *
  * ### `access: 'private'` is passed on every write, even though the store is private
@@ -161,7 +202,10 @@ export function vercelBlobStorage(): ReplayStorage {
       const token = process.env.BLOB_READ_WRITE_TOKEN ?? process.env.VERCEL_OIDC_TOKEN;
       if (!token) throw new Error('no blob credential: set BLOB_READ_WRITE_TOKEN');
 
-      const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+      /** Cast to `FetchResponse` — see that interface for why the ambient type is not used. */
+      const response = (await fetch(url, {
+        headers: { authorization: `Bearer ${token}` },
+      })) as unknown as FetchResponse;
 
       // 404 is the ordinary end of a replay's life, not a failure.
       if (response.status === 404) return null;

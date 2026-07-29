@@ -26,7 +26,11 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { replayKey, vercelBlobStorage } from '../../src/replays/storage.js';
+import {
+  replayKey,
+  vercelBlobStorage,
+  type FetchResponse,
+} from '../../src/replays/storage.js';
 
 const store = vercelBlobStorage();
 
@@ -71,7 +75,12 @@ describe('the store is private', () => {
   });
 
   it('refuses an unauthenticated read of a replay URL', async () => {
-    const anonymous = await fetch(url);
+    /**
+     * Cast for the same reason `storage.ts` does it: `tests/**` is inside this
+     * app's `tsconfig.json`, so a raw `Response` member access here fails the
+     * Vercel build exactly as it did there.
+     */
+    const anonymous = (await fetch(url)) as unknown as FetchResponse;
 
     expect(
       anonymous.status,
