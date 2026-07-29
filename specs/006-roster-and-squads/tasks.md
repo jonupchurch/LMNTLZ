@@ -48,12 +48,12 @@ plausible implementation gets backwards.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Implement squad-shape validation in `apps/api/src/squads/allocation.ts` — exactly **6 heroes as 2 front, 3 middle, 1 back**, rejecting anything else with `422` (FR-003)
-- [ ] T007 Implement the exclusivity rule in `apps/api/src/squads/allocation.ts` — a hero on **either** defense zone is unavailable to **every** offense squad, without exception (FR-007)
-- [ ] T008 Implement `evictionImpact(accountId, heroId)` in `apps/api/src/squads/allocation.ts` returning **every** attack squad containing the hero, **never truncated**
-- [ ] T009 Implement `canonicalForm(squad)` in `apps/api/src/squads/canonical.ts` — per seat in row then index order: `heroId · targeting[0] · targeting[1] · ranking · allyRule` (research.md Q1)
-- [ ] T010 Implement `streakResets(prev, next)` in `apps/api/src/squads/canonical.ts` as a hash comparison of canonical forms — **never a client-set dirty flag**, which is set by the editor and is therefore wrong the first time a re-render touches a field
-- [ ] T011 Generate and apply the squads migration from `apps/api/drizzle/`
+- [x] T006 Implement squad-shape validation in `apps/api/src/squads/allocation.ts` — exactly **6 heroes as 2 front, 3 middle, 1 back**, rejecting anything else with `422` (FR-003)
+- [x] T007 Implement the exclusivity rule in `apps/api/src/squads/allocation.ts` — a hero on **either** defense zone is unavailable to **every** offense squad, without exception (FR-007)
+- [x] T008 Implement `evictionImpact(accountId, heroId)` in `apps/api/src/squads/allocation.ts` returning **every** attack squad containing the hero, **never truncated**
+- [x] T009 Implement `canonicalForm(squad)` in `apps/api/src/squads/canonical.ts` — per seat in row then index order: `heroId · targeting[0] · targeting[1] · ranking · allyRule` (research.md Q1)
+- [x] T010 Implement `streakResets(prev, next)` in `apps/api/src/squads/canonical.ts` as a hash comparison of canonical forms — **never a client-set dirty flag**, which is set by the editor and is therefore wrong the first time a re-render touches a field
+- [x] T011 Generate and apply the squads migration from `apps/api/drizzle/`
 
 **Checkpoint**: Eviction, invalidation and the streak reset are correct before any pixel exists
 
