@@ -51,10 +51,31 @@ export function RosterView({ roster, selectedHeroId, onSelect }: RosterViewProps
 
   return (
     <section aria-label="Champion roster">
-      <header className="mb-4 flex items-baseline justify-between">
+      <header className="mb-4 flex items-baseline justify-between gap-6">
         <h2 className="font-display text-xl tracking-widest uppercase text-parchment">
           Champions
         </h2>
+
+        {/**
+         * **The ambush chance is always displayed** (FR-015), not on hover and
+         * not behind a tooltip. It is the odds of someone reaching your Hidden
+         * squad, it rises with every attack win you take, and a player who
+         * cannot see it cannot decide whether to keep pushing a streak.
+         *
+         * Every number here is read from the server. The client does no
+         * arithmetic on `perWin` or `cap` — they are shown as text so the rule
+         * is legible, and SC-008 greps this app to prove neither is a literal.
+         */}
+        <p className="font-mono text-xs">
+          <span className="text-faint">Ambush </span>
+          <span className="text-gold">{roster.ambush.chance}%</span>
+          <span className="text-faint">
+            {' '}
+            · +{roster.ambush.perWin}% per win, up to {roster.ambush.cap}%
+            {roster.ambush.chance >= roster.ambush.cap ? ' · at cap' : ''}
+          </span>
+        </p>
+
         <p className="font-mono text-xs text-faint">
           {/**
            * **The sentence that makes the constraint legible.** 15 heroes for 3

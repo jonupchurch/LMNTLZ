@@ -12,3 +12,4 @@ export * from './identities.js';
 export * from './renewalTokens.js';
 export * from './usernameChanges.js';
 export * from './squads.js';
+export * from './streaks.js';

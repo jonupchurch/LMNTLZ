@@ -20,7 +20,11 @@ import { getAllHeroes, getHero } from '@lmntlz/content';
 import { apiError } from '../errors.js';
 import { requireSession } from '../auth/middleware.js';
 import { requireContext, type AuthedEnv } from '../auth/context.js';
+import { eq } from 'drizzle-orm';
+import { db } from '../db/client.js';
 import { SQUAD_ZONES, type SquadZone } from '../db/schema/squads.js';
+import { playerStreaks } from '../db/schema/streaks.js';
+import { ambushChance, ambushConfig } from './ambush.js';
 import {
   HeroUnavailableError,
   InvalidSquadError,
@@ -165,9 +169,34 @@ squadRoutes.get('/roster', async (c) => {
       valid: s.valid ?? true,
     }));
 
+  const [streakRow] = await db()
+    .select()
+    .from(playerStreaks)
+    .where(eq(playerStreaks.accountId, accountId))
+    .limit(1);
+  const attackStreak = streakRow?.attackStreak ?? 0;
+
   return c.json({
     heroes: roster,
     assignments: { defense, offense },
+    /**
+     * **Three streaks, and they are named apart in the payload too** (FR-012).
+     * `attackStreak` sits here at the top level because there is exactly one and
+     * it belongs to the player; the two `holdStreak`s sit inside their zones
+     * because there is one each. A client cannot accidentally read the wrong one
+     * without changing which object it reached into.
+     */
+    streaks: {
+      attack: attackStreak,
+      hold: { visible: defense['visible']?.holdStreak ?? 0, hidden: defense['hidden']?.holdStreak ?? 0 },
+    },
+    /**
+     * **Served, never compiled in** (FR-017, SC-008). The client renders
+     * `chance` and does no arithmetic — if 2% turns out to put nobody into a
+     * Hidden battle, the fix is a config change rather than a Steam update that
+     * leaves the two builds disagreeing for a week.
+     */
+    ambush: { chance: ambushChance(attackStreak), ...ambushConfig() },
     available: {
       // **Every hero, deliberately.** Moving one off an attack squad onto
       // defense is legal — that is what the eviction warning covers.

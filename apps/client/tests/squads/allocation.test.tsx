@@ -44,6 +44,8 @@ const roster = (over: Partial<RosterResponse['assignments']> = {}): RosterRespon
     offense: [],
     ...over,
   },
+  streaks: { attack: 7, hold: { visible: 14, hidden: 3 } },
+  ambush: { chance: 14, perWin: 2, cap: 90, capAt: 45 },
   available: { forDefense: IDS, forOffense: IDS.slice(12) },
 });
 
@@ -69,6 +71,22 @@ describe('the roster shows all 27, always', () => {
   it('states the pool, which is why overlap keeps happening', () => {
     render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
     expect(screen.getByText(/12 \/ 12 on defense · 15 left for 3 squads of 6/)).toBeInTheDocument();
+  });
+
+  it('always shows the ambush chance, from the server (FR-015)', () => {
+    // Not on hover and not behind a tooltip. It is the odds of somebody
+    // reaching your Hidden squad, it rises with every attack win you take, and
+    // a player who cannot see it cannot decide whether to keep pushing.
+    render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
+
+    expect(screen.getByText('14%')).toBeInTheDocument();
+    expect(screen.getByText(/\+2% per win, up to 90%/)).toBeInTheDocument();
+  });
+
+  it('says so at the cap rather than showing a number that stopped moving', () => {
+    const atCap = { ...roster(), ambush: { chance: 90, perWin: 2, cap: 90, capAt: 45 } };
+    render(<RosterView roster={atCap} selectedHeroId={null} onSelect={() => {}} />);
+    expect(screen.getByText(/at cap/)).toBeInTheDocument();
   });
 });
 

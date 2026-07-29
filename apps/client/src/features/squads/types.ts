@@ -42,12 +42,37 @@ export interface EvictionPreview {
   readonly streakAtRisk: number;
 }
 
+/**
+ * **Three streaks that must never be conflated** (FR-012). They are named apart
+ * in the payload as well as in the schema: one `attack` belonging to the player,
+ * two `hold` belonging to zones. Reading the wrong one means reaching into a
+ * different object, not mistyping a field.
+ */
+export interface StreakState {
+  readonly attack: number;
+  readonly hold: Readonly<Record<Zone, number>>;
+}
+
+/**
+ * Ambush odds **as served**. The client renders `chance` and computes nothing —
+ * `perWin` and `cap` are here to be *displayed* ("+2% per win, up to 90%"), not
+ * to be multiplied. SC-008 greps this app for either value as a literal.
+ */
+export interface AmbushState {
+  readonly chance: number;
+  readonly perWin: number;
+  readonly cap: number;
+  readonly capAt: number;
+}
+
 export interface RosterResponse {
   readonly heroes: readonly Hero[];
   readonly assignments: {
     readonly defense: Readonly<Record<Zone, DefenseZoneState>>;
     readonly offense: readonly OffenseSquadState[];
   };
+  readonly streaks: StreakState;
+  readonly ambush: AmbushState;
   readonly available: {
     /** Every hero — moving one off an attack squad is legal. */
     readonly forDefense: readonly string[];

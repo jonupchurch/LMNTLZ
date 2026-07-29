@@ -128,16 +128,16 @@ plausible implementation gets backwards.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T032 [P] [US3] Write `apps/api/tests/squads/streaks.test.ts` — exactly three streaks exist; consecutive wins **across different offense squads** all count (SC-005); ambush reads `+2%` per win and **never exceeds 90%** at 45 wins (SC-006); an **ambushed loss does not reset** the attack streak
-- [ ] T033 [P] [US3] Add the config-source assertion to `apps/api/tests/squads/streaks.test.ts` — grep `apps/client/src` for any literal `2`-per-win or `90` cap and assert **zero** matches (SC-008)
+- [x] T032 [P] [US3] Write `apps/api/tests/squads/streaks.test.ts` — exactly three streaks exist; consecutive wins **across different offense squads** all count (SC-005); ambush reads `+2%` per win and **never exceeds 90%** at 45 wins (SC-006); an **ambushed loss does not reset** the attack streak
+- [x] T033 [P] [US3] Add the config-source assertion to `apps/api/tests/squads/streaks.test.ts` — grep `apps/client/src` for any literal `2`-per-win or `90` cap and assert **zero** matches (SC-008)
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Store `attackStreak` on the player and `holdStreak` per defense squad in `apps/api/src/db/schema/squads.ts` — **three numbers that look alike and must never be conflated** (FR-012)
-- [ ] T035 [US3] Make the attack streak universal across all three offense squads in `apps/api/src/squads/allocation.ts` — switching squads never resets it (FR-013)
-- [ ] T036 [US3] Compute ambush chance from the attack streak alone in `apps/api/src/squads/allocation.ts` — `+2%` per consecutive win, capped at **90%** (FR-015)
-- [ ] T037 [US3] Serve every streak and ambush constant from the server in `apps/api/src/squads/routes.ts` — **live-tunable, never a client constant** (FR-017, Constitution XII)
-- [ ] T038 [US3] Display the ambush chance **always** in `apps/client/src/features/squads/RosterView.tsx` (FR-015)
+- [x] T034 [US3] Store `attackStreak` on the player and `holdStreak` per defense squad in `apps/api/src/db/schema/squads.ts` — **three numbers that look alike and must never be conflated** (FR-012)
+- [x] T035 [US3] Make the attack streak universal across all three offense squads in `apps/api/src/squads/allocation.ts` — switching squads never resets it (FR-013)
+- [x] T036 [US3] Compute ambush chance from the attack streak alone in `apps/api/src/squads/allocation.ts` — `+2%` per consecutive win, capped at **90%** (FR-015)
+- [x] T037 [US3] Serve every streak and ambush constant from the server in `apps/api/src/squads/routes.ts` — **live-tunable, never a client constant** (FR-017, Constitution XII)
+- [x] T038 [US3] Display the ambush chance **always** in `apps/client/src/features/squads/RosterView.tsx` (FR-015)
 
 **Checkpoint**: Ambush odds are honest, visible, and tunable without a client build.
 
