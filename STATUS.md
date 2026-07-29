@@ -1,8 +1,10 @@
 ## Current phase
 
-**Features 001–006 are built. 285 of 767 tasks, and both halves are live on
-their own domains.** 716 unit tests + 25 Playwright end-to-end; lint, typecheck
-and build all clean.
+**Features 001–008 are built. 374 of 772 tasks, and both halves are live on
+their own domains.** **997 unit tests** (content 70 · sim 322 · api 474 · client
+131, across 90 files) + **36 Playwright end-to-end**; lint, typecheck and build
+all clean. Counted 2026-07-29 by running each suite rather than by trusting
+Turbo, which had cached four of the six tasks and printed no numbers for them.
 
 | | |
 |---|---|
@@ -16,8 +18,18 @@ production spent 13 hours serving a feature-005 build while six deploys failed,
 invisibly, because that was the only thing anyone checked. `/v1/roster` answering
 **401 rather than 404** is what proves feature 006 actually shipped.
 
-Four migrations are applied to Neon and verified by querying `information_schema`
+Six migrations are applied to Neon and verified by querying `information_schema`
 rather than by trusting the migrator.
+
+**Vercel, as of 2026-07-29.** Scope `jupchurch-7994s-projects`, on **Pro**.
+`lmntlz` carries exactly **two** environment variables — `VITE_API_BASE_URL` and
+`VITE_GOOGLE_CLIENT_ID` — and `lmntlz-api` seven. It carried nineteen until the
+Neon marketplace resource was found connected to the *client* project, which had
+put the database password on a static site in four different forms; disconnecting
+the resource removed all fifteen at once. **Vercel Web Analytics is live on both
+projects**, page views only. If a `PG*` or `POSTGRES_*` variable ever reappears on
+`lmntlz`, the resource has been reconnected — fix the connection, not the
+variables.
 
 | Feature | Tasks | State |
 |---|---|---|
@@ -27,10 +39,15 @@ rather than by trusting the migrator.
 | **004** defense-ai | 45/45 | firing profile, power choice, the five-step tiebreak, role defaults, reach window |
 | **005** auth | **49/49** | `apps/api` — Hono, Drizzle, Neon, Google, rotation, linking, usernames |
 | **006** roster & squads | **54/54** | `apps/client` — Vite/React/Tailwind · allocation, eviction, streaks, scout, defense config |
+| **007** battle | **52/52** | the log is the state · settlement, conclusion, expiry, hold streaks, sign-in wired at last |
+| **008** replays | **37/39** | permanent `battle_records` + a 7-day private blob · retention holds, cleanup, watch and list |
 
-**Features 001–006 are 100% complete.** Four migrations are applied to Neon and
-verified against the catalog rather than by trusting the migrator. **Feature 007,
-battle, is next.**
+**Features 001–008 are complete, bar two tasks that cannot be done yet.** 008's
+**T029** (cron registration) waits on 016 and its **T035** moderator exception
+waits on 015's operator identity; neither is dead code, and 008's own spec names
+012 as the consumer of its list endpoint. **Feature 009, matchmaking, is next** —
+it fills the four league and rating columns 008 currently writes null into, and
+gives the battle screen an attack button instead of resume-only.
 
 > **006 ended by finding a gap in its own task list.** T018–T020 and T047–T048
 > each say "build this component"; nothing said "put them on a page". Every squad

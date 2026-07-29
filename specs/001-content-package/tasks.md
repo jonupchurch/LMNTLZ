@@ -35,13 +35,13 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 
 **Purpose**: Stand up the pnpm + Turborepo workspace and the `@lmntlz/content` package
 
-- [ ] T001 Create the pnpm workspace root — `pnpm-workspace.yaml` (packages: `packages/*`, `apps/*`), root `package.json`, and `.npmrc` with `shamefully-hoist=false`
-- [ ] T002 Add Turborepo — `turbo.json` at repo root with `build`, `test`, `typecheck` and `lint` pipelines, `build` declaring `^build` dependency
-- [ ] T003 [P] Create `tsconfig.base.json` at repo root — `strict: true`, `target: ES2022`, `moduleResolution: bundler`, `noUncheckedIndexedAccess: true`
-- [ ] T004 [P] Configure ESLint and Prettier at repo root — `eslint.config.js`, `.prettierrc`
-- [ ] T005 [P] Add Vitest workspace config `vitest.workspace.ts` at repo root
-- [ ] T006 Scaffold `packages/content/` — `package.json` named `@lmntlz/content` with `build`/`test` scripts, `tsconfig.json` extending `tsconfig.base.json`, empty `src/index.ts`
-- [ ] T007 Add dependencies — `zod` to `packages/content/package.json`; `exceljs` and `tsx` to root devDependencies for the build step in `tools/`
+- [x] T001 Create the pnpm workspace root — `pnpm-workspace.yaml` (packages: `packages/*`, `apps/*`), root `package.json`, and `.npmrc` with `shamefully-hoist=false`
+- [x] T002 Add Turborepo — `turbo.json` at repo root with `build`, `test`, `typecheck` and `lint` pipelines, `build` declaring `^build` dependency
+- [x] T003 [P] Create `tsconfig.base.json` at repo root — `strict: true`, `target: ES2022`, `moduleResolution: bundler`, `noUncheckedIndexedAccess: true`
+- [x] T004 [P] Configure ESLint and Prettier at repo root — `eslint.config.js`, `.prettierrc`
+- [x] T005 [P] Add Vitest workspace config `vitest.workspace.ts` at repo root
+- [x] T006 Scaffold `packages/content/` — `package.json` named `@lmntlz/content` with `build`/`test` scripts, `tsconfig.json` extending `tsconfig.base.json`, empty `src/index.ts`
+- [x] T007 Add dependencies — `zod` to `packages/content/package.json`; `exceljs` and `tsx` to root devDependencies for the build step in `tools/`
 
 > **Why `exceljs`**: it is on the public npm registry with bundled types, and the
 > reader is header-keyed (research.md Q2) so the library is swappable without
@@ -56,11 +56,11 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 Delete the five workbook mutators per research.md Q1 (FR-018) — `tools/build-hero-stats.py`, `tools/add-passives.py`, `tools/add-powers-sheet.py`, `tools/apply-power-balance.py`, `tools/apply-roster-fixes.py`
-- [ ] T009 Verify no writer survives — `rg -l "hero-stats.xlsx" tools/` must return only read-only scripts (`validate-matchups.ps1`, `characterize-orderings.py`, `verify-accuracy.py`)
-- [ ] T010 Define the nine damage types, the two families and `family(type)` in `packages/content/src/types.ts`
-- [ ] T011 Implement `counter(type)` in `packages/content/src/types.ts` — Earth↔Air, Fire↔Water, Light↔Dark, Crush→Slash→Pierce→Crush (FR-003)
-- [ ] T012 [P] Property test — `counter` is a bijection over all 9 types and never crosses families, in `packages/content/tests/counter.test.ts`
+- [x] T008 Delete the five workbook mutators per research.md Q1 (FR-018) — `tools/build-hero-stats.py`, `tools/add-passives.py`, `tools/add-powers-sheet.py`, `tools/apply-power-balance.py`, `tools/apply-roster-fixes.py`
+- [x] T009 Verify no writer survives — `rg -l "hero-stats.xlsx" tools/` must return only read-only scripts (`validate-matchups.ps1`, `characterize-orderings.py`, `verify-accuracy.py`)
+- [x] T010 Define the nine damage types, the two families and `family(type)` in `packages/content/src/types.ts`
+- [x] T011 Implement `counter(type)` in `packages/content/src/types.ts` — Earth↔Air, Fire↔Water, Light↔Dark, Crush→Slash→Pierce→Crush (FR-003)
+- [x] T012 [P] Property test — `counter` is a bijection over all 9 types and never crosses families, in `packages/content/tests/counter.test.ts`
 
 **Checkpoint**: The single source of every weakness in the game exists, and nothing in the repo can overwrite the workbook
 
@@ -78,24 +78,24 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 > property of the rules — it needs no workbook and can be red before any reader
 > exists, which is what proves FR-006 is a *consequence* rather than a check.
 
-- [ ] T013 [P] [US1] The 60-of-72 enumeration test in `packages/content/tests/derivation.test.ts` — a **count** assertion (FR-005), so a change to `counter` that silently widens the legal space fails here
-- [ ] T014 [P] [US1] Rejection-naming test in `packages/content/tests/schema.test.ts` — each of the 12 illegal pairs returns its specific `ValidationRule`
-- [ ] T015 [P] [US1] The melee⇒magic consequence test in `packages/content/tests/derivation.test.ts` — assert the property holds for all 27 heroes, **plus** a source scan proving no rule mentioning melee pairing exists (FR-006)
+- [x] T013 [P] [US1] The 60-of-72 enumeration test in `packages/content/tests/derivation.test.ts` — a **count** assertion (FR-005), so a change to `counter` that silently widens the legal space fails here
+- [x] T014 [P] [US1] Rejection-naming test in `packages/content/tests/schema.test.ts` — each of the 12 illegal pairs returns its specific `ValidationRule`
+- [x] T015 [P] [US1] The melee⇒magic consequence test in `packages/content/tests/derivation.test.ts` — assert the property holds for all 27 heroes, **plus** a source scan proving no rule mentioning melee pairing exists (FR-006)
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement `isLegalPairing(primary, secondary)` with the three distinctness rules in `packages/content/src/derive.ts` (FR-004)
-- [ ] T017 [US1] Implement the derivation — `strengths`, `bane = counter(primary)`, `fault = counter(secondary)`, `family` — in `packages/content/src/derive.ts` (FR-002)
-- [ ] T018 [P] [US1] Zod schemas for `HeroStats`, `Power` and `Hero` in `packages/content/src/schema.ts`, matching `contracts/content.d.ts` — **no field accepts an authored bane, fault or strength list** (FR-001)
-- [ ] T019 [US1] Roster-wide rules in `packages/content/src/schema.ts` — exactly 27 heroes, exactly three per damage type, and the `legal-pairing-count` assertion (FR-010)
-- [ ] T020 [US1] Implement `validateRoster()` returning `ValidationFailure[]` that names the hero **and** the field in every message, in `packages/content/src/validate.ts` (FR-017)
-- [ ] T021 [US1] Startup guard in `packages/content/src/index.ts` — a non-empty `validateRoster()` throws at module load, so an invalid roster prevents startup rather than surfacing mid-battle (FR-015)
-- [ ] T022 [US1] Header-keyed workbook reader in `tools/build-content.ts` — resolve every column by header string once at load and fail loudly on a missing header; **never index a column by position** (research.md Q2)
-- [ ] T023 [US1] Power reading in `tools/build-content.ts` — match power columns by `startsWith('Power ')` (the first header carries a non-ASCII em dash), and reject a blank cooldown on an *active* power while accepting it on a passive
-- [ ] T024 [US1] Read the workbook's `Bane (derived)` / `Fault (derived)` columns **as an assertion, never as a source** — a mismatch emits `derived-column-disagrees` naming the hero (FR-008)
-- [ ] T025 [US1] Emit `packages/content/src/heroes.generated.ts` from `tools/build-content.ts` and commit it (FR-019)
-- [ ] T026 [US1] Emit `resources/characters/MATCHUPS.md` from the same build step, so the roster of record stops being hand-maintained (Constitution XX)
-- [ ] T027 [US1] Implement `getHero(id)` — throwing `UnknownHeroError`, not returning `undefined` — and `getAllHeroes()` returning a frozen array in stable roster order, in `packages/content/src/index.ts` (FR-011)
+- [x] T016 [US1] Implement `isLegalPairing(primary, secondary)` with the three distinctness rules in `packages/content/src/derive.ts` (FR-004)
+- [x] T017 [US1] Implement the derivation — `strengths`, `bane = counter(primary)`, `fault = counter(secondary)`, `family` — in `packages/content/src/derive.ts` (FR-002)
+- [x] T018 [P] [US1] Zod schemas for `HeroStats`, `Power` and `Hero` in `packages/content/src/schema.ts`, matching `contracts/content.d.ts` — **no field accepts an authored bane, fault or strength list** (FR-001)
+- [x] T019 [US1] Roster-wide rules in `packages/content/src/schema.ts` — exactly 27 heroes, exactly three per damage type, and the `legal-pairing-count` assertion (FR-010)
+- [x] T020 [US1] Implement `validateRoster()` returning `ValidationFailure[]` that names the hero **and** the field in every message, in `packages/content/src/validate.ts` (FR-017)
+- [x] T021 [US1] Startup guard in `packages/content/src/index.ts` — a non-empty `validateRoster()` throws at module load, so an invalid roster prevents startup rather than surfacing mid-battle (FR-015)
+- [x] T022 [US1] Header-keyed workbook reader in `tools/build-content.ts` — resolve every column by header string once at load and fail loudly on a missing header; **never index a column by position** (research.md Q2)
+- [x] T023 [US1] Power reading in `tools/build-content.ts` — match power columns by `startsWith('Power ')` (the first header carries a non-ASCII em dash), and reject a blank cooldown on an *active* power while accepting it on a passive
+- [x] T024 [US1] Read the workbook's `Bane (derived)` / `Fault (derived)` columns **as an assertion, never as a source** — a mismatch emits `derived-column-disagrees` naming the hero (FR-008)
+- [x] T025 [US1] Emit `packages/content/src/heroes.generated.ts` from `tools/build-content.ts` and commit it (FR-019)
+- [x] T026 [US1] Emit `resources/characters/MATCHUPS.md` from the same build step, so the roster of record stops being hand-maintained (Constitution XX)
+- [x] T027 [US1] Implement `getHero(id)` — throwing `UnknownHeroError`, not returning `undefined` — and `getAllHeroes()` returning a frozen array in stable roster order, in `packages/content/src/index.ts` (FR-011)
 
 **Checkpoint**: The roster loads, validates, and refuses exactly the 12 illegal pairings. Nothing downstream exists yet, but "what is a hero" now has one answer.
 
@@ -109,14 +109,14 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T028 [P] [US2] The 243-combination test in `packages/content/tests/effectiveness.test.ts` — every result is one of `1.5 | 1.25 | 1.0 | 0.8 | 0.5` and matches the value derived from that hero's authored pair
-- [ ] T029 [P] [US2] No-literal-table test in `packages/content/tests/effectiveness.test.ts` — scan `packages/content/src` for any 9×9 matrix or hard-coded multiplier outside `effectiveness.ts` (FR-008, SC-001)
+- [x] T028 [P] [US2] The 243-combination test in `packages/content/tests/effectiveness.test.ts` — every result is one of `1.5 | 1.25 | 1.0 | 0.8 | 0.5` and matches the value derived from that hero's authored pair
+- [x] T029 [P] [US2] No-literal-table test in `packages/content/tests/effectiveness.test.ts` — scan `packages/content/src` for any 9×9 matrix or hard-coded multiplier outside `effectiveness.ts` (FR-008, SC-001)
 
 ### Implementation for User Story 2
 
-- [ ] T030 [US2] Implement `effectiveness(attackType, defender: Hero)` in `packages/content/src/effectiveness.ts` — **the signature takes a Hero and there is no overload accepting a bare defending type**, because a 9×9 table cannot express Fault or the ×0.80 secondary case (FR-007)
-- [ ] T031 [US2] Implement `powerEffectiveness(power, defender)` in `packages/content/src/effectiveness.ts` — the better of a dual-typed power's two types, single-typed powers taking the same code path (FR-009)
-- [ ] T032 [US2] Export `counter`, `effectiveness` and `powerEffectiveness` from `packages/content/src/index.ts`
+- [x] T030 [US2] Implement `effectiveness(attackType, defender: Hero)` in `packages/content/src/effectiveness.ts` — **the signature takes a Hero and there is no overload accepting a bare defending type**, because a 9×9 table cannot express Fault or the ×0.80 secondary case (FR-007)
+- [x] T031 [US2] Implement `powerEffectiveness(power, defender)` in `packages/content/src/effectiveness.ts` — the better of a dual-typed power's two types, single-typed powers taking the same code path (FR-009)
+- [x] T032 [US2] Export `counter`, `effectiveness` and `powerEffectiveness` from `packages/content/src/index.ts`
 
 **Checkpoint**: Features 002 and 003 can now be started — the vocabulary they speak is complete.
 
@@ -133,12 +133,12 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T033 [P] [US3] Version-tracks-source test in `packages/content/tests/version.test.ts` — the stamp is a function of the workbook bytes, not of the emitted output (FR-020)
+- [x] T033 [P] [US3] Version-tracks-source test in `packages/content/tests/version.test.ts` — the stamp is a function of the workbook bytes, not of the emitted output (FR-020)
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Compute `"c" + sha256(bytes of resources/characters/hero-stats.xlsx)[0:12]` at build time in `tools/build-content.ts` (research.md Q3)
-- [ ] T035 [US3] Freeze the stamp into `packages/content/src/version.generated.ts` and expose `contentVersion()` from `packages/content/src/version.ts` — the `c` prefix is load-bearing, so a swapped `engineVersion`/`contentVersion` pair is visible on sight (FR-016)
+- [x] T034 [US3] Compute `"c" + sha256(bytes of resources/characters/hero-stats.xlsx)[0:12]` at build time in `tools/build-content.ts` (research.md Q3)
+- [x] T035 [US3] Freeze the stamp into `packages/content/src/version.generated.ts` and expose `contentVersion()` from `packages/content/src/version.ts` — the `c` prefix is load-bearing, so a swapped `engineVersion`/`contentVersion` pair is visible on sight (FR-016)
 
 **Checkpoint**: Any consumer can name the roster that produced an outcome.
 
@@ -152,14 +152,14 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T036 [P] [US4] Shape-rejection tests in `packages/content/tests/schema.test.ts` — a stat over the 75 cap, a fractional cooldown, a reach outside `{1, 2}`, and an unknown power reference each fail naming the hero and the field
+- [x] T036 [P] [US4] Shape-rejection tests in `packages/content/tests/schema.test.ts` — a stat over the 75 cap, a fractional cooldown, a reach outside `{1, 2}`, and an unknown power reference each fail naming the hero and the field
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Stat validation in `packages/content/src/schema.ts` — the 75 cap and the authored stat budget, leaving the measured +10 levelling headroom before a +20 rune overflows (FR-014)
-- [ ] T038 [US4] Cooldown validation in `packages/content/src/schema.ts` — integer turn counts only; reject any fractional or time-based value (FR-013)
-- [ ] T039 [US4] Reach and flag validation in `packages/content/src/schema.ts` — `reach ∈ {1, 2}`, and accept the `reactive` flag now so the hero-numbers pass needs no migration (research.md § What is NOT settled)
-- [ ] T040 [US4] Power-reference integrity in `tools/build-content.ts` — a hero referencing a power absent from `Power List`, or two heroes sharing a name that must be unique, fails naming both
+- [x] T037 [US4] Stat validation in `packages/content/src/schema.ts` — the 75 cap and the authored stat budget, leaving the measured +10 levelling headroom before a +20 rune overflows (FR-014)
+- [x] T038 [US4] Cooldown validation in `packages/content/src/schema.ts` — integer turn counts only; reject any fractional or time-based value (FR-013)
+- [x] T039 [US4] Reach and flag validation in `packages/content/src/schema.ts` — `reach ∈ {1, 2}`, and accept the `reactive` flag now so the hero-numbers pass needs no migration (research.md § What is NOT settled)
+- [x] T040 [US4] Power-reference integrity in `tools/build-content.ts` — a hero referencing a power absent from `Power List`, or two heroes sharing a name that must be unique, fails naming both
 
 **Checkpoint**: All four stories are independently functional. The hero-numbers pass can now land without a second migration.
 
@@ -167,9 +167,9 @@ Monorepo, per [plan.md](plan.md) § Project Structure and
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T041 CI regenerate-and-diff job in `.github/workflows/content.yml` — re-run `tools/build-content.ts` and **fail if the emitted output differs from what is committed** (FR-019). This is what makes the build step safe rather than merely convenient
-- [ ] T042 [P] Write `packages/content/README.md` — the public surface, and the standing warning that nothing may open the workbook for writing
-- [ ] T043 Run every check in [quickstart.md](quickstart.md) end to end, including the hand-edit-a-derived-column test and the "nothing else edited" `git status` check
+- [x] T041 CI regenerate-and-diff job in `.github/workflows/content.yml` — re-run `tools/build-content.ts` and **fail if the emitted output differs from what is committed** (FR-019). This is what makes the build step safe rather than merely convenient
+- [x] T042 [P] Write `packages/content/README.md` — the public surface, and the standing warning that nothing may open the workbook for writing
+- [x] T043 Run every check in [quickstart.md](quickstart.md) end to end, including the hand-edit-a-derived-column test and the "nothing else edited" `git status` check
 
 ---
 

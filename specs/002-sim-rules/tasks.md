@@ -33,10 +33,10 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 **Purpose**: The `@lmntlz/sim` package and the subpath export map that shapes the seam
 
-- [ ] T001 Scaffold `packages/sim/` — `package.json` named `@lmntlz/sim`, `tsconfig.json` extending `tsconfig.base.json`, dependency on `@lmntlz/content` only
-- [ ] T002 Declare the subpath exports in `packages/sim/package.json` per research.md Q1 — `./rules`, `./resolver`, `./ai`, and **deliberately no root export**, so `import from '@lmntlz/sim'` fails to resolve and nobody reaches the resolver through a barrel file
-- [ ] T003 [P] Add the `no-restricted-imports` ESLint rule in `apps/client/eslint.config.js` banning `@lmntlz/sim/resolver` and `@lmntlz/sim/ai` — the fast local signal; the CI graph test (T007) is the thing that is actually true
-- [ ] T004 [P] Add `packages/sim/vitest.config.ts` with a `rules` test project
+- [x] T001 Scaffold `packages/sim/` — `package.json` named `@lmntlz/sim`, `tsconfig.json` extending `tsconfig.base.json`, dependency on `@lmntlz/content` only
+- [x] T002 Declare the subpath exports in `packages/sim/package.json` per research.md Q1 — `./rules`, `./resolver`, `./ai`, and **deliberately no root export**, so `import from '@lmntlz/sim'` fails to resolve and nobody reaches the resolver through a barrel file
+- [x] T003 [P] Add the `no-restricted-imports` ESLint rule in `apps/client/eslint.config.js` banning `@lmntlz/sim/resolver` and `@lmntlz/sim/ai` — the fast local signal; the CI graph test (T007) is the thing that is actually true
+- [x] T004 [P] Add `packages/sim/vitest.config.ts` with a `rules` test project
 
 ---
 
@@ -46,8 +46,8 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Define `Row`, `Side`, `HeroState`, `StatusInstance` and `BattleState` in `packages/sim/rules/state.ts`, matching `contracts/rules.d.ts` — all fields `readonly`, because **nothing here mutates the state it is given**
-- [ ] T006 Document and encode the absolute axis in `packages/sim/rules/state.ts` per research.md Q3 — **row 1 is the attacker's rearmost seat, row 3 its front; row 4 is the defender's front, row 6 its back.** Numbering ascends toward the enemy for the attacker and away for the defender
+- [x] T005 Define `Row`, `Side`, `HeroState`, `StatusInstance` and `BattleState` in `packages/sim/rules/state.ts`, matching `contracts/rules.d.ts` — all fields `readonly`, because **nothing here mutates the state it is given**
+- [x] T006 Document and encode the absolute axis in `packages/sim/rules/state.ts` per research.md Q3 — **row 1 is the attacker's rearmost seat, row 3 its front; row 4 is the defender's front, row 6 its back.** Numbering ascends toward the enemy for the attacker and away for the defender
 
 > **Getting T006 backwards inverts every reach test while still looking
 > plausible.** research.md Q3 names it as the second thing to get wrong after the
@@ -68,18 +68,18 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 > **These run before any rule exists.** T007 is Constitution XII expressed as an
 > assertion rather than an intention.
 
-- [ ] T007 [US2] Write `packages/sim/tests/rules/purity.test.ts` — walk the module graph and assert (a) no module reachable from `packages/sim/rules` references `Math.random`, `crypto.getRandomValues`, `Date.now`, `new Date`, `performance.now` or `process.hrtime`; **and (b)** `apps/client`'s import graph contains neither `@lmntlz/sim/resolver` nor `@lmntlz/sim/ai` **at any depth**
-- [ ] T008 [P] [US2] Write `packages/sim/tests/rules/determinism.test.ts` — evaluate the same state 1,000 times through every exported function and assert byte-identical results (SC-003). This is the guard against a cache, a memo keyed on object identity, or `Set` iteration order
-- [ ] T009 [P] [US2] Write the no-outcome scan in `packages/sim/tests/rules/purity.test.ts` — assert no exported function's return type contains a boolean hit/miss or crit result (SC-004)
+- [x] T007 [US2] Write `packages/sim/tests/rules/purity.test.ts` — walk the module graph and assert (a) no module reachable from `packages/sim/rules` references `Math.random`, `crypto.getRandomValues`, `Date.now`, `new Date`, `performance.now` or `process.hrtime`; **and (b)** `apps/client`'s import graph contains neither `@lmntlz/sim/resolver` nor `@lmntlz/sim/ai` **at any depth**
+- [x] T008 [P] [US2] Write `packages/sim/tests/rules/determinism.test.ts` — evaluate the same state 1,000 times through every exported function and assert byte-identical results (SC-003). This is the guard against a cache, a memo keyed on object identity, or `Set` iteration order
+- [x] T009 [P] [US2] Write the no-outcome scan in `packages/sim/tests/rules/purity.test.ts` — assert no exported function's return type contains a boolean hit/miss or crit result (SC-004)
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Implement the folded hit probability in `packages/sim/rules/probability.ts` — `m = Agility_d − Perception_a − 20`, `P = (1/(Na·Nd))·Σ clamp(a − m − 1, 0, Nd)`, `Na = floor(Luck_a × 1.5)` with `Na ≥ 1` always (research.md Q2)
-- [ ] T011 [US2] Apply the `[0.65, 0.95]` clamp **after** the fold in `packages/sim/rules/probability.ts` — clamping earlier loses the property that makes runes safe (FR-020)
-- [ ] T012 [US2] Implement `riderLandProbability` in `packages/sim/rules/probability.ts` reusing the same fold with `m = Resolve_d − potency` and **no `+20`** — one implementation, the edge is a parameter (research.md Q2)
-- [ ] T013 [US2] Implement `critChance` in `packages/sim/rules/probability.ts` — `Luck × 0.5` percent as a fraction, rolled once per packet rather than per target (FR-021)
-- [ ] T014 [P] [US2] Write `packages/sim/tests/rules/probability.test.ts` — the clamp holds across all 729 pairings **and** across the runed extremes, where an `Agility` + `Luck` defender at the 75 cap is a 98.2% miss unclamped (SC-008)
-- [ ] T015 [US2] Regression-lock the unclamped distribution in `packages/sim/tests/rules/probability.test.ts` against research.md Q2 — mean miss **13.0%**, p90 **28.9%**, **0** pairs missing above 50%, **42** auto-hits, **0** auto-misses. `tools/verify-accuracy.py` reproduces every figure
+- [x] T010 [US2] Implement the folded hit probability in `packages/sim/rules/probability.ts` — `m = Agility_d − Perception_a − 20`, `P = (1/(Na·Nd))·Σ clamp(a − m − 1, 0, Nd)`, `Na = floor(Luck_a × 1.5)` with `Na ≥ 1` always (research.md Q2)
+- [x] T011 [US2] Apply the `[0.65, 0.95]` clamp **after** the fold in `packages/sim/rules/probability.ts` — clamping earlier loses the property that makes runes safe (FR-020)
+- [x] T012 [US2] Implement `riderLandProbability` in `packages/sim/rules/probability.ts` reusing the same fold with `m = Resolve_d − potency` and **no `+20`** — one implementation, the edge is a parameter (research.md Q2)
+- [x] T013 [US2] Implement `critChance` in `packages/sim/rules/probability.ts` — `Luck × 0.5` percent as a fraction, rolled once per packet rather than per target (FR-021)
+- [x] T014 [P] [US2] Write `packages/sim/tests/rules/probability.test.ts` — the clamp holds across all 729 pairings **and** across the runed extremes, where an `Agility` + `Luck` defender at the 75 cap is a 98.2% miss unclamped (SC-008)
+- [x] T015 [US2] Regression-lock the unclamped distribution in `packages/sim/tests/rules/probability.test.ts` against research.md Q2 — mean miss **13.0%**, p90 **28.9%**, **0** pairs missing above 50%, **42** auto-hits, **0** auto-misses. `tools/verify-accuracy.py` reproduces every figure
 
 **Checkpoint**: The seam is enforced by a failing build rather than a reviewer. A modified client can learn odds and nothing else.
 
@@ -93,22 +93,22 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T016 [P] [US1] Write `packages/sim/tests/rules/parity.test.ts` — evaluate an identical `BattleState` under both the browser and Node Vitest environments and assert every exported function agrees exactly (SC-002). **Re-run at each later checkpoint** as the surface grows
-- [ ] T017 [P] [US1] Write `packages/sim/tests/rules/turnOrder.test.ts` — 10,000 ticks giving Speed 45 **1.46×** the acts of Speed 15 and Speed 75 **1.92×** (SC-007), plus the case FR-013 exists for: a Speed 75 hero **acts twice** before a Speed 15 hero acts once
-- [ ] T018 [P] [US1] Write `packages/sim/tests/rules/damage.test.ts` — sweep `E` from −75 to +150 asserting `final ≥ packet × 0.25` throughout, mitigation alone never exceeding 50% reduction, **and** that the floor currently *ties* at the worst case and never bites, so the day it starts binding a test says so (SC-009, research.md)
+- [x] T016 [P] [US1] Write `packages/sim/tests/rules/parity.test.ts` — evaluate an identical `BattleState` under both the browser and Node Vitest environments and assert every exported function agrees exactly (SC-002). **Re-run at each later checkpoint** as the surface grows
+- [x] T017 [P] [US1] Write `packages/sim/tests/rules/turnOrder.test.ts` — 10,000 ticks giving Speed 45 **1.46×** the acts of Speed 15 and Speed 75 **1.92×** (SC-007), plus the case FR-013 exists for: a Speed 75 hero **acts twice** before a Speed 15 hero acts once
+- [x] T018 [P] [US1] Write `packages/sim/tests/rules/damage.test.ts` — sweep `E` from −75 to +150 asserting `final ≥ packet × 0.25` throughout, mitigation alone never exceeding 50% reduction, **and** that the floor currently *ties* at the worst case and never bites, so the day it starts binding a test says so (SC-009, research.md)
 
 ### Implementation for User Story 1
 
-- [ ] T019 [US1] Implement the bounded accumulator in `packages/sim/rules/turnOrder.ts` — `50 + Speed` per tick, acting at 100, **drained in a loop and never tested once** (FR-012, FR-013)
-- [ ] T020 [US1] Implement `turnQueue(state, lookahead)` in `packages/sim/rules/turnOrder.ts` — ticks stay internal; consumers get a projection (FR-014)
-- [ ] T021 [US1] Apply stat modifications as **flat points including Speed** in `packages/sim/rules/turnOrder.ts` — the base constant 50 already normalizes them, so a percentage would hand the fastest hero the largest absolute gain (FR-015)
-- [ ] T022 [P] [US1] Implement max HP and the packet in `packages/sim/rules/damage.ts` — `maxHp = Toughness × 50`; `packet = Might × power.multiplier` with **Luck absent** (FR-016, FR-017)
-- [ ] T023 [US1] Implement mitigation in `packages/sim/rules/damage.ts` — `E = (Armor | MagicResist) − Penetration` against `K = 75`, with the negative-`E` branch, and a mixed martial/arcane power answering the defender's **lower** mitigation stat (FR-018, FR-022)
-- [ ] T024 [US1] Implement the final-damage floor in `packages/sim/rules/damage.ts` — `max(packet × 0.25, mitigated × typeMultiplier)`, full precision throughout and rounded **once**, at the end (FR-019)
-- [ ] T025 [US1] Take the type multiplier from `@lmntlz/content`'s `powerEffectiveness` in `packages/sim/rules/damage.ts` — **never recomputed here** (FR-022, Constitution XIII)
-- [ ] T026 [US1] Implement `damagePreview` in `packages/sim/rules/damage.ts` returning packet, mitigation, multiplier, `resistedBy`, floor flag, final, crit final **and both probabilities** — everything except the outcome (FR-004)
-- [ ] T027 [US1] Implement `healPreview` in `packages/sim/rules/damage.ts` — skips evasion, mitigation, type effectiveness, the Resolve contest and the floor; keeps reach and crit; capped at `maxHp` with overheal lost
-- [ ] T028 [US1] Export the surface from `packages/sim/rules/index.ts`
+- [x] T019 [US1] Implement the bounded accumulator in `packages/sim/rules/turnOrder.ts` — `50 + Speed` per tick, acting at 100, **drained in a loop and never tested once** (FR-012, FR-013)
+- [x] T020 [US1] Implement `turnQueue(state, lookahead)` in `packages/sim/rules/turnOrder.ts` — ticks stay internal; consumers get a projection (FR-014)
+- [x] T021 [US1] Apply stat modifications as **flat points including Speed** in `packages/sim/rules/turnOrder.ts` — the base constant 50 already normalizes them, so a percentage would hand the fastest hero the largest absolute gain (FR-015)
+- [x] T022 [P] [US1] Implement max HP and the packet in `packages/sim/rules/damage.ts` — `maxHp = Toughness × 50`; `packet = Might × power.multiplier` with **Luck absent** (FR-016, FR-017)
+- [x] T023 [US1] Implement mitigation in `packages/sim/rules/damage.ts` — `E = (Armor | MagicResist) − Penetration` against `K = 75`, with the negative-`E` branch, and a mixed martial/arcane power answering the defender's **lower** mitigation stat (FR-018, FR-022)
+- [x] T024 [US1] Implement the final-damage floor in `packages/sim/rules/damage.ts` — `max(packet × 0.25, mitigated × typeMultiplier)`, full precision throughout and rounded **once**, at the end (FR-019)
+- [x] T025 [US1] Take the type multiplier from `@lmntlz/content`'s `powerEffectiveness` in `packages/sim/rules/damage.ts` — **never recomputed here** (FR-022, Constitution XIII)
+- [x] T026 [US1] Implement `damagePreview` in `packages/sim/rules/damage.ts` returning packet, mitigation, multiplier, `resistedBy`, floor flag, final, crit final **and both probabilities** — everything except the outcome (FR-004)
+- [x] T027 [US1] Implement `healPreview` in `packages/sim/rules/damage.ts` — skips evasion, mitigation, type effectiveness, the Resolve contest and the floor; keeps reach and crit; capped at `maxHp` with overheal lost
+- [x] T028 [US1] Export the surface from `packages/sim/rules/index.ts`
 
 **Checkpoint**: A client can price any attack without a request. The parity harness passes over turn order, probability and damage.
 
@@ -122,8 +122,8 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] Write `packages/sim/tests/rules/reach.test.ts` — the exhaustive enumeration: 30 ordered row pairs × 64 occupancy patterns = **1,920 cases**, no mocks
-- [ ] T030 [US3] Add the three named cases to `packages/sim/tests/rules/reach.test.ts` — row 1 → row 4 at full formation is distance **3**; the same with the attacker's row 3 empty is distance **2**; and a reach-2 front-seat hero with `+1` reach sees **three** enemy rows, not two
+- [x] T029 [P] [US3] Write `packages/sim/tests/rules/reach.test.ts` — the exhaustive enumeration: 30 ordered row pairs × 64 occupancy patterns = **1,920 cases**, no mocks
+- [x] T030 [US3] Add the three named cases to `packages/sim/tests/rules/reach.test.ts` — row 1 → row 4 at full formation is distance **3**; the same with the attacker's row 3 empty is distance **2**; and a reach-2 front-seat hero with `+1` reach sees **three** enemy rows, not two
 
 > **The third case is the one that fails on a natural implementation.** Feature
 > 004 carries FR-020 specifically for it. `inReach` must never be bounded by a
@@ -131,9 +131,9 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Implement `distance(state, from, to)` in `packages/sim/rules/reach.ts` — counting **occupied** rows crossed, **including the target's row and excluding the actor's own**, with an empty row counting zero (FR-005, FR-006)
-- [ ] T032 [US3] Treat a row holding only fallen heroes as empty in `packages/sim/rules/reach.ts` — a fallen hero does not hold its row (FR-029)
-- [ ] T033 [US3] Implement `inReach(state, actorId, targetRow)` in `packages/sim/rules/reach.ts` as `distance ≤ hero.reach + reachMod` (FR-007)
+- [x] T031 [US3] Implement `distance(state, from, to)` in `packages/sim/rules/reach.ts` — counting **occupied** rows crossed, **including the target's row and excluding the actor's own**, with an empty row counting zero (FR-005, FR-006)
+- [x] T032 [US3] Treat a row holding only fallen heroes as empty in `packages/sim/rules/reach.ts` — a fallen hero does not hold its row (FR-029)
+- [x] T033 [US3] Implement `inReach(state, actorId, targetRow)` in `packages/sim/rules/reach.ts` as `distance ≤ hero.reach + reachMod` (FR-007)
 
 **Checkpoint**: Reach is correct and exhaustively proven. The line collapsing changes who can fight.
 
@@ -147,16 +147,16 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T034 [P] [US4] Write `packages/sim/tests/rules/targeting.test.ts` — every combination of filter and compulsion over a sample of states, asserting a legal action always exists
-- [ ] T035 [P] [US4] Add the four interaction cases to `packages/sim/tests/rules/targeting.test.ts` — a filter that would empty the set is **ignored**; a compulsion naming a hero outside the set **does not apply**; a compulsion and a restriction naming the same hero **cancel**; a hero with no legal target **passes**
-- [ ] T036 [P] [US4] Add the ally case to `packages/sim/tests/rules/targeting.test.ts` — a healing power's legal targets obey the identical reach rule as an attack (FR-008)
+- [x] T034 [P] [US4] Write `packages/sim/tests/rules/targeting.test.ts` — every combination of filter and compulsion over a sample of states, asserting a legal action always exists
+- [x] T035 [P] [US4] Add the four interaction cases to `packages/sim/tests/rules/targeting.test.ts` — a filter that would empty the set is **ignored**; a compulsion naming a hero outside the set **does not apply**; a compulsion and a restriction naming the same hero **cancel**; a hero with no legal target **passes**
+- [x] T036 [P] [US4] Add the ally case to `packages/sim/tests/rules/targeting.test.ts` — a healing power's legal targets obey the identical reach rule as an attack (FR-008)
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Implement the four ordered stages in `packages/sim/rules/targeting.ts` — **reach → filters → compulsion → choice**, with this function performing the first three and stopping (FR-009)
-- [ ] T038 [US4] Implement the two non-emptying invariants in `packages/sim/rules/targeting.ts` — an emptying filter is ignored and recorded in `filtersIgnored`; an out-of-set compulsion does not apply (FR-010)
-- [ ] T039 [US4] Select the candidate pool from the power's `friendly` flag in `packages/sim/rules/targeting.ts` — **nothing else about the path differs between allies and enemies** (FR-008)
-- [ ] T040 [US4] Implement `mustPass(state, actorInstanceId)` in `packages/sim/rules/targeting.ts` — true when no power the hero owns has a legal target, so it passes rather than stalling the battle (FR-011)
+- [x] T037 [US4] Implement the four ordered stages in `packages/sim/rules/targeting.ts` — **reach → filters → compulsion → choice**, with this function performing the first three and stopping (FR-009)
+- [x] T038 [US4] Implement the two non-emptying invariants in `packages/sim/rules/targeting.ts` — an emptying filter is ignored and recorded in `filtersIgnored`; an out-of-set compulsion does not apply (FR-010)
+- [x] T039 [US4] Select the candidate pool from the power's `friendly` flag in `packages/sim/rules/targeting.ts` — **nothing else about the path differs between allies and enemies** (FR-008)
+- [x] T040 [US4] Implement `mustPass(state, actorInstanceId)` in `packages/sim/rules/targeting.ts` — true when no power the hero owns has a legal target, so it passes rather than stalling the battle (FR-011)
 
 **Checkpoint**: Targeting cannot deadlock. `TargetingResult.candidates` is a set feature 004 will **sort** and never filter.
 
@@ -170,18 +170,18 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T041 [P] [US5] Write `packages/sim/tests/rules/ending.test.ts` — a wipe, a cap resolved on pooled HP share, a cap tied on share and resolved on champions standing, a cap tied on both resolving to the defender, and a zero-damage squad losing at the cap
-- [ ] T042 [P] [US5] Write `packages/sim/tests/rules/phases.test.ts` — a hero losing its turn to crowd control skips phases 2–4 and **still reaches phase 5**, so cooldowns tick; a non-damaging, non-healing power skips the Defense phase; a reaction never triggers another reaction
+- [x] T041 [P] [US5] Write `packages/sim/tests/rules/ending.test.ts` — a wipe, a cap resolved on pooled HP share, a cap tied on share and resolved on champions standing, a cap tied on both resolving to the defender, and a zero-damage squad losing at the cap
+- [x] T042 [P] [US5] Write `packages/sim/tests/rules/phases.test.ts` — a hero losing its turn to crowd control skips phases 2–4 and **still reaches phase 5**, so cooldowns tick; a non-damaging, non-healing power skips the Defense phase; a reaction never triggers another reaction
 
 ### Implementation for User Story 5
 
-- [ ] T043 [US5] Implement the five-phase order in `packages/sim/rules/phases.ts` — **Upkeep · Attack · Defense · Additional effects · Resolution** (FR-023)
-- [ ] T044 [US5] Implement the phase skip conditions in `packages/sim/rules/phases.ts` — death during upkeep is the only early termination; crowd control skips 2–4 but never 5; a power dealing neither damage nor healing skips Defense (FR-025, FR-026)
-- [ ] T045 [US5] Implement the fixed order of additional effects in `packages/sim/rules/phases.ts` — riders → on-hit triggers → reactions → attacker self-effects → a second death check, with a reaction unable to trigger a reaction (FR-027, FR-028)
-- [ ] T046 [US5] Implement `cooldownsAfterResolution` in `packages/sim/rules/phases.ts` — integer turns, ticking in Resolution **unconditionally** (FR-024)
-- [ ] T047 [US5] Implement `availablePowers` in `packages/sim/rules/phases.ts` — off cooldown **and** past its gate: tier 4 from turn 3, tier 5 from turn 5
-- [ ] T048 [US5] Implement immediate departure at 0 HP in `packages/sim/rules/ending.ts` — the hero leaves the board, stops occupying its row, and is untargetable, unhealable and unrevivable (FR-029)
-- [ ] T049 [US5] Implement `battleEnded(state)` in `packages/sim/rules/ending.ts` — wipe, then at **300 hero-turns** pooled HP share, then champions standing, then the defender holds (FR-030, FR-031)
+- [x] T043 [US5] Implement the five-phase order in `packages/sim/rules/phases.ts` — **Upkeep · Attack · Defense · Additional effects · Resolution** (FR-023)
+- [x] T044 [US5] Implement the phase skip conditions in `packages/sim/rules/phases.ts` — death during upkeep is the only early termination; crowd control skips 2–4 but never 5; a power dealing neither damage nor healing skips Defense (FR-025, FR-026)
+- [x] T045 [US5] Implement the fixed order of additional effects in `packages/sim/rules/phases.ts` — riders → on-hit triggers → reactions → attacker self-effects → a second death check, with a reaction unable to trigger a reaction (FR-027, FR-028)
+- [x] T046 [US5] Implement `cooldownsAfterResolution` in `packages/sim/rules/phases.ts` — integer turns, ticking in Resolution **unconditionally** (FR-024)
+- [x] T047 [US5] Implement `availablePowers` in `packages/sim/rules/phases.ts` — off cooldown **and** past its gate: tier 4 from turn 3, tier 5 from turn 5
+- [x] T048 [US5] Implement immediate departure at 0 HP in `packages/sim/rules/ending.ts` — the hero leaves the board, stops occupying its row, and is untargetable, unhealable and unrevivable (FR-029)
+- [x] T049 [US5] Implement `battleEnded(state)` in `packages/sim/rules/ending.ts` — wipe, then at **300 hero-turns** pooled HP share, then champions standing, then the defender holds (FR-030, FR-031)
 
 **Checkpoint**: All five stories independently functional. No constructed pairing runs past the cap.
 
@@ -189,11 +189,11 @@ because [plan.md](plan.md) § Phase 2 requires `purity.test.ts` to be red-then-g
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T050 Write `packages/sim/tests/rules/pairings.test.ts` — property tests over all **729** hero-versus-hero pairings, with no mocks anywhere (SC-005)
-- [ ] T051 Re-run `packages/sim/tests/rules/parity.test.ts` over the **complete** surface now that targeting and ending exist — this closes US1 acceptance scenario 1, whose legal-target half could not be proven until Phase 6
-- [ ] T052 [P] Add `engineVersion` to `packages/sim/rules/index.ts` — the stamp that identifies this package, kept **separate from `contentVersion`** and never merged (Constitution XVI)
-- [ ] T053 [P] Write `packages/sim/README.md` documenting the seam — what belongs in `rules/`, what belongs in `resolver/`, and why a "temporary" `Math.random()` here would pass review once and be permanent
-- [ ] T054 Run the manual pass in [quickstart.md](quickstart.md) — import `@lmntlz/sim/rules` from a scratch client file and confirm it resolves; import `@lmntlz/sim/resolver` and confirm **the build fails**; read `damagePreview` against the worked example in `resources/mechanics/01-stats.md`
+- [x] T050 Write `packages/sim/tests/rules/pairings.test.ts` — property tests over all **729** hero-versus-hero pairings, with no mocks anywhere (SC-005)
+- [x] T051 Re-run `packages/sim/tests/rules/parity.test.ts` over the **complete** surface now that targeting and ending exist — this closes US1 acceptance scenario 1, whose legal-target half could not be proven until Phase 6
+- [x] T052 [P] Add `engineVersion` to `packages/sim/rules/index.ts` — the stamp that identifies this package, kept **separate from `contentVersion`** and never merged (Constitution XVI)
+- [x] T053 [P] Write `packages/sim/README.md` documenting the seam — what belongs in `rules/`, what belongs in `resolver/`, and why a "temporary" `Math.random()` here would pass review once and be permanent
+- [x] T054 Run the manual pass in [quickstart.md](quickstart.md) — import `@lmntlz/sim/rules` from a scratch client file and confirm it resolves; import `@lmntlz/sim/resolver` and confirm **the build fails**; read `damagePreview` against the worked example in `resources/mechanics/01-stats.md`
 
 ---
 

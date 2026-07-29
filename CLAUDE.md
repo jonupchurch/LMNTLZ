@@ -201,15 +201,26 @@ final   = max(packet × 0.25, mitigated × typeMultiplier)
 
 ## Deliberately undecided
 
-- **`06-progression.md` is the one real blocker.** Guild rewards and equipment
-  costs both wait on it, and it has to answer something the design made hard on
-  purpose: all 27 heroes are unlocked from the start, so progression cannot be
-  roster power.
-- **`07-defense-ai.md`** — unblocked now that the action space is complete. The
-  engine plays *every* defense squad, so this is the defensive half of the game.
+**Both documents this section used to name as missing are written** — `06` (1,660
+lines) and `07` (533) — and `07`'s feature shipped as **004**. What is left is
+narrower than "undecided":
+
+- **The rating ladder, inside `06-progression.md`.** The currency, power model,
+  income rates and daily curve are settled; the ladder is not, and it is what
+  **009's rating axis and 010 both wait on** — `009-matchmaking.md` says so
+  explicitly. Guild rewards and equipment costs wait on the same section. It still
+  has to answer the thing the design made hard on purpose: all 27 heroes are
+  unlocked from the start, so progression cannot be roster power.
 - **The hero-numbers pass** — every formula is specified; the values are still a
-  Role-shaped template. See `resources/mechanics/README.md` for the index, the
-  dependency read, and what each remaining document is waiting on.
+  Role-shaped template. Blocks no spec and blocks all balance, and under the
+  no-nerf rule this is the last moment numbers move freely. **Reactive powers are
+  specified but unpopulated**, leaving two passives dead; that authoring belongs
+  here.
+- **~130 bot squads** — the single largest authoring job in the project, inside
+  009. Each bot's Hidden squad is authored one band up its own ramp.
+- **`10-equipment.md` is deliberately not started** — a planned fast-follower, not
+  a gap. See `resources/mechanics/README.md` for the index, the dependency read,
+  and what each remaining document is waiting on.
 
 ## Toolkit available in this repo
 
