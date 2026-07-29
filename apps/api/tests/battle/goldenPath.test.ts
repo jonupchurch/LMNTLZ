@@ -186,9 +186,10 @@ describe('the packets themselves', () => {
 
   it('records an intent for every event, engine turns included', () => {
     /**
-     * **This is what makes a replay not need the AI.** An event without an
-     * actor is an event that has to be re-derived, and re-deriving is the bet
-     * the recorded intent exists to avoid.
+     * **This is what makes a divergence detectable.** A replay does re-run the
+     * defense AI — `act.ts` explains why it must — so the recorded intent is
+     * the thing its answer gets checked against. An event without an actor is
+     * an event nothing can be compared to.
      */
     for (const packet of fought.packets) {
       for (const event of packet.events) {

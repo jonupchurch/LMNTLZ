@@ -23,6 +23,7 @@
  */
 
 import { getHero, UnknownHeroError } from '@lmntlz/content';
+import type { PowerRanking } from './firingProfile.js';
 
 export const SQUAD_ROWS = ['front', 'middle', 'back'] as const;
 export type SquadRow = (typeof SQUAD_ROWS)[number];
@@ -170,8 +171,12 @@ export function validateFormation(seats: readonly Seat[]): FormationFault | null
  * all in range, and it leaves one power unreachable and another ranked twice.
  * The engine would resolve it into *something* — silently, and there is no
  * outcome that is right.
+ *
+ * **Narrows to `PowerRanking`, not to `number[]`**, because a permutation of 0–5
+ * *is* six numbers and saying so is what stops every caller writing a cast to
+ * get back the thing the check already proved.
  */
-export function isPowerRanking(value: unknown): value is number[] {
+export function isPowerRanking(value: unknown): value is PowerRanking {
   if (!Array.isArray(value) || value.length !== SQUAD_SIZE) return false;
   const seen = new Set<number>();
   for (const n of value) {

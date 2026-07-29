@@ -1,0 +1,287 @@
+/**
+ * Two real players, two real squads, one real battle — over HTTP.
+ *
+ * `goldenPath.test.ts` drives the engine functions directly, which is the right
+ * level for "does the packet boundary hold". **This is the level where the
+ * properties US1 actually promises live**: nothing is stored mid-battle, the
+ * defender's snapshot is frozen, and the seed never appears in a response. None
+ * of those is a statement about the engine; every one is a statement about the
+ * route in front of it.
+ *
+ * The accounts and squads are created through the API rather than inserted,
+ * because a fixture that wrote rows directly would be testing this file's idea
+ * of a squad instead of feature 006's.
+ */
+
+import { expect } from 'vitest';
+import { eq } from 'drizzle-orm';
+import { getAllHeroes } from '@lmntlz/content';
+import { legalTargets } from '@lmntlz/sim/rules';
+import { usablePowers } from '../../src/battle/choicePoint.js';
+import app from '../../src/index.js';
+import { db } from '../../src/db/client.js';
+import { accounts } from '../../src/db/schema/accounts.js';
+import { battles } from '../../src/db/schema/battles.js';
+import { overrideProvider } from '../../src/auth/providers.js';
+import { InvalidProviderTokenError, type IdentityProvider } from '../../src/auth/provider.js';
+
+export const ROSTER = getAllHeroes().map((h) => h.id);
+
+/**
+ * A provider that trusts a `sub:` prefix.
+ *
+ * The same stand-in every other route suite uses. Identity is feature 005's
+ * problem and it has its own tests; a battle test that also verified JWTs would
+ * fail for two unrelated reasons and be read as flaky.
+ */
+const provider: IdentityProvider = {
+  name: 'google',
+  verify: (token: string) =>
+    token.startsWith('sub:')
+      ? Promise.resolve({ provider: 'google' as const, subject: token.slice(4), email: null })
+      : Promise.reject(new InvalidProviderTokenError('signature')),
+};
+
+export interface SeatSpec {
+  readonly row: 'front' | 'middle' | 'back';
+  readonly index: number;
+  readonly heroId: string;
+  readonly config?: { targeting: [string, string]; ranking: number[]; allyRule: string | null };
+}
+
+export const defenseConfig = (over: Partial<NonNullable<SeatSpec['config']>> = {}) => ({
+  targeting: ['lowest-current-hp', 'nearest'] as [string, string],
+  ranking: [5, 4, 3, 2, 1, 0],
+  allyRule: null,
+  ...over,
+});
+
+/** Six heroes in the fixed 2 front · 3 middle · 1 back formation. */
+export function formation(heroIds: readonly string[], withConfig: boolean): SeatSpec[] {
+  const seats: Omit<SeatSpec, 'heroId' | 'config'>[] = [
+    { row: 'front', index: 0 },
+    { row: 'front', index: 1 },
+    { row: 'middle', index: 0 },
+    { row: 'middle', index: 1 },
+    { row: 'middle', index: 2 },
+    { row: 'back', index: 0 },
+  ];
+
+  return seats.map((seat, i) => ({
+    ...seat,
+    heroId: heroIds[i]!,
+    ...(withConfig ? { config: defenseConfig() } : {}),
+  }));
+}
+
+export interface Player {
+  readonly accountId: string;
+  readonly session: string;
+  readonly headers: () => Record<string, string>;
+}
+
+export interface Arena {
+  readonly attacker: Player;
+  readonly defender: Player;
+  /** Everything created, for the teardown the run-level audit checks. */
+  readonly createdAccounts: readonly string[];
+  readonly createdBattles: string[];
+  close(): Promise<void>;
+}
+
+async function signUp(subject: string): Promise<Player> {
+  const res = await app.request('/v1/auth/google', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ idToken: `sub:${subject}` }),
+  });
+
+  const body = (await res.json()) as { session: { token: string }; account: { id: string } };
+  expect(res.status, JSON.stringify(body)).toBe(200);
+
+  return {
+    accountId: body.account.id,
+    session: body.session.token,
+    headers: () => ({
+      'content-type': 'application/json',
+      authorization: `Bearer ${body.session.token}`,
+    }),
+  };
+}
+
+/**
+ * An attacker with an offense squad and a defender with both zones filled.
+ *
+ * **Both defense zones, not just Visible.** The zone is decided server-side by
+ * an ambush roll, and a fixture that only filled Visible would fail once every
+ * fifty runs on a streak nobody set — the exact shape of a test that gets
+ * marked flaky and retried instead of read.
+ */
+export async function arena(tag: string): Promise<Arena> {
+  const restore = overrideProvider('google', provider);
+  const run = `${tag}-${process.pid}${Math.floor(Math.random() * 1e6)}`;
+
+  const attacker = await signUp(`atk-${run}`);
+  const defender = await signUp(`def-${run}`);
+
+  const attackHeroes = ROSTER.slice(0, 6);
+  const defenseHeroes = ROSTER.slice(6, 12);
+  const hiddenHeroes = ROSTER.slice(12, 18);
+
+  const put = async (player: Player, path: string, seats: SeatSpec[]) => {
+    const res = await app.request(path, {
+      method: 'PUT',
+      headers: player.headers(),
+      body: JSON.stringify({ seats }),
+    });
+    expect(res.status, `${path}: ${await res.clone().text()}`).toBe(200);
+  };
+
+  await put(defender, '/v1/squads/defense/visible', formation(defenseHeroes, true));
+  await put(defender, '/v1/squads/defense/hidden', formation(hiddenHeroes, true));
+  await put(attacker, '/v1/squads/offense/0', formation(attackHeroes, false));
+
+  const createdBattles: string[] = [];
+
+  return {
+    attacker,
+    defender,
+    createdAccounts: [attacker.accountId, defender.accountId],
+    createdBattles,
+    async close() {
+      restore();
+      /**
+       * **Battles are deleted explicitly, not left to the account cascade.**
+       * `battles.attacker_id` is `set null` on purpose — a real player's history
+       * outlives their account — so deleting the accounts would leave the rows
+       * behind, unowned and permanent, in the table Constitution XVI makes
+       * un-cleanable.
+       */
+      for (const id of createdBattles) await db().delete(battles).where(eq(battles.id, id));
+      for (const id of [attacker.accountId, defender.accountId]) {
+        await db().delete(accounts).where(eq(accounts.id, id));
+      }
+    },
+  };
+}
+
+export interface StartedBattle {
+  readonly battleId: string;
+  readonly zone: string;
+  readonly sequence: number;
+  readonly packet: { events: unknown[]; state: BattleShape; conclusion: unknown };
+}
+
+/** Just enough of `BattleState` for a test to steer. The engine owns the rest. */
+export interface BattleShape {
+  readonly turnOfInstance: string | null;
+  readonly heroTurn: number;
+  readonly heroes: readonly {
+    readonly instanceId: string;
+    readonly heroId: string;
+    readonly hp: number;
+    readonly row: number;
+  }[];
+}
+
+export interface Acted {
+  readonly status: number;
+  readonly body: {
+    readonly sequence: number;
+    readonly packet: { events: unknown[]; state: BattleShape; conclusion: unknown };
+    readonly nextSequence: number;
+  };
+  readonly text: string;
+}
+
+/**
+ * Take one turn with the first legal move, exactly as the client would compute
+ * it — from `@lmntlz/sim/rules`, against the state the server just returned.
+ *
+ * **Deliberately not a good player.** What is under test is whether the route
+ * accepts a move derived the way the client derives it; a clever chooser would
+ * shorten the battle in a way that flatters every count taken from it.
+ */
+export async function act(
+  a: Arena,
+  battleId: string,
+  sequence: number,
+  state: BattleShape,
+): Promise<Acted> {
+  const up = state.turnOfInstance;
+  if (up === null) throw new Error('asked to act with nobody up');
+
+  const usable = usablePowers(state as never, up);
+  const power = usable[0];
+  if (!power) throw new Error(`${up} was presented as a choice with nothing usable`);
+
+  const targeting = legalTargets(state as never, up, power.id);
+  const target = targeting.compelled ?? targeting.candidates[0]!;
+
+  const res = await app.request(`/v1/battles/${battleId}/act`, {
+    method: 'POST',
+    headers: a.attacker.headers(),
+    body: JSON.stringify({ sequence, actorInstanceId: up, powerId: power.id, targetInstanceId: target }),
+  });
+
+  const text = await res.text();
+  return { status: res.status, body: JSON.parse(text) as Acted['body'], text };
+}
+
+/** Every response body a whole battle produced, in order. For the seed sweep. */
+export interface Fought {
+  readonly acts: number;
+  readonly bodies: readonly string[];
+  readonly conclusion: unknown;
+  readonly ms: number;
+  /**
+   * Per-request wall time, in order.
+   *
+   * **The shape of this array is the whole no-stored-state question.** Each
+   * request replays the log from the beginning, so the cost per request grows
+   * with the log — a mean hides that completely, and the mean is what anybody
+   * would otherwise report.
+   */
+  readonly perAct: readonly number[];
+}
+
+export async function fightToTheEnd(a: Arena, started: StartedBattle, cap = 250): Promise<Fought> {
+  const bodies: string[] = [JSON.stringify(started)];
+  const perAct: number[] = [];
+  const began = Date.now();
+
+  let state = started.packet.state;
+  let conclusion = started.packet.conclusion;
+  let sequence = started.sequence;
+  let acts = 0;
+
+  while (!conclusion && acts < cap) {
+    const at = Date.now();
+    const result = await act(a, started.battleId, sequence, state);
+    perAct.push(Date.now() - at);
+
+    expect(result.status, result.text).toBe(200);
+
+    bodies.push(result.text);
+    state = result.body.packet.state;
+    conclusion = result.body.packet.conclusion;
+    sequence = result.body.nextSequence;
+    acts += 1;
+  }
+
+  return { acts, bodies, conclusion, ms: Date.now() - began, perAct };
+}
+
+export async function start(a: Arena, opponentId?: string): Promise<StartedBattle> {
+  const res = await app.request('/v1/battles', {
+    method: 'POST',
+    headers: a.attacker.headers(),
+    body: JSON.stringify({ opponentId: opponentId ?? a.defender.accountId, attackSquadSlot: 0 }),
+  });
+
+  const body = (await res.json()) as StartedBattle;
+  expect(res.status, JSON.stringify(body)).toBe(201);
+
+  a.createdBattles.push(body.battleId);
+  return body;
+}

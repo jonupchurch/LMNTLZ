@@ -9,13 +9,17 @@
  * requests: the engine plays all defense, so a request that stopped at each
  * defender turn would be asking the player to watch rather than to decide.
  *
- * ### Every turn it folds is recorded, not re-derived
+ * ### Every turn it folds records what was chosen, so divergence is detectable
  *
- * Each event carries the actor, the power and the target that were *chosen*, so
- * a replay resolves from the record and **the defense AI never runs twice**.
- * The alternative — storing outcomes and re-asking the AI later — stakes every
- * replay on a ranking function with tiebreaks and iteration order answering
- * identically forever. The log already does this for draws; this does it for
+ * Each event carries the actor, the power and the target that were *chosen*, not
+ * just what came of them. **That does not mean a replay skips the defense AI** —
+ * `act.ts` explains why it cannot: the AI's tiebreak draws sit between one
+ * turn's resolution draws and the next, so a replay that skipped the decision
+ * would read every later index from the wrong place.
+ *
+ * What the record buys is a **check**. A ranking function that answered
+ * differently is visible against what it answered at the time, and the draw
+ * totals move with it. The log does the same thing for draws; this does it for
  * choices.
  *
  * ### The packet ends *before* the choosing hero acts

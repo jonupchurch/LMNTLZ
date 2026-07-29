@@ -62,19 +62,21 @@ import { battleActions } from '../db/schema/battles.js';
 /**
  * One hero turn: **what was chosen, and what came of it.**
  *
- * The intent is recorded, not just the outcome, and that is the whole point.
- * A replay resolves from `actorInstanceId`/`powerId`/`targetInstanceId` as
- * written here, so **the defense AI never runs during a replay** — only the
- * resolver does, and its draw order is already pinned by `drawIndexBefore`.
+ * The intent is recorded, not just the outcome, and it makes divergence
+ * **detectable**: what the engine chose is on record, so it can be compared
+ * against what the engine chooses now.
  *
- * This is the same rule the schema already applies to draws: *recording the
- * window makes the log the authority over the generator rather than the other
- * way round.* Re-deriving the engine's choices instead would stake every replay
- * on a ranking function with tiebreaks and iteration order continuing to answer
- * identically — a bet worth avoiding when the alternative costs a few fields.
+ * It does **not** let a replay skip the defense AI, which is a stronger claim
+ * and a false one — `act.ts` sets out why. The AI's tiebreak draws are
+ * interleaved with the resolver's, so a replay that re-derived only the
+ * resolutions would read every later index from a cursor the original battle had
+ * already moved past. Fixing that would mean a per-event draw cursor, and this
+ * packet is handed back to the client verbatim on a retry.
  *
- * It also makes divergence **detectable**: what the engine chose is on record,
- * so it can be compared against what the engine would choose now.
+ * So the same rule the schema applies to draws applies here in its weaker form:
+ * *recording what happened makes the log the authority over the generator*, and
+ * `drawsConsumed` is what makes a disagreement between the two impossible to
+ * miss.
  */
 export interface TurnEvent {
   readonly actorInstanceId: string;
