@@ -180,6 +180,34 @@ questions or keep raising them:
   | `Speed` sits on a Role-determined 10-point grid, so a buff either changes nothing or promotes a hero a whole rung | `01-stats.md` |
   | `Magic Resist` is a flat **30 for all 27 heroes** — and it is the stat the pricing decision says should be the one that *varies* | `01-stats.md` |
   | Only **7 distinct `(Armor, MR, Penetration)` profiles** exist across the roster, five of them sharing `Armor` 15 | `01-stats.md` |
+  | **A fought battle runs ~260–280 hero turns against a design target of ~102**, and asks the player ~85 times against a predicted 20–40 | feature 007's engine, 2026-07-29 |
+
+  **The last row is the first measurement taken from a running engine rather
+  than from a spreadsheet, and it is the one that prices the pass.** Playing
+  full 6v6 battles through `apps/api/src/battle/`:
+
+  | Measured | Value | Design figure |
+  |---|---|---|
+  | miss rate | **15.5%** | 9.4% — close; the `+20` edge is working |
+  | damage per acting turn | **61** | — |
+  | mean hero HP pool | **1375** (`Toughness × 50`) | — |
+  | **damage as a share of one hero's HP** | **4.5%** | needs ≈ **11%** |
+  | hero turns to a conclusion | **~260–280** | ~102 |
+  | turns that are a **pass** | **30%** | not modelled |
+
+  Two things fall out of it. **Damage needs roughly 2.5× its current share of a
+  health pool** for battles to run the length the accuracy work was tuned
+  against — the lever is `Might × multiplier` against `Toughness × 50`, and
+  raising damage is the direction the no-nerf rule prefers anyway. And **~30% of
+  all hero turns are passes**, because at full formation a reach-1 champion in
+  rows 1–2 can reach nothing; the ~102-turn estimate did not model that, so part
+  of the gap is the estimate rather than the numbers.
+
+  Neither is an engine defect — every formula behaves as specified, and the
+  request count follows the battle length rather than a wrong packet boundary.
+  Feature 007's tests assert the *rule* (a packet stops only at a genuine
+  choice) and report these figures rather than pinning them, so the numbers pass
+  can move them without a test rewrite.
 - **Event specifics.** Which metrics an event tallies, reward tiers, and the
   shape of a season. The *structure* of guild events is settled in
   `08-guilds.md`; the content of them is for much later.

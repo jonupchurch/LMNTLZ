@@ -90,7 +90,7 @@ cheap now and a migration later.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T014 [P] [US1] Write `apps/api/tests/battle/goldenPath.test.ts` — start, act to conclusion, and **count the `act` calls: expect 20–40** (SC-001). Over ~45 means the packet boundary is too fine; under ~15 is worse, because turns that carried a decision are being folded and **the player is not being asked**
+- [x] T014 [P] [US1] Write `apps/api/tests/battle/goldenPath.test.ts` — start, act to conclusion, and **count the `act` calls: expect 20–40** (SC-001). Over ~45 means the packet boundary is too fine; under ~15 is worse, because turns that carried a decision are being folded and **the player is not being asked**
 - [ ] T015 [P] [US1] Write `apps/api/tests/battle/noStoredState.test.ts` — play three actions, **restart the API process entirely**, re-read state, and assert it is identical. Plus a source scan for any table, cache key or in-memory map holding mid-battle state (SC-002)
 - [ ] T016 [P] [US1] Write `apps/api/tests/battle/snapshot.test.ts` — a defender editing their squad mid-battle **never** affects the battle in progress (SC-009)
 - [ ] T017 [P] [US1] Write `apps/api/tests/battle/seedBoundary.test.ts` — capture every response body across a full battle and assert none contains `seed`, `drawIndexBefore` or `drawsConsumed`, then search the serialised responses for **the actual seed bytes** from the database row
@@ -101,7 +101,7 @@ cheap now and a migration later.
 - [ ] T019 [US1] **Decide the zone server-side** in `apps/api/src/battle/create.ts` — a client cannot request `hidden` and the field is **absent from the request body**, so a Hidden battle happens only by ambush rolled against the displayed chance. Enforcement by absence
 - [ ] T020 [US1] Implement `currentState(battleId)` in `apps/api/src/battle/act.ts` — **re-derived from the log on every call**, returning `expired` or `versionMismatch` rather than a state when either applies (FR-007)
 - [x] T021 [US1] Implement `isChoicePoint(state, instanceId)` in `apps/api/src/battle/act.ts` — a choice exists **iff** the actor has more than one available power **or** the chosen power has more than one legal target (research.md Q3)
-- [ ] T022 [US1] Implement `resolveToNextChoice(seed, log)` in `apps/api/src/battle/act.ts` — resolving forward through every forced turn and **every engine turn** until `isChoicePoint` or conclusion (FR-003)
+- [x] T022 [US1] Implement `resolveToNextChoice(seed, log)` in `apps/api/src/battle/act.ts` — resolving forward through every forced turn and **every engine turn** until `isChoicePoint` or conclusion (FR-003)
 - [ ] T023 [US1] Implement `POST /v1/battles/:battleId/act` in `apps/api/src/battle/routes.ts` with the full status table — `200` (resolved **or replayed; the two are indistinguishable by design**), `409`, `410`, `422`, `503`
 - [ ] T024 [US1] Refuse an illegal intent with a reason and **append nothing** in `apps/api/src/battle/act.ts` — power on cooldown, target out of reach, or not this hero's turn (FR-005)
 - [ ] T025 [US1] Implement `GET /v1/battles/:battleId` in `apps/api/src/battle/routes.ts` as the resynchronisation route after a `409`, re-derived every call and **never** carrying the seed or draw indices
