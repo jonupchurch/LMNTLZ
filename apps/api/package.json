@@ -10,14 +10,21 @@
     "dev": "vercel dev",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src tests"
+    "lint": "eslint src tests",
+    "//db": "Both --env-file-if-exists paths are checked so DATABASE_URL can live at the repo root (where .env.example is) or beside this app (where `vercel dev` looks). Neither file is committed.",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local src/db/migrate.ts"
   },
   "dependencies": {
     "@lmntlz/content": "workspace:*",
     "@lmntlz/sim": "workspace:*",
-    "hono": "^4.11.7"
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.11.7",
+    "jose": "^6.2.4"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2"
+    "@types/node": "^26.1.2",
+    "drizzle-kit": "^0.31.10"
   }
 }
