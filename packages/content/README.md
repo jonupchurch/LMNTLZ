@@ -103,16 +103,17 @@ third value, not a lie.
 
 ## Known gaps
 
-- **⚠️ Three multiplier cells in the workbook are wrong.** `03-powers.md` says
-  *Whisper from the High Reach*, *The Unhidden Hour* and *The Undoing* carry a
-  **blank** multiplier, because *"damage is not a thing these powers have."* The
-  workbook gives all three the tier-5 default of **5**. Left alone, three tier-5
-  powers would deal full damage that they are specified to deal none of.
+- ~~**⚠️ Three multiplier cells in the workbook are wrong.**~~ **Closed
+  2026-07-28.** `03-powers.md` says *Whisper from the High Reach*, *The Unhidden
+  Hour* and *The Undoing* carry a **blank** multiplier, because *"damage is not a
+  thing these powers have."* The workbook gave all three the tier-5 default of
+  **5**, so left alone three tier-5 powers would deal full damage they are
+  specified to deal none of.
 
-  The build overrides them to `null` and **prints a warning on every run** for as
-  long as the workbook disagrees. Blank the three cells in `Power List` and the
-  warning stops by itself — the override becomes a no-op rather than debt someone
-  has to remember to remove.
+  `Power List!F66`, `F75` and `F78` are now blank and the build is silent. **The
+  override in `tools/power-targeting.json` stays** — it is a no-op today, and it
+  is what catches the cells being refilled. That was the design: self-clearing
+  debt, not a reminder somebody has to act on.
 
 - **`targets`, `friendly` and `reactive` have no workbook columns.** They live in
   `tools/power-targeting.json`, which fails the build if it names a power the
