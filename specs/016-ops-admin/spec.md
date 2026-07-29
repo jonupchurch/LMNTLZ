@@ -189,6 +189,24 @@ and legible.
 selects, 15 (`moderation`) defines the actions, 13 (`guilds`) defines succession,
 05 (`auth`) supplies operator identity.
 
+> **OPEN — 05 does not, in fact, supply operator identity.** Noted 2026-07-29,
+> when the first real account was created and there was no way to mark it as an
+> operator. Feature 005 shipped complete with **no role, no permission and no
+> operator concept of any kind**: `accounts` carries `username`, ban fields and
+> counters, and nothing else. This spec assumes that dependency is met and never
+> states what it is asking for.
+>
+> **This has to be decided before 015, not before 016.** Feature 15 defines the
+> moderation actions, and an action nobody can be authorised to take is not a
+> feature. It is also the one place in the set where getting it wrong is a
+> security bug rather than a balance bug, so it deserves the argument on paper:
+> a role column, an environment allowlist of account ids, and a separate
+> operator credential are three genuinely different answers with different blast
+> radii — and the middle one needs no migration and no UI, which is worth
+> weighing against how it scales past one operator.
+>
+> Nothing in 007–014 is blocked by it.
+
 **Downstream**: none — this is the top of the graph.
 
 ## Constitution Notes

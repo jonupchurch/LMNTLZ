@@ -52,6 +52,16 @@ export default defineConfig({
      */
     environment: 'node',
 
+    /**
+     * **Audits the database across the whole run.** Every suite that creates an
+     * account already deletes it, and a run still left ten behind — a per-file
+     * `afterAll` cannot see what another file failed to clean up, and nobody
+     * notices a leak that does not fail anything. See `tests/globalSetup.ts`.
+     *
+     * At this level rather than inside a project: it must span all of them.
+     */
+    globalSetup: ['./tests/globalSetup.ts'],
+
     projects: [
       {
         test: {
