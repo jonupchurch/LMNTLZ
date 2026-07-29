@@ -27,13 +27,48 @@ system exists to keep.
 > the single carve-out** from *the pool is every defender*, and it is a carve-out
 > rather than an exception to the principle.
 
+## Three decisions taken before the first line — 2026-07-29
+
+**1. `gearScore()` is a seam, not a query, until 010 lands.** `spec.md`'s
+*Dependencies* names **10 (progression) for rune placement** as upstream, and 009
+is built first — there is **no runes table**, so a real query would return `0` for
+every account and put the entire population below the Bronze floor. So T005 reads
+through one boundary that answers with the **1,500 starter grant** (12 heroes × one
+complete rune × 125) until progression can answer it from actually-placed runes.
+**Everything else in 009 is real**: leagues, position-in-league, bleed, candidate
+selection, bots, the starter league and its four exits.
+
+This costs the feature almost nothing, because **its tests never wanted rune rows
+anyway** — T004 and T020 specify a 20,000-account *simulated* population precisely
+because league shares and bleed are population questions. The seam is what those
+tests already assume. **The one thing 009 cannot prove is that a real placement
+moves a real league**; that assertion belongs to 010 and must be written there, not
+skipped.
+
+**2. Bots: all 20 of T045, none of the league pools.** `spec.md` US4 wants ~130
+across the bands, and a bot's strength is `2.5 × stat points` over hero values that
+are **still a Role-shaped template** — the hero-numbers pass has not run, and under
+the no-nerf rule it is the one pass that moves numbers freely. Authoring 130 now
+means authoring them twice.
+
+So: **the full bot machinery** — storage, league placement, the spread of fixed
+ratings, thin-league padding, inactivity eviction — plus **the 20 starter bots T045
+already specifies in detail**, because they are a *ramp* whose shape is a teaching
+decision rather than a tuning number. The ~110 league bots are a separate authoring
+pass after the numbers. **Note honestly in T046 what is deferred**: with 20 starter
+bots against ~140 battles in a starter week, the *"same six opponents repeating"*
+edge case in `spec.md` is **not yet answered** — the plumbing is proven, the depth
+is not.
+
+**3. Straight to `main`, no feature branch**, as with 001–008.
+
 ---
 
 ## Phase 1: Setup
 
 - [ ] T001 Create `apps/api/src/matchmaking/` and register `/v1/matchmaking` and `/v1/me/standing` in `apps/api/src/index.ts`
-- [ ] T002 Define `player_ratings` in `apps/api/src/db/schema/ratings.ts` — `rating` starting at 1000, `rated_battles` driving the K band (≤30 → 40, ≤200 → 20, else 10), `attack_streak`, `gear_score`, `last_activity_at`
-- [ ] T003 [P] Add a `matchmaking` test project to `apps/api/vitest.config.ts`
+- [x] T002 Define `player_ratings` in `apps/api/src/db/schema/ratings.ts` — `rating` starting at 1000, `rated_battles` driving the K band (≤30 → 40, ≤200 → 20, else 10), `attack_streak`, `gear_score`, `last_activity_at`
+- [x] T003 [P] Add a `matchmaking` test project to `apps/api/vitest.config.ts`
 - [ ] T004 **Build the simulated-population harness** in `apps/api/tests/matchmaking/population.ts` — league shares, bleed behaviour and bot sufficiency are all population questions, and reasoning will not settle them
 
 ---
@@ -53,9 +88,9 @@ system exists to keep.
 > player **eight leagues** above their strength. The *on placement* timing is what
 > makes *hoarding is not a sandbag* true rather than merely asserted.
 
-- [ ] T008 Implement `leagueOf(gearScore)` in `apps/api/src/matchmaking/league.ts` on the **fixed thresholds** from the shared model — bronze 1500–2500 · silver 2500–4000 · gold 4000–6200 · platinum 6200–8700 · diamond 8700–10125 (FR-003)
-- [ ] T009 Implement `positionInLeague(gearScore)` in `apps/api/src/matchmaking/league.ts` as `(score − floor) / (ceiling − floor)`, **against the league's own range and never against the population** (FR-007)
-- [ ] T010 Generate and apply the ratings migration from `apps/api/drizzle/`
+- [x] T008 Implement `leagueOf(gearScore)` in `apps/api/src/matchmaking/league.ts` on the **fixed thresholds** from the shared model — bronze 1500–2500 · silver 2500–4000 · gold 4000–6200 · platinum 6200–8700 · diamond 8700–10125 (FR-003)
+- [x] T009 Implement `positionInLeague(gearScore)` in `apps/api/src/matchmaking/league.ts` as `(score − floor) / (ceiling − floor)`, **against the league's own range and never against the population** (FR-007)
+- [x] T010 Generate and apply the ratings migration from `apps/api/drizzle/`
 
 **Checkpoint**: A player's league is derived from their own placements and nothing else
 

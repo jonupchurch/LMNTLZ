@@ -43,6 +43,13 @@
       "when": 1785359681315,
       "tag": "0005_powerful_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785367832733,
+      "tag": "0006_nasty_mastermind",
+      "breakpoints": true
     }
   ]
 }

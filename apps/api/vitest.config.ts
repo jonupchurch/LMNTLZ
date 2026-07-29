@@ -115,6 +115,24 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'matchmaking',
+          include: ['tests/matchmaking/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+          /**
+           * **Longer than the default, because one suite here is a simulation
+           * rather than a test.** `population.ts` builds 20,000 synthetic accounts
+           * and the league-share and bleed suites sweep the whole score range
+           * across it — `09-matchmaking.md` is explicit that those are population
+           * questions and that reasoning will not settle them. The work is pure
+           * arithmetic with no database in it, so it is fast per account and still
+           * adds up.
+           */
+          testTimeout: 30_000,
+        },
+      },
+      {
         /**
          * **Cross-cutting concerns that belong to no feature.** The projects
          * above are named for features, and a rule that holds for every route —

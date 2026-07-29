@@ -16,3 +16,4 @@ export * from './streaks.js';
 export * from './battles.js';
 export * from './battleRecords.js';
 export * from './replayHolds.js';
+export * from './ratings.js';
