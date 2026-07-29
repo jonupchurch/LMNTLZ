@@ -31,6 +31,19 @@
   // set on the project, so Turbo warns about them. Listed to silence it, NOT
   // because anything consumes them. Delete a row the day the matching variable
   // is removed from Vercel.
+  //
+  // ONE EXCEPTION, verified against the live bundle on 2026-07-29:
+  // `VITE_NEON_AUTH_URL` IS consumed — not by our code, by Vite. `lib/api.ts`
+  // reads `import.meta.env['VITE_API_BASE_URL']` in brackets rather than with a
+  // dot, because `noPropertyAccessFromIndexSignature` requires it, and bracket
+  // access is not statically replaceable — so Vite emits the whole env object
+  // instead, and every VITE_-prefixed variable on the project lands in a file
+  // every visitor downloads. Today that is `VITE_API_BASE_URL`,
+  // `VITE_GOOGLE_CLIENT_ID` (both public by design) and this one, whose value is
+  // a Neon Auth endpoint — public by design too, and unused, since auth is owned
+  // in-house. **Nothing is leaking.** The hazard is the mechanism: an integration
+  // that adds a VITE_-prefixed variable publishes it with no code change and no
+  // warning. Neon's belongs on the API project, not the client's.
   "globalPassThroughEnv": [
     "PGHOST",
     "PGHOST_UNPOOLED",
