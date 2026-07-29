@@ -45,10 +45,24 @@ export const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
  *
  * The cooldown is the security control; the max-age is the correctness one.
  */
-const remoteJwks: JWTVerifyGetKey = createRemoteJWKSet(new URL(GOOGLE_JWKS_URL), {
-  cooldownDuration: 30_000,
-  cacheMaxAge: 30 * 60 * 1000,
-});
+export const JWKS_COOLDOWN_MS = 30_000;
+export const JWKS_CACHE_MAX_AGE_MS = 30 * 60 * 1000;
+
+/**
+ * Built through a factory so `jwks.test.ts` can exercise **the real caching
+ * behaviour** against a stubbed endpoint rather than asserting that two option
+ * values were passed. The options are the entire point of this object; a test
+ * that only checked they were set would pass on a version of `jose` that
+ * ignored them.
+ */
+export function createGoogleJwks(url: string | URL = GOOGLE_JWKS_URL): JWTVerifyGetKey {
+  return createRemoteJWKSet(new URL(url), {
+    cooldownDuration: JWKS_COOLDOWN_MS,
+    cacheMaxAge: JWKS_CACHE_MAX_AGE_MS,
+  });
+}
+
+const remoteJwks: JWTVerifyGetKey = createGoogleJwks();
 
 export interface GoogleProviderOptions {
   readonly clientId: string;
