@@ -124,6 +124,63 @@ describe('fetch counting', () => {
     }
   });
 
+  it('accepts a rotated key once the key set catches up — a rotation is 30 s, not an outage', async () => {
+    // **The other half of the cooldown, and the half nobody writes.** Every test
+    // above proves the verifier refuses to refetch. That is only correct if the
+    // refusal eventually *ends* — a cooldown that never lapsed would be
+    // indistinguishable from these tests right up until Google rotated its keys,
+    // at which point every sign-in on the planet fails permanently.
+    //
+    // A forged token and a genuine rotation look **identical** on arrival: both
+    // are an unknown `kid`. What tells them apart is only whether the key shows
+    // up in the JWKS afterwards, which is why this needs a mutable key set
+    // rather than the fixed rogue key the tests above use.
+    const { provider, stub } = freshProvider();
+    const published = [...google.jwks.keys];
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      await provider.verify(await google.sign());
+      expect(stub.calls).toBe(1);
+
+      const rotated = await google.rotateKey('test-key-2');
+
+      // Not published yet. Correctly refused, and without asking Google.
+      await expect(provider.verify(await rotated.sign())).rejects.toThrow();
+      expect(stub.calls).toBe(1);
+
+      // Google rotates. The stub serves the live object, so this *is* the
+      // rotation as far as the verifier can tell.
+      google.jwks.keys.push(rotated.jwk);
+
+      // Still inside the cooldown. The key is live at Google and we do not know
+      // it yet — **this is the up-to-30-seconds of failed sign-ins the cooldown
+      // costs**, asserted rather than merely described in auth/README.md.
+      await expect(provider.verify(await rotated.sign())).rejects.toThrow();
+      expect(stub.calls).toBe(1);
+
+      vi.setSystemTime(Date.now() + JWKS_COOLDOWN_MS + 1_000);
+
+      const identity = await provider.verify(await rotated.sign());
+      expect(identity.provider).toBe('google');
+      expect(identity.subject).toBe('110169484474386276334');
+      expect(stub.calls, 'the lapsed cooldown must permit exactly one refetch').toBe(2);
+
+      // **The old key must still work.** Google publishes both across a rotation
+      // window, and tokens minted minutes ago are still in flight. A verifier
+      // that treated a refetch as "replace what I trust" would sign out everyone
+      // holding a token from before the rotation.
+      expect((await provider.verify(await google.sign())).subject).toBe(
+        '110169484474386276334',
+      );
+      expect(stub.calls).toBe(2);
+    } finally {
+      google.jwks.keys.length = 0;
+      google.jwks.keys.push(...published);
+      vi.useRealTimers();
+      stub.restore();
+    }
+  });
+
   it('rejects the forged tokens it refuses to refetch for', async () => {
     // The cooldown must not become a way IN. Refusing to refetch is only safe
     // if the token is still rejected — a cache that answered "no matching key,

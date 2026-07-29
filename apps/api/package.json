@@ -7,7 +7,9 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "vercel dev",
+    "//dev": "src/dev.ts explains why this is not `vercel dev` — the Hono preset's Development Command is `pnpm dev`, so `vercel dev` recursively invokes itself and refuses to start.",
+    "dev": "tsx watch --env-file-if-exists=../../.env.local src/dev.ts",
+    "dev:vercel": "vercel dev",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src tests",
@@ -24,7 +26,9 @@
     "jose": "^6.2.4",
     "unicode-confusables": "^0.1.1"
   },
+  "//devDependencies": "@hono/node-server is local dev only — Vercel supplies its own server and imports the default export of src/index.ts, so it never ships. pnpm rejects `//` keys INSIDE a dependency block, which is why this note is out here.",
   "devDependencies": {
+    "@hono/node-server": "^2.0.12",
     "@types/node": "^26.1.2",
     "drizzle-kit": "^0.31.10"
   }

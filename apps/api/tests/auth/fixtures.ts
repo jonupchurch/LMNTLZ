@@ -26,6 +26,23 @@ export interface FakeGoogle {
   sign(claims?: Partial<TokenClaims>, options?: SignOptions): Promise<string>;
   /** A second key that is NOT in the published JWKS — a forged signature. */
   signWithUnknownKey(claims?: Partial<TokenClaims>): Promise<string>;
+  /**
+   * A **legitimate** key Google has not published yet.
+   *
+   * Distinct from `signWithUnknownKey`, and the distinction is the whole point:
+   * that one is a forgery and must *never* be accepted, this one is a real
+   * rotation and must be accepted the moment the key set catches up. Both look
+   * identical to the verifier at first contact — an unknown `kid` — so the only
+   * thing that tells them apart is whether the key later appears in the JWKS.
+   */
+  rotateKey(kid?: string): Promise<RotatedKey>;
+}
+
+export interface RotatedKey {
+  readonly kid: string;
+  /** Publish it by pushing this into `google.jwks.keys`; the fetch stub serves the live object. */
+  readonly jwk: JWK;
+  sign(claims?: Partial<TokenClaims>, options?: SignOptions): Promise<string>;
 }
 
 export interface TokenClaims {
@@ -79,6 +96,21 @@ export async function fakeGoogle(): Promise<FakeGoogle> {
     sign: (claims = {}, options = {}) => build(claims, options).sign(privateKey),
     signWithUnknownKey: (claims = {}) =>
       build(claims, { kid: 'not-published' }).sign(rogue.privateKey),
+    rotateKey: async (nextKid = 'test-key-2') => {
+      const next = await generateKeyPair('RS256', { extractable: true });
+      const jwk: JWK = {
+        ...(await exportJWK(next.publicKey)),
+        kid: nextKid,
+        alg: 'RS256',
+        use: 'sig',
+      };
+      return {
+        kid: nextKid,
+        jwk,
+        sign: (claims = {}, options = {}) =>
+          build(claims, { ...options, kid: nextKid }).sign(next.privateKey),
+      };
+    },
   };
 }
 

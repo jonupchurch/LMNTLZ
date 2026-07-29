@@ -210,7 +210,7 @@ one that matters.
 
 - [x] T047 Add response-shape assertions to `apps/api/tests/auth/` — **no** response anywhere contains a provider subject, an email, or a token hash (Constitution XVII)
 - [x] T048 [P] Write `apps/api/src/auth/README.md` — the identity model, the four rotation states, and the standing rule that `accountId` comes from the session
-- [ ] T049 Run the full quickstart manual pass, including the JWKS rotation check against a fixture — sign with a key absent from the fixture and confirm `401`, add the key, confirm success after the cooldown
+- [x] T049 Run the full quickstart manual pass, including the JWKS rotation check against a fixture — sign with a key absent from the fixture and confirm `401`, add the key, confirm success after the cooldown
 
 ---
 
