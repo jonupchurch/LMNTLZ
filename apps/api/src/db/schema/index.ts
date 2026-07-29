@@ -14,3 +14,5 @@ export * from './usernameChanges.js';
 export * from './squads.js';
 export * from './streaks.js';
 export * from './battles.js';
+export * from './battleRecords.js';
+export * from './replayHolds.js';

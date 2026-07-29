@@ -36,6 +36,13 @@
       "when": 1785345532038,
       "tag": "0004_wise_jane_foster",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785359681315,
+      "tag": "0005_powerful_madrox",
+      "breakpoints": true
     }
   ]
 }

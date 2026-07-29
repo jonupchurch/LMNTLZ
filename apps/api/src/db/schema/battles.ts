@@ -87,11 +87,18 @@ import { accounts } from './accounts.js';
  * | `cap-hp-share`, `cap-champions-standing`, `cap-tiebreak` | `turn_cap` |
  * | *(none — no conclusion)* | `abandoned`, `discarded` |
  *
- * **Collapsing the three cap reasons loses information Constitution XVI would
- * otherwise keep**, and that is a decision to take on purpose rather than by
- * omission: feature 008 asks how *often* battles reach the cap, not which
- * tiebreak resolved them. If that changes, the tiebreak has to be recorded from
- * the first battle onwards — it cannot be backfilled.
+ * **The collapse used to lose information; feature 008 took it back.** This
+ * comment previously warned that the three cap reasons could not be recovered
+ * later. `battle_records.reason` (008 T005) keeps the engine's four values
+ * unmerged, and it was added *before the first battle was recorded* — which is
+ * the only window Constitution XVI leaves open. So the distinction is preserved
+ * where balance reads it, and this column stays collapsed where it is right to
+ * be: here it also has to express `abandoned` and `discarded`, which the engine
+ * has no concept of.
+ *
+ * The general lesson, since it will come up again: **a flagged loss is only
+ * cheap while it is still flagged.** This one was recoverable because the next
+ * feature read the note and acted inside the window.
  */
 export const BATTLE_REASONS = ['elimination', 'turn_cap', 'abandoned', 'discarded'] as const;
 export type BattleReason = (typeof BATTLE_REASONS)[number];
@@ -164,7 +171,19 @@ export const battles = pgTable(
      * creation (FR-001). A mid-battle edit to the real squad cannot reach this.
      */
     defenderSnapshot: jsonb('defender_snapshot').notNull(),
-    /** Null until feature 009 defines leagues. See the header note. */
+    /**
+     * **SUPERSEDED by `battle_records`' four columns. Feature 009 should not
+     * write here.**
+     *
+     * These two cannot say *whose* league and rating, and a matchup needs both
+     * sides to be worth anything — the interesting question is always the gap.
+     * `battle_records` carries `attacker_league`, `defender_league`,
+     * `attacker_rating` and `defender_rating` instead.
+     *
+     * Kept rather than dropped because they hold no data either way and a
+     * migration to remove two unused nullable columns buys nothing. They are
+     * still null on every row ever written.
+     */
     leagueAtBattle: text('league_at_battle'),
     ratingAtBattle: integer('rating_at_battle'),
 
