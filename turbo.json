@@ -1,6 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "//env": "Turborepo warns about every variable set on the Vercel project that is not declared here. It is a CACHE-CORRECTNESS mechanism: an undeclared variable does not enter the task hash, so a build could be replayed from cache after that variable changed. Nothing here reads any of them at build time — `build` is `tsc` — but declaring them is what makes the hash honest and silences a warning that would otherwise train everybody to ignore build warnings.",
+
+  // Turborepo warns about every variable set on the Vercel project that is not
+  // declared here. It is a CACHE-CORRECTNESS mechanism: an undeclared variable
+  // does not enter the task hash, so a build could be replayed from cache after
+  // that variable changed. Nothing here reads any of them at build time —
+  // `build` is `tsc` — but declaring them is what makes the hash honest, and an
+  // always-firing warning trains everybody to ignore build warnings, which is
+  // worse than the risk it describes.
+  //
+  // NOTE: turbo.json is JSONC — real `//` comments are fine, but a `"//key":`
+  // ENTRY is rejected as an unknown key. That convention works in package.json
+  // and not here.
   "globalEnv": [
     "DATABASE_URL",
     "DATABASE_URL_UNPOOLED",
@@ -11,7 +22,12 @@
     "VERCEL_ENV",
     "VERCEL_GIT_COMMIT_SHA"
   ],
-  "//neonAliases": "Neon's Vercel integration injects ~13 aliases of the same connection string. This project reads none of them — see .env.example — but they are on the project, so Turbo warns. Listed to silence it, NOT because anything consumes them. Delete a row here the day the matching variable is removed from Vercel.",
+
+  // Neon's Vercel integration injects ~13 aliases of the same connection
+  // string. This project reads none of them — see `.env.example` — but they are
+  // set on the project, so Turbo warns about them. Listed to silence it, NOT
+  // because anything consumes them. Delete a row the day the matching variable
+  // is removed from Vercel.
   "globalPassThroughEnv": [
     "PGHOST",
     "PGHOST_UNPOOLED",
@@ -30,6 +46,7 @@
     "NEON_AUTH_BASE_URL",
     "VITE_NEON_AUTH_URL"
   ],
+
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
