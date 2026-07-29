@@ -41,6 +41,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { SQUAD_ROWS } from '@lmntlz/sim/rules';
 import { accounts } from './accounts.js';
 
 export const SQUAD_KINDS = ['defense', 'offense'] as const;
@@ -54,18 +55,17 @@ export type SquadKind = (typeof SQUAD_KINDS)[number];
 export const SQUAD_ZONES = ['visible', 'hidden'] as const;
 export type SquadZone = (typeof SQUAD_ZONES)[number];
 
-/** The fixed formation. **A squad is always 2 front, 3 middle, 1 back.** */
-export const SQUAD_ROWS = ['front', 'middle', 'back'] as const;
-export type SquadRow = (typeof SQUAD_ROWS)[number];
+/**
+ * The fixed formation — **2 front, 3 middle, 1 back**.
+ *
+ * Re-exported from `@lmntlz/sim/rules` rather than declared here. The row widths
+ * appear in a `CHECK` constraint below *and* in the squad builder's drop
+ * targets, and two declarations of the same three numbers is exactly the pair
+ * that drifts.
+ */
+export { ROW_CAPACITY, SQUAD_ROWS, SQUAD_SIZE } from '@lmntlz/sim/rules';
+export type { SquadRow } from '@lmntlz/sim/rules';
 
-/** How many seats each row holds. Sums to 6, and that is the only legal shape. */
-export const ROW_CAPACITY: Readonly<Record<SquadRow, number>> = Object.freeze({
-  front: 2,
-  middle: 3,
-  back: 1,
-});
-
-export const SQUAD_SIZE = 6;
 export const DEFENSE_HEROES = 12;
 export const MAX_ATTACK_SQUADS = 3;
 

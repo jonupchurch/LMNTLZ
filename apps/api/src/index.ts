@@ -18,6 +18,7 @@
 import { Hono } from 'hono';
 import { apiError } from './errors.js';
 import { authRoutes } from './auth/routes.js';
+import { squadRoutes } from './squads/routes.js';
 
 export { apiError } from './errors.js';
 export type { ApiError } from './errors.js';
@@ -41,6 +42,7 @@ const v1 = new Hono();
 v1.get('/health', (c) => c.json({ status: 'ok' }));
 
 v1.route('/', authRoutes);
+v1.route('/', squadRoutes);
 
 app.route('/v1', v1);
 

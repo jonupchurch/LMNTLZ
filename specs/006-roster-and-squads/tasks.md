@@ -67,18 +67,18 @@ plausible implementation gets backwards.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T012 [P] [US1] Write `apps/api/tests/squads/allocation.test.ts` — all 27 available with **no unlock, ownership or collection state anywhere in the schema** (SC-001); twelve committed leaves exactly fifteen (SC-002)
-- [ ] T013 [P] [US1] Write `apps/api/tests/squads/validation.test.ts` — five seats instead of six is `422`; a hero already on the other zone is `409`; a `ranking` that is not a permutation of 0–5 is `422`
+- [x] T012 [P] [US1] Write `apps/api/tests/squads/allocation.test.ts` — all 27 available with **no unlock, ownership or collection state anywhere in the schema** (SC-001); twelve committed leaves exactly fifteen (SC-002)
+- [x] T013 [P] [US1] Write `apps/api/tests/squads/validation.test.ts` — five seats instead of six is `422`; a hero already on the other zone is `409`; a `ranking` that is not a permutation of 0–5 is `422`
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement `GET /v1/roster` in `apps/api/src/squads/routes.ts` — all 27 from `@lmntlz/content`, this player's assignments across both zones and all three offense slots, and `available.forOffense` as **the 15 not on either defense squad**
-- [ ] T015 [US1] Implement `PUT /v1/squads/defense/:zone` in `apps/api/src/squads/routes.ts` for `zone ∈ {visible, hidden}` — **one editor, one validator, one config shape, with `zone` as a parameter**, because the two zones differ only in visibility and reward (research.md § Settled)
-- [ ] T016 [US1] Implement `PUT /v1/squads/offense/:slot` in `apps/api/src/squads/routes.ts` for `slot ∈ {0,1,2}` — **no per-champion config**, because the player commands offense, and `409` if a named hero is on a defense squad
-- [ ] T017 [US1] Report a defense zone short of six as **unable to defend** in `apps/api/src/squads/allocation.ts`, rather than silently defending with five (FR-011)
-- [ ] T018 [P] [US1] Build `apps/client/src/features/squads/RosterView.tsx` — all 27 with assignment status and the player's remaining allocation (FR-002)
-- [ ] T019 [US1] Build `apps/client/src/features/squads/SquadBuilder.tsx` — 2/3/1 placement for both kinds, revalidating locally on every placement using `@lmntlz/sim/rules`
-- [ ] T020 [US1] Build `apps/client/src/features/squads/hooks/useAllocation.ts` — mirroring the server rules for immediate feedback, with **the server authoritative on every eviction and every streak reset**
+- [x] T014 [US1] Implement `GET /v1/roster` in `apps/api/src/squads/routes.ts` — all 27 from `@lmntlz/content`, this player's assignments across both zones and all three offense slots, and `available.forOffense` as **the 15 not on either defense squad**
+- [x] T015 [US1] Implement `PUT /v1/squads/defense/:zone` in `apps/api/src/squads/routes.ts` for `zone ∈ {visible, hidden}` — **one editor, one validator, one config shape, with `zone` as a parameter**, because the two zones differ only in visibility and reward (research.md § Settled)
+- [x] T016 [US1] Implement `PUT /v1/squads/offense/:slot` in `apps/api/src/squads/routes.ts` for `slot ∈ {0,1,2}` — **no per-champion config**, because the player commands offense, and `409` if a named hero is on a defense squad
+- [x] T017 [US1] Report a defense zone short of six as **unable to defend** in `apps/api/src/squads/allocation.ts`, rather than silently defending with five (FR-011)
+- [x] T018 [P] [US1] Build `apps/client/src/features/squads/RosterView.tsx` — all 27 with assignment status and the player's remaining allocation (FR-002)
+- [x] T019 [US1] Build `apps/client/src/features/squads/SquadBuilder.tsx` — 2/3/1 placement for both kinds, revalidating locally on every placement using `@lmntlz/sim/rules`
+- [x] T020 [US1] Build `apps/client/src/features/squads/hooks/useAllocation.ts` — mirroring the server rules for immediate feedback, with **the server authoritative on every eviction and every streak reset**
 
 **Checkpoint**: A player can commit twelve heroes and see the fifteen that remain.
 

@@ -9,6 +9,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { getAllHeroes } from '@lmntlz/content';
 import { ROW_CAPACITY, SQUAD_ROWS, SQUAD_SIZE } from '../../src/db/schema/squads.js';
 import {
@@ -56,6 +58,70 @@ const squad = (id: string, kind: 'defense' | 'offense', ids: readonly string[], 
   kind,
   seats: seatsFrom(ids),
   ...extra,
+});
+
+describe('all 27 are unlocked, and there is nowhere to record otherwise (SC-001)', () => {
+  it('has 27 heroes, every one of them usable', () => {
+    expect(ROSTER).toHaveLength(27);
+    expect(new Set(ROSTER).size).toBe(27);
+  });
+
+  it('has no unlock, ownership or collection column anywhere in the schema', () => {
+    /**
+     * **Structural, not behavioural, because behaviour cannot prove an absence.**
+     *
+     * Nothing to collect is the whole competitive premise: every player has the
+     * same 27, so nobody can out-roster anybody. The way that premise dies is
+     * not a decision — it is one `owned` column added for a reasonable-sounding
+     * reason, and then a feature that reads it.
+     *
+     * `progression` and `runes` are deliberately NOT on this list. Progression
+     * exists (feature 010); what must not exist is progression that gates *which
+     * heroes you may field*.
+     */
+    const FORBIDDEN = [
+      'unlocked',
+      'unlock_at',
+      'owned',
+      'ownership',
+      'acquired',
+      'collected',
+      'collection',
+      'obtained',
+      'recruited',
+      'shards_to_unlock',
+      'hero_copies',
+      'duplicates',
+    ];
+
+    const dir = join(import.meta.dirname, '../../src/db/schema');
+    const files = readdirSync(dir).filter((f) => f.endsWith('.ts'));
+    expect(files.length).toBeGreaterThan(0);
+
+    for (const file of files) {
+      // Comments stripped: this file's own prose explains what must not exist,
+      // and a scan that reads prose flags the explanation.
+      const source = readFileSync(join(dir, file), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/.*$/gm, '');
+
+      for (const word of FORBIDDEN) {
+        expect(source.toLowerCase(), `${file} has a "${word}" column — the roster is not a collection`).not.toContain(word);
+      }
+    }
+  });
+
+  it('leaves exactly fifteen once twelve are committed (SC-002)', () => {
+    const visible = squad('sv', 'defense', ROSTER.slice(0, 6), { zone: 'visible' });
+    const hidden = squad('sh', 'defense', ROSTER.slice(6, 12), { zone: 'hidden' });
+
+    const free = availableForOffense(ROSTER, [visible, hidden]);
+    expect(free).toHaveLength(15);
+    expect(ROSTER.length - 12).toBe(15);
+
+    // And 15 is genuinely short: three squads of six need eighteen seats.
+    expect(free.length).toBeLessThan(3 * 6);
+  });
 });
 
 describe('a squad is exactly 2 front, 3 middle, 1 back', () => {

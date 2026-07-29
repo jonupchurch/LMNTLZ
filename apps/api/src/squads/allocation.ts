@@ -22,20 +22,15 @@
  * unplayable, and it would pass every test written with fewer than three squads.
  */
 
-import { getHero, UnknownHeroError } from '@lmntlz/content';
 import {
-  MAX_ATTACK_SQUADS,
-  ROW_CAPACITY,
-  SQUAD_ROWS,
   SQUAD_SIZE,
-  type SquadRow,
-} from '../db/schema/squads.js';
+  validateFormation,
+  type FormationFaultCode,
+  type Seat,
+} from '@lmntlz/sim/rules';
+import { MAX_ATTACK_SQUADS } from '../db/schema/squads.js';
 
-export interface Seat {
-  readonly row: SquadRow;
-  readonly index: number;
-  readonly heroId: string;
-}
+export type { Seat };
 
 export interface SquadShape {
   readonly id: string;
@@ -46,13 +41,8 @@ export interface SquadShape {
   readonly seats: readonly Seat[];
 }
 
-export type ShapeRejection =
-  | 'wrong-size'
-  | 'wrong-row-counts'
-  | 'duplicate-seat'
-  | 'duplicate-hero'
-  | 'index-out-of-row'
-  | 'unknown-hero';
+/** The formation faults, re-exported so callers need one import. */
+export type ShapeRejection = FormationFaultCode;
 
 export class InvalidSquadError extends Error {
   readonly status = 422 as const;
@@ -71,90 +61,21 @@ export class InvalidSquadError extends Error {
 /**
  * **Exactly six heroes as 2 front, 3 middle, 1 back** (T006, FR-003).
  *
- * Checked in five separate ways rather than one, because each failure needs a
- * different sentence: "you have five heroes" and "you have three in the back
- * row" are both `422` and are not the same problem to the player.
+ * The rule itself lives in `@lmntlz/sim/rules` so the squad builder can run the
+ * *same code* on every drag rather than a copy that drifts. What is added here
+ * is the throw: the API needs a `422` with a code, and the builder needs a value
+ * it can render — so the shared function returns a fault and this one raises it.
  */
 export function validateSquadShape(seats: readonly Seat[]): void {
-  if (seats.length !== SQUAD_SIZE) {
-    throw new InvalidSquadError(
-      'wrong-size',
-      `A squad is exactly ${SQUAD_SIZE} heroes; this one has ${seats.length}.`,
-    );
-  }
-
-  const positions = new Set<string>();
-  const heroes = new Set<string>();
-  const perRow: Record<SquadRow, number> = { front: 0, middle: 0, back: 0 };
-
-  for (const seat of seats) {
-    const capacity = ROW_CAPACITY[seat.row];
-    if (capacity === undefined) {
-      throw new InvalidSquadError(
-        'wrong-row-counts',
-        `"${seat.row}" is not a row. Rows are ${SQUAD_ROWS.join(', ')}.`,
-      );
-    }
-
-    if (!Number.isInteger(seat.index) || seat.index < 0 || seat.index >= capacity) {
-      throw new InvalidSquadError(
-        'index-out-of-row',
-        `Seat ${seat.index} does not exist in the ${seat.row} row, which holds ${capacity}.`,
-      );
-    }
-
-    const position = `${seat.row}:${seat.index}`;
-    if (positions.has(position)) {
-      throw new InvalidSquadError('duplicate-seat', `Two heroes are in ${seat.row} seat ${seat.index}.`);
-    }
-    positions.add(position);
-
-    if (heroes.has(seat.heroId)) {
-      throw new InvalidSquadError(
-        'duplicate-hero',
-        `${seat.heroId} is in this squad twice. A hero holds one seat per squad.`,
-      );
-    }
-    heroes.add(seat.heroId);
-
-    // A hero id the roster does not have is a client bug or a stale client, and
-    // either way it must not reach the database — `hero_id` is deliberately not
-    // a foreign key, so this IS the referential check.
-    try {
-      getHero(seat.heroId);
-    } catch (err) {
-      if (err instanceof UnknownHeroError) {
-        throw new InvalidSquadError('unknown-hero', `There is no hero "${seat.heroId}".`);
-      }
-      throw err;
-    }
-
-    perRow[seat.row] += 1;
-  }
-
-  /**
-   * **Unreachable today, and kept deliberately.**
-   *
-   * `ROW_CAPACITY` sums to exactly `SQUAD_SIZE`, so there are precisely six
-   * legal positions. Six seats that are all in-bounds and all distinct must
-   * therefore occupy every one of them, which forces the counts to 2/3/1 — the
-   * checks above already guarantee what this asserts. Enumerated: of all
-   * 6-position selections with valid, distinct positions, **zero** have wrong
-   * row counts.
-   *
-   * It stays because it is the check that survives someone changing a capacity.
-   * The moment the row widths stop summing to the squad size this becomes live,
-   * and a formation bug is not something to discover from a battle.
-   */
-  for (const row of SQUAD_ROWS) {
-    if (perRow[row] !== ROW_CAPACITY[row]) {
-      throw new InvalidSquadError(
-        'wrong-row-counts',
-        `The ${row} row holds ${ROW_CAPACITY[row]}; this squad has ${perRow[row]}.`,
-      );
-    }
-  }
+  const fault = validateFormation(seats);
+  if (fault) throw new InvalidSquadError(fault.code, fault.detail);
 }
+
+/**
+ * Re-exported from `@lmntlz/sim/rules` — the builder disables the save button
+ * with the same predicate the route rejects with.
+ */
+export { isPowerRanking } from '@lmntlz/sim/rules';
 
 /** Every hero id in a squad, in seat order. */
 export const heroesOf = (squad: SquadShape): readonly string[] => squad.seats.map((s) => s.heroId);
@@ -220,6 +141,47 @@ export function assertAvailableForOffense(
     const zone = zoneOf.get(heroId);
     if (zone) throw new HeroUnavailableError(heroId, zone);
   }
+}
+
+/**
+ * **A zone short of six cannot defend, and says so** (T017, FR-011).
+ *
+ * The alternative — defending with five — is worse than it sounds. It is a free
+ * win for every attacker, it is invisible to the player who caused it, and it
+ * would most often be caused by *our own* eviction rule rather than by anything
+ * they did deliberately. So an incomplete zone is a stated state with a reason,
+ * not a squad that quietly fights a man down.
+ *
+ * It is reported, never repaired. Substituting a hero into the gap would replace
+ * the player's plan with our guess.
+ */
+export interface DefenseReadiness {
+  readonly zone: 'visible' | 'hidden';
+  readonly seated: number;
+  readonly required: number;
+  readonly canDefend: boolean;
+  /** Present only when it cannot — the sentence the player is shown. */
+  readonly reason?: string;
+}
+
+export function defenseReadiness(
+  zone: 'visible' | 'hidden',
+  squad: SquadShape | undefined,
+): DefenseReadiness {
+  const seated = squad?.seats.length ?? 0;
+  if (seated === SQUAD_SIZE) {
+    return { zone, seated, required: SQUAD_SIZE, canDefend: true };
+  }
+  return {
+    zone,
+    seated,
+    required: SQUAD_SIZE,
+    canDefend: false,
+    reason:
+      seated === 0
+        ? `Your ${zone} zone is empty and cannot defend. It needs ${SQUAD_SIZE} champions.`
+        : `Your ${zone} zone has ${seated} of ${SQUAD_SIZE} champions and cannot defend.`,
+  };
 }
 
 export interface EvictedSquad {

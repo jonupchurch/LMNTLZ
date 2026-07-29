@@ -96,6 +96,22 @@ export {
 } from './firingProfile.js';
 export type { FiringProfileEntry, PowerRanking } from './firingProfile.js';
 
+/**
+ * The 2/3/1 formation. **Here rather than in `apps/api` so the squad builder
+ * runs the same code the server does** — the alternative is a copy in the
+ * client, and the day the two disagree a player is looking at a squad the
+ * builder called valid and the server refused.
+ */
+export {
+  ROW_CAPACITY,
+  SQUAD_ROWS,
+  SQUAD_SIZE,
+  freeSeatsInRow,
+  isPowerRanking,
+  validateFormation,
+} from './formation.js';
+export type { FormationFault, FormationFaultCode, Seat, SquadRow } from './formation.js';
+
 export {
   HERO_TURN_CAP,
   battleEnded,
