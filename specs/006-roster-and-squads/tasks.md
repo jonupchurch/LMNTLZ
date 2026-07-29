@@ -151,15 +151,15 @@ plausible implementation gets backwards.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T039 [US4] Write `apps/api/tests/squads/scout.test.ts` — assert **present**: six Visible heroes, both types each, the 2/3/1 formation, rune slot elements and stages, **both** hold streaks
-- [ ] T040 [US4] Assert **absent** in `apps/api/tests/squads/scout.test.ts` **by searching the whole serialised response**, not by checking remembered fields — no stat value base or runed, no rune's boosted stat, no utility effect, **no targeting priority or power ranking in either zone**, and **no Hidden hero in any form** (SC-007)
+- [x] T039 [US4] Write `apps/api/tests/squads/scout.test.ts` — assert **present**: six Visible heroes, both types each, the 2/3/1 formation, rune slot elements and stages, **both** hold streaks
+- [x] T040 [US4] Assert **absent** in `apps/api/tests/squads/scout.test.ts` **by searching the whole serialised response**, not by checking remembered fields — no stat value base or runed, no rune's boosted stat, no utility effect, **no targeting priority or power ranking in either zone**, and **no Hidden hero in any form** (SC-007)
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] Implement `GET /v1/players/:targetId/scout` in `apps/api/src/squads/routes.ts` — note the parameter is **`targetId`, not `accountId`**, per feature 005's convention
-- [ ] T042 [US4] Give `scout` **its own serialiser** in `apps/api/src/squads/scoutSerializer.ts`, not shared with the profile read — **a shared serialiser is exactly how the Hidden squad leaks** (Constitution XVII)
-- [ ] T043 [US4] Return the Hidden zone as **the streak and nothing else** in `apps/api/src/squads/scoutSerializer.ts` (FR-018, FR-020)
-- [ ] T044 [US4] Disclose rune slot elements and stages **without** which stat they boost, in `apps/api/src/squads/scoutSerializer.ts` — rune fill shows **commitment, never power**, since at an identical 1,950-shard spend the best allocation scores ~3.35× the worst. That is what makes the disclosure safe and bluffing a real strategy
+- [x] T041 [US4] Implement `GET /v1/players/:targetId/scout` in `apps/api/src/squads/routes.ts` — note the parameter is **`targetId`, not `accountId`**, per feature 005's convention
+- [x] T042 [US4] Give `scout` **its own serialiser** in `apps/api/src/squads/scoutSerializer.ts`, not shared with the profile read — **a shared serialiser is exactly how the Hidden squad leaks** (Constitution XVII)
+- [x] T043 [US4] Return the Hidden zone as **the streak and nothing else** in `apps/api/src/squads/scoutSerializer.ts` (FR-018, FR-020)
+- [x] T044 [US4] Disclose rune slot elements and stages **without** which stat they boost, in `apps/api/src/squads/scoutSerializer.ts` — rune fill shows **commitment, never power**, since at an identical 1,950-shard spend the best allocation scores ~3.35× the worst. That is what makes the disclosure safe and bluffing a real strategy
 
 **Checkpoint**: The Hidden zone is a threat rather than a blank, and it leaks nothing.
 

@@ -19,11 +19,13 @@ import { Hono } from 'hono';
 import { getAllHeroes, getHero } from '@lmntlz/content';
 import { apiError } from '../errors.js';
 import { requireSession } from '../auth/middleware.js';
-import { requireContext, type AuthedEnv } from '../auth/context.js';
+import { asTargetId, requireContext, type AuthedEnv } from '../auth/context.js';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { SQUAD_ZONES, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
+import { accounts } from '../db/schema/accounts.js';
+import { serializeScoutView } from './scoutSerializer.js';
 import { ambushChance, ambushConfig } from './ambush.js';
 import {
   HeroUnavailableError,
@@ -48,6 +50,7 @@ export const squadRoutes = new Hono<AuthedEnv>();
 
 squadRoutes.use('/roster', requireSession);
 squadRoutes.use('/squads/*', requireSession);
+squadRoutes.use('/players/*', requireSession);
 
 const isZone = (value: string): value is SquadZone => (SQUAD_ZONES as readonly string[]).includes(value);
 
@@ -275,6 +278,44 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
     // empty now so a client written today does not branch on its absence.
     warnings: [],
   });
+});
+
+// ---------------------------------------------------------------------------
+// T041 — GET /v1/players/:targetId/scout
+// ---------------------------------------------------------------------------
+
+/**
+ * **The parameter is `targetId`, not `accountId`** — feature 005's convention.
+ * This is one of the few routes that legitimately names another player, and the
+ * distinct name is what makes that intent visible at the call site rather than
+ * something a reviewer has to trace.
+ */
+squadRoutes.get('/players/:targetId/scout', async (c) => {
+  requireContext(c); // scouting requires a session; the caller is not otherwise used
+  const targetId = asTargetId(c.req.param('targetId'));
+
+  const [target] = await db()
+    .select({ id: accounts.id, username: accounts.username })
+    .from(accounts)
+    .where(eq(accounts.id, targetId))
+    .limit(1);
+
+  if (!target) {
+    return c.json(apiError('not_found', 'No such player.'), 404);
+  }
+
+  const squads = await loadSquads(targetId);
+
+  return c.json(
+    serializeScoutView({
+      targetId: target.id,
+      username: target.username,
+      // Feature 009 owns rating and league. Stated rather than omitted so the
+      // shape does not change under clients when it arrives.
+      league: 'unranked',
+      squads,
+    }),
+  );
 });
 
 // ---------------------------------------------------------------------------
