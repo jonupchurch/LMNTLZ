@@ -153,18 +153,22 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
 
     if (defenderId) {
       /**
-       * **A hold increments; a loss resets — and this rule is an assumption.**
+       * **A hold increments; a loss resets.** Settled 2026-07-29 and now written
+       * down in `02-squads.md` — *"A defeat resets it too"*. It was implemented
+       * here first and flagged as an assumption; the rule confirms it.
        *
-       * The design documents state only that *editing* a defense resets its
-       * streak (`02-squads.md`, `08-guilds.md`). What a defeat does is nowhere
-       * written down. Implemented as a reset because the number is scouted and
-       * read as *"their Closed Gate has held 9 times"* — a count that survived
-       * being beaten would be a claim about a squad that has demonstrably not
-       * held, which is the same defect the edit rule exists to prevent.
+       * The reason is the same one the edit rule has: the number is **scouted**,
+       * and what it claims is that this squad turns attackers away. A count that
+       * survived being beaten would keep asserting *"their Closed Gate has held
+       * 9 times"* about a squad that just failed to hold.
        *
-       * Flagged rather than assumed silently: if holds are meant to pay
-       * (`06-progression.md` proposes it), this decides how much defense earns,
-       * and it belongs in that pass rather than here.
+       * **Consequence for feature 010:** if holds pay, they pay *per hold*.
+       * A milestone payout on streak length would be destroyed by a single
+       * defeat the defender never chose to take — the same double punishment
+       * `nextAttackStreak` refuses for an ambushed attacker.
+       *
+       * A **discard** never reaches here (see `discard` below): no fight
+       * happened, so neither streak moves.
        */
       const [row] = await tx
         .select({ id: squads.id, holdStreak: squads.holdStreak })

@@ -240,6 +240,33 @@ squads — a player wanting a hero back for an attack squad must break a defensi
 streak to get them. Two commitments pulling in opposite directions over the same
 27 heroes.
 
+##### A defeat resets it too — settled 2026-07-29
+
+**Losing a defense sets that zone's hold streak back to 0**, exactly as editing
+it does. Confirmed after feature 007 shipped the reset and flagged it as an
+assumption; it is now a rule rather than an implementation detail.
+
+It follows from the same argument as the edit rule. The number is *scouted*, and
+what it claims is that this squad turns attackers away. A count that survived
+being beaten would keep asserting *"their Closed Gate has held 9 times"* about a
+squad that has demonstrably just failed to hold — the same lie the edit rule
+exists to prevent, arrived at from the other direction.
+
+Two consequences worth naming, because they bite later:
+
+- **A defense loss is the only reset a player cannot see coming or prevent.**
+  Editing is a choice; being attacked is not. That makes a long hold streak
+  genuinely fragile, which is the point — it is a claim about performance, and
+  performance can end.
+- **It bounds what a hold can be worth.** If holds pay (`06-progression.md`
+  proposes it), the reward must be paid **per hold**, not per streak length at
+  some later reckoning — a milestone payout would be lost to a single defeat the
+  player never chose to take, which is precisely the double punishment the
+  ambushed-loss rule above refuses for attackers.
+
+The reset is **not** applied to a discarded battle — expiry, maintenance, or an
+engine-version drop leave both streaks untouched, because no fight happened.
+
 ##### Rules this needs
 
 - **The rate is capped at 90%**, reached at 45 consecutive wins. Uncapped it
@@ -399,7 +426,7 @@ the moment its protection lapses.
 - **Ambush** is the sole door into a Hidden battle: +2% per consecutive attack
   win, capped at **90%**, always displayed.
 - **Every defense squad tracks its own hold streak**, reset when the squad is
-  edited.
+  edited **or when it loses a defense** — but never by a discarded battle.
 - **Up to 3 offense squads**, freely overlapping with each other.
 - Moving a hero to defense **evicts it from offense squads and invalidates**
   them.
