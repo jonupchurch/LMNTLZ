@@ -18,7 +18,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import ExcelJS from 'exceljs';
 
-import { counter, family, DAMAGE_TYPES } from '../packages/content/src/types.js';
+import { family, DAMAGE_TYPES } from '../packages/content/src/types.js';
 import type { DamageType } from '../packages/content/src/types.js';
 import { derive } from '../packages/content/src/derive.js';
 import {

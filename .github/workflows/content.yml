@@ -1,0 +1,55 @@
+name: content
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter @lmntlz/content typecheck
+
+      - name: Test
+        run: pnpm --filter @lmntlz/content test
+
+      # T041 — the check that makes the build step safe rather than merely
+      # convenient. Without it, a hand edit to heroes.generated.ts would survive
+      # indefinitely: the emitted roster and the workbook it claims to come from
+      # would disagree, and nothing would say so until a designer changed a cell
+      # and their edit silently reverted someone else's.
+      - name: Regenerate content and fail on any difference
+        run: |
+          pnpm content:build
+          if ! git diff --exit-code --stat; then
+            echo ""
+            echo "::error::The committed content does not match a fresh build."
+            echo "Either heroes.generated.ts / version.generated.ts / MATCHUPS.md"
+            echo "were edited by hand, or the workbook changed without running"
+            echo "'pnpm content:build'. Run it and commit the result."
+            exit 1
+          fi
+
+      # Nothing may open the workbook for writing (FR-018). The five scripts that
+      # used to were deleted in T008; this is what stops a sixth appearing.
+      - name: Assert no tool writes to the workbook
+        run: |
+          if grep -rn --include=*.py --include=*.ts --include=*.ps1 \
+               -e 'wb\.save' -e 'to_excel' -e 'xlsx\.writeFile' -e 'Workbook()' \
+               tools/ ; then
+            echo "::error::A tool writes to the workbook. The authored source is read-only."
+            exit 1
+          fi

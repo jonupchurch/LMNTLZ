@@ -12,6 +12,45 @@ Versioned release notes start when Steam builds do.
 
 ---
 
+## 2026-07-28 — "No tier-4 or tier-5 power is ever resisted" is false
+
+### Fixed
+
+- **The claim is wrong, and the roster proves it.** `CLAUDE.md` and
+  `03-powers.md` both state it as a settled consequence. Measured across all 54
+  tier-4/5 powers against all 27 heroes, there are **24 resisted cases**.
+- **The true claim, now locked by a test:** a tier-4/5 power is never *strongly*
+  resisted. It never resolves to ×0.50.
+
+### The part worth explaining
+
+A tier-4/5 power is dual-typed with the attacker's **own** two types, and a
+dual-typed power takes the better of them. So it is resisted only when the
+defender resists *both* — which requires the defender to carry the same two
+types as the attacker.
+
+**Six hero pairs carry exactly swapped types**: Bramwen `earth/fire` against
+Cindara `fire/earth`, Ossic `earth/dark` against Corvane `dark/earth`, Zephyrine
+`air/light` against Lucen `light/air`, and three more. Six unordered pairs is
+twelve ordered ones, and each costs both of the attacker's top powers a ×0.80 —
+`6 × 2 × 2 = 24`.
+
+The ×0.50 half survives for a reason that is provable rather than measured: that
+branch needs *both* of the power's types to be the defender's primary, and a
+type cannot be its own pair.
+
+**This is the same shape as the Phase 0 sweep's finding** that *"every safe
+ordering ends `1·0`"* was wrong by one. Both are consequences that were reasoned
+out correctly for the common case and then written down as universal. The test
+now records the count, so a roster change that alters it is visible rather than
+silently making the doc true or falser.
+
+Recorded in `packages/content/README.md` and `tests/effectiveness.test.ts`.
+**`CLAUDE.md` and `03-powers.md` are left unedited** — the canon is Jon's to
+change, and this is a note, not an edit.
+
+---
+
 ## 2026-07-28 — Bots carry Hidden squads, and the harder squad is the Hidden one
 
 ### Decided
