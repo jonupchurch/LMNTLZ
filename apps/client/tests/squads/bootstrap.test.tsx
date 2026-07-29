@@ -13,23 +13,20 @@ import { App } from '../../src/App.js';
 
 const CLIENT = join(import.meta.dirname, '../..');
 
-describe('the client reads the real roster', () => {
-  it('renders 27 champions and 9 forces from @lmntlz/content', () => {
-    // **Not a copy.** The one thing that must never happen is the client
-    // shipping its own hero list — the roster would then be wrong in exactly
-    // one place, and the disagreement would surface as a battle that resolves
-    // differently on each side.
+describe('the app shell reaches the squad screen', () => {
+  it('renders the squads screen rather than a placeholder', () => {
+    /**
+     * **The gap this replaced.** Until feature 006's Phase 8, `App` rendered a
+     * bootstrap shell listing the nine damage types, and every squad component
+     * was complete, unit-tested and unreachable from the running app. A
+     * component suite cannot see that; this assertion and the e2e run can.
+     *
+     * No roster is stubbed, so the screen shows its loading state — which is
+     * exactly what proves `App` is the screen and not the old placeholder.
+     */
     render(<App />);
-
-    expect(screen.getByText(/27 champions · 9 forces/)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'LMNTLZ' })).toBeInTheDocument();
-  });
-
-  it('stamps the content version it was built against', () => {
-    render(<App />);
-    // `c` + 12 hex. A battle recorded without this cannot be replayed against
-    // the roster that produced it (Constitution XVI).
-    expect(screen.getByText(/^c[0-9a-f]{12}$/)).toBeInTheDocument();
+    expect(screen.getByText(/Loading your champions/)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'LMNTLZ' })).toBeNull();
   });
 });
 

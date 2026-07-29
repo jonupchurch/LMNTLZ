@@ -193,9 +193,9 @@ plausible implementation gets backwards.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T051 Add the Playwright end-to-end pass in `apps/client/e2e/squads.spec.ts` — build both defenses, build three overlapping attack squads, move one hero to defense, and assert all three invalidate with all three named
-- [ ] T052 [P] Add keyboard-navigation coverage to `apps/client/e2e/squads.spec.ts` — every control reachable and every focus ring visible, since mouse and keyboard are the only inputs
-- [ ] T053 [P] Write `apps/api/src/squads/README.md` — the allocation invariants, the canonical-form hash and what is deliberately outside it
+- [x] T051 Add the Playwright end-to-end pass in `apps/client/e2e/squads.spec.ts` — build both defenses, build three overlapping attack squads, move one hero to defense, and assert all three invalidate with all three named
+- [x] T052 [P] Add keyboard-navigation coverage to `apps/client/e2e/squads.spec.ts` — every control reachable and every focus ring visible, since mouse and keyboard are the only inputs
+- [x] T053 [P] Write `apps/api/src/squads/README.md` — the allocation invariants, the canonical-form hash and what is deliberately outside it
 - [ ] T054 Run the full quickstart manual pass, including the scout disclosure boundary checked by searching the serialised response
 
 ---

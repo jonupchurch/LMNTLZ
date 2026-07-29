@@ -1,0 +1,75 @@
+/**
+ * The API, intercepted.
+ *
+ * Built from the real `@lmntlz/content` roster rather than from invented
+ * champions, so the ids, names and reaches are the ones the app will actually
+ * receive — a fixture with `{ id: 'hero1' }` proves the page renders *a* list.
+ */
+
+import type { Page } from '@playwright/test';
+import { getAllHeroes } from '@lmntlz/content';
+
+export const HEROES = getAllHeroes();
+export const IDS = HEROES.map((h) => h.id);
+
+const seats = (ids: readonly string[]) => [
+  { row: 'front', index: 0, heroId: ids[0] },
+  { row: 'front', index: 1, heroId: ids[1] },
+  { row: 'middle', index: 0, heroId: ids[2] },
+  { row: 'middle', index: 1, heroId: ids[3] },
+  { row: 'middle', index: 2, heroId: ids[4] },
+  { row: 'back', index: 0, heroId: ids[5] },
+];
+
+/** Both zones full, three overlapping attack squads — the ordinary end state. */
+export function rosterPayload(over: { visibleSeats?: unknown[] } = {}) {
+  const free = IDS.slice(12);
+  const shared = free[0]!;
+
+  return {
+    heroes: HEROES,
+    assignments: {
+      defense: {
+        visible: {
+          seats: over.visibleSeats ?? seats(IDS.slice(0, 6)),
+          holdStreak: 14,
+          editedAt: null,
+          canDefend: true,
+        },
+        hidden: { seats: seats(IDS.slice(6, 12)), holdStreak: 3, editedAt: null, canDefend: true },
+      },
+      offense: [
+        { slot: 0, name: 'Vanguard', seats: seats([shared, ...free.slice(1, 6)]), complete: true, valid: true },
+        { slot: 1, name: 'Second Wind', seats: seats([shared, ...free.slice(6, 11)]), complete: true, valid: true },
+        { slot: 2, name: 'Long Reach', seats: seats([shared, ...free.slice(11, 15), free[1]!]), complete: true, valid: true },
+      ],
+    },
+    streaks: { attack: 7, hold: { visible: 14, hidden: 3 } },
+    ambush: { chance: 14, perWin: 2, cap: 90, capAt: 45 },
+    available: { forDefense: IDS, forOffense: free },
+  };
+}
+
+/** The three-squad eviction — the case the confirm exists for. */
+export const THREE_SQUAD_PREVIEW = {
+  heroId: IDS[12],
+  evicts: [
+    { slot: 0, name: 'Vanguard', wasComplete: true, wouldBe: 5 },
+    { slot: 1, name: 'Second Wind', wasComplete: true, wouldBe: 5 },
+    { slot: 2, name: 'Long Reach', wasComplete: true, wouldBe: 5 },
+  ],
+  poolAfter: { heroes: 14, squads: 3, seatsNeeded: 18 },
+  streakAtRisk: 14,
+};
+
+export async function mockApi(
+  page: Page,
+  options: { roster?: ReturnType<typeof rosterPayload>; preview?: unknown } = {},
+): Promise<void> {
+  await page.route('**/v1/roster', (route) =>
+    route.fulfill({ json: options.roster ?? rosterPayload() }),
+  );
+  await page.route('**/v1/squads/defense/*/preview-move', (route) =>
+    route.fulfill({ json: options.preview ?? THREE_SQUAD_PREVIEW }),
+  );
+}

@@ -20,7 +20,7 @@
  * it.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SQUAD_SIZE, validateFormation, type FormationFault, type Seat, type SquadRow } from '@lmntlz/sim/rules';
 import type { RosterResponse, Zone } from '../types.js';
 
@@ -52,6 +52,36 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
   }, [roster, editing]);
 
   const [seats, setSeats] = useState<readonly Seat[]>(initial);
+
+  /**
+   * **`useState(initial)` reads its argument once, on the first render only.**
+   *
+   * The screen's first render has `roster === null`, because the roster is
+   * fetched — so `initial` is `[]`, and without this the squad stays empty after
+   * the data arrives. Every component test passed a roster synchronously and so
+   * never saw it; the end-to-end run found it immediately, which is the whole
+   * reason that suite exists.
+   *
+   * **Keyed on the seats' *content*, not their identity.** Identity was the
+   * first attempt and it spins forever the moment a parent rebuilds the roster
+   * object on each render — which a component legitimately may, and which the
+   * hook's own test does. The symptom is not a warning: it is the worker dying
+   * with `JavaScript heap out of memory`, several files away from the cause.
+   *
+   * Content-keyed, a re-created-but-equal roster is a no-op, and edits in
+   * progress survive a refetch that returned the same stored squad.
+   */
+  const signature = `${String(editing)}|${initial.map((s) => `${s.row}${s.index}${s.heroId}`).join(',')}`;
+  const seeded = useRef<string | null>(null);
+  useEffect(() => {
+    if (seeded.current === signature) return;
+    seeded.current = signature;
+    setSeats(initial);
+    // `initial` is intentionally NOT a dependency: it is a fresh array whenever
+    // the caller rebuilds the roster, and depending on it is the loop above.
+    // (`react-hooks/exhaustive-deps` is not installed here, so there is no rule
+    // to disable — this note is the record of the deliberate omission.)
+  }, [signature]);
 
   const place = useCallback((heroId: string, row: SquadRow, index: number) => {
     setSeats((current) => {
