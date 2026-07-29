@@ -1,20 +1,50 @@
 {
+  // `extends` is kept because it is the truth locally and in CI: this app uses
+  // the same settings as everything else. But the block below **restates the
+  // load-bearing ones**, and that duplication is deliberate — see the note.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
     "types": ["node"],
 
+    // ---------------------------------------------------------------------
+    // RESTATED FROM THE BASE CONFIG, ON PURPOSE. Do not "clean this up".
+    //
+    // Vercel compiles this app's entrypoint itself, after the build, with a
+    // configuration we do not control and cannot see. Two features shipped
+    // while every one of those compiles failed, because production kept
+    // answering `/v1/health` from the last build that worked.
+    //
+    // What that compile demonstrably lacks is **`strictNullChecks`**, and it is
+    // the single flag that matters: Zod v4's type inference collapses to
+    // `unknown` without it. Bisected 2026-07-29 —
+    //
+    //   tsc -p ... --strict false                     ->  4 errors
+    //   tsc -p ... --strict false --strictNullChecks  ->  0 errors
+    //
+    // Whether the cause is that `extends` cannot resolve `../../` from Vercel's
+    // build context, or that the builder overrides `strict` itself, the answer
+    // is the same: state the options in the file the builder actually reads,
+    // rather than in one two directories above it. The values are identical to
+    // the base config, so nothing changes locally.
+    // ---------------------------------------------------------------------
+    "strict": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
     // Overridden from the base config, and only here.
     //
-    // Vercel's Hono builder compiles `src/index.ts` by NAMING THE FILE, and
-    // TypeScript then refuses to load tsconfig.json at all — it says so:
-    //   TS5112: tsconfig.json is present but will not be loaded if files are
-    //           specified on commandline.
-    // So that compile runs without `skipLibCheck` and without `types: ["node"]`,
-    // and immediately reports ~25 errors that are nothing to do with our code:
-    // every `process` and `Buffer` reference, plus drizzle-orm's own .d.ts files
-    // for the MySQL and Gel dialects we do not use.
+    // If TypeScript is invoked with files named on the command line it refuses
+    // to load tsconfig.json at all — TS5112 — so that compile runs without
+    // `skipLibCheck` and without `types: ["node"]`, and reports ~25 errors that
+    // are nothing to do with our code: every `process` and `Buffer` reference,
+    // plus drizzle-orm's own .d.ts files for the MySQL and Gel dialects we do
+    // not use.
     //
     // With `noEmitOnError: true` those become `Error: src/index.ts: Emit
     // skipped` and the deploy fails with no errors printed — which is why this

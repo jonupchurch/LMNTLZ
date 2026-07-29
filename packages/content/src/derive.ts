@@ -35,10 +35,23 @@ export class IllegalPairingError extends Error {
  * involution, so rules 2 and 3 land on the same pair and rule 2 is what gets
  * named. On melee they are distinct pairs and both are reachable.
  */
+/**
+ * **`rule` is present on both arms, `null` when legal.** The obvious shape is
+ * `{ legal: true } | { legal: false; rule }`, and it reads better — but reading
+ * `.rule` off it then depends on the compiler narrowing the union, which is a
+ * *setting*. Vercel compiles this package with `strict` off (it names the
+ * entrypoint on the command line, so no tsconfig is read at all), narrowing
+ * stops, and every `.rule` access becomes an error that exists in no other
+ * configuration. That is what kept a broken API deploy invisible for two
+ * features.
+ *
+ * Discriminating on `legal` still works exactly as before for anyone who wants
+ * to; this only removes the *requirement* to.
+ */
 export function isLegalPairing(
   primary: DamageType,
   secondary: DamageType,
-): { legal: true } | { legal: false; rule: ValidationRule } {
+): { legal: true; rule: null } | { legal: false; rule: ValidationRule } {
   if (secondary === primary) {
     return { legal: false, rule: 'secondary-equals-primary' };
   }
@@ -48,7 +61,7 @@ export function isLegalPairing(
   if (counter(secondary) === primary) {
     return { legal: false, rule: 'primary-is-counter-of-secondary' };
   }
-  return { legal: true };
+  return { legal: true, rule: null };
 }
 
 /** The four fields that are never present in any source file (FR-002). */
