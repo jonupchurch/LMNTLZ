@@ -28,5 +28,25 @@ export type {
   ReplayLog,
 } from './replay.js';
 
-export { reDerive, replay, replayEvents, resolveAction, resolveDefenderTurn } from './resolve.js';
-export type { ActionIntent, DefenderChooser, ResolvedPacket } from './resolve.js';
+export {
+  reDerive,
+  replay,
+  replayEvents,
+  resolveAction,
+  resolveDefenderTurn,
+  /**
+   * **The primitive, exported for feature 007's turn loop.**
+   *
+   * `replay` and `resolveAction` both take a log and re-derive from the
+   * beginning, which is right for their callers and quadratic for a loop that
+   * folds several turns into one packet: resolving five turns at turn 80 would
+   * replay 80 turns five times. `resolveOne` takes a *state* and a draw index,
+   * so a caller stepping the battle forward pays for each turn once.
+   *
+   * It resolves exactly one intent and touches only HP. **Accumulators,
+   * cooldowns, statuses and `heroTurn` are the caller's**, which is why this is
+   * a primitive rather than a turn.
+   */
+  resolveOne,
+} from './resolve.js';
+export type { ActionIntent, DefenderChooser, ResolvedPacket, Resolution } from './resolve.js';

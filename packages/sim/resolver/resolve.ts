@@ -102,7 +102,7 @@ const replaceHero = (state: BattleState, next: HeroState): BattleState => ({
   heroes: state.heroes.map((h) => (h.instanceId === next.instanceId ? next : h)),
 });
 
-interface Resolution {
+export interface Resolution {
   readonly state: BattleState;
   readonly packet: ResolvedPacket;
   readonly drawsConsumed: bigint;
@@ -124,7 +124,7 @@ interface Resolution {
  * "Lazy" is not an order. Each step is skipped rather than drawn-and-discarded,
  * which is why a miss consumes one index and a landed hit consumes two.
  */
-function resolveOne(
+export function resolveOne(
   seed: Seed,
   state: BattleState,
   intent: ActionIntent,
