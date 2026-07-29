@@ -41,7 +41,8 @@ import {
 } from '@lmntlz/sim/rules';
 import { api, ApiError } from '../../lib/api.js';
 import { TurnQueue } from './TurnQueue.js';
-import type { ActResponse, ActionPacket, BattleView, StartedBattle } from './types.js';
+import { useIntent, type IntentPhase } from './useIntent.js';
+import type { ActionPacket, BattleView, StartedBattle, TurnEvent } from './types.js';
 
 export interface BattleScreenProps {
   readonly started: StartedBattle;
@@ -64,7 +65,6 @@ export function BattleScreen({ started, onConcluded, onUnauthenticated }: Battle
   const [events, setEvents] = useState(started.packet.events);
   const [conclusion, setConclusion] = useState(started.packet.conclusion);
   const [powerId, setPowerId] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const up = state.turnOfInstance;
@@ -109,57 +109,61 @@ export function BattleScreen({ started, onConcluded, onUnauthenticated }: Battle
     [onConcluded],
   );
 
-  const send = useCallback(
-    async (targetInstanceId: string) => {
-      if (up === null || chosen === null || busy) return;
-
-      setBusy(true);
-      setError(null);
-
-      try {
-        const result = await api<ActResponse>(`/battles/${started.battleId}/act`, {
-          method: 'POST',
-          body: JSON.stringify({
-            sequence,
-            actorInstanceId: up,
-            powerId: chosen,
-            targetInstanceId,
-          }),
-        });
-
-        apply(result.packet, result.nextSequence);
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-          onUnauthenticated?.();
-          return;
-        }
-
-        /**
-         * **A `409` is recoverable and is recovered from here, silently.**
-         *
-         * It means the server's history and this client's disagree — a retry
-         * that landed after a timeout, or two tabs. The contract's answer is to
-         * re-read, and re-reading is a complete fix: state is re-derived from
-         * the log on every call, so there is nothing stale left to reconcile.
-         * Showing the player an error for something the client can resolve on
-         * its own would be the wrong half of server authority.
-         */
-        if (err instanceof ApiError && err.status === 409) {
-          const view = await api<BattleView>(`/battles/${started.battleId}`);
-          setState(view.state);
-          setSequence(view.sequence);
-          setEvents([]);
-          setConclusion(view.conclusion);
-          setPowerId(null);
-          return;
-        }
-
-        setError(err instanceof ApiError ? err.body?.error.message ?? 'That move was refused.' : 'The battle could not be reached.');
-      } finally {
-        setBusy(false);
+  const onFailed = useCallback(
+    async (err: unknown) => {
+      if (err instanceof ApiError && err.status === 401) {
+        onUnauthenticated?.();
+        return;
       }
+
+      /**
+       * **A `409` is recoverable and is recovered from here, silently.**
+       *
+       * It means the server's history and this client's disagree — a retry that
+       * landed after a timeout, or two tabs. The contract's answer is to
+       * re-read, and re-reading is a complete fix: state is re-derived from the
+       * log on every call, so there is nothing stale left to reconcile. Showing
+       * the player an error for something the client can resolve on its own
+       * would be the wrong half of server authority.
+       */
+      if (err instanceof ApiError && err.status === 409) {
+        const view = await api<BattleView>(`/battles/${started.battleId}`);
+        setState(view.state);
+        setSequence(view.sequence);
+        setEvents([]);
+        setConclusion(view.conclusion);
+        setPowerId(null);
+        return;
+      }
+
+      setError(
+        err instanceof ApiError
+          ? err.body?.error.message ?? 'That move was refused.'
+          : 'The battle could not be reached.',
+      );
     },
-    [apply, busy, chosen, onUnauthenticated, sequence, started.battleId, up],
+    [onUnauthenticated, started.battleId],
+  );
+
+  const { phase, busy, commit } = useIntent({
+    battleId: started.battleId,
+    onResolved: apply,
+    onFailed: (err) => void onFailed(err),
+  });
+
+  /**
+   * **Nothing is awaited in the click path.** `commit` sets the wind-up phase
+   * synchronously and fires the request in the same tick; everything after that
+   * happens on the hook's own clock. A handler that awaited here would put the
+   * round trip back between the click and the first frame of motion.
+   */
+  const send = useCallback(
+    (targetInstanceId: string) => {
+      if (up === null || chosen === null || busy) return;
+      setError(null);
+      commit({ sequence, actorInstanceId: up, powerId: chosen, targetInstanceId });
+    },
+    [busy, chosen, commit, sequence, up],
   );
 
   return (
@@ -185,6 +189,14 @@ export function BattleScreen({ started, onConcluded, onUnauthenticated }: Battle
 
           {conclusion ? (
             <Outcome conclusion={conclusion} />
+          ) : busy ? (
+            /**
+             * **The move panel is replaced, not disabled.** A greyed-out panel
+             * during a resolution invites the player to keep aiming at controls
+             * that will not answer; the resolution is what they should be
+             * watching, so it is what occupies the space.
+             */
+            <Resolving phase={phase} />
           ) : (
             <Choice
               actorName={actor ? heroName(actor.heroId) : null}
@@ -210,6 +222,46 @@ export function BattleScreen({ started, onConcluded, onUnauthenticated }: Battle
     </main>
   );
 }
+
+/**
+ * What the player looks at while the round trip happens (T032, T034).
+ *
+ * Three states, and the middle one is the whole point. `winding` is motion the
+ * player was going to watch anyway; **`holding` is the natural wait point** —
+ * a champion at the top of its swing, which reads as anticipation rather than
+ * as a stall, because it is a pose the animation was designed to reach.
+ * `playing` walks the folded turns on the client's own clock, touching nothing.
+ */
+function Resolving({ phase }: { readonly phase: IntentPhase }) {
+  const label =
+    phase.kind === 'holding'
+      ? 'Held…'
+      : phase.kind === 'playing'
+        ? `${phase.index + 1} of ${phase.total}`
+        : 'Committing…';
+
+  return (
+    <section
+      aria-label="Resolving"
+      aria-busy="true"
+      data-phase={phase.kind}
+      className="rounded border border-gold/40 bg-surface p-4"
+    >
+      <p className="font-mono text-xs text-gold">{label}</p>
+
+      {phase.kind === 'playing' && (
+        <p className="mt-2 font-mono text-[0.7rem] text-muted">{describe(phase.event)}</p>
+      )}
+    </section>
+  );
+}
+
+const describe = (event: TurnEvent): string =>
+  event.powerId === null
+    ? `${event.actorInstanceId} passed`
+    : `${event.actorInstanceId} → ${event.targetInstanceId ?? '—'}: ${
+        event.outcome.hit ? `${event.outcome.damage}${event.outcome.crit ? ' crit' : ''}` : 'miss'
+      }`;
 
 interface BoardProps {
   readonly state: BattleState;

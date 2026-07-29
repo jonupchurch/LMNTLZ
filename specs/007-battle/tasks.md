@@ -127,14 +127,14 @@ cheap now and a migration later.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T030 [P] [US3] Write `apps/client/tests/battle/useIntent.test.tsx` — the request fires **and** the wind-up starts on the same click; a delayed response waits at a natural point rather than freezing mid-motion; a response contradicting the optimistic display is **what gets shown** (SC-008)
+- [x] T030 [P] [US3] Write `apps/client/tests/battle/useIntent.test.tsx` — the request fires **and** the wind-up starts on the same click; a delayed response waits at a natural point rather than freezing mid-motion; a response contradicting the optimistic display is **what gets shown** (SC-008)
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Build `apps/client/src/features/battle/useIntent.ts` — firing the request and starting the wind-up **together on click**, never on response (FR-018)
-- [ ] T032 [US3] Add the natural wait point before the impact frame in `apps/client/src/features/battle/BattleScreen.tsx` — no animation blocks on the network (FR-019)
-- [ ] T033 [US3] Reconcile to the server's version wherever the optimistic display disagrees, in `apps/client/src/features/battle/BattleScreen.tsx` (FR-020)
-- [ ] T034 [US3] Play the whole packet out client-side at its own pace in `apps/client/src/features/battle/BattleScreen.tsx` — **never round-trip on an animation**, and a player who alt-tabs mid-packet loses nothing because the server already resolved it
+- [x] T031 [US3] Build `apps/client/src/features/battle/useIntent.ts` — firing the request and starting the wind-up **together on click**, never on response (FR-018)
+- [x] T032 [US3] Add the natural wait point before the impact frame in `apps/client/src/features/battle/BattleScreen.tsx` — no animation blocks on the network (FR-019)
+- [x] T033 [US3] Reconcile to the server's version wherever the optimistic display disagrees, in `apps/client/src/features/battle/BattleScreen.tsx` (FR-020)
+- [x] T034 [US3] Play the whole packet out client-side at its own pace in `apps/client/src/features/battle/BattleScreen.tsx` — **never round-trip on an animation**, and a player who alt-tabs mid-packet loses nothing because the server already resolved it
 
 **Checkpoint**: A server-authoritative game that reads as responsive.
 
