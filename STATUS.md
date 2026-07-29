@@ -179,6 +179,25 @@ at 011, **Ably** at 014.
 > and the moment its client is deployed with them, the verification can start and
 > run in parallel with 007–010 instead of blocking after 011.
 
+### Two more things feature 006 must not discover late
+
+1. **Vercel Deployment Protection has to come off production.** It is on by
+   default for team accounts and currently guards production too, so the API
+   answers `302 → vercel.com/sso-api` to anything without a Vercel session.
+   Deliberately left on through 005 — nothing consumes the API yet, and
+   `/v1/auth/google` creates accounts, so there is no reason for it to be
+   reachable before there is a game attached. **Set it to *Only Preview
+   Deployments* when the client needs cross-origin access**, which keeps
+   previews private and makes production public. Settings → Deployment
+   Protection.
+2. **Google's authorized JavaScript origins need the client's real domain.**
+   Only `http://localhost:5173` is registered today, because the client project
+   does not exist. Google does **not** support wildcard origins and Vercel gives
+   every preview deployment a unique URL, so preview deploys cannot do Google
+   sign-in unless a stable branch domain or custom domain is registered. Decide
+   which at 006; the fallback is that sign-in works locally and in production
+   only.
+
 ### What each feature's MVP stops at
 
 Every `tasks.md` names a **STOP and VALIDATE** point — the smallest slice worth
