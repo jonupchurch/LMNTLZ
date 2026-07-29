@@ -49,6 +49,16 @@ importers:
         specifier: ^26.1.2
         version: 26.1.2
 
+  packages/sim:
+    dependencies:
+      '@lmntlz/content':
+        specifier: workspace:*
+        version: link:../content
+    devDependencies:
+      '@types/node':
+        specifier: ^26.1.2
+        version: 26.1.2
+
 packages:
 
   '@emnapi/core@1.11.1':

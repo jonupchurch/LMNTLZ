@@ -1,0 +1,93 @@
+/**
+ * `@lmntlz/sim/rules` — pure, shared, deterministic.
+ *
+ * **Imported unmodified by both the client and the server.** Nothing here
+ * consumes randomness, reads a clock, reads ambient state, or decides an
+ * outcome. It computes probabilities and ranges; `@lmntlz/sim/resolver` draws
+ * from them, on the server, with a seed that never leaves it.
+ *
+ * That boundary is Constitution XII, and it is enforced by `purity.test.ts`
+ * walking the import graph rather than by anybody remembering it.
+ */
+
+export {
+  ALL_ROWS,
+  ATTACKER_ROWS,
+  DEFENDER_ROWS,
+  UnknownInstanceError,
+  effectiveStat,
+  frontRowOf,
+  heroStateOf,
+  isRow,
+  isRowOccupied,
+  isStanding,
+  sideOfRow,
+  standingHeroes,
+  standingOnSide,
+} from './state.js';
+export type { BattleState, HeroState, Row, Side, StatusInstance } from './state.js';
+
+export {
+  ATTACKER_EDGE,
+  LUCK_DIE_MULTIPLIER,
+  MAX_HIT_PROBABILITY,
+  MIN_HIT_PROBABILITY,
+  contestProbability,
+  critChance,
+  dieSize,
+  hitProbability,
+  riderLandProbability,
+  unclampedHitProbability,
+} from './probability.js';
+
+export { distance, inReach, rowsInReach } from './reach.js';
+
+export { ACT_THRESHOLD, TICK_BASE, afterTick, gainPerTick, speedOf, turnQueue } from './turnOrder.js';
+
+export {
+  CRIT_MULTIPLIER,
+  DAMAGE_FLOOR_FRACTION,
+  HP_PER_TOUGHNESS,
+  K,
+  damagePreview,
+  healPreview,
+  maxHp,
+  mitigationFactor,
+  packetOf,
+  resistedBy,
+} from './damage.js';
+export type { DamagePreview } from './damage.js';
+
+export { legalTargets, mustPass, poolFor } from './targeting.js';
+export type { Compulsion, TargetFilter, TargetingResult, TargetingStage } from './targeting.js';
+
+export {
+  EFFECT_ORDER,
+  PHASE_ORDER,
+  availablePowers,
+  cooldownsAfterResolution,
+  gateTurnFor,
+  isIncapacitated,
+  phasesFor,
+} from './phases.js';
+export type { EffectStep, Phase } from './phases.js';
+
+export {
+  HERO_TURN_CAP,
+  battleEnded,
+  hasLeftTheBoard,
+  pooledHpShare,
+  stillInPlay,
+} from './ending.js';
+export type { Conclusion } from './ending.js';
+
+/**
+ * The stamp that identifies this engine (Constitution XVI).
+ *
+ * **Kept separate from `contentVersion` and never merged.** They answer
+ * different questions — *which rules ran* versus *which numbers they ran on* —
+ * and a battle record carries both. The `e` prefix mirrors content's `c` so a
+ * swapped pair is visible on sight rather than six months later, when the
+ * record can no longer be backfilled.
+ */
+export const engineVersion = (): string => 'e0.1.0';

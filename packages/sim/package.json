@@ -1,0 +1,24 @@
+{
+  "name": "@lmntlz/sim",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "//": "NO root export, deliberately. `import from '@lmntlz/sim'` must fail to resolve, so nobody reaches the resolver through a barrel file. The seam is a resolution error, not a convention.",
+  "exports": {
+    "./rules": "./rules/index.ts",
+    "./resolver": "./resolver/index.ts",
+    "./ai": "./ai/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint rules tests"
+  },
+  "dependencies": {
+    "@lmntlz/content": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2"
+  }
+}
