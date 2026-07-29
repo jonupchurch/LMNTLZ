@@ -1,12 +1,17 @@
 ## Current phase
 
 **Features 001–006 are built. 285 of 767 tasks, and the API is deployed and
-serving.** 640 unit tests + 12 Playwright end-to-end; lint, typecheck and build
+serving.** 697 unit tests + 25 Playwright end-to-end; lint, typecheck and build
 all clean.
 
-`https://lmntlz-jupchurch-7994s-projects.vercel.app/v1/health` returns
-`{"status":"ok"}`. Two migrations are applied to Neon and verified by querying
-`information_schema` rather than by trusting the migrator.
+**`https://lmntlz.vercel.app/v1/health` returns `{"status":"ok"}` to an
+anonymous request** — that is the production domain and the one to test against.
+The scoped alias `lmntlz-<scope>.vercel.app` answers `302 → vercel.com/sso-api`
+because Deployment Protection covers it; both point at the same deployment, so
+checking the wrong hostname reads as an outage that is not there.
+
+Four migrations are applied to Neon and verified by querying `information_schema`
+rather than by trusting the migrator.
 
 | Feature | Tasks | State |
 |---|---|---|
@@ -179,37 +184,73 @@ at 011, **Ably** at 014.
 > - terms of service · privacy policy · **refund policy**
 > - a contact route that reaches a person
 >
-> None of those are in any `tasks.md` today. **Feature 006 is where they belong**,
-> and the moment its client is deployed with them, the verification can start and
-> run in parallel with 007–010 instead of blocking after 011.
+> None of those were in any `tasks.md`. **✅ Built 2026-07-29** as five static
+> pages in `apps/client/public/` — `pricing`, `terms`, `privacy`, `refunds`,
+> `contact` — plus `SiteFooter` linking them from every screen. Static HTML and
+> not React routes on purpose: a refund policy must render with no JavaScript and
+> must survive the app being broken, which is exactly when somebody goes looking
+> for it. `tests/site/legal.test.tsx` and `e2e/legal.spec.ts` hold them up.
+>
+> **Three blanks remain and they are enumerated, not scattered** —
+> `[[TRADING_NAME]]`, `[[SUPPORT_EMAIL]]`, `[[JURISDICTION]]`. Each needs a fact
+> about the business that is not in this repo. `OPEN_BLANKS` in the test is the
+> complete list, and the suite fails both if a *new* blank appears and if a filled
+> one is left listed, so neither can drift.
 
-### Two more things feature 006 must not discover late
+### The deployment shape — decided 2026-07-29
 
-1. **Vercel Deployment Protection has to come off production.** It is on by
-   default for team accounts and currently guards production too, so the API
-   answers `302 → vercel.com/sso-api` to anything without a Vercel session.
-   Deliberately left on through 005 — nothing consumes the API yet, and
-   `/v1/auth/google` creates accounts, so there is no reason for it to be
-   reachable before there is a game attached. **Set it to *Only Preview
-   Deployments* when the client needs cross-origin access**, which keeps
-   previews private and makes production public. Settings → Deployment
-   Protection.
+**Two Vercel projects from one Git repo**, each with its own Root Directory
+(`apps/api`, `apps/client`). Not two repositories: that would split
+`packages/sim` in two, which is the one thing the architecture cannot afford.
+
+**Same-origin was never really available.** It is the only thing a single project
+buys, and the Steam build makes it unusable — that bundle loads from disk, so it
+is permanently cross-origin. `apps/client/src/lib/api.ts` has treated its base
+URL as configuration from the day it was written for that reason.
+
+`lmntlz.com` was bought on 2026-07-29 and belongs to the **client**. The existing
+Vercel project becomes the client; the API moves to a new one. **Deploy the new
+API project before flipping the existing project's Root Directory**, or there is
+a window with no API at all. And **delete `DATABASE_URL` and `JWT_SIGNING_KEY`
+from the client project** once it is the client — Vite only inlines `VITE_`
+names so they would not reach the bundle, but a project that builds a static site
+has no business holding them.
+
+1. ~~**Vercel Deployment Protection has to come off production.**~~
+   **✅ Nothing to do — the note was wrong.** Checked 2026-07-29:
+   `https://lmntlz.vercel.app/v1/health` returns `{"status":"ok"}` to an
+   anonymous request. **Protection never covered the production domain**; what it
+   guards is the scoped alias `lmntlz-<scope>.vercel.app`, which still answers
+   `302 → vercel.com/sso-api`. Both hostnames point at the same deployment, so
+   testing the wrong one reads as an outage that is not there.
+
+   If protection is ever turned on, the setting that matters for a browser client
+   is **OPTIONS Allowlist** — a CORS preflight carries no credential, so it is
+   refused before the real request is ever made.
 2. **Google's authorized JavaScript origins need the client's real domain.**
-   `http://localhost:5173` and a Vercel origin are registered as of 2026-07-28.
 
    **The origin Google checks is the one serving the page, not the one serving
    the API.** Google Identity Services validates the browser origin the sign-in
-   button is rendered from; the API is called afterwards with the resulting
-   token and its own hostname never comes into it. So an API-only Vercel URL in
-   that list is harmless and does nothing — **the entry that has to be there is
-   wherever `apps/client` is served from**, which is a second Vercel project that
-   does not exist yet. Confirm the registered origin matches the client once 006
-   deploys.
+   button is rendered from; the API is called afterwards with the resulting token
+   and its own hostname never comes into it. So an API-only URL in that list is
+   inert.
+
+   **The existing registration survives the reshuffle by luck**: the project that
+   owns `https://lmntlz.vercel.app` is the one becoming the client, so that entry
+   goes on meaning what it says. Add `https://lmntlz.com` (and `www.` if it is
+   served rather than redirected) when the domain is attached.
 
    Google does **not** support wildcard origins and Vercel gives every preview
    deployment a unique URL, so preview deploys cannot do Google sign-in unless a
-   stable branch domain or custom domain is registered. Decide which at 006; the
-   fallback is that sign-in works locally and in production only.
+   stable branch domain is registered. The fallback is that sign-in works locally
+   and in production only.
+3. **The API had no CORS at all until 2026-07-29.** `apps/api/src/cors.ts` now
+   holds it: an exact-match allowlist from `CORS_ALLOWED_ORIGINS`, no
+   `Allow-Credentials` (sessions are bearer tokens in memory, never cookies),
+   `Origin: null` refused, and **registered before `/v1` is mounted** so a
+   preflight is answered before `requireSession` can 401 it. Unset in production
+   means no browser can call the API, and there is deliberately no default —
+   `src/dev.ts` supplies the local origins and never ships.
 
 ### What each feature's MVP stops at
 

@@ -69,6 +69,21 @@ export default defineConfig({
           environment: 'node',
         },
       },
+      {
+        /**
+         * **Cross-cutting concerns that belong to no feature.** The projects
+         * above are named for features, and a rule that holds for every route —
+         * the CORS policy, and feature 016's maintenance flag — has nowhere to
+         * live among them. Without this the file simply is not collected, and a
+         * test nobody runs reports nothing at all.
+         */
+        test: {
+          name: 'platform',
+          include: ['tests/platform/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+        },
+      },
     ],
     // Two things excluded for two reasons. `dist/**` because `tsc` emits a .js
     // twin of every test file, so one build gives Vitest two copies of each

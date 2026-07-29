@@ -48,6 +48,24 @@ export default defineConfig({
           setupFiles: ['./tests/setup.ts'],
         },
       },
+      {
+        /**
+         * **The site around the game**, which belongs to no feature: the five
+         * static policy pages a payment provider requires, and the footer that
+         * makes them reachable. `apps/api` has a `platform` project for the
+         * same reason — a rule that holds everywhere has nowhere to live among
+         * projects named after features, and an uncollected test reports
+         * nothing at all.
+         */
+        plugins: [react()],
+        test: {
+          name: 'site',
+          include: ['tests/site/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
     ],
     // Repeated inside the project above on purpose: an `exclude` here does NOT
     // reach nested projects, and one `pnpm build` otherwise doubles the suite

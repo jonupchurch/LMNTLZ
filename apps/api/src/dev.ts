@@ -17,9 +17,25 @@
  */
 
 import { serve } from '@hono/node-server';
+import { CORS_ORIGINS_VAR } from './cors.js';
 import app from './index.js';
 
 const port = Number(process.env.PORT ?? 3000);
+
+/**
+ * **The local origins are defaulted here and nowhere else.**
+ *
+ * `cors.ts` has no defaults on purpose: an unset allowlist in production must
+ * mean *nothing is allowed*, not *localhost is allowed*, because a developer
+ * with something running on port 5173 is otherwise a cross-origin caller of the
+ * live API. This file never ships — Vercel imports `index.ts` — so a default
+ * here reaches a laptop and cannot reach production.
+ *
+ * The three ports: Vite's dev server, Vite's `preview`, and the dedicated
+ * Playwright port from `apps/client/playwright.config.ts`.
+ */
+process.env[CORS_ORIGINS_VAR] ??=
+  'http://localhost:5173,http://localhost:4173,http://localhost:5190';
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`  api  http://localhost:${info.port}/v1/health`);

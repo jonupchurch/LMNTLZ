@@ -1,0 +1,283 @@
+/*
+ * The stylesheet for the five static pages Paddle requires before it will
+ * verify a seller: pricing, terms, privacy, refunds, contact.
+ *
+ * ### Why these pages are static HTML and not React routes
+ *
+ * Three reasons, and the third is the one that decides it.
+ *
+ * 1. **They must render with no JavaScript.** A reviewer, a crawler and a
+ *    support link all reach them directly, and none of them should depend on a
+ *    bundle parsing correctly.
+ * 2. **They must survive the app being broken.** A refund policy that 404s
+ *    because the game failed to boot is the single worst moment for it to be
+ *    missing.
+ * 3. **They are not the game.** Routing them through the app would couple a
+ *    legal document's availability to a squad screen's dependencies, which is
+ *    an odd thing to have done when somebody asks why the terms are down.
+ *
+ * Vite copies `public/` to the build root untouched, so these ship as-is.
+ *
+ * ### The one place this deliberately disagrees with the app
+ *
+ * `src/styles/base.css` sets `min-width: 1280px`, because a six-hero squad in a
+ * fixed 2/3/1 formation does not become a phone layout — it scrolls instead.
+ * **That reasoning does not extend to a page of prose.** These are read on
+ * whatever the reader has, so they are fluid, and the desktop floor is
+ * deliberately absent rather than forgotten.
+ *
+ * Colours are the Elemental Spectrum from `src/styles/base.css`, repeated as
+ * literals because these pages load no Tailwind and no build step. They change
+ * about once a year; the duplication is cheaper than the toolchain that would
+ * remove it.
+ */
+
+:root {
+  --void: #0e0c17;
+  --bg: #141221;
+  --surface: #1c1930;
+  --raised: #241f38;
+  --line: #3a3357;
+  --parchment: #f4efe4;
+  --muted: #b4aecb;
+  --faint: #8e87a8;
+  --gold: #f2c744;
+  --slash-lit: #f06a72;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--parchment);
+  font-family: 'Barlow', system-ui, -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+}
+
+/* --- masthead ---------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mark {
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--gold);
+  text-decoration: none;
+}
+
+.masthead nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.masthead nav a {
+  color: var(--faint);
+}
+
+.masthead nav a[aria-current='page'] {
+  color: var(--parchment);
+}
+
+/* --- type -------------------------------------------------------------- */
+
+h1 {
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  margin: 2.5rem 0 0.5rem;
+}
+
+h2 {
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 2.75rem 0 0.75rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.75rem 0 0.5rem;
+}
+
+p,
+li {
+  color: var(--muted);
+}
+
+strong {
+  color: var(--parchment);
+  font-weight: 600;
+}
+
+a {
+  color: var(--gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--parchment);
+}
+
+/* The only thing telling a keyboard reader where they are. Never removed —
+   same rule as the app, for the same reason. */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.updated {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: var(--faint);
+  margin: 0;
+}
+
+/* Present for a screen reader, absent for everyone else — used on table
+   captions, where the surrounding prose already says what the table is. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.lede {
+  font-size: 1.125rem;
+  color: var(--parchment);
+}
+
+/* --- tables ------------------------------------------------------------ */
+
+/* Wide content scrolls inside its own box; the page body never scrolls
+   sideways. */
+.scroller {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+th,
+td {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  font-family: 'Chakra Petch', system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  background: var(--surface);
+}
+
+td {
+  color: var(--muted);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.best td {
+  background: var(--raised);
+  color: var(--parchment);
+}
+
+.num {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+/* --- callout ----------------------------------------------------------- */
+
+.note {
+  margin: 1.75rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 6px 6px 0;
+}
+
+.note p:first-child {
+  margin-top: 0;
+}
+
+.note p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * An unfilled blank, styled so it cannot be mistaken for finished copy.
+ * `tests/legal.test.ts` enumerates every one of these and fails if an
+ * unreviewed token appears, so a page cannot quietly ship with a hole in it.
+ */
+.tbd {
+  padding: 0.05em 0.4em;
+  background: #77161c;
+  color: var(--parchment);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.85em;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* --- footer ------------------------------------------------------------ */
+
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.875rem;
+  color: var(--faint);
+}
+
+footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}

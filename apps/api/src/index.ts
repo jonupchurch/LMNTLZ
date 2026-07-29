@@ -17,6 +17,7 @@
 
 import { Hono } from 'hono';
 import { apiError } from './errors.js';
+import { corsMiddleware } from './cors.js';
 import { authRoutes } from './auth/routes.js';
 import { squadRoutes } from './squads/routes.js';
 
@@ -24,6 +25,16 @@ export { apiError } from './errors.js';
 export type { ApiError } from './errors.js';
 
 const app = new Hono();
+
+/**
+ * **First, and before `/v1` is mounted.** Hono composes middleware in
+ * registration order, so registering this after the routes would let
+ * `requireSession` answer a preflight — and a preflight carries no
+ * `Authorization` header, because it is the request asking whether one may be
+ * sent. The 401 that follows surfaces in the browser as a CORS error, which
+ * sends you looking in the wrong file. See `cors.ts`.
+ */
+app.use('*', corsMiddleware());
 
 /**
  * `/v1` is the whole public surface. Everything else is a 404, including `/`,
