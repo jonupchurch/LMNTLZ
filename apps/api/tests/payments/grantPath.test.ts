@@ -107,7 +107,19 @@ describe('the entitlement belongs to the account, never a storefront', () => {
 });
 
 describe('no vendor is named outside payments/provider', () => {
-  const VENDORS = /\b(paddle|stripe|braintree|lemonsqueezy|fastspring|resend)\b/i;
+  /**
+   * **No word boundaries, deliberately.**
+   *
+   * The first version was `/\b(...)\b/i` and it did not catch
+   * `process.env['resend_RESEND_API_KEY']` sitting in `receipt.ts` — `_` is a word
+   * character, so neither `\b` matches inside `resend_RESEND`. The rule was being
+   * satisfied by a regex technicality rather than by the code being right.
+   *
+   * A substring match will occasionally flag an innocent word. That is the correct
+   * trade: a false positive costs one rename, and a false negative costs the thing
+   * this scan exists to prevent.
+   */
+  const VENDORS = /(paddle|stripe|braintree|lemonsqueezy|fastspring|resend)/i;
 
   it('names no payment vendor anywhere in src outside the provider directory', async () => {
     const files = await sources();

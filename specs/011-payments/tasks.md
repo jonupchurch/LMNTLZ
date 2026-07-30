@@ -108,7 +108,7 @@ edge case here — and granting twice is a revenue defect and a support case at 
 - [x] T024 [US1] Implement `GET /v1/me/entitlements` in `apps/api/src/payments/routes.ts` — what the player holds and when it expires, plus `spentThisYear` against the ceiling (FR-009)
 - [x] T025 [US1] Call feature 010's `canAcceptPurchase` **before invoking the rail** in `apps/api/src/payments/routes.ts` — **never take money for shards that cannot be delivered**
 - [ ] T026 [US1] Show the statement descriptor **at checkout, adjacent to the pay button and not in a footer**, in `apps/client/src/features/store/Checkout.tsx` (FR-018)
-- [ ] T027 [US1] Repeat the descriptor in the confirmation email via Resend, in `apps/api/src/payments/receipt.ts` — it is the artifact a cardholder actually goes looking for
+- [x] T027 [US1] Repeat the descriptor in the confirmation email via Resend, in `apps/api/src/payments/receipt.ts` — it is the artifact a cardholder actually goes looking for
 - [x] T028 [US1] Implement `GET /v1/receipts/:token` in `apps/api/src/payments/routes.ts` reachable **without signing in**, via a signed link in the email — **someone disputing a charge is frequently not the person who can sign in**
 
 > **An unexplained line item is itself a chargeback trigger**, and chargeback ratio
@@ -263,7 +263,7 @@ can audit* only holds if the storefront cannot quietly breach it.
 
 ## What shipped, and the five tasks the vendor gates
 
-**39 of 44 closed on 2026-07-30, with no vendor account in existence.** That is the
+**40 of 44 closed on 2026-07-30, with no vendor account in existence.** That is the
 interface discipline paying for itself: every behavioural claim in this feature —
 exactly-once, signature-before-parse, additive extension, out-of-order refunds, the
 reconcile asymmetry, the computed ceiling — is a property of *our* code, and none of
