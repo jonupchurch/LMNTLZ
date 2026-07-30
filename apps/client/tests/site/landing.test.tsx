@@ -183,11 +183,32 @@ describe('what the page claims', () => {
     }
   });
 
-  it('does not claim the game is playable', () => {
-    // It is not. Feature 007 onward is unbuilt, and a front door that implies
-    // otherwise is the one thing on this page that could be dishonest rather
-    // than merely wrong.
+  /**
+   * ### Inverted deliberately, and late
+   *
+   * This asserted `'not yet playable'` and kept passing for two features after the
+   * game became playable — the front door said battles, matchmaking and sign-in were
+   * "being written now" when all three had shipped. **A test pinning a status claim
+   * cannot tell you the claim went stale**; it can only tell you the words are still
+   * there, which is exactly what was wrong.
+   *
+   * So the assertion is now on the *shape* of the claim rather than the sentence:
+   * the page must say what is playable **and** what is missing. Both halves, because
+   * either alone is the dishonest version.
+   */
+  it('says both what is playable and what is not', () => {
     render(<LandingScreen />);
-    expect(document.body.textContent).toContain('not yet playable');
+    const text = document.body.textContent ?? '';
+
+    expect(text).toContain('playable and unfinished');
+
+    // The missing half, named. Runes and the ladder are the two big ones, and a
+    // page claiming playability without them reads as a finished game.
+    for (const missing of ['runes', 'guilds', 'rating ladder']) {
+      expect(text, `the page does not admit ${missing} is missing`).toContain(missing);
+    }
+
+    // And it must not have gone back to promising rather than describing.
+    expect(text).not.toContain('being written now');
   });
 });

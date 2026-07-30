@@ -30,12 +30,10 @@
  * game**, which is exactly the shape of failure this project keeps meeting — no
  * error, no log, just nothing.
  *
- * **`last_activity_at` now has one writer of the two.** `PUT /squads/defense/:zone`
- * calls `touchActivity()`; **battle settlement still does not**, so an account that
- * only ever attacks and never edits a squad still ages out of the pool after thirty
- * days. The `isNull` fallback to `accounts.created_at` is what keeps that from being
- * an empty pool today rather than a thin one. Recorded, because a pool that empties
- * silently is worse than one that errors.
+ * **`last_activity_at` now has both its writers.** `PUT /squads/defense/:zone` and
+ * battle settlement both call `touchActivity()`, which are the two things the design
+ * defines activity as. The `isNull` fallback to `accounts.created_at` stays, because
+ * every account created before those calls existed has no stamp and never will.
  */
 
 import { and, asc, desc, eq, gte, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
@@ -84,8 +82,9 @@ const effectiveGearScore = sql<number>`coalesce(${playerRatings.gearScore}, ${ST
  *
  * Upserts, because the standing row may not exist yet: pre-010 nothing creates one.
  *
- * > **One of the two callers is wired.** `PUT /v1/squads/defense/:zone` calls this;
- * > battle settlement does not yet. A player who only attacks still ages out.
+ * > **Both callers are wired**: `PUT /v1/squads/defense/:zone` and `settle()`, which
+ * > stamps **both sides** — a defender who is being attacked is demonstrably in
+ * > somebody's pool whether or not they logged in.
  */
 export async function touchActivity(accountId: string): Promise<void> {
   const now = new Date();

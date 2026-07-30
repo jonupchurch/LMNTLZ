@@ -107,12 +107,21 @@ export function LandingScreen(): JSX.Element {
         <h2 className="font-display text-sm tracking-widest text-gold uppercase">
           Where the game is
         </h2>
+        {/**
+         * **This paragraph is the one thing on the site that goes stale on its own**,
+         * and it had: it still said battles, matchmaking and sign-in were "being
+         * written now" after all three had shipped. A status note that lags is worse
+         * than none, because the honest version is what makes the rest credible.
+         *
+         * So it now names what is *missing* rather than what is done — the shorter
+         * list, and the one that shrinks.
+         */}
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          <strong className="text-parchment">LMNTLZ is in active development and not yet
-          playable.</strong>{' '}
-          The rules engine, the roster and the squad builder are built; battles, matchmaking and
-          sign-in are being written now. Nothing is being sold until there is a game attached to it —
-          the{' '}
+          <strong className="text-parchment">LMNTLZ is playable and unfinished.</strong>{' '}
+          Sign in and you can build both defense squads and three attack squads, scout an
+          opponent and fight them out turn by turn. What is not built yet: runes and the shards
+          that buy them, guilds, and the rating ladder. Nothing is being sold until there is a
+          finished game attached to it — the{' '}
           <a href="/pricing.html" className="text-gold underline underline-offset-2">
             pricing page
           </a>{' '}

@@ -20,11 +20,13 @@ import { getAllHeroes, getHero } from '@lmntlz/content';
 import { apiError } from '../errors.js';
 import { requireSession } from '../auth/middleware.js';
 import { asTargetId, requireContext, type AuthedEnv } from '../auth/context.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { SQUAD_ZONES, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { accounts } from '../db/schema/accounts.js';
+import { playerRatings } from '../db/schema/ratings.js';
+import { STARTER_GRANT_SCORE, leagueOf } from '../matchmaking/league.js';
 import { serializeScoutView } from './scoutSerializer.js';
 import { ambushChance, ambushConfig } from './ambush.js';
 import { warningsFor } from './warnings.js';
@@ -410,9 +412,26 @@ squadRoutes.get('/players/:targetId/scout', async (c) => {
   requireContext(c); // scouting requires a session; the caller is not otherwise used
   const targetId = asTargetId(c.req.param('targetId'));
 
+  /**
+   * **The league is real now that 009 exists.** It was `'unranked'` for one
+   * feature — stated rather than omitted so the shape would not change under
+   * clients — and this is that placeholder coming out.
+   *
+   * `coalesce` to the starter grant for the same reason `candidates.ts` does it:
+   * pre-010 nobody has a gear score, and an inner join on the standing row would
+   * make every scout look up an unranked player forever.
+   *
+   * A league is not a disclosure question. Matchmaking offers same-league
+   * defenders, so a player who can see this candidate already knows their band.
+   */
   const [target] = await db()
-    .select({ id: accounts.id, username: accounts.username })
+    .select({
+      id: accounts.id,
+      username: accounts.username,
+      gearScore: sql<number>`coalesce(${playerRatings.gearScore}, ${STARTER_GRANT_SCORE})`,
+    })
     .from(accounts)
+    .leftJoin(playerRatings, eq(playerRatings.accountId, accounts.id))
     .where(eq(accounts.id, targetId))
     .limit(1);
 
@@ -426,9 +445,7 @@ squadRoutes.get('/players/:targetId/scout', async (c) => {
     serializeScoutView({
       targetId: target.id,
       username: target.username,
-      // Feature 009 owns rating and league. Stated rather than omitted so the
-      // shape does not change under clients when it arrives.
-      league: 'unranked',
+      league: leagueOf(Number(target.gearScore)),
       squads,
     }),
   );

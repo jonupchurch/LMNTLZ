@@ -8,9 +8,59 @@
 
 import type { Page } from '@playwright/test';
 import { getAllHeroes } from '@lmntlz/content';
+import type { HeroState } from '@lmntlz/sim/rules';
 
 export const HEROES = getAllHeroes();
 export const IDS = HEROES.map((h) => h.id);
+
+/**
+ * A renderable opening board, so a mocked `POST /v1/battles` produces a screen
+ * rather than an exception. The rows are the shared 1–6 axis: attacker 1–3,
+ * defender 4–6, front nearest the enemy.
+ */
+const ROW_OF = {
+  attacker: { front: 3, middle: 2, back: 1 },
+  defender: { front: 4, middle: 5, back: 6 },
+} as const;
+
+const BOARD_SEATS = [
+  { row: 'front', index: 0 },
+  { row: 'front', index: 1 },
+  { row: 'middle', index: 0 },
+  { row: 'middle', index: 1 },
+  { row: 'middle', index: 2 },
+  { row: 'back', index: 0 },
+] as const;
+
+function boardSide(side: 'attacker' | 'defender', heroIds: readonly string[]): HeroState[] {
+  return BOARD_SEATS.map((seat, i) => {
+    const heroId = heroIds[i]!;
+    const hp = HEROES.find((h) => h.id === heroId)!.stats.toughness * 50;
+    return {
+      heroId,
+      instanceId: `${side === 'attacker' ? 'a' : 'd'}-${seat.row}-${seat.index}`,
+      side,
+      row: ROW_OF[side][seat.row],
+      hp,
+      maxHp: hp,
+      accumulator: side === 'attacker' && i === 0 ? 99 : 0,
+      cooldowns: {},
+      statuses: [],
+      statMods: {},
+      reachMod: 0,
+    };
+  });
+}
+
+export function board() {
+  return {
+    heroes: [...boardSide('attacker', IDS.slice(0, 6)), ...boardSide('defender', IDS.slice(6, 12))],
+    heroTurn: 1,
+    turnOfInstance: 'a-front-0',
+    engineVersion: 'e0.1.0-splitmix64',
+    contentVersion: 'test',
+  };
+}
 
 /**
  * A served defense configuration.
@@ -194,4 +244,119 @@ export async function mockApi(
       json: { slot, name: 'Vanguard', complete: true, valid: true },
     });
   });
+}
+
+/** Two candidates, one of them a bot, in a league that did not have to widen. */
+export const CANDIDATES = {
+  league: 'bronze',
+  positionInLeague: 0.4,
+  gearScore: 1500,
+  widened: false,
+  candidates: [
+    {
+      playerId: 'acc_1',
+      username: 'Reyna',
+      isBot: false,
+      rating: 1180,
+      visibleHoldStreak: 4,
+      hiddenHoldStreak: 9,
+    },
+    {
+      playerId: 'acc_2',
+      username: 'The_Ninth_Door',
+      isBot: true,
+      rating: 1000,
+      visibleHoldStreak: 0,
+      hiddenHoldStreak: 0,
+    },
+  ],
+  ambushChance: 14,
+  consecutiveWins: 7,
+};
+
+export const STANDING = {
+  league: 'bronze',
+  gearScore: 1500,
+  positionInLeague: 0.4,
+  rating: 1000,
+  ratedBattles: 3,
+  band: 'provisional',
+  ambushChance: 14,
+  consecutiveWins: 7,
+  starter: { active: false, reason: 'time' },
+};
+
+/**
+ * A scout payload for the first candidate, built from the real roster.
+ *
+ * **`hidden` carries a streak and nothing else**, exactly as the server sends it —
+ * a fixture with an empty `seats` array here would let a client render "0
+ * champions" and pass, which is the leak the absent field prevents.
+ */
+export function scoutPayload() {
+  return {
+    playerId: 'acc_1',
+    username: 'Reyna',
+    league: 'bronze',
+    visible: {
+      holdStreak: 4,
+      canDefend: true,
+      seats: HEROES.slice(0, 6).map((hero, i) => ({
+        row: i < 2 ? 'front' : i < 5 ? 'middle' : 'back',
+        index: i < 2 ? i : i < 5 ? i - 2 : 0,
+        hero: {
+          id: hero.id,
+          name: hero.name,
+          primary: hero.primary,
+          secondary: hero.secondary,
+          bane: hero.bane,
+          fault: hero.fault,
+          role: hero.role,
+          reach: hero.reach,
+        },
+        runes: [
+          { element: hero.primary, stages: 0 },
+          { element: hero.secondary, stages: 0 },
+          { element: 'common', stages: 0 },
+        ],
+      })),
+    },
+    hidden: { holdStreak: 9 },
+  };
+}
+
+/** Everything the attack screen asks for, on top of `mockApi`. */
+export async function mockAttack(
+  page: Page,
+  options: { candidates?: unknown; standing?: unknown; start?: unknown } = {},
+): Promise<void> {
+  await page.route('**/v1/matchmaking/candidates', (route) =>
+    route.fulfill({ json: options.candidates ?? CANDIDATES }),
+  );
+  await page.route('**/v1/me/standing', (route) =>
+    route.fulfill({ json: options.standing ?? STANDING }),
+  );
+  await page.route('**/v1/players/*/scout', (route) => route.fulfill({ json: scoutPayload() }));
+  await page.route('**/v1/battles', (route) =>
+    route.request().method() === 'POST'
+      ? route.fulfill({
+          status: 201,
+          json:
+            options.start ?? {
+              battleId: 'b_e2e',
+              zone: 'visible',
+              ambushed: false,
+              sequence: 0,
+              /**
+               * **A board the battle screen can actually render.** A stub of
+               * `{ squads: [] }` satisfied the assertions about the *request* and
+               * then threw inside `BattleScreen` — a real error, reported by Vite
+               * as an unhandled rejection rather than as a failing test, which is
+               * the worst place for one to appear.
+               */
+              packet: { events: [], state: board(), conclusion: null },
+            },
+        })
+      : route.continue(),
+  );
 }

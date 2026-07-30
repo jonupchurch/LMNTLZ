@@ -45,6 +45,7 @@ import { squads, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { insertRecord } from '../replays/record.js';
 import { nextAttackStreak } from '../squads/ambush.js';
+import { touchActivity } from '../matchmaking/candidates.js';
 
 /**
  * The engine says how the *fight* ended; this column says how the *record*
@@ -79,7 +80,7 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
   const { battleId, attackerId, defenderId, zone, conclusion, turnCount, wasAmbush } = input;
   const attackerWon = conclusion.winner === 'attacker';
 
-  return db().transaction(async (tx) => {
+  const result = await db().transaction(async (tx) => {
     /**
      * **The guard and the write are one statement.** Reading `concluded_at`
      * first and updating after leaves a window that two requests fit through —
@@ -255,6 +256,35 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
 
     return { settled: true, winner: conclusion.winner, attackStreak, holdStreak };
   });
+
+  /**
+   * **Fighting a battle is activity** (009 `candidates.ts`), and this is the second
+   * of the two callers `touchActivity()` shipped without.
+   *
+   * Both sides are stamped, not only the attacker. A defender who is being attacked
+   * is demonstrably in somebody's pool and their squad is demonstrably worth
+   * attacking — dropping them out of everyone else's pool thirty days later, because
+   * they had not personally logged in, would thin the pool for no reason. And the
+   * attacker's own defense stays offerable for the same reason.
+   *
+   * **Outside the transaction, and after it.** An activity timestamp is not part of
+   * the settlement: a failure to write it must not roll back a concluded battle, and
+   * a battle that concluded is a fact regardless. Awaited rather than floated,
+   * because on this platform the function is torn down when the response returns and
+   * an unawaited write may simply never run.
+   */
+  if (result.settled) {
+    // Either id may be `null` — a deleted account nulls the column rather than
+    // removing the battle, because the past is immutable.
+    const present = [attackerId, defenderId].filter((id): id is string => id !== null);
+    try {
+      await Promise.all(present.map((id) => touchActivity(id)));
+    } catch (err) {
+      console.warn(`[battle] could not stamp activity for ${battleId}: ${String(err)}`);
+    }
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------

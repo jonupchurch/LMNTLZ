@@ -239,6 +239,49 @@ describe('the permanent record carries the matchup, not placeholders (T055)', ()
   });
 });
 
+describe('a settled battle marks both sides active', () => {
+  it('stamps the attacker and the defender, not only the caller', async () => {
+    /**
+     * ### Why both, and why this is not symmetry for its own sake
+     *
+     * `candidates.ts` requires activity inside thirty days to be offered as a
+     * defender, and `touchActivity()` shipped with **no caller at all** — every
+     * account would have aged out of every pool a month after signing up, silently.
+     * The defense save closed one half; this is the other.
+     *
+     * Stamping the **defender** is the half that is easy to leave out and matters
+     * most: they did not make the request. But a player who is being attacked is
+     * demonstrably in somebody's pool and their squad is demonstrably worth
+     * attacking — dropping them out of everyone else's pool because they had not
+     * personally logged in would thin the population for no reason.
+     */
+    const bot = await botDefender(STARTER_GRANT_SCORE + 400);
+
+    // Cleared first, so a stamp found afterwards was written by this battle.
+    await db()
+      .update(playerRatings)
+      .set({ lastActivityAt: new Date(Date.now() - 200 * DAY_MS) })
+      .where(inArray(playerRatings.accountId, [a.attacker.accountId, bot]));
+
+    const started = await start(a, bot);
+    a.createdBattles.push(started.battleId);
+    await fightToTheEnd(a, started);
+
+    const rows = await db()
+      .select({ id: playerRatings.accountId, at: playerRatings.lastActivityAt })
+      .from(playerRatings)
+      .where(inArray(playerRatings.accountId, [a.attacker.accountId, bot]));
+
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(
+        Date.now() - row.at.getTime(),
+        `${row.id === bot ? 'the defender' : 'the attacker'} was not marked active`,
+      ).toBeLessThan(120_000);
+    }
+  });
+});
+
 describe('the working row and the record agree', () => {
   it('copies all five values through settlement unchanged', async () => {
     /**

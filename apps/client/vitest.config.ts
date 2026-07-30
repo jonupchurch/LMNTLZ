@@ -84,6 +84,25 @@ export default defineConfig({
       },
       {
         /**
+         * **Choosing an opponent (006's scout view + 009's candidate list + 007's
+         * start).** All three routes existed and none had a caller, which is why
+         * this project appears three features after the code it drives.
+         *
+         * Its own project for the same reason `battle` is: the assertions are about
+         * *which* requests happen, and a shared fetch stub cannot say whose call it
+         * was.
+         */
+        plugins: [react()],
+        test: {
+          name: 'attack',
+          include: ['tests/attack/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
+      {
+        /**
          * **The site around the game**, which belongs to no feature: the five
          * static policy pages a payment provider requires, and the footer that
          * makes them reachable. `apps/api` has a `platform` project for the

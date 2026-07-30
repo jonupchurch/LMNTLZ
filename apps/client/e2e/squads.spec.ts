@@ -274,7 +274,12 @@ test.describe('the three attack squads are reachable and savable', () => {
     });
     await page.goto('/');
 
-    await expect(page.getByRole('tab')).toHaveCount(5);
+    /**
+     * **Scoped to the squad tablist.** The shell has its own two-tab nav — Squads
+     * and Attack — so an unscoped count is 7 and would change again the next time a
+     * screen is added. The five here are the squads: two zones and three slots.
+     */
+    await expect(page.getByRole('tablist', { name: 'Squad' }).getByRole('tab')).toHaveCount(5);
 
     await page.getByRole('tab', { name: /Attack 2/ }).click();
     await page.getByRole('button', { name: /Save Attack 2/ }).click();

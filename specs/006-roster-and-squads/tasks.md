@@ -237,6 +237,28 @@ plausible implementation gets backwards.
 - [x] T063 Refuse a defending champion **locally**, naming her zone, rather than letting the save `409` — and permit overlap between attack squads without comment, since 3 × 6 > 15 makes it forced
 - [x] T064 Surface the three attack states apart on the tabs — `ready`, `n/6`, and **`broken`** for a squad an eviction emptied a seat in (SC-009: it cannot attack until refilled, and reading as "unfinished" leaves the player wondering why)
 
+### The attack flow — three routes, no callers, across three features
+
+> `GET /v1/matchmaking/candidates` (009), `GET /v1/players/:targetId/scout` (006 US4)
+> and `POST /v1/battles` (007) were each shipped with tests and **none was ever
+> called**. The consequence was not a bug report: it was that the game could not be
+> played. `ResumeBattle.tsx` recorded the reason at the time — *"there is no 'attack'
+> button yet: choosing an opponent needs the candidate set, which is feature 009"* —
+> and then 009 shipped and nobody came back for the sentence.
+>
+> **US4 is the one worth noting.** It is P2 in this spec's own priority order, and
+> its tasks say build the endpoint and the serialiser. Nothing says render it. So the
+> scout view — the feature the design's premise rests on, *read the enemy's
+> weaknesses* — existed for three features as a route with no screen.
+
+- [x] T065 Build `apps/client/src/features/attack/AttackScreen.tsx` — the whole candidate list (no slate, no page, no exclusion), the player's own standing, and the ambush chance **as served**
+- [x] T066 Build `apps/client/src/features/attack/ScoutPanel.tsx` — the six Visible champions with Bane and Fault, and a **tally of what answers the squad**, which is the arithmetic a player will not do by eye across six champions and nine types. The Hidden zone renders its streak and has no seats to render
+- [x] T067 Wire `POST /v1/battles` with the opponent and the squad slot and **no `zone`** — the server reads the zone from the attack streak, so a client that sent one would be ignored; offer only squads that are six **and** valid (SC-009)
+- [x] T068 Add the screen nav to `App.tsx` and make `BattleScreen` reachable from a *start* as well as a resume — hidden during a battle rather than disabled, because one battle at a time is a server rule and a disabled control invites the player to work out why
+- [x] T069 Serve the real league from `GET /v1/players/:targetId/scout` — it was `'unranked'` for one feature, stated rather than omitted so the shape would not change, and 009 shipped
+- [x] T070 Call `touchActivity()` from `settle()` for **both sides** — the second of its two callers. A defender being attacked is demonstrably in somebody's pool whether or not they logged in
+- [x] T071 Correct the landing page's status paragraph, which still said battles, matchmaking and sign-in were "being written now" after all three shipped — and change the test from pinning a sentence to requiring **both halves**, what is playable and what is missing
+
 ---
 
 ## Dependencies & Execution Order

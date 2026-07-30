@@ -2,7 +2,10 @@ import { Analytics } from '@vercel/analytics/react';
 import { useCallback, useEffect, useState, type JSX } from 'react';
 import { SiteFooter } from './components/SiteFooter.js';
 import { SignInPanel } from './features/auth/SignInPanel.js';
+import { AttackScreen } from './features/attack/AttackScreen.js';
+import { BattleScreen } from './features/battle/BattleScreen.js';
 import { ResumeBattle } from './features/battle/ResumeBattle.js';
+import type { StartedBattle } from './features/battle/types.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
 import { analyticsEnabled, scrubEvent } from './lib/analytics.js';
@@ -41,10 +44,25 @@ type Phase =
   | { readonly kind: 'anonymous' }
   | { readonly kind: 'signed-in'; readonly account: Account };
 
+/**
+ * Which screen a signed-in player is on.
+ *
+ * **A battle is a screen rather than a mode**, and it is deliberately not
+ * navigable away from by the nav: one battle at a time is a server rule, so
+ * offering "Squads" mid-fight would offer a screen whose only outcome is
+ * `409 battle_already_open`. The nav is hidden instead of disabled — a disabled
+ * control invites the player to work out why.
+ */
+type Screen =
+  | { readonly kind: 'squads' }
+  | { readonly kind: 'attack' }
+  | { readonly kind: 'battle'; readonly started: StartedBattle };
+
 export function App(): JSX.Element {
   const [phase, setPhase] = useState<Phase>(() =>
     hasStoredSession() ? { kind: 'restoring' } : { kind: 'anonymous' },
   );
+  const [screen, setScreen] = useState<Screen>({ kind: 'squads' });
 
   useEffect(() => {
     if (phase.kind !== 'restoring') return;
@@ -99,19 +117,50 @@ export function App(): JSX.Element {
 
         {phase.kind === 'signed-in' ? (
           /**
-           * **A battle in progress outranks the squad builder**, because the
+           * **A battle in progress outranks everything else**, because the
            * one-at-a-time rule means a player with an open battle cannot start
            * anything else — landing them on a builder whose only outcome is
            * `409 battle_already_open` would be showing them the one screen they
-           * cannot use.
+           * cannot use. So the resume check runs first and its fallback is the
+           * ordinary app.
            *
-           * This is also the only route into `BattleScreen` that exists. There
-           * is no "attack" button yet: choosing an opponent needs the candidate
-           * set, which is feature 009. See `ResumeBattle.tsx`.
+           * **It is no longer the only route into `BattleScreen`.** It was, for one
+           * feature: choosing an opponent needed the candidate set, which was 009.
+           * 009 shipped, so `AttackScreen` is now the other route in — and the two
+           * differ in exactly one way, which is that a start has an opening packet
+           * and a resume does not.
            */
           <ResumeBattle
             onUnauthenticated={onUnauthenticated}
-            fallback={<SquadsScreen onUnauthenticated={onUnauthenticated} />}
+            fallback={
+              screen.kind === 'battle' ? (
+                <BattleScreen
+                  started={screen.started}
+                  onConcluded={() => {
+                    /**
+                     * **Left on the result rather than navigated away from.** The
+                     * player just finished a fight and the outcome is what they came
+                     * for; going back to a list would animate over it. The next load
+                     * lands them on the squad screen on its own, because
+                     * `GET /battles/open` answers `204` once a battle has settled.
+                     */
+                  }}
+                  onUnauthenticated={onUnauthenticated}
+                />
+              ) : (
+                <>
+                  <ScreenNav screen={screen.kind} onNavigate={setScreen} />
+                  {screen.kind === 'attack' ? (
+                    <AttackScreen
+                      onBattleStarted={(started) => setScreen({ kind: 'battle', started })}
+                      onUnauthenticated={onUnauthenticated}
+                    />
+                  ) : (
+                    <SquadsScreen onUnauthenticated={onUnauthenticated} />
+                  )}
+                </>
+              )
+            }
           />
         ) : null}
       </div>
@@ -132,6 +181,47 @@ export function App(): JSX.Element {
        */}
       {analyticsEnabled() ? <Analytics beforeSend={scrubEvent} /> : null}
     </div>
+  );
+}
+
+/**
+ * Two screens, named for what they do.
+ *
+ * **Not a router.** The app is a single URL — deliberately, since the Steam build
+ * loads from disk and there is no server to route on — so this is local state, and
+ * `lib/analytics.ts` records the consequence: every screen reports as `/` in the
+ * dashboard, and a per-screen funnel would need routes or custom events.
+ */
+function ScreenNav({
+  screen,
+  onNavigate,
+}: {
+  screen: 'squads' | 'attack';
+  onNavigate: (next: { kind: 'squads' } | { kind: 'attack' }) => void;
+}): JSX.Element {
+  const tab = (kind: 'squads' | 'attack', label: string) => (
+    <button
+      key={kind}
+      type="button"
+      role="tab"
+      aria-selected={screen === kind}
+      onClick={() => onNavigate({ kind })}
+      className={[
+        'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
+        screen === kind ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
+      ].join(' ')}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <nav className="mx-auto max-w-[1600px] px-8 pt-8">
+      <div className="flex items-center gap-2" role="tablist" aria-label="Screen">
+        {tab('squads', 'Squads')}
+        {tab('attack', 'Attack')}
+      </div>
+    </nav>
   );
 }
 
