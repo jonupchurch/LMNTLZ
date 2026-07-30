@@ -23,8 +23,41 @@ export const DAMAGE_FLOOR_FRACTION = 0.25;
 
 export const CRIT_MULTIPLIER = 2;
 
-/** `maxHp = Toughness × 50` (FR-016). */
-export const HP_PER_TOUGHNESS = 50;
+/**
+ * `maxHp = Toughness × 8` (FR-016).
+ *
+ * **This constant is the game's pacing dial, and it was 50 until it was
+ * measured.** At 50 the median battle ran **299 hero-turns into a 300-turn cap**
+ * — 62% of battles never reached a wipe at all and were decided on pooled HP
+ * share — while a typical hit took **3.8%** off a health bar and 90% of every
+ * hit in the game landed under 10%. The hardest hit the roster could produce,
+ * anywhere, was 28.7%.
+ *
+ * At 8, over 600 auto-played battles with both sides on the shipped AI:
+ *
+ * | | 50 | 8 |
+ * |---|---|---|
+ * | hero-turns, median | 299 (the cap) | **49** |
+ * | ended on the cap | 62% | **0%** |
+ * | normal hit | 3.8% | **26.3%** (p75 44%) |
+ * | crit | 8.0% | **45.5%** (p90 100%) |
+ * | hits under 10% of a bar | 90% | **10%** |
+ *
+ * **Nothing about relative balance moves.** Damage and healing are both
+ * absolute — `Might × multiplier` — so scaling the pool scales both against it
+ * identically, and every matchup ratio the design reasoned about is preserved.
+ * That is precisely why this is the lever and `Might` is not: `Might` is capped
+ * at 75 and tops out at 45 today, nowhere near the 6× of headroom needed.
+ *
+ * **The absolute damage numbers are unchanged** — a hit still lands for ~60. It
+ * is the health bars that stopped being 1,250–2,000 points long.
+ *
+ * Two consequences are deliberate rather than overlooked, and both are asserted
+ * in tests rather than left as prose: a tier-4 or tier-5 power can now one-shot
+ * a full-health hero (`pairings.test.ts`), and a hero acts few enough times that
+ * some of its six powers never fire (`firingProfile.ts`, `BATTLE_TURNS`).
+ */
+export const HP_PER_TOUGHNESS = 8;
 
 export function maxHp(hero: HeroState): number {
   return effectiveStat(hero, getHero(hero.heroId).stats, 'toughness') * HP_PER_TOUGHNESS;

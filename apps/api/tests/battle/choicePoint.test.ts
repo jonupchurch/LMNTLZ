@@ -18,8 +18,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { getAllHeroes } from '@lmntlz/content';
-import { availablePowers, legalTargets } from '@lmntlz/sim/rules';
+import { getAllHeroes, getHero } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS, availablePowers, legalTargets, maxHp } from '@lmntlz/sim/rules';
 import { isChoicePoint, forcedMove, usablePowers } from '../../src/battle/choicePoint.js';
 import { buildInitialState } from '../../src/battle/board.js';
 import { autoPowerOf, board, fell, onlyPowers, REACH_1, ROSTER } from './fixtures.js';
@@ -319,11 +319,27 @@ describe('the board a battle actually opens on', () => {
     expect(rowOf('d-back-0')).toBe(6);
   });
 
-  it('derives HP as Toughness × 50 rather than storing it', () => {
+  /**
+   * **Asserts the derivation, not a multiple of it.**
+   *
+   * This read `maxHp % 50 === 0`, which is why it sat green over a real bug:
+   * `board.ts` carried its own literal `50` next to `HP_PER_TOUGHNESS` in
+   * `sim/rules`, and a modulo check cannot tell a shared constant from a
+   * coincidence. When the dial moved to 8 the board would have kept building
+   * heroes at 6.25× the max HP the engine computed — and `% 50` would still
+   * have passed for every hero whose Toughness was a multiple of 5.
+   *
+   * Comparing against `maxHp()` — the engine's own function, on the engine's own
+   * constant — is the claim that was meant all along.
+   */
+  it('derives HP from the engine, rather than storing or re-deriving it', () => {
     const state = board();
+    expect(state.heroes.length).toBeGreaterThan(0);
+
     for (const hero of state.heroes) {
       expect(hero.hp).toBe(hero.maxHp);
-      expect(hero.maxHp % 50).toBe(0);
+      expect(hero.maxHp, `${hero.heroId} opened on the wrong pool`).toBe(maxHp(hero));
+      expect(hero.maxHp).toBe(getHero(hero.heroId).stats.toughness * HP_PER_TOUGHNESS);
     }
   });
 

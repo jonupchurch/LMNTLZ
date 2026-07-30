@@ -14,7 +14,7 @@
 
 import { inArray } from 'drizzle-orm';
 import { db } from '../../src/db/client.js';
-import { accounts } from '../../src/db/schema/accounts.js';
+import { accounts, type BotBand } from '../../src/db/schema/accounts.js';
 import { guilds, guildMembers, type GuildRole } from '../../src/db/schema/guilds.js';
 import { usernameKey } from '../../src/auth/username.js';
 
@@ -62,7 +62,20 @@ export class Fixtures {
    * the warning is absent and pass for entirely the wrong reason. Seeding one bot
    * is what makes the starter tests test the starter league.
    */
-  async starterBot(): Promise<string> {
+  /**
+   * A bot account, in a caller-chosen band.
+   *
+   * **The band is a parameter because `'starter'` is globally observable.** One
+   * row with `is_bot AND bot_band = 'starter'` anywhere in the database makes
+   * `starterLeagueOpen()` true for every test in every file, and
+   * `tests/matchmaking/starter.test.ts` opens by asserting it is false. Its
+   * header warned about exactly this: *"a second file creating one would
+   * silently break the first block below."*
+   *
+   * So ask for `'starter'` only when the starter league genuinely has to be
+   * open — and if it does, know that this file now races that one.
+   */
+  async starterBot(band: BotBand = 'starter'): Promise<string> {
     const key = suffix('bot');
     const [row] = await db()
       .insert(accounts)
@@ -70,7 +83,7 @@ export class Fixtures {
         username: `GT ${key}`,
         usernameKey: key,
         isBot: true,
-        botBand: 'starter',
+        botBand: band,
       })
       .returning({ id: accounts.id });
 

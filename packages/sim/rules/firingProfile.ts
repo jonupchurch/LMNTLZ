@@ -48,15 +48,32 @@ export interface FiringProfileEntry {
 /**
  * The horizon a player actually experiences.
  *
- * A 6v6 runs about **102 hero-turns across 12 heroes**, so a hero takes ~8.5 of
- * them (`04-turns.md`, `06-progression.md`). Nine is that, rounded up.
+ * **Measured, not derived — and the figure it used to be derived from was
+ * wrong.** This was 9, reasoning that a 6v6 ran about 102 hero-turns across 12
+ * heroes so a hero took roughly 8.5 of them. No battle ever ran 102 hero-turns:
+ * at the old `HP_PER_TOUGHNESS = 50` the median was **299**, and a hero took
+ * about 25.
  *
- * **The 60-turn figure in `07-defense-ai.md` is a measurement artifact and about
- * seven times a real battle.** Profiling at 60 tells a player their auto-attack
- * fires 5% of the time when in their actual battles it never fires at all —
- * a warning that is wrong in the direction of false reassurance.
+ * Since the pacing pass (engine `e0.2.0`) the median battle is **49 hero-turns**.
+ * Across 600 auto-played battles a hero acts:
+ *
+ * | | p25 | median | mean | p75 | p90 | max |
+ * |---|---|---|---|---|---|---|
+ * | any hero | 2 | 4 | 4.4 | 6 | 8 | 20 |
+ * | **a hero that survives** | 5 | **6** | 6.7 | 8 | 10 | 20 |
+ *
+ * **Six, from the survivor row, because that is who a ranking is for.** A hero
+ * cut down on turn two fired its top-ranked power once and the rest of the
+ * ordering never mattered; averaging it in would measure how often heroes die,
+ * not how long a ranking gets to breathe.
+ *
+ * The rounding is down from 6.7 rather than up, and deliberately: the error this
+ * constant must avoid is **false reassurance**. A horizon that is too long tells
+ * a player a power fires when in their battles it never will — the exact failure
+ * the 60-turn figure in `07-defense-ai.md` produces. Too short merely
+ * over-warns, and an over-warning is one a player can see and dismiss.
  */
-export const BATTLE_TURNS = 9;
+export const BATTLE_TURNS = 6;
 
 /**
  * The horizon the recorded characterisation used, kept **only** for continuity

@@ -7,6 +7,7 @@
  */
 
 import { getAllHeroes, getHero, type Hero, type Role } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS } from '../../rules/damage.js';
 import type { BattleState, HeroState, Row, Side } from '../../rules/state.js';
 import { restoreSeed, type Seed } from '../../resolver/seed.js';
 import type { SquadMemberConfig } from '../../ai/types.js';
@@ -30,7 +31,7 @@ export function heroState(
   instanceId: string,
   patch: Partial<HeroState> = {},
 ): HeroState {
-  const hp = getHero(heroId).stats.toughness * 50;
+  const hp = getHero(heroId).stats.toughness * HP_PER_TOUGHNESS;
   return {
     heroId,
     instanceId,

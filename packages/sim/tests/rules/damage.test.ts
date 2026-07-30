@@ -3,6 +3,7 @@ import { getAllHeroes, getHero, powerEffectiveness } from '@lmntlz/content';
 import {
   CRIT_MULTIPLIER,
   DAMAGE_FLOOR_FRACTION,
+  HP_PER_TOUGHNESS,
   K,
   damagePreview,
   healPreview,
@@ -14,12 +15,24 @@ import {
 import { allPairings, duel, withHero } from './fixtures.js';
 
 describe('max HP and the packet', () => {
-  it('is Toughness x 50', () => {
+  it('is Toughness x HP_PER_TOUGHNESS, for every hero', () => {
     for (const hero of getAllHeroes()) {
       const state = duel(hero.id, 'h19');
       const state0 = state.heroes.find((h) => h.instanceId === 'a')!;
-      expect(maxHp(state0)).toBe(hero.stats.toughness * 50);
+      expect(maxHp(state0)).toBe(hero.stats.toughness * HP_PER_TOUGHNESS);
     }
+  });
+
+  /**
+   * **The pacing dial has one home.** Before the pacing pass a literal `50` sat
+   * in `apps/api/src/battle/board.ts` beside this constant, and nothing checked
+   * that the two agreed — so changing the dial alone would have started every
+   * hero at 6.25× the max HP the engine computed, silently. This asserts the
+   * dial's *value*, so moving it is a deliberate edit to a test and never a
+   * side effect of tuning something else.
+   */
+  it('pins the pacing dial at 8', () => {
+    expect(HP_PER_TOUGHNESS).toBe(8);
   });
 
   it('computes the packet as Might x multiplier, with Luck absent', () => {

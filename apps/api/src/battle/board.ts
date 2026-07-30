@@ -32,6 +32,7 @@
  */
 
 import { getHero } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS } from '@lmntlz/sim/rules';
 import type { BattleState, HeroState, Row, Side } from '@lmntlz/sim/rules';
 
 export type SeatRow = 'front' | 'middle' | 'back';
@@ -93,7 +94,15 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
 
   return seats.map((seat) => {
     const hero = getHero(seat.heroId);
-    const hp = hero.stats.toughness * 50;
+    /**
+     * **The engine's constant, never a copy of it.** This line held a literal
+     * `50` alongside `HP_PER_TOUGHNESS` in `sim/rules`, and the two agreeing was
+     * a coincidence nothing checked. Moving the pacing dial on its own would
+     * have started every hero at 6.25x the max HP the engine computed —
+     * `pooledHpShare` above 1, healing capped at a negative headroom, and
+     * battles *longer* rather than shorter. Nothing would have thrown.
+     */
+    const hp = hero.stats.toughness * HP_PER_TOUGHNESS;
 
     return {
       heroId: seat.heroId,

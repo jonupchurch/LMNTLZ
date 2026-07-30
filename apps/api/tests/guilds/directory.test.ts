@@ -160,7 +160,10 @@ describe('inviting by name, with no player search anywhere', () => {
   });
 
   it('never resolves a bot — they are opponents, not recruits', async () => {
-    const bot = await fx.starterBot();
+    // A bot, in any band but 'starter' — this test is about bots being
+    // unrecruitable, not about the starter league, and a starter-band row
+    // here would race tests/matchmaking/starter.test.ts.
+    const bot = await fx.starterBot('bronze');
     const [row] = await db()
       .select({ username: accounts.username })
       .from(accounts)

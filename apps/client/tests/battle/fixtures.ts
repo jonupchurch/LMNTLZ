@@ -1,6 +1,7 @@
 /** A board the battle screen can render, built from the real roster. */
 
 import { getAllHeroes } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS } from '@lmntlz/sim/rules';
 import type { BattleState, HeroState } from '@lmntlz/sim/rules';
 import type { StartedBattle } from '../../src/features/battle/types.js';
 
@@ -24,7 +25,7 @@ const ROW_OF = {
 function squad(side: 'attacker' | 'defender', heroIds: readonly string[]): HeroState[] {
   return SEATS.map((seat, i) => {
     const heroId = heroIds[i]!;
-    const hp = getAllHeroes().find((h) => h.id === heroId)!.stats.toughness * 50;
+    const hp = getAllHeroes().find((h) => h.id === heroId)!.stats.toughness * HP_PER_TOUGHNESS;
 
     return {
       heroId,

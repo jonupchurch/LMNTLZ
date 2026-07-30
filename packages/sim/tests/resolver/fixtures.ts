@@ -1,4 +1,5 @@
 import { getHero } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS } from '../../rules/damage.js';
 import type { BattleState, HeroState, Row, Side } from '../../rules/state.js';
 import type { BattleAction } from '../../resolver/replay.js';
 import { restoreSeed, type Seed } from '../../resolver/seed.js';
@@ -19,7 +20,7 @@ const FORMATION: Readonly<Record<Side, readonly Row[]>> = Object.freeze({
 
 function heroState(heroId: string, side: Side, row: Row, instanceId: string): HeroState {
   const hero = getHero(heroId);
-  const hp = hero.stats.toughness * 50;
+  const hp = hero.stats.toughness * HP_PER_TOUGHNESS;
   return {
     heroId,
     instanceId,

@@ -34,7 +34,7 @@ export interface FiringProfileProps {
 }
 
 export function FiringProfile({ hero, ranking }: FiringProfileProps) {
-  // `BATTLE_TURNS` is 9 and comes from the rules package — never a literal here,
+  // `BATTLE_TURNS` comes from the rules package — never a literal here,
   // so a change to the measured battle length reaches this screen for free.
   const profile = useMemo(() => firingProfile(hero, ranking, BATTLE_TURNS), [hero, ranking]);
 

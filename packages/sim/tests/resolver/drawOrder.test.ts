@@ -76,10 +76,29 @@ describe('draw consumption', () => {
     const log = play(0x0123456789abcdefn, 60);
     const { events } = replayEvents(seed, initial, log);
 
+    /**
+     * **The board empties before 60 auto-attacks land.** Since a health bar
+     * became `Toughness × 8` the target is gone partway through, and an action
+     * with no legal target runs no contest at all — it consumes 0 draws, which
+     * is neither a hit nor a miss and is not a sample of anything.
+     *
+     * Those are excluded, and then asserted to be a **suffix**: a no-contest
+     * action in the *middle* would mean targeting had broken rather than the
+     * battle having ended, and quietly skipping it is exactly how that bug
+     * would survive a green suite.
+     */
+    const firstIdle = log.findIndex((a) => a.drawsConsumed === 0n);
+    const contested = firstIdle === -1 ? events.length : firstIdle;
+
+    expect(contested).toBeGreaterThan(0);
+    for (let i = contested; i < events.length; i++) {
+      expect(log[i]!.drawsConsumed, `action ${i} should be past the board emptying`).toBe(0n);
+    }
+
     let misses = 0;
     let hits = 0;
 
-    for (const [i, event] of events.entries()) {
+    for (const [i, event] of events.slice(0, contested).entries()) {
       const consumed = log[i]!.drawsConsumed;
       if (event.hit) {
         expect(consumed, `action ${i} landed`).toBe(2n);

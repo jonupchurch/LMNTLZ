@@ -159,8 +159,26 @@ describe('the draw ledger', () => {
   });
 
   it('swept a whole battle rather than one response', () => {
-    // The assertions above are only worth what the sweep covered.
-    expect(bodies.length).toBeGreaterThan(10);
-    expect(acts).toBeGreaterThan(10);
+    /**
+     * The assertions above are only worth what the sweep covered.
+     *
+     * **The real guard is that the battle reached a conclusion**, asserted in
+     * `beforeAll` — a sweep that stopped early would fail there first. This is
+     * the secondary check that it was a *battle* and not a single exchange.
+     *
+     * The bound was `> 10` and became unreachable when the pacing pass took the
+     * median battle from 299 hero-turns to 49: this fixture's matchup now ends
+     * in about ten acts, so the old bound was asserting that battles are slow.
+     * Five still distinguishes a swept battle from one response, which is the
+     * only thing this test was ever for.
+     */
+    expect(acts).toBeGreaterThan(5);
+    /**
+     * Two more than the acts: `fightToTheEnd` seeds `bodies` with the *start*
+     * response before its loop, and this file appends the resync afterwards. So
+     * the count is not merely large, it is the exact size of the battle that was
+     * fought — a sweep that silently dropped a response would fail here.
+     */
+    expect(bodies).toHaveLength(acts + 2);
   });
 });

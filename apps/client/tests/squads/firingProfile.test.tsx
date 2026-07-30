@@ -59,20 +59,23 @@ describe('nothing is requested while a ranking changes', () => {
   });
 });
 
-describe('the horizon is 9 turns, not 60', () => {
+describe('the horizon is BATTLE_TURNS, not the 60-turn sweep', () => {
   it('uses BATTLE_TURNS and says so on screen', () => {
-    expect(BATTLE_TURNS).toBe(9);
+    expect(BATTLE_TURNS).toBe(6);
     expect(SWEEP_TURNS).toBe(60);
 
     render(<FiringProfile hero={HERO} ranking={[5, 4, 3, 2, 1, 0] as PowerRanking} />);
-    expect(screen.getByText(/Over 9 turns/)).toBeInTheDocument();
+    // Built from the constant rather than a literal: a hard-coded `9` is how
+    // this drifted from the rules package in the first place.
+    expect(screen.getByText(new RegExp(`Over ${BATTLE_TURNS} turns`))).toBeInTheDocument();
+    expect(screen.queryByText(/Over 60 turns/)).not.toBeInTheDocument();
   });
 
-  it('renders the same counts the rules package produces at 9 turns', () => {
+  it('renders the same counts the rules package produces at BATTLE_TURNS', () => {
     // **A 60-turn horizon tells a player their tier-0 fires 5% of the time; at
     // battle length it usually never fires at all.** Asserting equality against
-    // the 9-turn profile is what pins the horizon — a component that passed 60
-    // would render different numbers and this would fail.
+    // the BATTLE_TURNS profile is what pins the horizon — a component that
+    // passed 60 would render different numbers and this would fail.
     const ranking = [5, 4, 3, 2, 1, 0] as PowerRanking;
     const expected = firingProfile(HERO, ranking, BATTLE_TURNS);
     const atSweep = firingProfile(HERO, ranking, SWEEP_TURNS);

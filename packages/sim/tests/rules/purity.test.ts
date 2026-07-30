@@ -28,6 +28,19 @@ const repoRoot = resolve(simRoot, '../..');
 // A minimal module-graph walker
 // ---------------------------------------------------------------------------
 
+/**
+ * **Comments are not code, and this scanner reads code.**
+ *
+ * Defined here rather than beside its other caller because `specifiersIn`
+ * needs it: `IMPORT_RE` looks for a line beginning `import`/`export` followed
+ * by `from '...'`, and ordinary prose containing those words satisfies it. A
+ * JSDoc sentence in `firingProfile.ts` quoting an old derivation was reported
+ * as a third-party dependency of the rules package — the scan was reading the
+ * comment that explained the rule as a breach of it.
+ */
+const stripComments = (source: string): string =>
+  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
 const IMPORT_RE = /(?:^|\n)\s*(?:import|export)[\s\S]*?from\s*['"]([^'"]+)['"]/g;
 const DYNAMIC_IMPORT_RE = /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 const REQUIRE_RE = /\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
@@ -92,7 +105,7 @@ function walk(entry: string): Map<string, GraphNode> {
     if (seen.has(file)) continue;
 
     const source = readFileSync(file, 'utf8');
-    const specifiers = specifiersIn(source);
+    const specifiers = specifiersIn(stripComments(source));
     seen.set(file, { file, source, specifiers });
 
     for (const specifier of specifiers) {
@@ -103,9 +116,6 @@ function walk(entry: string): Map<string, GraphNode> {
 
   return seen;
 }
-
-const stripComments = (source: string): string =>
-  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 const relative = (file: string): string => file.slice(repoRoot.length + 1).replace(/\\/g, '/');
 
@@ -135,6 +145,27 @@ describe('the rules half is pure', () => {
   it('reaches at least the whole rules directory', () => {
     // A walker that silently resolved nothing would pass every test below.
     expect(graph.size).toBeGreaterThan(5);
+  });
+
+  /**
+   * **The comment strip must not eat the code.**
+   *
+   * `specifiersIn` runs over `stripComments(source)` so that prose containing
+   * the words `from "..."` is not read as an import. A strip that was too greedy
+   * would delete real import lines instead, and then *every* scan in this file
+   * would pass over an empty specifier list — green, and proving nothing.
+   *
+   * So this asserts the strip left the imports behind, naming two that must be
+   * there: one workspace package and one relative sibling.
+   */
+  it('still sees real imports after the comment strip', () => {
+    const firing = [...graph.values()].find((n) =>
+      relative(n.file).endsWith('packages/sim/rules/firingProfile.ts'),
+    );
+
+    expect(firing).toBeDefined();
+    expect(firing!.specifiers).toContain('@lmntlz/content');
+    expect(firing!.specifiers).toContain('./phases.js');
   });
 
   it('reaches no source of randomness or time, at any depth', () => {

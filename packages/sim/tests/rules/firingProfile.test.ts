@@ -173,10 +173,14 @@ describe('the naive 1/(cooldown+1) form', () => {
 // ---------------------------------------------------------------------------
 
 describe('the horizon', () => {
-  it('defaults to 9 turns — a hero takes ~8.5 in a real 6v6', () => {
-    expect(BATTLE_TURNS).toBe(9);
+  it('defaults to BATTLE_TURNS — six, the median a surviving hero acts', () => {
+    expect(BATTLE_TURNS).toBe(6);
     const bramwen = getHero('h01');
     expect(firingProfile(bramwen, [5, 4, 3, 2, 1, 0])).toEqual(
+      firingProfile(bramwen, [5, 4, 3, 2, 1, 0], BATTLE_TURNS),
+    );
+    // ...and is genuinely NOT the old nine, or the default would be untested.
+    expect(firingProfile(bramwen, [5, 4, 3, 2, 1, 0])).not.toEqual(
       firingProfile(bramwen, [5, 4, 3, 2, 1, 0], 9),
     );
   });

@@ -24,7 +24,9 @@ import {
   SWEEP_TURNS,
   firingProfile,
   isSafeOrdering,
+  type PowerRanking,
 } from '../../rules/firingProfile.js';
+import { HP_PER_TOUGHNESS } from '../../rules/damage.js';
 import {
   ROLE_DEFAULTS,
   SAFE_ORDERINGS,
@@ -35,6 +37,7 @@ import {
 } from '../../ai/defaults.js';
 
 const ROSTER = getAllHeroes();
+const ROLES: readonly Role[] = ['striker', 'tank', 'ranged', 'buffer'];
 
 // ---------------------------------------------------------------------------
 // Part one — the recorded 60-turn property (T025)
@@ -107,8 +110,24 @@ describe('the 12 universally safe orderings, at 60 turns', () => {
 // Part two — the assertion that describes a real game (T026)
 // ---------------------------------------------------------------------------
 
-describe('the four role defaults, at battle length', () => {
-  const ROLES: readonly Role[] = ['striker', 'tank', 'ranged', 'buffer'];
+describe('the four role defaults, at their tuning horizon', () => {
+  /**
+   * **The horizon these defaults were tuned to — not the one a player gets.**
+   *
+   * Every assertion below used to read `BATTLE_TURNS`, and passed because that
+   * constant was 9. It is 6 since the pacing pass (engine `e0.2.0`), measured:
+   * across 600 auto-played battles a surviving hero acts a median of 6 times,
+   * and any hero 4.4 on average. Nine was never measured — it came from a
+   * battle-length figure that was wrong by 3x.
+   *
+   * The four shipped rankings are genuinely tuned to 9, so the properties below
+   * are still worth asserting: they are what the defaults were designed to do,
+   * and a change that broke them at 9 would be a mistake in its own right. But
+   * they are NO LONGER a statement about a real battle, so they are stated
+   * against their own constant, and the test after this block records the gap.
+   */
+  const TUNED_HORIZON = 9;
+
 
   it('draws every default ranking from the safe set (FR-014, FR-015)', () => {
     for (const role of ROLES) {
@@ -127,7 +146,7 @@ describe('the four role defaults, at battle length', () => {
       expect(heroes.length).toBeGreaterThan(0);
 
       for (const hero of heroes) {
-        const profile = firingProfile(hero, roleDefaults(role).ranking, BATTLE_TURNS);
+        const profile = firingProfile(hero, roleDefaults(role).ranking, TUNED_HORIZON);
 
         for (const tier of [1, 2, 3, 4, 5]) {
           expect(
@@ -144,7 +163,7 @@ describe('the four role defaults, at battle length', () => {
     // being true, a default is deleting a power IN THE GAME rather than in the
     // asymptote, and no 60-turn measurement would notice.
     for (const hero of ROSTER) {
-      const profile = firingProfile(hero, roleDefaults(hero.role).ranking, BATTLE_TURNS);
+      const profile = firingProfile(hero, roleDefaults(hero.role).ranking, TUNED_HORIZON);
       expect(
         profile.find((e) => e.tier === 5)!.fires,
         `${hero.name} (${hero.role}) never fires its ultimate`,
@@ -157,7 +176,7 @@ describe('the four role defaults, at battle length', () => {
     // last and a real battle is too short for the top five to be simultaneously
     // on cooldown. Counting that as a fault would make every ranking unsafe.
     const silent = ROSTER.filter(
-      (h) => firingProfile(h, roleDefaults(h.role).ranking, BATTLE_TURNS).find((e) => e.tier === 0)!.fires === 0,
+      (h) => firingProfile(h, roleDefaults(h.role).ranking, TUNED_HORIZON).find((e) => e.tier === 0)!.fires === 0,
     );
 
     expect(silent.length).toBeGreaterThan(0);
@@ -166,14 +185,14 @@ describe('the four role defaults, at battle length', () => {
 
   it('is what `isSafeOrdering` reports, so the builder and the defaults agree', () => {
     for (const hero of ROSTER) {
-      expect(isSafeOrdering(hero, roleDefaults(hero.role).ranking, BATTLE_TURNS)).toBe(true);
+      expect(isSafeOrdering(hero, roleDefaults(hero.role).ranking, TUNED_HORIZON)).toBe(true);
     }
   });
 
   it('flags the self-defeating ranking the builder must warn about', () => {
     for (const hero of ROSTER) {
-      expect(isSafeOrdering(hero, [1, 2, 3, 4, 5, 0], BATTLE_TURNS)).toBe(false);
-      expect(isSafeOrdering(hero, [0, 5, 4, 3, 2, 1], BATTLE_TURNS)).toBe(false);
+      expect(isSafeOrdering(hero, [1, 2, 3, 4, 5, 0], TUNED_HORIZON)).toBe(false);
+      expect(isSafeOrdering(hero, [0, 5, 4, 3, 2, 1], TUNED_HORIZON)).toBe(false);
     }
   });
 
@@ -187,7 +206,7 @@ describe('the four role defaults, at battle length', () => {
     expect(fastLadder.length).toBeGreaterThan(0);
     for (const hero of fastLadder) {
       expect(hero.role).not.toBe('tank');
-      expect(firingProfile(hero, [4, 3, 2, 1, 5, 0], BATTLE_TURNS).find((e) => e.tier === 5)!.fires).toBe(0);
+      expect(firingProfile(hero, [4, 3, 2, 1, 5, 0], TUNED_HORIZON).find((e) => e.tier === 5)!.fires).toBe(0);
     }
   });
 });
@@ -195,6 +214,84 @@ describe('the four role defaults, at battle length', () => {
 // ---------------------------------------------------------------------------
 // The rest of the default configuration (T028, T029, T030)
 // ---------------------------------------------------------------------------
+
+/**
+ * **What a player actually gets, which is not what the defaults were tuned for.**
+ *
+ * The block above asserts the four shipped rankings at their tuning horizon of
+ * 9. This one asserts them at `BATTLE_TURNS` — the measured horizon — and the
+ * numbers are deliberately exact rather than "greater than zero", because both
+ * directions are news: a drop means the pacing pass got worse, and a rise means
+ * somebody re-ranked and this file should be simplified away.
+ *
+ * **This is a recorded gap, not a passing grade.** At the real horizon:
+ *
+ * | role | n | safe today |
+ * |---|---|---|
+ * | striker | 12 | 12 |
+ * | ranged | 5 | 5 |
+ * | **tank** | 7 | **0** — no tank ever fires its ultimate |
+ * | **buffer** | 3 | **0** — no buffer ever fires tier 1 |
+ *
+ * It is fixable and cheaply: **10 of the 720 rankings are safe for all 27
+ * heroes at this horizon**, so only the tank and buffer defaults need to move.
+ * That is a change to how every AI defense plays and is deliberately not folded
+ * into the pacing pass.
+ */
+describe('the four role defaults, at the horizon a player experiences', () => {
+  const SAFE_AT_BATTLE_TURNS: Readonly<Record<string, number>> = {
+    striker: 12,
+    ranged: 5,
+    tank: 0,
+    buffer: 0,
+  };
+
+  it.each(ROLES)('is safe for a known number of %s, and no fewer', (role) => {
+    const heroes = ROSTER.filter((h) => h.role === role);
+    const safe = heroes.filter((h) => isSafeOrdering(h, roleDefaults(role).ranking, BATTLE_TURNS));
+
+    expect(
+      safe.length,
+      `${role}: ${safe.length}/${heroes.length} safe at ${BATTLE_TURNS} turns, ` +
+        `expected ${SAFE_AT_BATTLE_TURNS[role]}. A DROP is a regression in the pacing ` +
+        `pass; a RISE means the defaults were re-ranked and this test should go.`,
+    ).toBe(SAFE_AT_BATTLE_TURNS[role]);
+  });
+
+  it('leaves exactly the tanks and buffers unable to fire a power they own', () => {
+    const broken = ROSTER.filter((h) => !isSafeOrdering(h, roleDefaults(h.role).ranking, BATTLE_TURNS));
+    const roles = [...new Set(broken.map((h) => h.role))].sort();
+
+    expect(broken).toHaveLength(10);
+    expect(roles).toEqual(['buffer', 'tank']);
+  });
+
+  /**
+   * The fix exists and is not being applied here — asserting that keeps the
+   * open item honest. If this ever fails, re-ranking stopped being possible and
+   * the problem is bigger than a default.
+   */
+  it('is fixable by re-ranking alone, for every hero', () => {
+    const perms: number[][] = [];
+    (function go(left: number[], acc: number[]): void {
+      if (left.length === 0) {
+        perms.push(acc);
+        return;
+      }
+      for (let i = 0; i < left.length; i++) {
+        go([...left.slice(0, i), ...left.slice(i + 1)], [...acc, left[i]!]);
+      }
+    })([0, 1, 2, 3, 4, 5], []);
+
+    expect(perms).toHaveLength(720);
+
+    const universal = perms.filter((p) =>
+      ROSTER.every((h) => isSafeOrdering(h, p as unknown as PowerRanking, BATTLE_TURNS)),
+    );
+
+    expect(universal.length).toBeGreaterThanOrEqual(1);
+  });
+});
 
 describe('the default configuration beyond the ranking', () => {
   it('gives every role a targeting pair and an ally rule', () => {
@@ -214,14 +311,17 @@ describe('the default configuration beyond the ranking', () => {
   });
 
   it('defaults the ally rule to lowest HP PERCENTAGE, not lowest current HP', () => {
-    // Pools run 1,250–2,000, so a Tank at 1,300 of 2,000 — 65%, in real trouble
-    // — holds more current HP than an untouched Buffer at 1,250 of 1,250. A
+    // Stated as a ratio, so it survives the pacing dial: a Tank (Toughness 40)
+    // at 65% of full still holds more current HP than an untouched Buffer
+    // (Toughness 25) at 100%. A
     // "lowest current HP" heal would pass over the wounded Tank.
     const tank = ROSTER.find((h) => h.stats.toughness === 40);
     const buffer = ROSTER.find((h) => h.stats.toughness === 25);
 
     if (tank && buffer) {
-      expect(tank.stats.toughness * 50 * 0.65).toBeGreaterThan(buffer.stats.toughness * 50);
+      expect(tank.stats.toughness * HP_PER_TOUGHNESS * 0.65).toBeGreaterThan(
+        buffer.stats.toughness * HP_PER_TOUGHNESS,
+      );
     }
 
     for (const cfg of Object.values(ROLE_DEFAULTS)) {

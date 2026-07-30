@@ -8,6 +8,7 @@
 
 import type { Page } from '@playwright/test';
 import { getAllHeroes } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS } from '@lmntlz/sim/rules';
 import type { HeroState } from '@lmntlz/sim/rules';
 
 export const HEROES = getAllHeroes();
@@ -35,7 +36,7 @@ const BOARD_SEATS = [
 function boardSide(side: 'attacker' | 'defender', heroIds: readonly string[]): HeroState[] {
   return BOARD_SEATS.map((seat, i) => {
     const heroId = heroIds[i]!;
-    const hp = HEROES.find((h) => h.id === heroId)!.stats.toughness * 50;
+    const hp = HEROES.find((h) => h.id === heroId)!.stats.toughness * HP_PER_TOUGHNESS;
     return {
       heroId,
       instanceId: `${side === 'attacker' ? 'a' : 'd'}-${seat.row}-${seat.index}`,

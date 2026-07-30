@@ -139,7 +139,16 @@ export type { Conclusion } from './ending.js';
  *
  * Draw *order* is part of the same contract. Adding, removing or reordering a
  * draw within an action has the identical effect and needs the identical bump.
+ *
+ * ### Changelog
+ *
+ * - **`e0.2.0`** — the pacing pass. `HP_PER_TOUGHNESS` 50 → 8, taking the median
+ *   battle from 299 hero-turns to 49. Draw order is untouched, but every HP
+ *   total in the game changed, so an in-flight battle resumed under this engine
+ *   would find its heroes at 6.25× their new maximum. `act.ts` already refuses a
+ *   battle whose stamp does not match; this is the bump that makes it refuse.
+ * - **`e0.1.0`** — first engine.
  */
 export const ENGINE_RNG = 'splitmix64';
 
-export const engineVersion = (): string => `e0.1.0-${ENGINE_RNG}`;
+export const engineVersion = (): string => `e0.2.0-${ENGINE_RNG}`;

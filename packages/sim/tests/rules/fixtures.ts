@@ -7,6 +7,7 @@
  */
 
 import { getAllHeroes, getHero, type Hero } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS } from '../../rules/damage.js';
 import type { BattleState, HeroState, Row, Side } from '../../rules/state.js';
 
 export const ENGINE = 'e0.1.0-test';
@@ -25,7 +26,7 @@ export function heroStateFor(
   instanceId: string,
   patch: Partial<HeroState> = {},
 ): HeroState {
-  const maxHp = hero.stats.toughness * 50;
+  const maxHp = hero.stats.toughness * HP_PER_TOUGHNESS;
   return {
     heroId: hero.id,
     instanceId,

@@ -20,10 +20,21 @@ import { maxHp } from './damage.js';
 /**
  * **Provisional in its constant, settled in its mechanism.**
  *
- * The corrected battle-length median is ~102 hero-turns, so 300 is roughly 3×
- * and should almost never bind. Re-derive it from measured p99 once feature 008
- * is recording turn counts — and do not change it before then, because the only
- * evidence available today is the same simulation that produced it.
+ * This comment used to claim the median battle ran ~102 hero-turns, so that 300
+ * was "roughly 3× and should almost never bind". **It bound in 62% of battles.**
+ * Measured over 400 auto-played battles at `HP_PER_TOUGHNESS = 50`, the median
+ * was **299** — the cap itself — and the majority of matches were decided on
+ * pooled HP share rather than by anyone winning. Whatever produced 102 was not
+ * measuring this loop.
+ *
+ * Since the pacing pass (`HP_PER_TOUGHNESS = 8`, engine `e0.2.0`) the same 400
+ * battles give a median of **49** and a max of **130**, and **none** reaches the
+ * cap. 300 is now ~6× the median and is inert.
+ *
+ * The instruction below still stands, and is now the *only* reason this is not
+ * already 150: re-derive from measured p99 once feature 008 has recorded real
+ * battles. The number above is simulation, which is the same class of evidence
+ * that produced the wrong 102.
  */
 export const HERO_TURN_CAP = 300;
 
