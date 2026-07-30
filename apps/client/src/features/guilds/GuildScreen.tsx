@@ -30,6 +30,7 @@ import { GuildRoster } from './GuildRoster.js';
 import { ApplicationForm } from './ApplicationForm.js';
 import { GuildBrowser } from './GuildBrowser.js';
 import { InviteList } from './InviteList.js';
+import { SuccessionPanel } from './SuccessionPanel.js';
 import { StarterWarningNotice, bothAcknowledged } from './StarterWarningNotice.js';
 import type { Emblem, FoundingInfo, MyGuildState } from './types.js';
 
@@ -108,19 +109,28 @@ export function GuildScreen({
     return <p className="mx-auto max-w-[1600px] px-8 py-10 text-red-400">{state.message}</p>;
   }
 
-  const { guild, role, invites, applications, applicationBudget } = state.value;
+  const { guild, role, succession, invites, applications, applicationBudget } = state.value;
 
   return (
     <section className="mx-auto grid max-w-[1600px] gap-6 px-8 py-8">
       {guild ? (
-        <GuildRoster
-          guild={guild}
-          role={role}
-          accountId={accountId}
-          onViewProfile={onViewProfile}
-          onChanged={load}
-          onUnauthenticated={onUnauthenticated}
-        />
+        <>
+          <GuildRoster
+            guild={guild}
+            role={role}
+            accountId={accountId}
+            onViewProfile={onViewProfile}
+            onChanged={load}
+            onUnauthenticated={onUnauthenticated}
+          />
+          <SuccessionPanel
+            guildId={guild.id}
+            role={role}
+            succession={succession}
+            onChanged={load}
+            onUnauthenticated={onUnauthenticated}
+          />
+        </>
       ) : (
         <>
           <InviteList invites={invites} onChanged={load} onUnauthenticated={onUnauthenticated} />

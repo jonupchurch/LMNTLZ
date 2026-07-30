@@ -64,9 +64,20 @@ export interface StarterWarning {
   readonly permanent: true;
 }
 
+export interface SuccessionView {
+  readonly id: string;
+  readonly guildId: string;
+  readonly requestedBy: string;
+  readonly formerMasterId: string;
+  readonly requestedAt: string;
+  readonly completesAt: string;
+  readonly state: string;
+}
+
 export interface MyGuildState {
   readonly guild: GuildView | null;
   readonly role: 'master' | 'officer' | 'member' | null;
+  readonly succession: SuccessionView | null;
   readonly applications: readonly ApplicationView[];
   readonly invites: readonly InviteView[];
   readonly applicationBudget: { readonly used: number; readonly max: number };
