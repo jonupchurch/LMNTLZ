@@ -107,6 +107,63 @@ export async function record(ledger: Ledger, over: RecordOptions): Promise<strin
   return battleId;
 }
 
+/**
+ * Many records in one round trip.
+ *
+ * The export scan needs 200 battles, and 200 sequential inserts is 200 Neon
+ * round trips — about a minute of the suite spent proving nothing. One
+ * multi-row insert is the same fixture in one trip.
+ */
+export async function recordMany(
+  ledger: Ledger,
+  specs: readonly RecordOptions[],
+): Promise<readonly string[]> {
+  if (specs.length === 0) return [];
+
+  const values = specs.map((over) => {
+    const battleId = crypto.randomUUID();
+    ledger.battleIds.push(battleId);
+
+    return {
+      battleId,
+      startedAt: new Date(over.concludedAt.getTime() - 60_000),
+      concludedAt: over.concludedAt,
+      attackerId: over.attackerId ?? null,
+      defenderId: over.defenderId ?? null,
+      defenderIsBot: over.defenderIsBot ?? false,
+      zone: over.zone,
+      winner: over.winner ?? ('attacker' as const),
+      reason: 'wipe',
+      turnCount: over.turnCount ?? 88,
+      attackerSquad: {
+        seats: [
+          { row: 'front', index: 0, heroId: 'h01' },
+          { row: 'middle', index: 0, heroId: 'h14' },
+        ],
+      },
+      defenderSquad: {
+        seats: [
+          { row: 'front', index: 0, heroId: 'h07' },
+          { row: 'back', index: 0, heroId: 'h22' },
+        ],
+      },
+      attackerLeague: over.attackerLeague ?? 'gold',
+      defenderLeague: over.defenderLeague ?? 'silver',
+      attackerRating: over.attackerRating ?? 1500,
+      defenderRating: over.defenderRating ?? 1480,
+      engineVersion: 'test-engine',
+      contentVersion: 'test-content',
+      buildSha: null,
+      replayBlobUrl: null,
+      replayDeletedAt: null,
+    };
+  });
+
+  await db().insert(battleRecords).values(values);
+
+  return values.map((v) => v.battleId);
+}
+
 export const dropAccount = (id: string): Promise<void> =>
   db()
     .delete(accounts)

@@ -76,10 +76,26 @@ two disclosure rules, **no shared serialiser** — a shared serialiser between
 `Content-Type: text/csv`
 
 ```csv
-battleId,concludedAt,role,opponentUsername,opponentWasBot,zone,outcome,turnCount,leagueAtTime,ratingAfter
+battleId,concludedAt,role,opponentUsername,opponentWasBot,zone,outcome,turnCount,leagueAtTime,ratingAtBattle
 ```
 
 **Ten columns, named explicitly. Never `SELECT *`, never an object spread.**
+
+> ### ⚠️ Corrected during implementation, 2026-07-30: `ratingAfter` → `ratingAtBattle`
+>
+> **Nothing stores a post-battle rating.** `player_ratings` holds one current
+> value per account with no history, and `battle_records.attacker_rating` is
+> written by `battle/create.ts` — at battle **creation** — so it is unambiguously
+> the rating the player went in with. The per-battle delta is not recorded either,
+> so the post-battle value cannot be reconstructed.
+>
+> Emitting the pre-battle number under the name `ratingAfter` would be a lie in the
+> one file whose entire purpose is telling a player the truth about their own data.
+> The column is named what it is.
+>
+> **Recording a post-battle rating would be a schema change under Constitution
+> XVI** — it could not be backfilled for battles already recorded. It is cheap
+> today and not obviously worth it; raised here rather than taken.
 
 > **`attackerSquad` and `defenderSquad` are absent — BOTH of them, in BOTH
 > directions.** The battle record carries them because it is the analytics product;
