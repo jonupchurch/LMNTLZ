@@ -13,6 +13,7 @@
   // ENTRY is rejected as an unknown key. That convention works in package.json
   // and not here.
   "globalEnv": [
+    "ABLY_API_KEY",
     "CORS_ALLOWED_ORIGINS",
     "DATABASE_URL",
     "DATABASE_URL_UNPOOLED",

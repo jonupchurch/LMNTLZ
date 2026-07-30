@@ -46,6 +46,7 @@ const SECRET_NAMES = [
   'PADDLE_API_KEY',
   'RESEND_API_KEY',
   'BLOB_READ_WRITE_TOKEN',
+  'ABLY_API_KEY',
 ] as const;
 
 describe('no secret is ever hard-coded', () => {
@@ -108,6 +109,28 @@ describe('the client bundle', () => {
       expect(/postgres(?:ql)?:\/\//.test(text), `${path} has a connection string`).toBe(false);
       expect(/GOCSPX-/.test(text), `${path} has a Google client secret`).toBe(false);
       expect(/steamworks/i.test(text), `${path} bundles steamworks.js`).toBe(false);
+
+      /**
+       * **An Ably key in the bundle is an economy hole, not just a leak.**
+       *
+       * Vite inlines anything prefixed `VITE_`, so a single mis-named variable
+       * puts a PUBLISH-CAPABLE credential in a public bundle — and a client that
+       * can publish to a channel reaches every subscriber without passing through
+       * the route that charges shards for it. Nothing recovers those.
+       *
+       * The name is caught by SECRET_NAMES above; this catches the **shape**,
+       * because the leak that matters is the value, and a value can arrive under
+       * a name nobody thought to list. Ably keys are `appId.keyId:secret`.
+       */
+      expect(/VITE_ABLY/i.test(text), `${path} inlines an Ably variable`).toBe(false);
+      expect(
+        // No word-boundary anchor, deliberately: `_` is a word character so a
+        // `\b` here would not mean what it looks like — and writing one through a
+        // generator collapsed it to a literal backspace, which lint caught as
+        // `no-control-regex`. The pattern is specific enough without it.
+        /[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}:[A-Za-z0-9_+/=-]{20,}/.test(text),
+        `${path} contains something shaped like an Ably key`,
+      ).toBe(false);
     }
   });
 
