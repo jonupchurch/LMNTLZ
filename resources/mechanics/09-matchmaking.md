@@ -183,13 +183,34 @@ bonus and the hold term absorb it. Measured there, not here.
 | League | Score band | Share of a mature population | Max gear ratio inside |
 |---|---|---|---|
 | **Bronze** | 1,500 – 2,500 | 15.6% | 1.67× |
-| **Silver** | 2,500 – 4,000 | 19.6% | 1.62× |
-| **Gold** | 4,000 – 6,200 | 18.9% | 1.52× |
-| **Platinum** | 6,200 – 8,700 | 14.9% | 1.41× |
-| **Diamond** | 8,700 – 10,125 | **31.0%** | **1.17×** |
+| **Silver** | 2,500 – 4,000 | 19.6% | 1.60× |
+| **Gold** | 4,000 – 6,200 | 18.9% | 1.55× |
+| **Platinum** | 6,200 – 8,700 | 14.9% | 1.40× |
+| **Diamond** | 8,700 – 10,125 | **31.0%** | **1.16×** |
 
 *(Shares simulated over 20,000 accounts with exponential tenure and 20%
 pass holders.)*
+
+> **⚠️ The ratio column read `1.62 / 1.52 / 1.41 / 1.17` until 2026-07-29.** The
+> ratio inside a band is just `ceiling ÷ floor`: Silver is `4000 ÷ 2500 = 1.60`,
+> not 1.62, and Gold is `6200 ÷ 4000 = 1.55`, not 1.52 — the two middle rows were
+> out by more than rounding and in opposite directions. Platinum (1.403) and
+> Diamond (1.164) had simply been rounded up rather than to nearest.
+>
+> **Nothing load-bearing moved.** Bronze's 1.67× was correct, and Bronze is the
+> row that matters — it is the tightest ratio in the game and the sole source of
+> the `1.67×` promise, because it is the narrowest band on the lowest floor. The
+> corrected numbers also strengthen the claim below: the bound gets *monotonically*
+> kinder as players climb, which the old Silver/Gold pair broke.
+> `apps/api/tests/matchmaking/gearBound.test.ts` sweeps all 8,626 scores and pins
+> every one of these five values.
+
+**The shares are reproduced independently.** `population.test.ts` builds the same
+20,000-account model from `06-progression.md`'s income rates and lands all five
+within 1.3 points — the largest gap is Gold at 20.1% against 18.9%. Silver and
+Gold come out in the opposite order there, and **neither derivation is precise
+enough to settle which of the two middle leagues is larger**; both agree they are
+close to equal and close to a fifth each.
 
 **Nobody ever faces more than 1.67× their own gear.** Diamond is the largest
 league because roughly a quarter of a mature population sits at the cap — and

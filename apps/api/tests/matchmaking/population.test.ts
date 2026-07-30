@@ -20,6 +20,7 @@ import {
   FULL_KIT_SCORE,
   STARTER_GRANT_SCORE,
   leagueOf,
+  type League,
 } from '../../src/matchmaking/league.js';
 import {
   DEFAULT_MEAN_TENURE_DAYS,
@@ -174,22 +175,77 @@ describe('the population', () => {
     }
   });
 
-  it('puts Diamond around 31%, which spec.md calls expected and correct', () => {
+  it('reproduces all five shares from the 09-matchmaking.md league table (T023)', () => {
     /**
-     * **A calibration, not a prediction**, and the harness header says so: mean
-     * tenure was the free variable solved for this outcome, because `spec.md`
-     * records the share but not the tenure distribution behind it.
+     * **The recorded distribution, and it is five numbers rather than one.**
+     * `09-matchmaking.md` § *Leagues* publishes a share for every band, simulated in
+     * an earlier design pass over the same 20,000 accounts and 20% pass holders. Only
+     * Diamond's ~31% made it into `spec.md`, so only Diamond was being checked here —
+     * and Diamond is the one share the harness was *calibrated* to hit, which makes it
+     * the least informative of the five.
      *
-     * It is still worth asserting. It pins the one number in the harness that no
-     * document supplies, so a later change to the rune cost, the grant, the pass
-     * multiplier or the play mix cannot quietly move the population a league
-     * without this failing and naming itself.
+     * The other four are free. They fall out of the rune cost, the grant, the play
+     * mix and the band widths with nothing tuned for them, so agreement across all
+     * five is a real check between two derivations rather than a self-consistency one.
+     *
+     * ```
+     * league     modelled  published  delta
+     * bronze       16.16      15.6     +0.56
+     * silver       18.88      19.6     -0.73
+     * gold         20.14      18.9     +1.25
+     * platinum     14.08      14.9     -0.82
+     * diamond      30.75      31.0     -0.25
+     * ```
      */
+    const PUBLISHED: Readonly<Record<League, number>> = {
+      bronze: 15.6,
+      silver: 19.6,
+      gold: 18.9,
+      platinum: 14.9,
+      diamond: 31.0,
+    };
+
     const shares = leagueShares(population({ size: 20_000 }));
 
-    expect(shares.diamond).toBeGreaterThan(0.28);
-    expect(shares.diamond).toBeLessThan(0.34);
+    for (const [league, published] of Object.entries(PUBLISHED) as Array<[League, number]>) {
+      const modelled = shares[league] * 100;
+      expect(
+        Math.abs(modelled - published),
+        `${league}: modelled ${modelled.toFixed(2)}% vs published ${published}%`,
+      ).toBeLessThan(1.5);
+    }
+
+    /**
+     * **What is deliberately NOT asserted: that Silver outranks Gold.** The published
+     * table has them 0.7 points apart and the model has them 1.3 apart the other way,
+     * so the two derivations disagree about the order of the two middle leagues while
+     * agreeing about both magnitudes. Neither table is precise enough to settle it, and
+     * an assertion either way would be pinning a rounding artefact as a design claim.
+     * The ordering that *is* real — Diamond largest, Bronze and Platinum smallest — is
+     * checked below, along with the reason.
+     */
     expect(DEFAULT_MEAN_TENURE_DAYS).toBe(77);
+  });
+
+  it('produces those shares from the model rather than from the seed', () => {
+    /**
+     * The agreement above would be worth little if a different seed gave a different
+     * distribution — it would mean the table was matched by luck. Across four seeds no
+     * league moves a full percentage point, so the shares are a property of the income
+     * model and the band widths.
+     */
+    const runs = [0x9e37_79b9, 1, 42, 12_345].map((seed) =>
+      leagueShares(population({ size: 20_000, seed })),
+    );
+
+    for (const league of ['bronze', 'silver', 'gold', 'platinum', 'diamond'] as League[]) {
+      const values = runs.map((r) => r[league] * 100);
+      const spread = Math.max(...values) - Math.min(...values);
+      expect(
+        spread,
+        `${league} varies ${spread.toFixed(2)} points across seeds: ${values.map((v) => v.toFixed(2)).join(', ')}`,
+      ).toBeLessThan(1);
+    }
   });
 
   it('populates every league, so no band is untestable', () => {
