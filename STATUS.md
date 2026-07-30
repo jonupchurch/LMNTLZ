@@ -54,10 +54,20 @@ prints no numbers for them.
 > `tests/platform/ambientFetch.test.ts`, which scans for the shape and has been
 > watched failing on a planted violation.
 >
-> **The standing rule: push, then poll `/v1/health` until it reports your commit.
-> Until it matches, the honest report is "pushed, deploy unverified", never "live".**
-> When it does not match, `list_deployments` gives `state: ERROR` and
-> `get_deployment_build_logs` with `errorsOnly` gives the reason, in two calls.
+> ### The standing rule, with the caveat that bit immediately
+>
+> **Push, then poll `/v1/health` until it reports your commit. Until it matches, the
+> honest report is "pushed, deploy unverified", never "live".** When it does not
+> match, `list_deployments` gives `state: ERROR` and `get_deployment_build_logs`
+> with `errorsOnly` gives the reason, in two calls.
+>
+> **But a commit that does not touch the project's Root Directory produces no
+> deployment at all**, so the poll can never succeed and waiting on it is waiting
+> forever. `e03d0cc` touched only `STATUS.md`; `lmntlz-api`'s root is `apps/api`, so
+> Vercel correctly created nothing and production stayed on `e32b163`. **So the real
+> check is `list_deployments`, and health is the confirmation**: no deployment for
+> your commit is *fine* when the commit missed the app, and *the whole problem* when
+> it did not. Look at which files changed before deciding which answer you expect.
 >
 > **Verified after the fix**: API on `e32b163`; `/v1/players/:id/profile`,
 > `/v1/me/export` and `/v1/me/avatar` all answer **401 rather than 404**, and a
