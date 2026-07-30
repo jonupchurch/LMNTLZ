@@ -91,7 +91,7 @@ describe('the grid, as data', () => {
 });
 
 describe('the routes refuse — the six-row proof over HTTP', () => {
-  const invite = (who: Signed): Promise<Response> =>
+  const invite = async (who: Signed): Promise<Response> =>
     app.request(`/v1/guilds/${guildId}/invites`, {
       method: 'POST',
       headers: who.headers(),

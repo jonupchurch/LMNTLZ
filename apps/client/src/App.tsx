@@ -8,6 +8,7 @@ import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import type { StartedBattle } from './features/battle/types.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
+import { GuildScreen } from './features/guilds/GuildScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
 import { analyticsEnabled, scrubEvent } from './lib/analytics.js';
 import {
@@ -64,7 +65,13 @@ type Screen =
    * step, and the difference between them is a single flag: whose controls to
    * render. The *data* difference is the server's job, not this union's.
    */
-  | { readonly kind: 'profile'; readonly targetId: string };
+  | { readonly kind: 'profile'; readonly targetId: string }
+  /**
+   * **One screen for three states** — in a guild, not in one, and founding one.
+   * Which you see is a server fact (`GET /v1/me/guild`), not a navigation choice,
+   * so it is a single member here rather than three.
+   */
+  | { readonly kind: 'guild' };
 
 export function App(): JSX.Element {
   const [phase, setPhase] = useState<Phase>(() =>
@@ -174,6 +181,12 @@ export function App(): JSX.Element {
                       isSelf={screen.targetId === phase.account.id}
                       onUnauthenticated={onUnauthenticated}
                     />
+                  ) : screen.kind === 'guild' ? (
+                    <GuildScreen
+                      accountId={phase.account.id}
+                      onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
+                      onUnauthenticated={onUnauthenticated}
+                    />
                   ) : (
                     <SquadsScreen onUnauthenticated={onUnauthenticated} />
                   )}
@@ -204,7 +217,7 @@ export function App(): JSX.Element {
 }
 
 /**
- * Two screens, named for what they do.
+ * The screens, named for what they do.
  *
  * **Not a router.** The app is a single URL — deliberately, since the Steam build
  * loads from disk and there is no server to route on — so this is local state, and
@@ -216,15 +229,19 @@ function ScreenNav({
   accountId,
   onNavigate,
 }: {
-  screen: 'squads' | 'attack' | 'profile';
+  screen: 'squads' | 'attack' | 'profile' | 'guild';
   /** Needed because "My profile" is a profile *of somebody*, and that is you. */
   accountId: string;
   onNavigate: (
-    next: { kind: 'squads' } | { kind: 'attack' } | { kind: 'profile'; targetId: string },
+    next:
+      | { kind: 'squads' }
+      | { kind: 'attack' }
+      | { kind: 'profile'; targetId: string }
+      | { kind: 'guild' },
   ) => void;
 }): JSX.Element {
   const tab = (
-    kind: 'squads' | 'attack' | 'profile',
+    kind: 'squads' | 'attack' | 'profile' | 'guild',
     label: string,
     next: Parameters<typeof onNavigate>[0],
   ) => (
@@ -249,6 +266,7 @@ function ScreenNav({
         {tab('squads', 'Squads', { kind: 'squads' })}
         {tab('attack', 'Attack', { kind: 'attack' })}
         {tab('profile', 'Profile', { kind: 'profile', targetId: accountId })}
+        {tab('guild', 'Guild', { kind: 'guild' })}
       </div>
     </nav>
   );

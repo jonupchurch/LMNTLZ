@@ -28,7 +28,7 @@ import { join } from 'node:path';
 import app from '../../src/index.js';
 import { closeDb, db } from '../../src/db/client.js';
 import { shardLedger } from '../../src/db/schema/ledger.js';
-import { squads } from '../../src/db/schema/squads.js';
+import { squads, squadSeats } from '../../src/db/schema/squads.js';
 import { apply, pendingFor } from '../../src/guilds/applications.js';
 import { fixedClock } from '../../src/guilds/clock.js';
 import { publicProfile } from '../../src/profiles/publicProfile.js';
@@ -77,17 +77,21 @@ beforeAll(async () => {
   applicantId = await fx.account('boundApplicant');
   await apply(applicantId, guildId, 'a secret hope', clock);
 
-  /** A shard balance and a defense squad, so a leak would have something to leak. */
+  /**
+   * A shard balance and a **real seated defense squad**, so a leak would have
+   * something to leak. Both halves matter: a scan for hero ids over a response
+   * built from a squad with no seats would find nothing and pass for that reason.
+   */
   await db().insert(shardLedger).values({ accountId: memberId, delta: 4_321, reason: 'grant' });
-  await db()
+
+  const [squad] = await db()
     .insert(squads)
-    .values({
-      accountId: memberId,
-      kind: 'defense',
-      zone: 'visible',
-      slot: 0,
-      seats: [{ row: 'front', index: 0, heroId: 'h07' }],
-    });
+    .values({ accountId: memberId, kind: 'defense', zone: 'visible' })
+    .returning({ id: squads.id });
+
+  await db()
+    .insert(squadSeats)
+    .values({ squadId: squad!.id, row: 'front', index: 0, heroId: 'h07' });
 
   view = JSON.parse(await guildViewJson(guildId, viewer));
 }, 60_000);
