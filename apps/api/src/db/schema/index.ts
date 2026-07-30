@@ -19,3 +19,5 @@ export * from './replayHolds.js';
 export * from './ratings.js';
 export * from './ledger.js';
 export * from './runes.js';
+export * from './payments.js';
+export * from './entitlements.js';

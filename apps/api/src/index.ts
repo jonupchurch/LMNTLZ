@@ -24,6 +24,7 @@ import { battleRoutes } from './battle/routes.js';
 import { replayRoutes } from './replays/routes.js';
 import { matchmakingRoutes } from './matchmaking/routes.js';
 import { progressionRoutes } from './progression/routes.js';
+import { paymentRoutes } from './payments/routes.js';
 import { installRuneSource } from './progression/install.js';
 
 export { apiError } from './errors.js';
@@ -88,6 +89,7 @@ v1.route('/', battleRoutes);
 v1.route('/', replayRoutes);
 v1.route('/', matchmakingRoutes);
 v1.route('/', progressionRoutes);
+v1.route('/', paymentRoutes);
 
 app.route('/v1', v1);
 

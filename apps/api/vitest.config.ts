@@ -212,6 +212,14 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'payments',
+          include: ['tests/payments/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+        },
+      },
+      {
+        test: {
           name: 'progression',
           include: ['tests/progression/**/*.test.ts'],
           exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
