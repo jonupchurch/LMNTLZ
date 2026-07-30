@@ -166,6 +166,35 @@ amount of code review reliably catches** the bug it prevents.
 
 ---
 
+## Phase 7: Wiring — the tasks the template never wrote
+
+**Purpose**: **Make every component above reachable, and every route above
+called.** T014 says *build `PublicProfile.tsx`*; T027 says *build
+`AvatarPicker.tsx`*. Nothing in Phases 1–6 renders either, and nothing requests a
+single one of the four routes T001 registers.
+
+> **This phase exists because the defect it prevents has now happened five times
+> across four features and has never once announced itself** — a component that is
+> built, unit-tested, committed and never rendered passes every gate in this repo.
+> 006 found it the same way and grew a Phase 9 for the same reason.
+> `.specify/templates/tasks-template.md` now mandates a wiring task per user story;
+> this phase is that rule applied retroactively to a list generated before it.
+
+- [ ] T038 [US1] **WIRING** — add `{ kind: 'profile'; targetId: string }` to the `Screen` union in `apps/client/src/App.tsx` and render `ProfileScreen`; the nav gains a **My profile** entry
+- [ ] T039 [US1] **WIRING** — `apps/client/src/features/profile/ProfileScreen.tsx` calls `GET /v1/players/:targetId/profile` via `lib/api.ts` and composes `PublicProfile` + `BattleRecord`. Without this, T013's route has no client caller at all
+- [ ] T040 [US1] **WIRING** — the scout panel in `apps/client/src/features/attack/` links each candidate to their profile, since scouting is the stated reason this surface exists
+- [ ] T041 [US2] **WIRING** — an **Export my data** control in `ProfileScreen.tsx` requests `GET /v1/me/export` and saves the CSV. A download nobody can trigger is not an export
+- [ ] T042 [US3] **WIRING** — render `AvatarPicker` and the rename control from `ProfileScreen.tsx`, and have the rename call `PUT /v1/me/username`
+- [ ] T043 [US3] **WIRING** — show the player's **shard balance** beside the 325-shard rename price by calling feature 010's `GET /v1/me/shards`. **This is the first client call to any progression route**; 010 and 011 are otherwise invisible in the browser
+- [ ] T044 **Assert the wires, then cut them.** `apps/client/tests/profile/wiring.test.tsx` fails if `ProfileScreen` stops requesting the profile, the export, or the shard balance. Mutate each of the three and confirm three failures — *"is it called?"* is a testable claim
+
+> **T043 closes half of a known gap and names the other half.** Runes and
+> entitlements still have no client surface after this feature; that belongs to the
+> visual pass or to a dedicated progression screen, and it is **named here rather
+> than folded in**.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

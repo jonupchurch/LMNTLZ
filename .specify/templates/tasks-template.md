@@ -19,6 +19,45 @@ description: "Task list template for feature implementation"
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
+## ⚠️ MANDATORY: every user story phase ends with a WIRING task
+
+**"Build the thing" and "call the thing" are different tasks, and only the first
+one ever gets written down.** A task list that says *implement X in `path/to/x.ts`*
+is satisfied completely by code nothing invokes — so the box is checked honestly,
+every gate goes green, and the feature does nothing.
+
+**This has happened five times in this project across four features, and it has
+never once announced itself.** An uncalled seam does not error, does not log and
+does not fail a test. It produces silence, or a plausible wrong answer.
+
+So **every user-story phase MUST end with at least one task of the form**:
+
+```text
+- [ ] TXXX [USn] WIRING — <the caller> invokes <the thing>: <exact file:symbol>
+```
+
+Concretely, a wiring task names the caller for each kind of thing built:
+
+| Built | The wiring task names |
+|---|---|
+| a component | the screen or route that **renders** it |
+| a route/endpoint | the client call that **requests** it |
+| a form or control | the request that **persists** the result |
+| a seam another feature left (`setX`, a null-returning provider) | the **install** call, and where it runs at startup |
+| a scheduled job | the **registration**, not just the handler |
+
+**And the test that proves it**: assert the caller, then cut the wire and watch it
+fail. *"Is it called?"* is a testable claim.
+
+```bash
+# Zero hits outside its own definition is the defect:
+rg -n "<symbolName>" apps/api/src apps/client/src | rg -v "\.test\.|export "
+```
+
+**A seam another feature left for you is the highest-risk case** — the feature that
+wrote it deliberately left it inert, and your task list never mentions it. The
+handoff is exactly where nobody owns the wire.
+
 ## Path Conventions
 
 - **Single project**: `src/`, `tests/` at repository root
@@ -95,8 +134,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T016 [US1] Add validation and error handling
 - [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T018 [US1] **WIRING** — [screen/route] renders [component] and calls [endpoint] in src/[location]/[file]; assert the caller in tests/[…], then cut the wire and confirm it fails
 
-**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
+**Checkpoint**: User Story 1 is **reachable by a user** — not merely implemented and green. State the two claims separately: *tasks closed and gates green*, and *a user can actually do this*.
 
 ---
 
@@ -117,8 +157,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T021 [US2] Implement [Service] in src/services/[service].py
 - [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T024 [US2] **WIRING** — [screen/route] renders [component] and calls [endpoint] in src/[location]/[file]; assert the caller, then cut the wire and confirm it fails
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
+**Checkpoint**: User Stories 1 AND 2 are both **reachable by a user**, independently
 
 ---
 
@@ -130,16 +171,17 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T025 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
+- [ ] T026 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T027 [P] [US3] Create [Entity] model in src/models/[entity].py
+- [ ] T028 [US3] Implement [Service] in src/services/[service].py
+- [ ] T029 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T030 [US3] **WIRING** — [screen/route] renders [component] and calls [endpoint] in src/[location]/[file]; assert the caller, then cut the wire and confirm it fails
 
-**Checkpoint**: All user stories should now be independently functional
+**Checkpoint**: All user stories are **reachable by a user**, independently
 
 ---
 
