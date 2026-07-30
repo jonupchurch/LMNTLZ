@@ -5,7 +5,15 @@
 **Prerequisites**: [plan.md](plan.md) · [spec.md](spec.md) · [research.md](research.md) ·
 [contracts/guilds-api.md](contracts/guilds-api.md) · [quickstart.md](quickstart.md) ·
 shared [specs/data-model.md](../data-model.md) § Social models ·
-**features 005, 009, 010, 012 and 014 complete**
+**features 005, 009, 010 and 012 complete**
+
+> ### ⚠️ The prerequisite line was wrong: **014 is not built, and 013 ships before it**
+>
+> This list was generated claiming *"features 005, 009, 010, 012 **and 014**
+> complete"*. Feature 014 is chat, it comes **after** this one in `specs/README.md`,
+> and `apps/api/src/chat/` does not exist. The only task that genuinely needs it is
+> **T039** (`/motd` announcing in guild chat) — see the note there. Nothing else in
+> the feature touches chat, so 013 proceeds.
 
 **Tests**: **Included.** Succession spans **21 days of wall-clock across two
 timers**, so it cannot be tested by waiting — which means an implementation that
@@ -28,6 +36,37 @@ before succession exists.
 > are **deferred with their design** — a Wing exists only for an event, so deferring
 > events defers Wings; they are not separable. Guilds still earn their place at 1.0
 > because **joining and founding are two of the four starter-league exits**.
+
+---
+
+## ⚠️ The wiring pass, run 2026-07-30 before any code was written
+
+This list was generated **before** `.specify/templates/tasks-template.md` grew its
+mandatory wiring rule, so it has the shape that has now produced the same defect
+**seven times across five features**: *"implement X in `path/to/x.ts`"* is satisfied
+completely by code nothing calls. Every box gets checked honestly, every gate goes
+green, and the feature does nothing.
+
+Reading the repo rather than the spec turned up **four concrete wires this list did
+not mention at all**. Three of them are seams **another feature already wrote and
+left inert** — the highest-risk case, because the feature that wrote them
+deliberately left them uncalled and this list never named them:
+
+| Seam, already in the repo | Where | Callers today |
+|---|---|---|
+| `guildJoined(accountId)` | `apps/api/src/matchmaking/starterLeague.ts` | **none** — *"No caller yet. Feature 013 owns guilds and does not exist."* |
+| `guildDoorConfirm(accountId, door, guildId)` | same file — the **only** constructor of a confirm | **none but tests** |
+| `publicProfile.guild` | `apps/api/src/profiles/publicProfile.ts:149` returns a hard-coded `null` | **013 is the feature that fills it** |
+| the whole **client surface** | `apps/client/src/App.tsx` | T017/T030/T031 build two components and **nothing renders either** |
+
+The fourth is the one 006 was caught by exactly: the original list built
+`ApplicationForm.tsx` and `EmblemDesigner.tsx` and never added a screen, a nav
+entry, or a single `lib/api.ts` call. **A guild you cannot reach in the browser is
+not a guild.**
+
+**Wiring tasks are numbered T057+ and placed at the end of the phase they belong
+to.** IDs are appended rather than renumbered so the phases above stay stable;
+**read by phase, not by number.**
 
 ---
 
@@ -84,7 +123,13 @@ before succession exists.
 - [ ] T019 [US2] Show a dismissed application **as dismissed rather than vanishing**, with a **24-hour cooldown** before reapplying to that guild, in `apps/api/src/guilds/applications.ts` (FR-014)
 - [ ] T020 [US2] Enforce the **24-member** cap in `apps/api/src/guilds/membership.ts` (FR-005, SC-003)
 
-**Checkpoint**: A player accepted by one guild has zero remaining open applications, under concurrency.
+### Wiring for User Story 2 ⚠️
+
+- [ ] T057 [US2] **WIRING** — the acceptance transaction in `apps/api/src/guilds/applications.ts` calls **`guildJoined(accountId)`** from `../matchmaking/starterLeague.js`, **not a hand-rolled `UPDATE accounts SET starter_exited_at`**. 009 wrote that function as *"one rule, two doors"* and it has had **no caller since the day it was written**. The SQL in `contracts/guilds-api.md` shows the raw `UPDATE` for illustration — the function is what enforces the `isNull` guard that makes the exit one-way and idempotent
+- [ ] T058 [US2] **WIRING** — `apps/client/src/features/guilds/GuildScreen.tsx` renders `ApplicationForm` (T017) and the invitation list, and calls `POST /v1/guilds/:id/applications` and `POST /v1/invites/:id/accept` through `apps/client/src/lib/api.ts`. **Without this, T017's form is a component nothing mounts and T018's routes have no client caller**
+- [ ] T059 [US2] **WIRING** — register T016's 7-day expiry job. ⛔ **This one is genuinely blocked and must not be quietly skipped**: 008's `cleanupExpired()` is the shape T016 copies, and `apps/api/src/replays/README.md` records *"The daily schedule is not registered"* — 008 T029 waits on 016's cron. So **copying the shape copies the non-registration**. Write the handler and an authenticated `POST /v1/jobs/guild-applications/expire` that runs it, so 016 has something to point a schedule at, and record the gap in `apps/api/src/guilds/README.md`. **An expiry that never runs means applications never expire and the 5-cap fills up permanently**
+
+**Checkpoint**: A player accepted by one guild has zero remaining open applications, under concurrency — **and can do all of it from the browser**.
 
 ---
 
@@ -125,7 +170,14 @@ before succession exists.
 >
 > The guild **name** and **pitch** are text and **do** go through feature 015.
 
-**Checkpoint**: A guild exists, is paid for, and its founder was warned before graduating.
+### Wiring for User Story 1 ⚠️
+
+- [ ] T060 [US1] **WIRING** — `POST /v1/guilds` in `apps/api/src/guilds/found.ts` calls **`guildDoorConfirm(accountId, 'founding', null)`** from `../matchmaking/starterLeague.js`, and the same for the two other doors in T028. It is documented as *"the only way to build a guild confirm"* — it fetches the warning itself, so **there is no version of the call that produces an unwarned confirm**. T027/T028 say *"require the `StarterExitWarning` payload"* without naming the function, which is exactly how a feature reimplements a seam beside the one already written for it
+- [ ] T061 [US1] **WIRING** — add `{ kind: 'guild' }` to the `Screen` union in `apps/client/src/App.tsx`, render `GuildScreen`, and give `ScreenNav` a **Guild** tab beside Squads / Attack / Profile. This is the mount point T058 and T062 both depend on
+- [ ] T062 [US1] **WIRING** — `GuildScreen.tsx` renders `EmblemDesigner` (T030, T031) inside a founding flow that calls `POST /v1/guilds`, and shows the shard balance beside the 650 price using `GET /v1/me/shards` — the same pattern 012 T043 established for the rename charge. **A designer that cannot submit is a colour picker**
+- [ ] T063 [US1] **WIRING** — `apps/api/src/profiles/publicProfile.ts` stops returning a hard-coded `guild: null` and reads the membership 013 now owns. The field, its type and its client rendering **already exist and have never once been non-null**; 012 wrote *"Null until feature 013 exists"* and this is that feature. Also delete that comment, so the next reader is not told a built thing is missing
+
+**Checkpoint**: A guild exists, is paid for, its founder was warned before graduating, and **it shows on their profile**.
 
 ---
 
@@ -144,7 +196,11 @@ before succession exists.
 
 - [ ] T037 [US3] Implement the three roles in `apps/api/src/guilds/membership.ts` — **one** Guild Master, **at most 3** Officers, and Members (FR-017)
 - [ ] T038 [US3] Enforce the permission table **server-side** in `apps/api/src/guilds/membership.ts`, never by hiding a control (FR-018, Constitution XII)
-- [ ] T039 [US3] Implement `/motd` in `apps/api/src/guilds/motd.ts` — it sets a **pin** rather than sending a message, usable by master and officers, announcing in **guild chat only**, plus a **login notice** derived from a last-seen comparison (FR-019)
+- [ ] T039 [US3] Implement `/motd` in `apps/api/src/guilds/motd.ts` — it sets a **pin** rather than sending a message, usable by master and officers, plus a **login notice** derived from a last-seen comparison (FR-019). ⛔ **The "announce in guild chat" half is blocked on 014** and there is no chat module to call. Build the pin and the login notice — which are the parts FR-019 can satisfy without chat — and leave the announcement to 014, **named in `guilds/README.md` as an outstanding wire rather than silently absent**
+
+### Wiring for User Story 3 ⚠️
+
+- [ ] T064 [US3] **WIRING** — `GuildScreen.tsx` renders the roster with per-member role controls that call the promote / demote / kick routes, and the motd editor that calls `PUT /v1/guilds/:guildId/motd`. **The permission table is enforced server-side (T038); the client renders what it is allowed to, and a control it wrongly shows must still 403** — that is the test, not the hiding
 
 **Checkpoint**: A guild does not stop when one person does.
 
@@ -177,7 +233,14 @@ before succession exists.
 - [ ] T049 [US4] Leave a displaced master as a **Member**, not removed from the guild, in `apps/api/src/guilds/succession.ts` (FR-025)
 - [ ] T050 [US4] Make **14 and 7 config, not constants**, in `apps/api/src/guilds/config.ts` — the shape is decided; the numbers want a real population
 
-**Checkpoint**: All four stories independently functional.
+### Wiring for User Story 4 ⚠️
+
+- [ ] T065 [US4] **WIRING — the one most likely to be missed.** T046 says *"logging in lapses the request"*, and **nothing in `apps/api/src/auth/` knows guilds exist**. Call the lapse from the sign-in path in `apps/api/src/auth/routes.ts` (or a single `noteSeen` hook it already runs), **not from a guilds route nobody hits while away**. *Presence is the reply* is a claim about the **auth** path; written only inside `succession.ts` it is a function the absent master never triggers, and **they lose their guild by logging in**
+- [ ] T066 [US4] **WIRING** — the succession email in T045 goes through the **already-installed** `Mailer` from `apps/api/src/payments/receipt.ts` (`setMailer`, installed at startup by `installMailer()` in `apps/api/src/index.ts`). Do **not** add a second sender: 011 built this behind the vendor interface for Constitution XIX and it is live. Resolve the master's address from `identities`, the same way the receipt path does
+- [ ] T067 [US4] **WIRING** — register completion. Like T059 this needs a schedule that does not exist yet, so expose `POST /v1/jobs/guild-successions/complete` and **also evaluate completion lazily whenever the guild is read**, so a succession still resolves with no cron at all. **Succession is the one timer where "the job never ran" means a guild is frozen forever, which is the exact failure the story exists to prevent**
+- [ ] T068 [US4] **WIRING** — `GuildScreen.tsx` shows an officer the succession control when it is available, the countdown while it is pending, and the master a plain statement that logging in has already cancelled it
+
+**Checkpoint**: All four stories independently functional **and reachable by a player**.
 
 ---
 
@@ -187,8 +250,10 @@ before succession exists.
 - [ ] T052 Define guild activity by member activity within a stated window that **does not depend on when a member plays** (FR-027, SC-008)
 - [ ] T053 Write `apps/api/tests/guilds/deferred.test.ts` — `rg -in "wing|event|guildFund|treasury" apps/api/src/guilds` returns **nothing**. **A "harmless" Wing column now is a structure with no rules attached, and it will acquire wrong ones**
 - [ ] T054 Dissolve a guild whose last member leaves, in `apps/api/src/guilds/membership.ts` — the founding fee is **not** returned. Succession refunds where disbanding does not, and the rule is *a guild costs 650 to hold*, not *you get your money back*
-- [ ] T055 [P] Write `apps/api/src/guilds/README.md` — the three roles, the contended-row argument, and the standing note that Wings are deferred with their design
+- [ ] T055 [P] Write `apps/api/src/guilds/README.md` — the three roles, the contended-row argument, the standing note that Wings are deferred with their design, and **the two unregistered schedules (T059, T067) named as outstanding wires**
 - [ ] T056 Run the full quickstart manual pass
+- [ ] T069 **Assert the wires, then cut them.** `apps/api/tests/guilds/wiring.test.ts` + `apps/client/tests/guilds/wiring.test.tsx` fail if founding stops calling `guildDoorConfirm`, if acceptance stops calling `guildJoined`, if the sign-in path stops lapsing succession, if `publicProfile` goes back to a constant `null`, or if `GuildScreen` stops requesting the guild. **Mutate each of the five and confirm five failures** — *"is it called?"* is a testable claim, and a wiring task with no test is the same promise that failed seven times
+- [ ] T070 Update `apps/api/src/matchmaking/starterLeague.ts` and `apps/api/src/profiles/publicProfile.ts` to **delete their "no caller yet" / "null until 013" notes**. A stale *"this is not wired"* comment beside wired code is how the next reader concludes a built thing is missing
 
 ---
 
@@ -196,13 +261,19 @@ before succession exists.
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: needs features 005, 009, 010, 012, 014
+- **Setup (Phase 1)**: needs features 005, 009, 010, 012 — **not 014**
 - **Foundational (Phase 2)**: the clock — **blocks all four stories**
 - **US2 (Phase 3)**: Foundational only. **Sequenced first**
-- **US1 (Phase 4)**: needs feature 010's charge and feature 009's `StarterExitWarning`
-- **US3 (Phase 5)**: needs membership (T012, T020) and feature 014's guild chat for `/motd`
-- **US4 (Phase 6)**: needs the clock (T005) and roles (T037)
+- **US1 (Phase 4)**: needs feature 010's charge and feature 009's `guildDoorConfirm`
+- **US3 (Phase 5)**: needs membership (T012, T020). **Its chat announcement needs 014 and does not gate the phase** — the pin and the login notice do not touch chat
+- **US4 (Phase 6)**: needs the clock (T005), roles (T037) and 011's installed `Mailer`
 - **Polish (Phase 7)**: depends on US1 and US2
+
+### The wiring tasks depend on the client mount point
+
+**T061 comes before T058, T062, T064 and T068** even though it is numbered later:
+it is the task that puts a Guild tab in `App.tsx`, and the other four render into
+it. Build it first if you touch the client at all.
 
 ### User Story Dependencies
 
@@ -248,9 +319,15 @@ acceptance, four withdrawals, and all three starter-league doors demanding both
 acknowledgements.
 
 1. Phase 2: **the clock, banned by lint**
-2. Phase 3: US2 — **the concurrency test before the happy path**
-3. Phase 4: US1 — **STOP and VALIDATE** the starter warning on **founding first**
-4. Phase 5–6: roles, then succession with all four branches
+2. Phase 3: US2 — **the concurrency test before the happy path**, then T057–T059
+3. Phase 4: US1 — **STOP and VALIDATE** the starter warning on **founding first**, then T060–T063
+4. Phase 5–6: roles, then succession with all four branches, then T064–T068
+
+**"Validate" means in a browser, not in a test run.** 006 and 012 both reached a
+complete, green, committed phase whose feature could not be reached by a player;
+`.claude/skills` calls this out and `MEMORY.md` carries it as *"complete means
+boxes, not playable"*. **Report the gates and the playability as two separate
+lines.**
 
 ### Incremental Delivery
 
