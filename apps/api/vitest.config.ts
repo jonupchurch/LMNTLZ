@@ -62,6 +62,35 @@ export default defineConfig({
      */
     globalSetup: ['./tests/globalSetup.ts'],
 
+    /**
+     * **Serial across the whole app, and it has to be stated HERE rather than inside the
+     * `replays` project — which is where it was, and where the root runner ignored it.**
+     *
+     * `replays/cleanup.test.ts` exercises a job that deletes *every* expired row in the
+     * database, deliberately: a job that can be scoped is a job somebody scopes by
+     * accident, and a scoped sweep silently stops deleting. That makes the file
+     * incompatible with anything else writing battle records at the same time, so
+     * `fileParallelism: false` was set on the `replays` project to serialise it.
+     *
+     * **It was set in the one place the comment above says gets dropped.** Nested projects
+     * are honoured in-package and discarded by the root runner, so the setting worked for
+     * `vitest run --project replays` from `apps/api` and did nothing for `pnpm vitest run`
+     * from the repo root — which is how CI runs. The suite was parallel in exactly the
+     * environment the flake matters in, and it surfaced as four or five *different*
+     * failures per run once feature 009's matchmaking suite grew heavy enough to overlap.
+     *
+     * Serialising only the `replays` project is not enough anyway: the collision is with
+     * the `battle` project's records, which is a *different* project. Cross-project
+     * parallelism is not configurable per project, so the honest lever is the app.
+     *
+     * **Costs about a minute on a full run**, all of it database round trips that were
+     * already the bulk of the time. The rejected alternative was making the cleanup job
+     * scopable for the tests' benefit, which weakens the thing under test — and rewriting
+     * fifteen absolute-count assertions into deltas, which does not help while a
+     * concurrent writer can still have its rows swept mid-assertion.
+     */
+    fileParallelism: false,
+
     projects: [
       {
         test: {

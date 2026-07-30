@@ -230,22 +230,22 @@ is not.
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T041 [P] [US4] Write `apps/api/tests/matchmaking/bots.test.ts` — the starter pool is **100% bots with ≥20 distinct**; Bronze holds ~20% of the bot population; **Diamond has no generated bots**, only hand-seeded ones
-- [ ] T042 [P] [US4] Add the shape check to `apps/api/tests/matchmaking/bots.test.ts` — **starter bots carry a spread of ratings, not one value**. Fight all 20 as a provisional player and confirm you can lose to a strong one and beat a weak one **inside the same league**
-- [ ] T043 [P] [US4] Write `apps/api/tests/matchmaking/inactivity.test.ts` — idle 29 days is in the pool, idle 31 days is not, one battle or one squad edit re-enters **immediately with no job run**, and a **bare login does not**
+- [x] T041 [P] [US4] Write `apps/api/tests/matchmaking/bots.test.ts` — the starter pool is **100% bots with ≥20 distinct**; Bronze holds ~20% of the bot population; **Diamond has no generated bots**, only hand-seeded ones
+- [x] T042 [P] [US4] Add the shape check to `apps/api/tests/matchmaking/bots.test.ts` — **starter bots carry a spread of ratings, not one value**. Fight all 20 as a provisional player and confirm you can lose to a strong one and beat a weak one **inside the same league**
+- [x] T043 [P] [US4] Write `apps/api/tests/matchmaking/inactivity.test.ts` — idle 29 days is in the pool, idle 31 days is not, one battle or one squad edit re-enters **immediately with no job run**, and a **bare login does not**
 
 ### Implementation for User Story 4
 
-- [ ] T044 [US4] Implement bot distribution in `apps/api/src/matchmaking/bots.ts` — **30%** starter and **20/20/20/10** across Bronze, Silver, Gold and Platinum, with Diamond **hand-seeded and counted separately** (FR-015, FR-016)
-- [ ] T045 [US4] Author the **Visible** squads of **20 starter bot defenders** in `content/bots/starter/*.json`, structured as a ramp — bots 1–5 with one glaring exploitable Bane, a mono-type squad and no rune fill; 6–12 with two types and partial fill; **13–20 with mixed types, full fill and no free answer**, setting the graduation standard
-- [ ] T046 [US4] Author the **Hidden** squad of each starter bot **one band up its own ramp** — bot 3's Hidden is built to the 6–12 standard, bot 10's to the 13–20 standard, and 13–20's Hidden squads answer the very type their own Visible squad invites you to bring. A farmer who solved the Visible squad walks into the squad built to punish that solution, which is the ambush tax doing its designed job
-- [ ] T047 [US4] Author the padding bots for Bronze, Silver, Gold and Platinum in `content/bots/` at the derived floor — 13 · 13 · 13 · 7 — **each carrying both squads**, a full defense record using **the same configuration model as players**, which is 12 heroes across two zones (FR-018)
-- [ ] T048 [US4] Spread bot ratings across a band in `apps/api/src/matchmaking/bots.ts` rather than pegging to a midpoint — one anchor calibrates a single point; a spread calibrates the band (FR-017)
-- [ ] T049 [US4] Implement the inactivity test as `AND last_activity_at >= now() - interval '30 days'` **in the candidate query**, never in a nightly job — a job would leave a returning player invisible until it next ran (FR-012)
-- [ ] T050 [US4] Define activity as **an attack battle or a defense-squad edit**, never a bare login, in `apps/api/src/matchmaking/candidates.ts` — otherwise an absent account keeps collecting hold income by opening the game and doing nothing
-- [ ] T051 [US4] **Add no rule zeroing an idle account's hold income.** Leaving the pool is its own enforcement: nobody can attack a defense nobody is offered, and a second mechanism is a second thing to keep in step
-- [ ] T052 [US4] **Pad with bots first; widen only if that is not enough**, in `apps/api/src/matchmaking/candidates.ts` — a bot inside the band keeps matching in-band, while widening reaches outside it and breaks the guarantee, up to **2.67×** for a player at a league floor. Widening is **per request and never persists**
-- [ ] T053 [US4] Surface `widened: true` to the player in `apps/api/src/matchmaking/routes.ts`, because **the 1.67× guarantee does not hold on a widened match**
+- [x] T044 [US4] Implement bot distribution in `apps/api/src/matchmaking/bots.ts` — **30%** starter and **20/20/20/10** across Bronze, Silver, Gold and Platinum, with Diamond **hand-seeded and counted separately** (FR-015, FR-016)
+- [x] T045 [US4] Author the **Visible** squads of **20 starter bot defenders** in `content/bots/starter/*.json`, structured as a ramp — bots 1–5 with one glaring exploitable Bane, a mono-type squad and no rune fill; 6–12 with two types and partial fill; **13–20 with mixed types, full fill and no free answer**, setting the graduation standard
+- [x] T046 [US4] Author the **Hidden** squad of each starter bot **one band up its own ramp** — bot 3's Hidden is built to the 6–12 standard, bot 10's to the 13–20 standard, and 13–20's Hidden squads answer the very type their own Visible squad invites you to bring. A farmer who solved the Visible squad walks into the squad built to punish that solution, which is the ambush tax doing its designed job
+- [ ] T047 [US4] **DEFERRED — see decision 2 above.** Author the padding bots for Bronze, Silver, Gold and Platinum in `content/bots/` at the derived floor — 13 · 13 · 13 · 7 — **each carrying both squads**, a full defense record using **the same configuration model as players**, which is 12 heroes across two zones (FR-018)
+- [x] T048 [US4] Spread bot ratings across a band in `apps/api/src/matchmaking/bots.ts` rather than pegging to a midpoint — one anchor calibrates a single point; a spread calibrates the band (FR-017)
+- [x] T049 [US4] Implement the inactivity test as `AND last_activity_at >= now() - interval '30 days'` **in the candidate query**, never in a nightly job — a job would leave a returning player invisible until it next ran (FR-012)
+- [x] T050 [US4] Define activity as **an attack battle or a defense-squad edit**, never a bare login, in `apps/api/src/matchmaking/candidates.ts` — otherwise an absent account keeps collecting hold income by opening the game and doing nothing
+- [x] T051 [US4] **Add no rule zeroing an idle account's hold income.** Leaving the pool is its own enforcement: nobody can attack a defense nobody is offered, and a second mechanism is a second thing to keep in step
+- [x] T052 [US4] **Pad with bots first; widen only if that is not enough**, in `apps/api/src/matchmaking/candidates.ts` — a bot inside the band keeps matching in-band, while widening reaches outside it and breaks the guarantee, up to **2.67×** for a player at a league floor. Widening is **per request and never persists**
+- [x] T053 [US4] Surface `widened: true` to the player in `apps/api/src/matchmaking/routes.ts`, because **the 1.67× guarantee does not hold on a widened match**
 
 **Checkpoint**: All five stories independently functional.
 

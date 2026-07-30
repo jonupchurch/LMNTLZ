@@ -73,7 +73,27 @@ export interface BotSeat {
 export interface StarterBot {
   /** 1-based, and it is the ramp position — bot 1 is the weakest. */
   readonly position: number;
+  /** The squad's display name, e.g. `The Nine Stones`. Stored on `squads.name`. */
   readonly name: string;
+  /**
+   * The **account** username, e.g. `Nine_Stones`.
+   *
+   * **A separate field because a squad name is not a username**, and finding that out
+   * was worth the trip: `auth/username.ts` allows only `\p{L}\p{N}_` and caps the
+   * length at 16, so *"The Nine Stones"* is not a name any account can hold — spaces
+   * are rejected outright.
+   *
+   * **Bots take player-legal names on purpose.** They share the unique
+   * `accounts.username_key` index with everybody, and that index is only impersonation
+   * protection if the names on both sides of it are drawn from the same alphabet: a bot
+   * squatting an unreachable name protects nothing, while `Nine_Stones` is a name a
+   * player genuinely cannot take. `bots.seed.test.ts` asserts every one of the twenty
+   * passes `validateUsername`, which is the check that keeps this honest.
+   *
+   * The flavour is not lost — it moves to `squads.name`, which is the field that was
+   * always meant to carry it.
+   */
+  readonly username: string;
   readonly stage: 1 | 2 | 3;
   readonly gearScore: number;
   readonly visible: readonly BotSeat[];
@@ -139,7 +159,7 @@ const STARTER_RAMP: readonly Rung[] = Object.freeze([
   { name: 'Stone and Cinder', stage: 2, runes: 11, themes: ['earth', 'crush'] },
   { name: 'The Thin Blade Watch', stage: 2, runes: 11, themes: ['air', 'pierce'] },
   { name: 'Salt and Iron', stage: 2, runes: 12, themes: ['water', 'slash'] },
-  { name: 'The Lantern and the Wall', stage: 2, runes: 12, themes: ['light', 'crush'] },
+  { name: 'The Lantern Wall', stage: 2, runes: 12, themes: ['light', 'crush'] },
   { name: 'Ash and Silence', stage: 2, runes: 13, themes: ['fire', 'dark'] },
   { name: 'The Long Reach', stage: 2, runes: 13, themes: ['air', 'water'] },
   { name: 'The Verdict Hold', stage: 2, runes: 14, themes: ['light', 'pierce'] },
@@ -174,6 +194,17 @@ const STARTER_RAMP: readonly Rung[] = Object.freeze([
  * module load, before a single request is served, and a second check would be a second
  * thing to keep in step.
  */
+
+/**
+ * A squad's display name to an account username: drop a leading article, spaces to
+ * underscores.
+ *
+ * **Derived rather than authored twice**, so the two can never drift into naming
+ * different things. The leading `The ` goes because it costs four of the sixteen
+ * characters available and carries no information — every rung has one.
+ */
+const accountName = (display: string): string =>
+  display.replace(/^The /, '').replaceAll(' ', '_');
 
 /** Every hero whose primary or secondary is one of `themes`, in roster order. */
 function pool(themes: readonly DamageType[], exclude: ReadonlySet<string>): Hero[] {
@@ -544,6 +575,7 @@ export const STARTER_BOTS: readonly StarterBot[] = Object.freeze(
     return Object.freeze({
       position: i + 1,
       name: rung.name,
+      username: accountName(rung.name),
       stage: rung.stage,
       gearScore: rung.runes * COMPLETE_RUNE_SCORE,
       visible,

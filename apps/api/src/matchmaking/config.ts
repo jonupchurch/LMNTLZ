@@ -69,6 +69,25 @@ export const GEAR_BOUND = 1.67;
 export const WIDENED_GEAR_BOUND = 2.67;
 
 /**
+ * The fewest distinct defenders a pool may hold before matchmaking widens outside the
+ * band.
+ *
+ * **Not specified anywhere, so it is derived from the smallest published number that
+ * bears on it rather than chosen.** `06-progression.md`'s attack income pays **1.5× on
+ * the first five victories** of a day, so five distinct defenders is the point below
+ * which a player cannot finish the tier the economy front-loads without attacking
+ * somebody twice. That is the first place a thin pool becomes visible as something other
+ * than an aesthetic problem.
+ *
+ * **It is deliberately small, because widening breaks a promise the design published.**
+ * `contracts/matchmaking-api.md` states plainly that *"the 1.67× gear guarantee does not
+ * hold on a widened match"* — reaching a band out can serve 2.67× gear. A generous floor
+ * would widen often and quietly convert a guarantee into a usual case, so the trigger is
+ * the smallest defensible one and bots are the answer above it.
+ */
+export const MIN_POOL = 5;
+
+/**
  * A defender must have been active inside this window to be offered.
  *
  * **Applied in the query, never by a nightly job.** A job leaves a returning player
@@ -125,6 +144,7 @@ export interface MatchmakingConfig {
   };
   readonly bleed: { readonly ramp: number; readonly edgeMix: number };
   readonly bound: { readonly normal: number; readonly widened: number };
+  readonly minPool: number;
   readonly inactivityDays: number;
   readonly ambush: AmbushConfig;
   readonly starter: {
@@ -151,6 +171,7 @@ export const matchmakingConfig = (): MatchmakingConfig => ({
   },
   bleed: { ramp: BLEED_RAMP, edgeMix: BLEED_EDGE_MIX },
   bound: { normal: GEAR_BOUND, widened: WIDENED_GEAR_BOUND },
+  minPool: MIN_POOL,
   inactivityDays: INACTIVITY_DAYS,
   ambush: ambushConfig(),
   starter: {

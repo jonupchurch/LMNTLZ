@@ -20,7 +20,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { getAllHeroes } from '@lmntlz/content';
 import app from '../../src/index.js';
 import { closeDb, db } from '../../src/db/client.js';
@@ -29,6 +29,15 @@ import { squads, squadSeats } from '../../src/db/schema/squads.js';
 import { overrideProvider } from '../../src/auth/providers.js';
 import { InvalidProviderTokenError, type IdentityProvider } from '../../src/auth/provider.js';
 import { candidates } from '../../src/matchmaking/candidates.js';
+import { botRating } from '../../src/matchmaking/bots.js';
+import { STARTER_BOTS } from '../../src/matchmaking/starterBots.js';
+import {
+  removeStarterBots,
+  seedStarterBots,
+  type SeedReport,
+} from '../../src/matchmaking/seedBots.js';
+import { validateUsername } from '../../src/auth/username.js';
+import { playerRatings, STARTING_RATING } from '../../src/db/schema/ratings.js';
 import { standing } from '../../src/matchmaking/standing.js';
 import {
   GUILD_DOORS,
@@ -529,5 +538,175 @@ describe('once a starter bot is authored, the league opens itself', () => {
       const repeat = (await again.json()) as { starter: { reason?: string } };
       expect(repeat.starter.reason).toBe('voluntary');
     });
+  });
+});
+
+/**
+ * The **real** twenty, seeded through the players' own write path (T041 · T045–T048).
+ *
+ * ### Why this lives here and not in its own file
+ *
+ * It has to. The first block in this file asserts `starterLeagueOpen()` is **false**,
+ * which is a claim about the *whole database* — no starter bot anywhere. A separate file
+ * calling `seedStarterBots()` would run in parallel with it and make that assertion
+ * flake, and the header of this file predicted exactly that: *"a second file creating one
+ * would silently break the first block below."*
+ *
+ * The blocks above use one synthetic bot, which was the right fixture when no authored
+ * content existed. This one uses the shipped ramp, so what is checked is the content the
+ * game will actually serve rather than a stand-in for it.
+ *
+ * **It cleans up after itself with `removeStarterBots()`**, which also collects the
+ * synthetic bots the earlier blocks made — they are `is_bot` in the starter band too.
+ * `tests/globalSetup.ts` fails the run on a leaked account, and tests share the database
+ * with production, so twenty stray bots would be twenty stray bots in the live game.
+ */
+describe('the authored ramp, seeded', () => {
+  let report: SeedReport;
+
+  beforeAll(async () => {
+    report = await seedStarterBots();
+  }, 180_000);
+
+  afterAll(async () => {
+    await removeStarterBots();
+  }, 120_000);
+
+  it('creates all twenty, and skips them all on a second run', async () => {
+    expect(report.created).toHaveLength(STARTER_BOTS.length);
+    expect(report.skipped).toEqual([]);
+
+    /**
+     * **Idempotence is a correctness requirement, not a convenience.** `battle_records`
+     * stores squad composition and Constitution XVI makes those records permanent — so a
+     * re-seed that recreated a bot with a different squad would leave older records
+     * describing a squad that no longer exists, uncorrectably. Skipping is the only safe
+     * re-seed, which is why it is asserted rather than assumed.
+     */
+    const again = await seedStarterBots();
+    expect(again.created, 'a second seed created duplicates').toEqual([]);
+    expect(again.skipped).toHaveLength(STARTER_BOTS.length);
+  });
+
+  it('gives every bot a player-legal username', async () => {
+    /**
+     * Bots share `accounts.username_key`'s unique index with every player, and that index
+     * is only impersonation protection if both sides draw from the same alphabet. It also
+     * catches the thing that was actually wrong: the squad names contain spaces, which
+     * `validateUsername` rejects outright, so *"The Nine Stones"* could never have been
+     * an account name at all.
+     */
+    for (const bot of STARTER_BOTS) {
+      expect(validateUsername(bot.username), `${bot.username} is not a legal username`).toBeNull();
+    }
+  });
+
+  it('seats twelve champions per bot across two zones, through the players’ own writer', async () => {
+    const ids = await db()
+      .select({ id: accounts.id, username: accounts.username })
+      .from(accounts)
+      .where(and(eq(accounts.isBot, true), eq(accounts.botBand, 'starter')));
+
+    const seeded = ids.filter((r) => STARTER_BOTS.some((b) => b.username === r.username));
+    expect(seeded).toHaveLength(STARTER_BOTS.length);
+
+    for (const row of seeded) {
+      const zones = await db()
+        .select({ id: squads.id, zone: squads.zone, name: squads.name })
+        .from(squads)
+        .where(and(eq(squads.accountId, row.id), eq(squads.kind, 'defense')));
+
+      expect(zones.map((z) => z.zone).sort(), `${row.username} has the wrong zones`).toEqual([
+        'hidden',
+        'visible',
+      ]);
+
+      // The flavour name rides on the squad, which is the field that was always for it.
+      for (const zone of zones) {
+        expect(zone.name, `${row.username}'s ${zone.zone} squad is unnamed`).toBeTruthy();
+
+        const seats = await db()
+          .select({ heroId: squadSeats.heroId })
+          .from(squadSeats)
+          .where(eq(squadSeats.squadId, zone.id));
+
+        expect(seats, `${row.username}'s ${zone.zone} squad is not six`).toHaveLength(6);
+      }
+    }
+  });
+
+  it('gives every bot the ramp’s own gear and a fixed rating, not the seam’s defaults', async () => {
+    /**
+     * **The seam that protects real players would have erased the ramp.** `candidates()`
+     * coalesces a missing gear score to the 1,500 starter grant and a missing rating to
+     * 1,000 — so a bot without a standing row would read as gear 1,500 and rating 1,000,
+     * collapsing all twenty rungs onto one point and silently discarding both axes this
+     * phase authored.
+     */
+    const rows = await db()
+      .select({
+        username: accounts.username,
+        gearScore: playerRatings.gearScore,
+        rating: playerRatings.rating,
+      })
+      .from(accounts)
+      .innerJoin(playerRatings, eq(playerRatings.accountId, accounts.id))
+      .where(and(eq(accounts.isBot, true), eq(accounts.botBand, 'starter')));
+
+    const byName = new Map(rows.map((r) => [r.username, r]));
+
+    for (const [index, bot] of STARTER_BOTS.entries()) {
+      const row = byName.get(bot.username);
+      expect(row, `${bot.username} has no standing row`).toBeDefined();
+      expect(row!.gearScore, `${bot.username}'s gear is not the ramp's`).toBe(bot.gearScore);
+      expect(row!.rating, `${bot.username}'s rating is not its ramp position`).toBe(
+        botRating(index, STARTER_BOTS.length),
+      );
+    }
+
+    // And the ratings are a spread, which is the whole point of a calibration anchor.
+    const ratings = new Set(rows.map((r) => r.rating));
+    expect(ratings.size, 'the bots all share one rating').toBeGreaterThan(15);
+  });
+
+  it('offers a starter player the whole authored pool, all of it bots (T041)', async () => {
+    const list = await candidates(fresh);
+
+    /**
+     * T041's claim, against the real content: **100% bots with at least twenty distinct.**
+     * The count can exceed twenty because the blocks above seeded two synthetic bots into
+     * the same band, so this asserts the floor rather than an exact figure — a number that
+     * depends on what another block did is a number that breaks when that block changes.
+     */
+    const distinct = new Set(list.candidates.map((c) => c.playerId));
+    expect(distinct.size, 'the authored pool is not all there').toBeGreaterThanOrEqual(
+      STARTER_BOTS.length,
+    );
+
+    for (const candidate of list.candidates) {
+      expect(candidate.isBot, `${candidate.username} is not a bot`).toBe(true);
+    }
+
+    // Every authored bot specifically, by name — a count alone would pass on twenty
+    // copies of one squad.
+    const names = new Set(list.candidates.map((c) => c.username));
+    for (const bot of STARTER_BOTS) {
+      expect(names, `${bot.username} is missing from the pool`).toContain(bot.username);
+    }
+  });
+
+  it('spans the gear ramp, so the pool is a ramp and not twenty of the same fight', async () => {
+    const list = await candidates(fresh);
+    const seeded = list.candidates.filter((c) => STARTER_BOTS.some((b) => b.username === c.username));
+
+    const ratings = seeded.map((c) => c.rating).sort((a, b) => a - b);
+    expect(ratings[0], 'no weak opponent in the pool').toBeLessThan(STARTING_RATING);
+    expect(ratings.at(-1), 'no strong opponent in the pool').toBeGreaterThan(STARTING_RATING);
+
+    // Ordered by rating descending, which is the one place rating is allowed to appear.
+    const asServed = seeded.map((c) => c.rating);
+    expect(asServed, 'the pool is not ordered by rating').toEqual(
+      [...asServed].sort((a, b) => b - a),
+    );
   });
 });

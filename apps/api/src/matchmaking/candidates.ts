@@ -38,7 +38,7 @@
  * worse than one that errors.
  */
 
-import { and, desc, eq, gte, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
 import { SQUAD_SIZE } from '@lmntlz/sim/rules';
 import { db } from '../db/client.js';
 import { accounts } from '../db/schema/accounts.js';
@@ -46,7 +46,8 @@ import { playerRatings, STARTING_RATING } from '../db/schema/ratings.js';
 import { squads, squadSeats } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
-import { INACTIVITY_DAYS, STARTER_DAYS } from './config.js';
+import { INACTIVITY_DAYS, MIN_POOL, STARTER_DAYS } from './config.js';
+import { bleed, leagueAbove, leagueBelow } from './bleed.js';
 import { starterLeagueOpen, starterStatus } from './starterLeague.js';
 import { STARTER_GRANT_SCORE, bandOf, leagueOf, positionInLeague, type League } from './league.js';
 
@@ -159,47 +160,146 @@ export async function candidates(accountId: string): Promise<CandidateList> {
    */
   const leagueOpen = await starterLeagueOpen();
 
+  /**
+   * **Everything true of a defender regardless of which band is searched — and putting
+   * the two starter protections here is a bug fix, not tidying.**
+   *
+   * They used to sit alongside the gear range inside a single `pool` predicate. That was
+   * safe while there was exactly one pool query. The moment bleed and widening added two
+   * more, both new queries built their own gear range and **silently dropped both
+   * protections**: a veteran near a band edge was offered starter players as bleed
+   * neighbours, and the beginner ramp became farmable again. Two tests caught it. The
+   * lesson generalises — a protection written *next to* a varying clause travels with the
+   * variation instead of with the rule.
+   *
+   * ### The three parts
+   *
+   * **Activity, in the query rather than a nightly job.** A job leaves a returning player
+   * invisible until it next runs. The `isNull` arm is the seam above: with no standing
+   * row, fall back to when the account was created. **A bot is never inactive, and that
+   * arm is load-bearing** — a bot has no activity row and never will, so it would fall
+   * through to `created_at` and every authored bot would drop out of every pool thirty
+   * days after seeding, with no error anywhere.
+   *
+   * **The nursery is not farmable**, which is what lets opting out be permanent. A
+   * starter bot's gear sits at or below the Bronze floor, so without this it lands in
+   * every Bronze player's pool — and `09-matchmaking.md` rejects exactly that: *"a player
+   * who returns after leaving would be farming a pool built for beginners."* Band rather
+   * than `is_bot`, because Bronze **is** padded with bots by design and those are meant to
+   * be offered; it is the authored ramp that is reserved.
+   *
+   * **A starter player's defense is dormant** (FR-020) — removed from everybody else's
+   * pool rather than merely told nothing will happen. Written as the negation of "still in
+   * the starter league": an exit is recorded, *or* the week has elapsed, *or* it is a bot.
+   *
+   * Both starter clauses are omitted **for** a starter player, whose pool is the ramp
+   * itself — the nursery clause would exclude the very opponents they are owed.
+   */
+  const eligible = and(
+    ne(accounts.id, accountId),
+    seatedSix,
+    or(
+      eq(accounts.isBot, true),
+      gte(playerRatings.lastActivityAt, cutoff),
+      and(isNull(playerRatings.lastActivityAt), gte(accounts.createdAt, cutoff)),
+    ),
+    starter.active ? undefined : or(isNull(accounts.botBand), ne(accounts.botBand, 'starter')),
+    !starter.active && leagueOpen
+      ? or(
+          isNotNull(accounts.starterExitedAt),
+          lt(accounts.createdAt, starterCutoff),
+          eq(accounts.isBot, true),
+        )
+      : undefined,
+  );
+
+  /** Gear restricts, and this is the only place it does. */
   const pool = starter.active
     ? and(eq(accounts.isBot, true), eq(accounts.botBand, 'starter'))
-    : and(
-        // Gear restricts — and this is the only place it does.
-        gte(effectiveGearScore, band.floor),
-        lt(effectiveGearScore, band.ceiling),
-        /**
-         * **The nursery is not farmable, and this clause is the reason opting out can
-         * be permanent.** A starter bot's gear score sits at or below the Bronze floor,
-         * so without this it would land in every Bronze player's ordinary pool — and
-         * `09-matchmaking.md` rejects exactly that: *"a player who returns after leaving
-         * would be farming a pool built for beginners."* One-way is only meaningful if
-         * the door stays shut from the other side too.
-         *
-         * Band rather than `is_bot`: Bronze **is** padded with bots by design (FR-015),
-         * and those are meant to be offered. It is the authored beginner ramp that is
-         * reserved.
-         */
-        or(isNull(accounts.botBand), ne(accounts.botBand, 'starter')),
-        /**
-         * **A starter player's defense is dormant** (FR-020), so they are removed from
-         * everybody else's pool rather than merely told nothing will happen.
-         * Expressed as the negation of "still in the starter league", which is the
-         * same three conditions `starterStatus()` applies, in SQL: an exit is
-         * recorded, *or* the week has elapsed, *or* it is a bot.
-         */
-        leagueOpen
-          ? or(
-              isNotNull(accounts.starterExitedAt),
-              lt(accounts.createdAt, starterCutoff),
-              eq(accounts.isBot, true),
-            )
-          : undefined,
-      );
+    : and(gte(effectiveGearScore, band.floor), lt(effectiveGearScore, band.ceiling));
 
-  const rows = await db()
+  const rows = await defenders(eligible, pool, 'desc');
+
+  /**
+   * ### Bleed, and then widening — in that order, because they are not the same thing
+   *
+   * **Bleed is by design and proportional; widening is an emergency that breaks a
+   * published promise.** `bleed()` says what share of this player's offers should come
+   * from the league above and below given where they sit in their band — zero through
+   * the middle 80%, rising to half at each edge — which is what makes crossing a
+   * threshold cost 0.2% rather than 12.6 points of win rate.
+   *
+   * Widening is different: it reaches a whole band out because there is nobody to fight,
+   * and `contracts/matchmaking-api.md` is explicit that *"the 1.67× gear guarantee does
+   * not hold on a widened match."* So it goes second and it is disclosed.
+   *
+   * **A starter player gets neither.** Their pool is the authored ramp, which is the
+   * bound by construction — reaching outside it would hand a beginner the very full-kit
+   * veteran the ramp exists to keep away, and the ramp is never thin because it is
+   * authored rather than populated.
+   */
+  const neighbours = starter.active ? [] : await bleedNeighbours(eligible, gearScore, rows.length);
+
+  let all = [...rows, ...neighbours];
+  let widened = false;
+
+  if (!starter.active && all.length < MIN_POOL) {
+    /**
+     * **Padding with bots happens before this and is not a step here** (T052). Bots are
+     * *seeded into bands* rather than injected per request, so by the time this runs any
+     * bot in the player's league is already in `rows` — which is the point: a bot inside
+     * the band keeps matching in-band, while widening does not. This branch is what
+     * happens when even that was not enough.
+     *
+     * **Per request and never persisted.** Nothing records that a player was widened;
+     * the next request asks again, and a league that has since filled stops widening on
+     * its own.
+     */
+    all = await defenders(eligible, widenedBand(league), 'desc');
+    widened = all.length > rows.length;
+  }
+
+  /**
+   * **Sorted here rather than trusted from the queries**, because two or three ordered
+   * result sets concatenated are not one ordered result set — and rating order is the
+   * one thing the contract promises about sequence.
+   */
+  const ordered = [...all].sort((a, b) => Number(b.rating) - Number(a.rating) || a.playerId.localeCompare(b.playerId));
+
+  return {
+    league,
+    positionInLeague: positionInLeague(gearScore),
+    gearScore,
+    widened,
+    candidates: ordered.map((r) => ({
+      playerId: r.playerId,
+      username: r.username,
+      isBot: r.isBot,
+      rating: Number(r.rating),
+      visibleHoldStreak: r.visibleHoldStreak,
+      hiddenHoldStreak: Number(r.hiddenHoldStreak),
+    })),
+    ambushChance: ambushChance(Number(own.attackStreak)),
+    consecutiveWins: Number(own.attackStreak),
+  };
+}
+
+/** One row shape for every pool query, so the three cannot drift apart. */
+async function defenders(
+  eligible: ReturnType<typeof and>,
+  pool: ReturnType<typeof and>,
+  direction: 'asc' | 'desc',
+  limit?: number,
+) {
+  const rating = sql<number>`coalesce(${playerRatings.rating}, ${STARTING_RATING})`;
+
+  const query = db()
     .select({
       playerId: accounts.id,
       username: accounts.username,
       isBot: accounts.isBot,
-      rating: sql<number>`coalesce(${playerRatings.rating}, ${STARTING_RATING})`,
+      gear: effectiveGearScore,
+      rating,
       visibleHoldStreak: squads.holdStreak,
       hiddenHoldStreak: sql<number>`coalesce((
         select h.hold_streak from ${squads} h
@@ -219,52 +319,89 @@ export async function candidates(accountId: string): Promise<CandidateList> {
       squads,
       and(eq(squads.accountId, accounts.id), eq(squads.kind, 'defense'), eq(squads.zone, 'visible')),
     )
-    .where(
-      and(
-        ne(accounts.id, accountId),
-        seatedSix,
-        pool,
-        /**
-         * **In the query, not a nightly job.** A job leaves a returning player
-         * invisible until it next runs. The `isNull` arm is the seam above: with no
-         * standing row, fall back to when the account was created.
-         *
-         * **A bot is never inactive, and this arm is load-bearing rather than
-         * tidy.** A bot has no activity row and never will — nothing signs into one —
-         * so it would fall through to `created_at`, and every authored bot would
-         * silently drop out of every pool thirty days after it was seeded. The whole
-         * bot layer would stop working with no error anywhere, which is the failure
-         * mode this project keeps finding.
-         */
-        or(
-          eq(accounts.isBot, true),
-          gte(playerRatings.lastActivityAt, cutoff),
-          and(isNull(playerRatings.lastActivityAt), gte(accounts.createdAt, cutoff)),
-        ),
-      ),
-    )
-    // Rating appears here and nowhere else in this query.
-    .orderBy(desc(sql`coalesce(${playerRatings.rating}, ${STARTING_RATING})`), accounts.id);
+    .where(and(eligible, pool))
+    // Rating appears here and nowhere else. Gear orders the *bleed* selection, below.
+    .orderBy(direction === 'asc' ? asc(effectiveGearScore) : desc(rating), accounts.id);
 
-  return {
-    league,
-    positionInLeague: positionInLeague(gearScore),
-    gearScore,
-    // Widening is Phase 7's, once bots exist to pad with. Never persisted.
-    widened: false,
-    candidates: rows.map((r) => ({
-      playerId: r.playerId,
-      username: r.username,
-      // Read from the row rather than hard-coded false. No account is a bot until
-      // Phase 7 authors one, so this is `false` for everybody today — but it is
-      // false *because the column says so*, which is the difference between a seam
-      // and a placeholder.
-      isBot: r.isBot,
-      rating: Number(r.rating),
-      visibleHoldStreak: r.visibleHoldStreak,
-      hiddenHoldStreak: Number(r.hiddenHoldStreak),
-    })),
-    ambushChance: ambushChance(Number(own.attackStreak)),
-    consecutiveWins: Number(own.attackStreak),
-  };
+  return limit === undefined ? query : query.limit(limit);
+}
+
+/**
+ * The defenders drawn from next door, in the proportion `bleed()` asks for.
+ *
+ * **Nearest across the line, not strongest.** A player at the top of Silver who starts
+ * seeing Gold names should see the *weakest* Gold players — the ones they have nearly
+ * caught — because those are the opponents the bleed is modelling. Taking the top of Gold
+ * would make crossing a threshold a cliff in the other direction, which is the exact
+ * sawtooth `bleed.ts` exists to remove.
+ *
+ * The counts come from treating the mix as shares of the finished list: if `own` accounts
+ * for a fraction `m` of the offers and there are `C` of them, the whole list is `C / m`.
+ */
+async function bleedNeighbours(
+  eligible: ReturnType<typeof and>,
+  gearScore: number,
+  ownCount: number,
+) {
+  const mix = bleed(gearScore);
+  if (mix.own >= 1 || ownCount === 0) return [];
+
+  const total = ownCount / mix.own;
+  const league = leagueOf(gearScore);
+
+  const picked: Awaited<ReturnType<typeof defenders>> = [];
+
+  const above = leagueAbove(league);
+  const upN = Math.round(total * mix.up);
+  if (above && upN > 0) {
+    const band = bandOf(above);
+    // Ascending gear: the weakest of the league above, i.e. those just over the line.
+    picked.push(
+      ...(await defenders(
+        eligible,
+        and(gte(effectiveGearScore, band.floor), lt(effectiveGearScore, band.ceiling)),
+        'asc',
+        upN,
+      )),
+    );
+  }
+
+  const below = leagueBelow(league);
+  const downN = Math.round(total * mix.down);
+  if (below && downN > 0) {
+    const band = bandOf(below);
+    /**
+     * **Descending gear here, and the asymmetry is deliberate.** Downward the nearest
+     * neighbours are the *strongest* of the band below, so the direction flips. Using
+     * `asc` for both would offer a Silver player the very bottom of Bronze — a 1.67×
+     * mismatch in their own favour, dressed up as a bleed.
+     */
+    picked.push(
+      ...(await defenders(
+        eligible,
+        and(gte(effectiveGearScore, band.floor), lt(effectiveGearScore, band.ceiling)),
+        'desc',
+        downN,
+      )),
+    );
+  }
+
+  return picked;
+}
+
+/**
+ * One band either side, which is what `WIDENED_GEAR_BOUND` is derived from.
+ *
+ * **Not two, and not unbounded.** 2.67× is *"the same derivation one band wider"*; a
+ * second band out would be a third promise nobody has stated, and an unbounded widen
+ * would serve a Bronze player a Diamond defender rather than admit the league is empty.
+ */
+function widenedBand(league: League) {
+  const below = leagueBelow(league);
+  const above = leagueAbove(league);
+
+  const floor = bandOf(below ?? league).floor;
+  const ceiling = bandOf(above ?? league).ceiling;
+
+  return and(gte(effectiveGearScore, floor), lt(effectiveGearScore, ceiling));
 }

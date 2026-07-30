@@ -79,18 +79,30 @@ const install = (placedRunes: number): void => {
 };
 
 /**
- * What matchmaking says about *this* player, with the opponent list dropped.
+ * What matchmaking says about *this* player, with the population-dependent parts dropped.
  *
- * The list is every eligible defender in the database, so other suites creating
- * accounts in parallel would move it — a comparison including it would be a flake,
- * and a flake gets retried rather than read. The claim under test is about the
- * player's own standing anyway.
+ * The list is every eligible defender in the database, so other suites creating accounts
+ * in parallel would move it — a comparison including it would be a flake, and a flake
+ * gets retried rather than read. The claim under test is about the player's own standing
+ * anyway.
+ *
+ * **`widened` goes for the same reason, one level up, and it was missed the first time.**
+ * It is a fact about how many opponents exist right now, not about this player's gear:
+ * Phase 7 made it true when a band holds fewer than `MIN_POOL` defenders, and this loop
+ * runs seventeen times while other suites create and delete accounts around it. It
+ * flipped mid-loop and failed the comparison on correct code.
+ *
+ * Worth recording that **the spread-and-delete design is what surfaced it.** Naming the
+ * fields to compare would have quietly gone on ignoring `widened` forever; comparing
+ * everything by default meant a new field arrived in the assertion the day it was added,
+ * and had to be reasoned about rather than overlooked.
  */
 const ownFields = async (accountId: string): Promise<Record<string, unknown>> => {
   // Spread-and-delete rather than naming the fields, so a field added to the
   // response next year is compared without anybody remembering to add it here.
   const mine: Record<string, unknown> = { ...(await candidates(accountId)) };
   delete mine['candidates'];
+  delete mine['widened'];
   return mine;
 };
 
