@@ -187,6 +187,39 @@ export const battles = pgTable(
     leagueAtBattle: text('league_at_battle'),
     ratingAtBattle: integer('rating_at_battle'),
 
+    /**
+     * League and rating **per side, captured when the battle starts** (009 T055).
+     *
+     * ### Why four columns here as well as on `battle_records`
+     *
+     * `battle_records` has had these four since 008 and `record.ts` wrote `null` into
+     * every one of them, because leagues did not exist yet. They exist now. But the record
+     * is built from the concluding `UPDATE`'s `RETURNING` and **never from a second
+     * `SELECT`** — that rule is what stops the record disagreeing with the settlement
+     * describing it — so a value the record must carry has to be on this row to be
+     * returnable.
+     *
+     * ### Creation time, not settlement time, and the difference is real
+     *
+     * A battle can stay open for hours. Placing a rune mid-battle can move a player across
+     * a league threshold, so reading the league at settlement would record the band the
+     * player was in when they *finished* rather than the one the matchmaking decision was
+     * made in. The interesting question is always about the **gap the pool offered**, which
+     * is a creation-time fact.
+     *
+     * ### These are the columns Constitution XVI cannot repair
+     *
+     * Every battle recorded before this landed has null leagues and null ratings, forever.
+     * That is not a bug to fix later — it is the reason this is being wired the moment
+     * league exists rather than when a screen wants it. `leagueAtBattle` and
+     * `ratingAtBattle` above are the previous attempt: single columns that cannot say
+     * whose, superseded and still empty.
+     */
+    attackerLeague: text('attacker_league'),
+    defenderLeague: text('defender_league'),
+    attackerRating: integer('attacker_rating'),
+    defenderRating: integer('defender_rating'),
+
     winner: text('winner'),
     reason: text('reason'),
 

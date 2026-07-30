@@ -110,6 +110,15 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
         attackerId: battles.attackerId,
         defenderId: battles.defenderId,
         defenderIsBot: battles.defenderIsBot,
+        /**
+         * **Returned rather than re-read**, which is why they had to live on `battles` at
+         * all: `insertRecord` takes no second `SELECT`, so the permanent record can only
+         * carry what the concluding `UPDATE` hands it. See the columns' own note.
+         */
+        attackerLeague: battles.attackerLeague,
+        defenderLeague: battles.defenderLeague,
+        attackerRating: battles.attackerRating,
+        defenderRating: battles.defenderRating,
         zone: battles.zone,
         attackerSquad: battles.attackerSquad,
         defenderSnapshot: battles.defenderSnapshot,

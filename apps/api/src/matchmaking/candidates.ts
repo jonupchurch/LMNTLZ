@@ -257,6 +257,40 @@ export async function candidates(accountId: string): Promise<CandidateList> {
      */
     all = await defenders(eligible, widenedBand(league), 'desc');
     widened = all.length > rows.length;
+
+    /**
+     * **The widen rate, instrumented from the first widened request ever served (T054).**
+     *
+     * `09-matchmaking.md` makes this the metric that says whether the bot allocation was
+     * big enough: *"Bronze is where the widen breaks a guarantee"*, and **a Bronze widen
+     * rate above a few percent means the bot allocation was too small.** Adding the
+     * instrument when somebody notices a problem leaves nothing to compare against — the
+     * same reason `act.ts` logs its replay cost from the first battle.
+     *
+     * ### A log line, and no table, and no vendor
+     *
+     * `docs/tech-stack.md` settles that **no vendor measures the game** — the battle
+     * metadata row is the analytics product. But a widen cannot be derived from
+     * `battle_records`: it happens when a player *looks at* an opponent list, and most
+     * listings never become a battle. So it needs its own instrument, and the cheapest
+     * honest one is a structured line.
+     *
+     * **Only widened requests are logged, which is deliberate and it does cost
+     * something.** Logging every call would give an exact denominator and would also mean
+     * a line per opponent-list view forever. The denominator is instead the platform's own
+     * request count for this route, which makes the rate approximate — stated here so
+     * nobody reads a precision into it that is not there. It is a launch-tuning signal
+     * checked occasionally, not a dashboard, and if it ever needs to be exact the fix is a
+     * counter rather than more log volume.
+     *
+     * `league` is on the line because the allocation is per-band and the answer is
+     * per-band; a total would average Bronze's problem away against Platinum's health.
+     */
+    if (widened) {
+      console.warn(
+        `[matchmaking] widened league=${league} own=${rows.length} widened_to=${all.length} min=${MIN_POOL}`,
+      );
+    }
   }
 
   /**

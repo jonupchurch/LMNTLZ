@@ -57,6 +57,13 @@
       "when": 1785373043600,
       "tag": "0007_burly_captain_flint",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785381060044,
+      "tag": "0008_lush_sister_grimm",
+      "breakpoints": true
     }
   ]
 }

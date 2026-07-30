@@ -23,15 +23,18 @@
  */
 
 import { randomInt } from 'node:crypto';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { contentVersion } from '@lmntlz/content';
 import { engineVersion } from '@lmntlz/sim/rules';
 import { createSeed } from '@lmntlz/sim/resolver';
 import { db } from '../db/client.js';
+import { accounts } from '../db/schema/accounts.js';
 import { battles } from '../db/schema/battles.js';
+import { playerRatings, STARTING_RATING } from '../db/schema/ratings.js';
 import { squads, squadSeats, squadMemberConfig, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
+import { STARTER_GRANT_SCORE, leagueOf } from '../matchmaking/league.js';
 import { buildInitialState } from './board.js';
 import { openingPacket } from './packet.js';
 import { encodeSeed } from './seedStore.js';
@@ -246,12 +249,57 @@ export async function createBattle(
   const seed = createSeed();
   const versions = { engineVersion: engineVersion(), contentVersion: contentVersion() };
 
+  /**
+   * **Whether the defender is a bot, and both sides' standing, as they are right now
+   * (009 T055).**
+   *
+   * ### `defenderIsBot` was hard-coded `false`, and that column can never be corrected
+   *
+   * `battles.defender_is_bot` exists because — in its own words — *"bot battles must be
+   * excludable from every aggregate"*, and until bots were accounts there were none, so
+   * `false` was true. Phase 7 made twenty of them real. Every battle against a bot would
+   * have been recorded as a battle against a player, in a table Constitution XVI makes
+   * permanent, and the first balance question asked of it would have got a wrong answer
+   * that looked completely reasonable. 008's `commitments.test.ts` already measured how
+   * much this matters: the Visible hold rate is **40% human-only and 60% with bots
+   * counted**.
+   *
+   * ### The leagues and ratings likewise
+   *
+   * `record.ts` wrote `null` into all four of `battle_records`' league and rating columns
+   * because feature 009 had not shipped. It has. These are captured here, at creation,
+   * because that is when the matchmaking decision was made — see the note on the columns.
+   *
+   * One query for both sides, and a LEFT JOIN because pre-010 a standing row may not
+   * exist: an INNER JOIN would return no row and the battle would refuse to start, which
+   * is the kind of failure this project has already met once in `candidates()`.
+   */
+  const standings = await db()
+    .select({
+      id: accounts.id,
+      isBot: accounts.isBot,
+      gearScore: sql<number>`coalesce(${playerRatings.gearScore}, ${STARTER_GRANT_SCORE})`,
+      rating: sql<number>`coalesce(${playerRatings.rating}, ${STARTING_RATING})`,
+    })
+    .from(accounts)
+    .leftJoin(playerRatings, eq(playerRatings.accountId, accounts.id))
+    .where(inArray(accounts.id, [attackerId, opponentId]));
+
+  const byId = new Map(standings.map((r) => [r.id, r]));
+  const attackerStanding = byId.get(attackerId);
+  const defenderStanding = byId.get(opponentId);
+
   const inserted = await db()
     .insert(battles)
     .values({
       attackerId,
       defenderId: opponentId,
-      defenderIsBot: false,
+      // Read from the row. `false` was correct only while no bot existed.
+      defenderIsBot: defenderStanding?.isBot ?? false,
+      attackerLeague: attackerStanding ? leagueOf(Number(attackerStanding.gearScore)) : null,
+      defenderLeague: defenderStanding ? leagueOf(Number(defenderStanding.gearScore)) : null,
+      attackerRating: attackerStanding ? Number(attackerStanding.rating) : null,
+      defenderRating: defenderStanding ? Number(defenderStanding.rating) : null,
       zone,
       seed: encodeSeed(seed),
       engineVersion: versions.engineVersion,

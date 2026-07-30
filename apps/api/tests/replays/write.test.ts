@@ -116,30 +116,46 @@ describe('the record', () => {
     expect(record.contentVersion).toBe(contentVersion());
   });
 
-  it('leaves league and rating null, because neither feature exists yet', async () => {
+  it('carries both leagues and both ratings, now that 009 exists', async () => {
     /**
-     * Asserted rather than left implicit, so the day 009 and 010 start writing
-     * them this test fails and somebody confirms it on purpose. A nullable column
-     * silently staying null forever is how a field ends up missing from the
-     * history that matters.
+     * ### This test is the tripwire from 008, and it fired exactly as intended
+     *
+     * It used to assert all four columns were **null**, with the note: *"asserted rather
+     * than left implicit, so the day 009 and 010 start writing them this test fails and
+     * somebody confirms it on purpose. A nullable column silently staying null forever is
+     * how a field ends up missing from the history that matters."*
+     *
+     * 009 T055 started writing them and this went red on the next full run. That is the
+     * whole value of the pattern — the alternative was four columns quietly staying null
+     * through a feature that had everything needed to fill them, in a table Constitution
+     * XVI makes permanent. **Confirmed on purpose, and flipped.**
+     *
+     * The deeper assertions — each side read separately, creation-time rather than
+     * settlement-time, the bot flag — live in `tests/matchmaking/record.test.ts`, which is
+     * the feature that owns them.
      */
     const record = (await recordOf(started.battleId))!;
 
-    expect(record.attackerLeague).toBeNull();
-    expect(record.defenderLeague).toBeNull();
-    expect(record.attackerRating).toBeNull();
-    expect(record.defenderRating).toBeNull();
+    expect(record.attackerLeague, 'the attacker league went back to null').not.toBeNull();
+    expect(record.defenderLeague, 'the defender league went back to null').not.toBeNull();
+    expect(record.attackerRating, 'the attacker rating went back to null').not.toBeNull();
+    expect(record.defenderRating, 'the defender rating went back to null').not.toBeNull();
   });
 
   it('records defender_is_bot from the battle row rather than inferring it', async () => {
     /**
      * ### T011, honestly scoped
      *
-     * The task asks to *fight a bot and fight a human*. **There are no bots yet** —
-     * curated bot defenders arrive with `07-defense-ai.md` and feature 009, and
-     * `createBattle` writes `false` for every battle it can currently create. So
-     * the half of T011 that can be tested today is the plumbing: that the flag
-     * travels from the battle row into the record instead of being derived.
+     * The task asks to *fight a bot and fight a human*. When this was written **there were
+     * no bots** and `createBattle` wrote `false` for every battle, so the only half that
+     * could be tested was the plumbing: that the flag travels from the battle row into the
+     * record instead of being derived.
+     *
+     * **Feature 009 seeded twenty and taught `createBattle` to read the column**, so the
+     * other half is testable now and lives in `tests/matchmaking/record.test.ts` — a real
+     * battle against a real bot. This still earns its place, because it is the only test
+     * that flips the flag on the *row* and checks the record follows: it covers the copy,
+     * where that one covers the capture.
      *
      * That is the half that could actually break. The flag exists precisely
      * because it must **not** be inferred from `defender_id IS NULL` — a deleted

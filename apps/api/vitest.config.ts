@@ -91,6 +91,32 @@ export default defineConfig({
      */
     fileParallelism: false,
 
+    /**
+     * **Thirty seconds, at this level, and this is the SECOND setting lost to the trap
+     * above.**
+     *
+     * It was set on the `matchmaking` project — for `population.ts`, which builds 20,000
+     * synthetic accounts — and the root runner dropped it exactly as it dropped
+     * `fileParallelism`. Nothing noticed for two features because every matchmaking test
+     * until now was pure arithmetic or a single query and fit inside the 5s default. Then
+     * `record.test.ts` started fighting battles to a conclusion — ~73 requests each, every
+     * one replaying the action log — and six of its seven tests timed out **in the root run
+     * only**, while passing in-package.
+     *
+     * ### So the rule for this file, written down rather than rediscovered a third time
+     *
+     * **Treat the nested `projects` array as a way to name and filter files, and nothing
+     * else.** `name`, `include` and `exclude` do their job there because the root run does
+     * not need them. Everything *behavioural* — `environment`, `setupFiles`,
+     * `fileParallelism`, `testTimeout` — must be stated here or it silently applies only
+     * when somebody runs vitest from inside `apps/api`, which is not how CI runs.
+     *
+     * Generous rather than tuned: every suite in this app talks to a network database, so
+     * the failure this guards against is a slow round trip, and a timeout that fires on
+     * one of those reports a defect that is not there.
+     */
+    testTimeout: 30_000,
+
     projects: [
       {
         test: {

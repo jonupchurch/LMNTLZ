@@ -268,3 +268,52 @@ describe('widening is the last resort, and it says so (T052 · T053)', () => {
     expect(typeof list.widened, 'widened must always be present, never optional').toBe('boolean');
   });
 });
+
+describe('the widen rate is instrumented from the first widened request (T054)', () => {
+  it('logs the league and both pool sizes when it widens', async () => {
+    /**
+     * **The metric that says whether the bot allocation was big enough.**
+     * `09-matchmaking.md`: Bronze is where widening breaks the guarantee, and **a Bronze
+     * widen rate above a few percent means the allocation was too small.** Instrumenting it
+     * when somebody notices a problem leaves nothing to compare against.
+     *
+     * Asserted because an instrument nobody checks is an instrument that gets deleted as
+     * noise. The **league** is the part that matters — a total would average Bronze's
+     * problem away against Platinum's health.
+     */
+    const lines: string[] = [];
+    const original = console.warn;
+    console.warn = (...args: unknown[]) => void lines.push(args.join(' '));
+
+    try {
+      const list = await candidates(lonely);
+      expect(list.widened, 'the fixture did not widen, so nothing could be logged').toBe(true);
+    } finally {
+      console.warn = original;
+    }
+
+    const line = lines.find((l) => l.includes('[matchmaking] widened'));
+    expect(line, `no widen was logged; saw ${JSON.stringify(lines)}`).toBeDefined();
+    expect(line, 'the log does not name the league, so the rate cannot be read per band').toContain(
+      'league=platinum',
+    );
+    expect(line, 'the log does not report how thin the band was').toMatch(/own=\d+/);
+    expect(line).toMatch(/widened_to=\d+/);
+  });
+
+  it('stays quiet on a healthy band', async () => {
+    // Otherwise the signal is every request and the rate is unreadable.
+    const lines: string[] = [];
+    const original = console.warn;
+    console.warn = (...args: unknown[]) => void lines.push(args.join(' '));
+
+    try {
+      const list = await candidates(edge);
+      expect(list.widened).toBe(false);
+    } finally {
+      console.warn = original;
+    }
+
+    expect(lines.filter((l) => l.includes('[matchmaking] widened'))).toEqual([]);
+  });
+});

@@ -253,10 +253,10 @@ is not.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T054 **Instrument `widenRate` from day one** in `apps/api/src/matchmaking/candidates.ts` — widened requests over total, **by league**. Bronze is where inactive accounts thin hardest and where widening breaks the bound; **a Bronze widen rate above a few percent means the bot allocation was too small**
-- [ ] T055 Confirm every battle record carries `defender_is_bot`, `attacker_league`, `defender_league` and both ratings — feature 008 owns the columns; this task asserts this feature populates them (FR-013, SC-008)
-- [ ] T056 [P] Write `apps/api/src/matchmaking/README.md` — the two axes, the carve-out, and the standing note that the bot total is a launch-tuning number with a derived floor
-- [ ] T057 Run the full quickstart manual pass, including the `rg` check that no `zeroHoldIncome`-style rule exists
+- [x] T054 **Instrument `widenRate` from day one** in `apps/api/src/matchmaking/candidates.ts` — widened requests over total, **by league**. Bronze is where inactive accounts thin hardest and where widening breaks the bound; **a Bronze widen rate above a few percent means the bot allocation was too small**
+- [x] T055 Confirm every battle record carries `defender_is_bot`, `attacker_league`, `defender_league` and both ratings — feature 008 owns the columns; this task asserts this feature populates them (FR-013, SC-008)
+- [x] T056 [P] Write `apps/api/src/matchmaking/README.md` — the two axes, the carve-out, and the standing note that the bot total is a launch-tuning number with a derived floor
+- [x] T057 Run the full quickstart manual pass, including the `rg` check that no `zeroHoldIncome`-style rule exists
 
 ---
 

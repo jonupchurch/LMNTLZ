@@ -65,6 +65,11 @@ export interface RecordSource {
   readonly attackerId: string | null;
   readonly defenderId: string | null;
   readonly defenderIsBot: boolean;
+  /** Captured at creation by `battle/create.ts`. Null only on battles that predate 009. */
+  readonly attackerLeague: string | null;
+  readonly defenderLeague: string | null;
+  readonly attackerRating: number | null;
+  readonly defenderRating: number | null;
   readonly zone: string;
   readonly attackerSquad: unknown;
   readonly defenderSnapshot: unknown;
@@ -116,15 +121,22 @@ export async function insertRecord(tx: Tx, input: RecordInput): Promise<void> {
     defenderSquad: source.defenderSnapshot,
 
     /**
-     * **Left null on purpose.** Leagues come from feature 009 and rating from
-     * 010; neither exists, so there is no true value to write and a sentinel
-     * would be indistinguishable from a real one. The columns exist now because
-     * Constitution XVI means they cannot be added later.
+     * **Populated as of 009 T055 — they were `null` here for two features.**
+     *
+     * The old note said leagues came from 009 and ratings from 010 and neither existed, so
+     * there was no true value to write. 009 exists now, and it owns `player_ratings.rating`
+     * as well as the bands, so both are real.
+     *
+     * **They arrive from the `RETURNING`, captured at battle creation**, because that is
+     * when the matchmaking decision was made and because this function is forbidden a
+     * second `SELECT`. Still nullable: battles recorded before this landed have no true
+     * value, and Constitution XVI protects values that *were* real rather than requiring
+     * invented ones.
      */
-    attackerLeague: null,
-    defenderLeague: null,
-    attackerRating: null,
-    defenderRating: null,
+    attackerLeague: source.attackerLeague,
+    defenderLeague: source.defenderLeague,
+    attackerRating: source.attackerRating,
+    defenderRating: source.defenderRating,
 
     engineVersion: source.engineVersion,
     contentVersion: source.contentVersion,
