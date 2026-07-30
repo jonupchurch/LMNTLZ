@@ -144,6 +144,45 @@ seconds.
 rewritten** — the corrections belong in the mechanics docs when someone edits them
 deliberately.
 
+### Discrepancies found specifying the design port (017) — **2026-07-30**
+
+Reading the exports as *designs to build from* rather than as reference surfaced one
+defect, and it is **systematic rather than a typo**.
+
+- **The design library models effectiveness as four tiers; canon has five.** Every
+  export that shows the ladder shows the same wrong one:
+
+  | | Design exports | Canon (`CLAUDE.md`, `01-stats.md`) |
+  |---|---|---|
+  | Bane | ×1.5 | ×1.50 ✅ |
+  | Fault | **×1.2** | **×1.25** |
+  | Neutral | ×1.0 | ×1.00 ✅ |
+  | Secondary | **— absent —** | **×0.80** |
+  | Primary | ×0.5 | ×0.50 ✅ |
+
+  `FAULT ×1.2` appears in **four** exports — `Codex`, `Design System`, `Hero Card`
+  and `Turn Sequence`. `Turn Sequence` states the collapse outright: *"Bane ×1.5,
+  Fault ×1.2, either of the target's own Forces ×0.5"* — **either**, where canon
+  distinguishes the secondary (×0.80) from the primary (×0.50). A scan of all
+  twenty exports finds **no occurrence of ×0.80 anywhere**; the only `0.8` in the
+  library is an HP fraction in `Matchmaking and Results`.
+
+  Consequence for the port: the **relationship strip and the hero card must render
+  five tiers, not the four they are drawn with**, and every multiplier a player
+  reads is required to come from the generated matrix at render time rather than be
+  transcribed (017 FR-019). That makes this class of drift impossible to repeat —
+  the screen cannot disagree with the engine, because it has no number of its own.
+
+- **`THE COURT` is a rail destination with no screen.** It is named in the shell of
+  almost every export, but no `Court.dc.html` exists, and *Court-Champion* turns out
+  to be a **league name** — `Matchmaking and Results` shows it beside the rating,
+  and *"three courts will hear you"* describes match offerings. **Not a defect in
+  the exports**; noted because porting the rail verbatim would ship a navigation
+  entry that leads nowhere.
+
+**Nothing was rewritten here either.** The exports stay as generated and are left to
+be regenerated; canon is unchanged and unchallenged.
+
 ## Lore & roster
 
 - `LORE-and-flavor.md` — world (Aethrym), the Nine Forces, the **weakness-derivation rule**, House voices, drop-in flavor text, and the **Design Canon** single-source-of-truth block.
