@@ -294,16 +294,27 @@ move. What 013 left named rather than done:
   resolves lazily, because *"the job never ran"* freezing a guild forever is the
   failure that story exists to prevent.
 
-> ### ⚠️ The starter-league warning cannot fire, and it is not 013's fault
+> ### ✅ The starter league is OPEN. Seeded 2026-07-30 — and the blocker was a human
 >
-> There are **zero bots in the database**, so `starterLeagueOpen()` is false, so
-> every account reports `no-authored-pool`, so `guildDoorConfirm()` returns `null`
-> and **nobody is warned on any of the three doors**. That is 009 answering
-> honestly — *"a feature that has no pool should say so"* — and it switches itself
-> on when **009 T047** seeds the starter bots, deferred to the hero-numbers pass.
+> For a day the warning could not fire: zero bots meant `starterLeagueOpen()` was
+> false, so every account reported `no-authored-pool` and `guildDoorConfirm()`
+> returned `null` for **everybody, on every door**. I attributed it to **009 T047**
+> and was wrong. T047 is the ~46 **padding** bots for Bronze–Platinum, deferred by a
+> recorded decision, and **the starter league never needed them**. T045 and T046
+> authored all twenty starter bots with both squads each, and `seedStarterBots()`
+> has been complete, idempotent and tested since feature 009.
 >
-> **The test consequence is the dangerous half**: without seeding a bot, every
-> *"was it warned?"* assertion passes *because the warning is absent*.
+> **Its only callers were tests, which delete the bots again on the way out.** So
+> the function was perfect and production had none — the **eighth** seam-with-no-caller
+> here, in its most disguised form: not an uncalled function but a *one-shot
+> operation nobody ever ran*. A seam whose caller is "a human, once" still has to be
+> written down. `pnpm --filter @lmntlz/api db:seed-bots` is that caller.
+>
+> Measured after seeding: **20 bots · 20 visible + 20 hidden squads · 240 seats ·
+> league open · the warning fires on all three doors.**
+>
+> **The test consequence remains the dangerous half**: a suite that does not seed a
+> bot has every *"was it warned?"* assertion pass *because the warning is absent*.
 > `tests/guilds/helpers.ts` seeds one and says why at length.
 
 ### ✅ SC-008: I reported a conflict that was not there. Corrected 2026-07-30.
