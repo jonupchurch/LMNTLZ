@@ -33,6 +33,46 @@ comment.
 
 ---
 
+## The wiring pass — run **before** any code, as 013's was
+
+013 got this pass first and it found five wires its generated list never named,
+one of which made joining a guild impossible while every test passed. This is the
+same pass over 014, run 2026-07-30 against the code as it actually stands.
+
+**Six wires. Two of them are dependencies on data that does not exist**, which is
+a different and worse shape than a seam nobody calls — a test can pass vacuously
+against them forever.
+
+| # | The wire | State today | Owner |
+|---|---|---|---|
+| **W1** | **A language preference** — FR-002 splits Global *and* Guild Ads by it, and T007 revokes a token when it changes | **Does not exist.** No column, no setter, no UI. `profiles/publicProfile.ts` says it outright: *"neither is collected yet"*. The profile contract calls it `languages` — **plural**, a list — while a chat room needs **one** routing key | **new, T047–T049** |
+| **W2** | **The Envoy role** — T026 admits Envoys to Beginner, T027 gives them no powers, 015's T023 tests they get 403 | **Does not exist.** `auth/username.ts` reserves the *word* `envoy` and nothing else. No column, no grant route, nobody can become one | **new, T050–T051** |
+| **W3** | **Issuing a chat ban** — T007 revokes on ban | `BAN_SCOPES` already contains `'chat'` and `banScope` is **only ever read**, in `auth/accounts.ts`. Nothing writes it | **015 writes the caller**; 014 owns the hook and must say so |
+| **W4** | **The client surface** — T028 builds `ChatPanel.tsx` | `App.tsx`'s `Screen` union has no `chat`, and no tab renders it. **Exactly 013's shape** | **new, T052** |
+| **W5** | **The guild MOTD announcement** — 013's T039 deferred the *"announce in guild chat"* half to 014 | **Orphaned.** 014's task list and its contract never mention `motd`. Meanwhile the pin half was never built either, so today a MOTD **renders and can never be set by anyone** | **new, T053**, and it closes 013 T039 |
+| **W6** | **The broker itself** | `ably` is **not a dependency of any package**, and there is no account. T005's interface is correct and buildable without it; *delivery* is not | **Jon** — a vendor gate |
+
+### Why W1 and W2 are the dangerous ones
+
+A seam with no caller is invisible but *testable* — you can grep for the symbol.
+**A dependency on data nothing produces is worse: the tests pass.** `envoys.test.ts`
+asserting *"an Envoy gets 403"* is green when no Envoy can exist, because the
+fixture cannot make one and the route refuses everybody. That is the fixture-vacuity
+trap this project has already hit twice — the starter warning that returned `null`
+because the database held zero bots, and the boundary test that selected a raw row
+instead of calling the route.
+
+So **W1 and W2 get their data model and their setter before the tasks that consume
+them**, and each gets a test that fails when the data is absent rather than passing.
+
+### Not in scope, deliberately
+
+**League-scoped chat stays unbuilt (T010)** — that is a decision, not an omission.
+And **presence stays out (T029)**: it is a screen suggestion, and it makes the bill
+scale with total players rather than with chat use.
+
+---
+
 ## Phase 1: Setup
 
 - [ ] T001 Create `apps/api/src/chat/` and `apps/client/src/features/chat/`, and register `/v1/chat/:scope/messages`, `/v1/chat/token` and `/v1/chat/:scope/history` in `apps/api/src/index.ts`
@@ -169,12 +209,73 @@ comment.
 
 ---
 
+## Phase 6b: WIRING — the six the generated list never named
+
+**Purpose**: the things that make the routes above reachable, and the data they
+assume. **W1 and W2 come first inside this phase**, because tasks T009, T019, T020,
+T026 and T027 are all written against data that does not exist yet.
+
+### W1 — a language preference (blocks FR-002)
+
+- [ ] T047 **WIRING** Add `chat_language` to `apps/api/src/db/schema/accounts.ts` — **one** value, not the profile's plural `languages` list. A room is a routing key and a player is in exactly one Global room; a list cannot answer "which room". Default it from the `Accept-Language` header at signup and let it be changed. Migration in `apps/api/drizzle/`
+- [ ] T048 **WIRING** Implement `PUT /v1/me/chat-language` in `apps/api/src/profiles/routes.ts`, and **call `revokeChatToken` inside the same transaction** (T007) — a language change moves the player between rooms, so a token naming the old one is wrong the moment it commits
+- [ ] T049 **WIRING** Add the language control to the client in `apps/client/src/features/profile/`, and assert in `apps/api/tests/chat/language.test.ts` that **an account with no language set still lands in exactly one Global room** — the null case is the common one on day one, and a player who falls into *no* room sees an empty chat and reports it as broken
+
+### W2 — the Envoy role (T026, T027, and 015's T023)
+
+- [ ] T050 **WIRING** Add `is_envoy` to `apps/api/src/db/schema/accounts.ts` and a grant path in `apps/api/src/chat/envoys.ts`. **Without this nobody can be an Envoy**, and every test that asserts an Envoy is refused a power passes because the route refuses everybody
+- [ ] T051 **WIRING** Prove the role is real in `apps/api/tests/chat/envoys.test.ts` — **grant it, then assert the Envoy reaches Beginner chat after graduating**, which is the one thing the role does. Then assert it grants nothing else. **The positive case is the one that fails when the role is fake**; the negative case is green either way
+
+### W3 — the ban hook, whose caller arrives in 015
+
+- [ ] T052 **WIRING** Export `revokeChatToken` from `apps/api/src/chat/index.ts` as a named seam, and record in `apps/api/src/chat/README.md` that **`banScope` is written by nobody until feature 015** — `BAN_SCOPES` already contains `'chat'` and today it is only ever read, in `auth/accounts.ts`. 015's ban issuer calls this **inside its transaction**; until then the hook is deliberately uncalled and says so
+
+### W4 — the client surface
+
+- [ ] T053 **WIRING** Add `| { readonly kind: 'chat' }` to the `Screen` union in `apps/client/src/App.tsx`, a Chat tab, and render `ChatPanel`. **T028 builds the panel and nothing mounts it** — the same shape as 013, where every guild route worked and no screen reached them
+
+### W5 — the guild MOTD, orphaned between 013 and 014
+
+- [ ] T054 **WIRING** Implement `PUT /v1/guilds/:guildId/motd` in `apps/api/src/guilds/motd.ts`, permission-gated to master and officers by the existing table in `guilds/membership.ts` — which **already lists `motd` as a permission nothing checks**. Then announce the change into Guild chat via `send`. This closes **013 T039**, whose pin half was never built: a MOTD renders in `GuildRoster.tsx` today and **no route on earth can set one**
+
+**Checkpoint**: every route above is reachable by a hand, and no test passes because its subject cannot exist.
+
+---
+
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T043 **Instrument delivered messages per day, by scope**, in `apps/api/src/chat/transport.ts` — **delivered, not published**. The broker bills `published × subscribers`, and the two diverge by three orders of magnitude on Global
-- [ ] T044 Track `global delivered / DAU` as the ratio that predicts the bill, in the ops runbook — **not the total**. Global delivered messages scale **quadratically** in players, and a rising ratio means the room needs a cap
-- [ ] T045 [P] Write `apps/api/src/chat/README.md` — the fan-out-only rule, the two-tier moderation ordering, and the standing note that the two economies never meet
-- [ ] T046 Run the full quickstart manual pass
+- [ ] T055 **Instrument delivered messages per day, by scope**, in `apps/api/src/chat/transport.ts` — **delivered, not published**. The broker bills `published × subscribers`, and the two diverge by three orders of magnitude on Global
+- [ ] T056 Track `global delivered / DAU` as the ratio that predicts the bill, in the ops runbook — **not the total**. Global delivered messages scale **quadratically** in players, and a rising ratio means the room needs a cap
+- [ ] T057 [P] Write `apps/api/src/chat/README.md` — the fan-out-only rule, the two-tier moderation ordering, and the standing note that the two economies never meet
+- [ ] T058 Run the full quickstart manual pass
+
+---
+
+## Status
+
+**54 tasks, numbered to T058** — 46 generated, **8 added by the wiring pass**
+(T047–T054); the four polish tasks moved to T055–T058 to make room. The highest id
+and the count are not the same number, deliberately: renumbering the eight would
+have churned every id in the file.
+**Nothing implemented yet**; `apps/api/src/chat/`, `apps/client/src/features/chat/`
+and `apps/api/src/db/schema/chat.ts` do not exist. Verified 2026-07-30, not assumed:
+013's list claimed three tasks 009 had already built.
+
+### Blocked on somebody else
+
+| | |
+|---|---|
+| **W6 — Ably** | Not a dependency of any package and there is no account. **Jon creates vendor accounts.** T005's `RealtimeBroker` interface is buildable now and everything can be developed and tested against an in-memory broker; only *delivery to a real client* needs the account (Constitution XIX is exactly this shape) |
+| **W3 — the ban issuer** | Feature **015**. 014 owns the hook; nothing writes `banScope` until then |
+| **The classifier** | Feature **015**. T016 enqueues; the consumer arrives later. T012 asserts send is unaffected when it is **absent**, which is the state it will genuinely be in |
+
+### Read this before starting
+
+- **Prerequisites are real and met**: 005, 006, 009, 010 and 013 are built.
+- **T009, T019, T020, T026 and T027 are written against data that does not exist**
+  (W1, W2). Do those wiring tasks *first* or those five will pass vacuously.
+- **The exact per-scope rate limits are still unsettled** and want real traffic —
+  named in the Notes, not a gap to close by guessing.
 
 ---
 
@@ -188,6 +289,8 @@ comment.
 - **US1 (Phase 4)**: needs `send` (T014)
 - **US3 (Phase 5)**: needs `send` (T014) and feature 010's charge
 - **US4 (Phase 6)**: needs feature 013's guild membership
+- **Wiring (Phase 6b)**: **W1 and W2 block T009/T019/T020/T026/T027** and should be
+  pulled forward ahead of them; W3–W5 depend on `send` (T014)
 - **Polish (Phase 7)**: depends on US1 and US3
 
 ### User Story Dependencies
