@@ -112,6 +112,32 @@ export const accounts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 
     /**
+     * The chosen **curated** avatar, or null for the default (012 T027).
+     *
+     * Curated avatars need no review, which is why they are a plain column: the
+     * whole set ships with the client, the value is validated against it, and
+     * nothing a player can type reaches a screen.
+     */
+    avatarKey: text('avatar_key'),
+
+    /**
+     * An **approved** custom avatar. Wins over `avatarKey` when set.
+     *
+     * ### Two columns rather than one, because the invariant is the point
+     *
+     * A single `avatar` column holding either kind would make "is this image
+     * approved?" a question about the *format of a string*, and the pre-moderation
+     * rule (FR-013) is the one rule in this feature whose failure cannot be undone
+     * — a bad image seen by every opponent stays seen.
+     *
+     * With two columns the invariant is structural: **this column is written by
+     * exactly one code path, the approval, and by nothing else.** A pending
+     * submission lives in `avatar_submissions` and has no way to reach a profile,
+     * because no profile query reads that table.
+     */
+    customAvatarUrl: text('custom_avatar_url'),
+
+    /**
      * **A timestamp, not a boolean.** Most bans are temporary, and a boolean
      * would need a separate expiry column plus a job to flip it — which is a job
      * that can fail, leaving somebody banned after their time. An expiry in the

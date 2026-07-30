@@ -21,3 +21,4 @@ export * from './ledger.js';
 export * from './runes.js';
 export * from './payments.js';
 export * from './entitlements.js';
+export * from './avatarSubmissions.js';
