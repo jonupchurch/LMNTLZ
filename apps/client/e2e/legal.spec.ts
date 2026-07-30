@@ -50,6 +50,55 @@ test.describe('every policy page is served', () => {
   });
 });
 
+test.describe('the favicon is referenced, and by a path the Steam build can follow', () => {
+  /**
+   * **Worth a test because the file existing is not the same as the file being used.**
+   * `favicon.svg` sat in `public/` unreferenced, so browsers went on asking for
+   * `/favicon.ico` and getting nothing. Nobody would report that as a bug.
+   *
+   * And these five policy pages are **regenerated from the design prompts** in
+   * `resources/` — `CLAUDE.md` says to record a discrepancy and let the screen be
+   * regenerated rather than hand-editing it — so a `<link>` added by hand is precisely
+   * the kind of line a regeneration drops. This is the guard.
+   */
+  for (const file of ['index.html', ...PAGES.map((p) => p.file)]) {
+    test(`/${file} carries an icon link the browser resolves`, async ({ page }) => {
+      await page.goto(`/${file}`);
+
+      const href = await page.locator('link[rel="icon"]').first().getAttribute('href');
+      expect(href, `${file} has no <link rel="icon">`).toBeTruthy();
+
+      /**
+       * **The path shape is deliberately not asserted here, and that is a finding
+       * rather than a gap.** Playwright drives `pnpm dev`, and **Vite's dev server
+       * rewrites `./favicon.svg` to `/favicon.svg`** — the relative form that the Steam
+       * build depends on exists only in `dist`. Asserting it here would be asserting
+       * the dev server's behaviour and would fail on correct source, which is what the
+       * first version of this test did.
+       *
+       * `tests/site/favicon.test.ts` owns that half, against the source HTML.
+       */
+      expect(href).toMatch(/favicon\.svg$/);
+
+      // What e2e *can* prove that a source scan cannot: a real browser resolved it.
+      const resolved = await page.locator('link[rel="icon"]').first().evaluate((el) => {
+        return (el as HTMLLinkElement).href;
+      });
+      const response = await page.request.get(resolved);
+      expect(response.status(), `${file}'s icon does not load`).toBe(200);
+    });
+  }
+
+  test('the file it points at actually resolves', async ({ page }) => {
+    // The other half: a correct link to a missing file renders a blank tab icon, which
+    // looks identical to no link at all.
+    const response = await page.goto('/favicon.svg');
+
+    expect(response?.status()).toBe(200);
+    expect(response?.headers()['content-type']).toContain('svg');
+  });
+});
+
 test.describe('the front door', () => {
   /**
    * **Found in production, not in a test.** The deployed homepage was the API's

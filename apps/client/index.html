@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=1280" />
     <title>LMNTLZ</title>
     <!--
+      **Relative, not `/favicon.svg`** — `vite.config.ts` sets `base: './'` because the
+      Steam build is loaded from disk, where a root-absolute path resolves against the
+      filesystem root and 404s. The same reason `analytics.ts` guards on the protocol.
+
+      SVG only, and deliberately: this is a desktop-only game (`CLAUDE.md` — no mobile,
+      no touch), so there is no `apple-touch-icon` to add, and every browser the two
+      channels target renders an SVG favicon. The mark is dark on a gold gradient, so it
+      reads on a light and a dark tab strip without a second file.
+    -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!--
       Fonts are self-hosted rather than fetched from Google Fonts: the Steam
       build runs from disk and may have no network at all, and a webfont that
       silently fails there would reflow the whole interface. Added with the
