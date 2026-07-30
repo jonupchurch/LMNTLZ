@@ -25,7 +25,8 @@ import { linkIdentity, LinkRejectedError, unlinkIdentity } from './link.js';
 import { PROVIDERS, type Provider } from './provider.js';
 import { requireContext, type AuthedEnv } from './context.js';
 import { requireSession } from './middleware.js';
-import { renameAccount, RenameRejectedError } from './rename.js';
+import { RenameRejectedError } from './rename.js';
+import { renameWithCharge } from '../profiles/identity.js';
 
 export const authRoutes = new Hono<AuthedEnv>();
 
@@ -275,7 +276,19 @@ authRoutes.put('/me/username', requireSession, async (c) => {
   }
 
   try {
-    const result = await renameAccount(accountId, username);
+    /**
+     * **`renameWithCharge`, not `renameAccount`** (012 T026, FR-011).
+     *
+     * `renameAccount` computes the 325-shard cost and reports it, and takes an
+     * `options.shardsAvailable` to check affordability against. This route used
+     * to call it with **no options at all**, so the check ran against
+     * `undefined` and never fired, and nothing anywhere debited the ledger. The
+     * response said `shardsCharged: 325` while the balance did not move.
+     *
+     * Feature 012 owns the price, so 012 supplies the caller. The auth module is
+     * unchanged — it still knows nothing about shards beyond the number.
+     */
+    const result = await renameWithCharge(accountId, username);
     return c.json(result, 200);
   } catch (err) {
     if (err instanceof RenameRejectedError) {

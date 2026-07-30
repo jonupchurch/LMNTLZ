@@ -147,7 +147,7 @@ describe('the disclosure boundary (T006)', () => {
   });
 
   it('contains no Hidden battle and no gap where one would be (SC-001, SC-002)', async () => {
-    const { status, text, body } = await fetchProfile();
+    const { status, body } = await fetchProfile();
     expect(status).toBe(200);
 
     /**

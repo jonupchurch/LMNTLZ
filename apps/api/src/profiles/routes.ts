@@ -23,11 +23,20 @@ import { apiError } from '../errors.js';
 import { PlayerNotFoundError, publicProfile } from './publicProfile.js';
 import { EXPORT_HEADER, myDataCsv } from './export.js';
 import { exportAllowed, noteExport } from './rateLimit.js';
+import {
+  AVATAR_COST_CENTS,
+  AVATAR_COST_SHARDS,
+  CURATED_AVATARS,
+  UnknownAvatarError,
+  currentAvatar,
+  setCuratedAvatar,
+} from './identity.js';
 
 export const profileRoutes = new Hono<AuthedEnv>();
 
 profileRoutes.use('/players/:targetId/profile', requireSession);
 profileRoutes.use('/me/export', requireSession);
+profileRoutes.use('/me/avatar', requireSession);
 
 profileRoutes.get('/players/:targetId/profile', async (c) => {
   const targetId = c.req.param('targetId');
@@ -63,6 +72,67 @@ profileRoutes.get('/me/export', async (c) => {
     'content-disposition': 'attachment; filename="lmntlz-battles.csv"',
   });
 });
+
+/**
+ * The curated set, and the player's current choice.
+ *
+ * **Curated avatars need no review**, which is why this is a plain read and a
+ * plain write with no queue anywhere near it.
+ */
+profileRoutes.get('/me/avatar', async (c) => {
+  const { accountId } = requireContext(c);
+
+  return c.json(
+    {
+      curated: CURATED_AVATARS,
+      current: await currentAvatar(accountId),
+      customPrice: { shards: AVATAR_COST_SHARDS, cents: AVATAR_COST_CENTS },
+      /**
+       * **False until feature 016's review queue exists.** Stated in the payload
+       * rather than only in the copy, so a client renders an honest screen
+       * instead of offering an upload whose submission nobody can approve.
+       */
+      customAvailable: false,
+    },
+    200,
+  );
+});
+
+profileRoutes.put('/me/avatar', async (c) => {
+  const { accountId } = requireContext(c);
+  const body = (await c.req.json().catch(() => null)) as { avatarKey?: unknown } | null;
+  const key = body?.avatarKey;
+
+  if (typeof key !== 'string') {
+    return c.json(apiError('malformed_request', 'An `avatarKey` is required.'), 400);
+  }
+
+  try {
+    await setCuratedAvatar(accountId, key);
+  } catch (error) {
+    if (error instanceof UnknownAvatarError) {
+      return c.json(apiError('unknown_avatar', 'No such avatar.'), 422);
+    }
+    throw error;
+  }
+
+  return c.json({ current: await currentAvatar(accountId) }, 200);
+});
+
+/**
+ * ### `POST /v1/me/avatar` (custom upload) is deliberately NOT here — T028–T033 blocked
+ *
+ * The charge is **on submission, not on approval**, and a rejection refunds
+ * nothing. That is the throttle and it only works if somebody is actually
+ * reviewing: without feature 016's queue, shipping the upload would charge
+ * players $5 or 1,350 shards for an image that sits pending forever, with no
+ * refund by design. **That is worse than not shipping it**, so it waits.
+ *
+ * Everything it needs is already in place — `avatar_submissions` with its
+ * harm-only reason enum, the two prices, and the private-blob decision. What is
+ * missing is the reviewer. `tasks.md`'s own incremental-delivery section says
+ * exactly this: ship curated with US1, add custom when the admin queue exists.
+ */
 
 /**
  * ### `GET /v1/guilds/:guildId/export` is deliberately NOT here — 012 T021 is blocked

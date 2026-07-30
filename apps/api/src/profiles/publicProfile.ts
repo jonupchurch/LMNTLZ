@@ -33,6 +33,7 @@ import { accounts } from '../db/schema/accounts.js';
 import { playerRatings } from '../db/schema/ratings.js';
 import { squads } from '../db/schema/squads.js';
 import { leagueOf } from '../matchmaking/league.js';
+import { avatarFrom, type AvatarChoice } from './identity.js';
 import { recentVisibleBattles, type ProfileBattle } from './visibleRecord.js';
 
 /**
@@ -49,7 +50,7 @@ export interface PublicProfile {
   readonly playerId: string;
   readonly username: string;
   /** A curated key, an approved custom URL, or null for the default. */
-  readonly avatar: { readonly kind: 'curated' | 'custom' | 'default'; readonly value: string | null };
+  readonly avatar: AvatarChoice;
   readonly accountAgeDays: number;
   readonly league: string | null;
   readonly rating: number | null;
@@ -125,11 +126,8 @@ export async function publicProfile(targetId: string): Promise<PublicProfile> {
   return {
     playerId: account.id,
     username: account.username,
-    avatar: account.customAvatarUrl
-      ? { kind: 'custom', value: account.customAvatarUrl }
-      : account.avatarKey
-        ? { kind: 'curated', value: account.avatarKey }
-        : { kind: 'default', value: null },
+    /** One precedence rule, in `identity.ts`. See `avatarFrom` for why. */
+    avatar: avatarFrom(account),
     /**
      * **Clamped at zero, because it went negative on the first run.**
      *

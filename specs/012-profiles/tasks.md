@@ -143,6 +143,40 @@ amount of code review reliably catches** the bug it prevents.
 - [ ] T025 [P] [US3] Add the harm-gate structural check to `apps/api/tests/profiles/avatar.test.ts` — the rejection-reason enum has **no `low-quality` member**, so a reviewer who wants to reject on taste has no value to submit (Constitution XVIII enforced by the type)
 - [ ] T026 [P] [US3] Write `apps/api/tests/profiles/pricing.test.ts` — a voluntary rename costs **325 shards**, a forced rename is **free**, and the avatar's shards-per-dollar is **worse than the best boost pass** as reported by feature 011's `bestShardsPerDollar()` (SC-007, SC-008)
 
+> ### ⚠️ SC-008 is arithmetically unsatisfiable as written — a decision, not a bug
+>
+> Found while implementing T026 on **2026-07-30**. **FR-012 and FR-015 cannot
+> both hold.**
+>
+> | | |
+> |---|---|
+> | FR-012 | a custom avatar costs **$5 or 1,350 shards** |
+> | FR-015 | a dual-priced item must be **worse** shards-per-dollar than the best boost pass |
+> | `bestShardsPerDollar()` | **0** — deliberately; *no* product converts money into shards |
+>
+> A dual price of $5-or-1,350-shards implies **270 shards per dollar**: paying the
+> money *saves* the shards, and saved shards are fungible into runes. 270 > 0, so
+> the only dual-priced item in the game is *better* value than the best pass.
+> **Any dual price at all is better than zero**, so FR-015 forbids dual pricing
+> outright while the catalog sells no shards.
+>
+> **Scale, so the decision is informed rather than theoretical.** A full rune is
+> 650 shards and costs ~1.7 days of typical income, so income is ~380 shards/day.
+> One $5 avatar therefore frees **~3.5 days** of income, or about two full runes.
+> At a realistic 2–3 changes a year that is ~4,000 shards — six runes — and at the
+> $160/year advantage cap it would be 32 changes, 43,200 shards, **66 runes**.
+> That is not cosmetic.
+>
+> **Three ways out, no recommendation taken:** price the avatar in shards *only*
+> (FR-015 becomes vacuous, and the $5 throttle on moderation volume is lost);
+> raise the shard price until the implied rate is unattractive (does not reach
+> zero, so FR-015 still fails literally); or **restate FR-015** as *no dual-priced
+> item may convert money into gameplay advantage faster than the $160/year cap
+> allows*, which is the rule the design actually wants.
+>
+> `pricing.test.ts` **asserts the conflict** rather than pretending it is
+> resolved, and fails the moment either number moves.
+
 ### Implementation for User Story 3
 
 - [ ] T027 [US3] Build the curated avatar set in `apps/client/src/features/profile/AvatarPicker.tsx` — **curated avatars need no review**

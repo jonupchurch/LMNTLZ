@@ -65,6 +65,18 @@ export const LEDGER_REASONS = [
   'grant',
   /** Bought with money (011). Refused *before* the rail if it would exceed the cap. */
   'purchase',
+  /**
+   * A voluntary rename (012). **A forced rename never writes a row at all** —
+   * it is free, so there is nothing to record, and a zero-delta row would show
+   * up in a player's history as a charge they can see and cannot explain.
+   */
+  'rename',
+  /**
+   * A custom avatar submission (012), charged **per change and on submission**.
+   * A rejection refunds nothing, so there is never a matching credit — which is
+   * the throttle, not an oversight.
+   */
+  'avatar',
 ] as const;
 
 export type LedgerReason = (typeof LEDGER_REASONS)[number];
