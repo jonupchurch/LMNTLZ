@@ -185,4 +185,13 @@ export async function mockApi(
         })
       : route.continue(),
   );
+
+  /** The offense save. No warnings and no streak — both belong to defense. */
+  await page.route('**/v1/squads/offense/*', (route) => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    const slot = Number(route.request().url().split('/').pop());
+    return route.fulfill({
+      json: { slot, name: 'Vanguard', complete: true, valid: true },
+    });
+  });
 }

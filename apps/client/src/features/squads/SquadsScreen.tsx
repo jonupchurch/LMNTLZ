@@ -25,11 +25,28 @@ import type {
   EvictionPreview,
   RosterResponse,
   SaveDefenseResponse,
+  SaveOffenseResponse,
   SeatConfigWire,
   Zone,
 } from './types.js';
 
 const ZONE_LABEL: Readonly<Record<Zone, string>> = { visible: 'Zone I', hidden: 'Zone II' };
+
+/**
+ * Which squad the builder is editing: a defense zone, or an attack slot.
+ *
+ * **One discriminant across five tabs rather than a mode plus a selection.**
+ * `useAllocation` already takes exactly this union, because there is exactly one
+ * squad on screen at a time — and a separate "Defense / Attack" toggle would add a
+ * second piece of state that has to agree with the first. The two nested selections
+ * would then have a state nobody wants: attack mode with a zone selected.
+ */
+type Editing = Zone | number;
+
+const ATTACK_SLOTS = [0, 1, 2] as const;
+const isAttack = (editing: Editing): editing is number => typeof editing === 'number';
+const labelOf = (editing: Editing): string =>
+  isAttack(editing) ? `Attack ${editing + 1}` : ZONE_LABEL[editing];
 
 export interface SquadsScreenProps {
   /**
@@ -59,15 +76,18 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
    */
   const [error, setError] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const [zone, setZone] = useState<Zone>('visible');
+  const [editing, setEditing] = useState<Editing>('visible');
   const [selected, setSelected] = useState<string | null>(null);
   const [pending, setPending] = useState<{ heroId: string; preview: EvictionPreview } | null>(null);
   /** The seat the confirm interrupted, so it can finish the placement. */
   const pendingSeat = useRef<{ row: SquadRow; index: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<SaveDefenseResponse | null>(null);
+  const [savedAttack, setSavedAttack] = useState<SaveOffenseResponse | null>(null);
+  /** The squad's name, which is offense-only — a zone's name is its zone. */
+  const [attackName, setAttackName] = useState('');
 
-  const allocation = useAllocation(roster, zone);
+  const allocation = useAllocation(roster, editing);
 
   const load = useCallback(async () => {
     try {
@@ -108,8 +128,32 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
         return;
       }
 
+      /**
+       * **An attack squad seats nobody who is defending, and it is refused here
+       * rather than by the server** (`409 hero_on_other_zone`). The refusal is
+       * cheap to make locally and the roster already says which zone she is in —
+       * and a player who has to press Save to find out has already composed a
+       * squad around somebody who cannot be in it.
+       *
+       * There is no eviction preview in this direction: moving a hero *to* attack
+       * costs nothing, and overlap between the three attack squads is forced.
+       */
+      if (isAttack(editing)) {
+        const zone = (['visible', 'hidden'] as const).find((z) =>
+          roster.assignments.defense[z].seats.some((s) => s.heroId === selected),
+        );
+        if (zone) {
+          setProblem(
+            `${heroName(selected)} is defending your ${ZONE_LABEL[zone]} and cannot attack. Move her off defense first.`,
+          );
+          return;
+        }
+        allocation.place(selected, row, index);
+        return;
+      }
+
       try {
-        const preview = await api<EvictionPreview>(`/squads/defense/${zone}/preview-move`, {
+        const preview = await api<EvictionPreview>(`/squads/defense/${editing}/preview-move`, {
           method: 'POST',
           body: JSON.stringify({ heroId: selected }),
         });
@@ -127,7 +171,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
         setProblem('Could not check what this move would break. Nothing was changed.');
       }
     },
-    [selected, roster, zone, allocation],
+    [selected, roster, editing, allocation, heroName],
   );
 
   const confirmMove = useCallback(() => {
@@ -162,7 +206,31 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
     setSaving(true);
     setProblem(null);
     try {
-      const result = await api<SaveDefenseResponse>(`/squads/defense/${zone}`, {
+      if (isAttack(editing)) {
+        /**
+         * **No `config` on an attack squad, and the server rejects one.** The
+         * player commands offense, so there is nothing to configure — and a field
+         * that were accepted and ignored would be worse than a refusal, because
+         * the player would believe it applied.
+         */
+        const result = await api<SaveOffenseResponse>(`/squads/offense/${editing}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: attackName.trim() === '' ? null : attackName.trim(),
+            seats: allocation.seats.map((seat) => ({
+              row: seat.row,
+              index: seat.index,
+              heroId: seat.heroId,
+            })),
+          }),
+        });
+
+        setSavedAttack(result);
+        await load();
+        return;
+      }
+
+      const result = await api<SaveDefenseResponse>(`/squads/defense/${editing}`, {
         method: 'PUT',
         body: JSON.stringify({
           seats: allocation.seats.map((seat) => {
@@ -188,6 +256,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
       await load();
     } catch (err) {
       setSaved(null);
+      setSavedAttack(null);
       /**
        * **The server's own sentence, when there is one.** A `409` here names the
        * champion and the zone she is already defending, and a `422` names the
@@ -200,13 +269,41 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
     } finally {
       setSaving(false);
     }
-  }, [allocation, saving, zone, load]);
+  }, [allocation, saving, editing, attackName, load]);
 
-  /** Cleared on a zone switch, so a Zone I result never reads as a Zone II one. */
+  /**
+   * Cleared when the tab changes, so a Zone I result never reads as a Zone II one.
+   *
+   * **Depends on `editing` alone, and that is not an oversight.** The save refetches
+   * the roster, so a `roster` dependency here would clear the result the save had
+   * just set — the screen would flash a success message and lose it.
+   */
   useEffect(() => {
     setSaved(null);
+    setSavedAttack(null);
     setProblem(null);
-  }, [zone]);
+  }, [editing]);
+
+  /**
+   * The name box, seeded from the squad being opened.
+   *
+   * An attack squad's name is part of it, so blanking the box on every tab change
+   * would rename the squad to nothing the next time Save was pressed. Content-keyed
+   * for the same reason `useAllocation` is: a refetch that returned the same name
+   * must not interrupt somebody mid-word.
+   */
+  const servedName = isAttack(editing)
+    ? (roster?.assignments.offense.find((o) => o.slot === editing)?.name ?? '')
+    : '';
+  const nameKey = `${String(editing)}|${servedName}`;
+  const seededName = useRef<string | null>(null);
+  useEffect(() => {
+    if (seededName.current === nameKey) return;
+    seededName.current = nameKey;
+    setAttackName(servedName);
+    // `servedName` is intentionally not a dependency — it is derived from
+    // `nameKey`, and depending on both says the same thing twice.
+  }, [nameKey]);
 
   /**
    * The champion whose behaviour the editor is showing.
@@ -216,12 +313,14 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
    * configuring a seat that does not exist.
    */
   const configuring = useMemo(() => {
-    if (!roster || !selected) return null;
+    // Defense only: **the player commands offense**, so an attack squad has
+    // nothing to configure and a panel here would imply otherwise.
+    if (!roster || !selected || isAttack(editing)) return null;
     if (!allocation.seats.some((s) => s.heroId === selected)) return null;
     const hero = roster.heroes.find((h) => h.id === selected);
     if (!hero) return null;
     return { hero, behaviour: allocation.behaviour.get(selected) ?? null };
-  }, [roster, selected, allocation.seats, allocation.behaviour]);
+  }, [roster, selected, editing, allocation.seats, allocation.behaviour]);
 
   if (error) {
     return (
@@ -243,12 +342,22 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
 
   return (
     <main className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
-      <div className="flex items-center gap-2" role="tablist" aria-label="Defense zone">
+      {/**
+       * **Five tabs on one row, because there are five squads.** Two defense zones
+       * and three attack slots, and exactly one is open at a time. A "Defense /
+       * Attack" toggle above a second selection would be two pieces of state that
+       * have to agree, with a combination — attack mode, zone selected — that means
+       * nothing.
+       *
+       * The 12/15 split is stated beside them: it is why the three attack squads
+       * overlap, and no per-squad message conveys it.
+       */}
+      <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Squad">
         {(['visible', 'hidden'] as const).map((z) => (
           <button
             key={z}
             role="tab"
-            aria-selected={zone === z}
+            aria-selected={editing === z}
             /**
              * **Explicit, because the computed name runs the words together.**
              * The label and the streak are adjacent elements with no whitespace
@@ -257,10 +366,10 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
              * e2e locator failing to match, which is a fair way to find it.
              */
             aria-label={`${ZONE_LABEL[z]}, hold streak ${roster.assignments.defense[z].holdStreak}`}
-            onClick={() => setZone(z)}
+            onClick={() => setEditing(z)}
             className={[
               'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
-              zone === z ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
+              editing === z ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
             ].join(' ')}
           >
             {ZONE_LABEL[z]}
@@ -269,14 +378,71 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
             </span>
           </button>
         ))}
+
+        <span aria-hidden className="mx-2 h-6 w-px bg-line" />
+
+        {ATTACK_SLOTS.map((slot) => {
+          const squad = roster.assignments.offense.find((o) => o.slot === slot);
+          /**
+           * **"Broken" and "unfinished" are different states and both are shown.**
+           * A squad our own eviction rule emptied a seat in did not get that way
+           * through anything the player did deliberately, and it cannot attack until
+           * it is refilled — so it says so rather than reading as a squad nobody
+           * has got round to.
+           */
+          const state = !squad || squad.seats.length === 0
+            ? 'empty'
+            : !squad.valid
+              ? 'broken'
+              : squad.complete
+                ? 'ready'
+                : `${squad.seats.length}/6`;
+
+          return (
+            <button
+              key={slot}
+              role="tab"
+              aria-selected={editing === slot}
+              aria-label={`Attack ${slot + 1}${squad?.name ? `, ${squad.name}` : ''}, ${state}`}
+              onClick={() => setEditing(slot)}
+              className={[
+                'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
+                editing === slot ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
+              ].join(' ')}
+            >
+              Attack {slot + 1}
+              <span
+                className={[
+                  'ml-2 font-mono text-[11px]',
+                  state === 'broken' ? 'text-slash-lit' : 'text-faint',
+                ].join(' ')}
+              >
+                {state}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* FR-011 — an incomplete zone says so rather than defending a man down. */}
-      {!roster.assignments.defense[zone].canDefend && (
+      {!isAttack(editing) && !roster.assignments.defense[editing].canDefend && (
         <p role="status" className="font-mono text-sm text-slash-lit">
-          {roster.assignments.defense[zone].reason}
+          {roster.assignments.defense[editing].reason}
         </p>
       )}
+
+      {/**
+       * **SC-009: an invalidated squad cannot attack until it is refilled**, and the
+       * server refuses it with `squad_incomplete`. Said here so the player finds out
+       * on the builder rather than when they try to start a battle.
+       */}
+      {isAttack(editing) &&
+        roster.assignments.offense.find((o) => o.slot === editing)?.valid === false && (
+          <p role="status" className="font-mono text-sm text-slash-lit">
+            {labelOf(editing)} lost a champion to defense and cannot attack until it is back to
+            six.
+          </p>
+        )}
 
       {problem && (
         <p role="alert" className="font-mono text-sm text-slash-lit">
@@ -290,10 +456,27 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
           <SquadBuilder
             allocation={allocation}
             heroName={heroName}
-            kind="defense"
+            kind={isAttack(editing) ? 'offense' : 'defense'}
             selectedHeroId={selected}
             onSeatActivate={(row, index) => void seatActivate(row, index)}
           />
+
+          {/* Offense only. A zone's name is its zone; there is nothing to call it. */}
+          {isAttack(editing) && (
+            <label className="flex flex-col gap-1">
+              <span className="font-display text-[11px] tracking-widest uppercase text-faint">
+                Squad name
+              </span>
+              <input
+                type="text"
+                value={attackName}
+                maxLength={40}
+                placeholder={`Attack ${editing + 1}`}
+                onChange={(e) => setAttackName(e.target.value)}
+                className="rounded border border-line bg-void px-2 py-1 text-sm text-parchment"
+              />
+            </label>
+          )}
 
           <section aria-label="Save this squad" className="flex flex-col gap-3">
             <button
@@ -307,8 +490,15 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
                   : 'border-line text-faint',
               ].join(' ')}
             >
-              {saving ? 'Saving…' : `Save ${ZONE_LABEL[zone]}`}
+              {saving ? 'Saving…' : `Save ${labelOf(editing)}`}
             </button>
+
+            {savedAttack && (
+              <p role="status" className="font-mono text-xs text-earth-lit">
+                Saved. {savedAttack.name ?? `Attack ${savedAttack.slot + 1}`} is{' '}
+                {savedAttack.complete ? 'ready to attack' : 'not yet six champions'}.
+              </p>
+            )}
 
             {/**
              * **The streak cost, stated after the fact because it is decided
@@ -377,10 +567,11 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
         </div>
       </div>
 
-      {pending && (
+      {/* Reachable from a defense tab only — nothing is evicted by an attack save. */}
+      {pending && !isAttack(editing) && (
         <EvictionWarning
           heroName={heroName(pending.heroId)}
-          zoneLabel={ZONE_LABEL[zone]}
+          zoneLabel={ZONE_LABEL[editing]}
           preview={pending.preview}
           onConfirm={confirmMove}
           onCancel={() => setPending(null)}

@@ -224,6 +224,19 @@ plausible implementation gets backwards.
 - [x] T059 Call `touchActivity()` from the defense save (009's `candidates.ts` shipped it with no caller, so every account would have aged out of every defender pool after thirty days). **Battle settlement is still not wired — that belongs to 007 and is open.**
 - [x] T060 Fix the formation grid: the middle row wrapped 2 + 1 at every real column width, which reads as a formation that does not exist
 
+### The offense half, which had no interface at all
+
+> `SquadBuilder` has taken a `kind: 'offense'` prop since T019 and **was never
+> rendered with it**. T016 built `PUT /v1/squads/offense/:slot` and nothing called
+> it. So a player could commit twelve champions to defense and then had no way to
+> build an attack squad — which means no way to attack, whatever 007 and 009 had
+> shipped behind it.
+
+- [x] T061 Render the offense builder from the same screen — **one row of five tabs**, two defense zones and three attack slots, on the single `Zone | number` discriminant `useAllocation` already takes (a mode toggle plus a selection would be two states that must agree, with a meaningless combination)
+- [x] T062 Wire `PUT /v1/squads/offense/:slot` with the optional squad name, seeded from the stored name rather than blanked — clearing the box would rename a squad to nothing on the next save
+- [x] T063 Refuse a defending champion **locally**, naming her zone, rather than letting the save `409` — and permit overlap between attack squads without comment, since 3 × 6 > 15 makes it forced
+- [x] T064 Surface the three attack states apart on the tabs — `ready`, `n/6`, and **`broken`** for a squad an eviction emptied a seat in (SC-009: it cannot attack until refilled, and reading as "unfinished" leaves the player wondering why)
+
 ---
 
 ## Dependencies & Execution Order

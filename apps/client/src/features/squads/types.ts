@@ -66,9 +66,16 @@ export interface SaveDefenseResponse {
   }[];
 }
 
-/** `PUT /v1/squads/offense/:slot`. */
+/**
+ * `PUT /v1/squads/offense/:slot`.
+ *
+ * **No warnings and no streak.** Both belong to defense: a warning describes what
+ * the engine will do with a champion the player is not commanding, and a hold
+ * streak measures how long a *defense* has stood.
+ */
 export interface SaveOffenseResponse {
   readonly slot: number;
+  readonly name: string | null;
   readonly complete: boolean;
   readonly valid: boolean;
 }

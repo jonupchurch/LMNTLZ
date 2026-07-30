@@ -258,6 +258,49 @@ test.describe('the squad actually saves', () => {
   });
 });
 
+test.describe('the three attack squads are reachable and savable', () => {
+  /**
+   * `SquadBuilder` has taken a `kind: 'offense'` prop since T019 and was **never
+   * rendered with it** — so there was no way to reach an attack squad from the
+   * running app, and therefore no way to attack. Exactly the gap this file's header
+   * describes, one feature later.
+   */
+  test('five tabs, and an attack squad saves to its own slot', async ({ page }) => {
+    const puts: string[] = [];
+
+    await mockApi(page);
+    page.on('request', (request) => {
+      if (request.method() === 'PUT') puts.push(request.url());
+    });
+    await page.goto('/');
+
+    await expect(page.getByRole('tab')).toHaveCount(5);
+
+    await page.getByRole('tab', { name: /Attack 2/ }).click();
+    await page.getByRole('button', { name: /Save Attack 2/ }).click();
+
+    await expect.poll(() => puts.length).toBe(1);
+    expect(puts[0]).toMatch(/\/v1\/squads\/offense\/1$/);
+    await expect(page.getByText(/ready to attack/)).toBeVisible();
+  });
+
+  test('a defending champion is refused before the save, and named', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+
+    await page.getByRole('tab', { name: /Attack 1/ }).click();
+
+    // IDS[0] defends the Visible zone in the fixture.
+    await page
+      .getByLabel('Champion roster')
+      .getByRole('button', { name: new RegExp(nameOf(IDS[0]!)) })
+      .click();
+    await page.getByRole('button', { name: /Front seat 1/ }).first().click();
+
+    await expect(page.getByRole('alert')).toContainText(/defending your Zone I and cannot attack/);
+  });
+});
+
 test.describe('the preview is never skipped silently', () => {
   test('a failed eviction check changes nothing and says so', async ({ page }) => {
     // Routes its own mocks rather than using `mockApi`, so the session has to
