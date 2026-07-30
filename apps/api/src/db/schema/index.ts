@@ -23,3 +23,4 @@ export * from './payments.js';
 export * from './entitlements.js';
 export * from './avatarSubmissions.js';
 export * from './guilds.js';
+export * from './chat.js';

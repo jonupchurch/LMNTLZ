@@ -251,6 +251,16 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          // Name, include and exclude only — see the rule above. Anything
+          // behavioural stated here is dropped by the root runner.
+          name: 'chat',
+          include: ['tests/chat/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+        },
+      },
+      {
         /**
          * **Cross-cutting concerns that belong to no feature.** The projects
          * above are named for features, and a rule that holds for every route —

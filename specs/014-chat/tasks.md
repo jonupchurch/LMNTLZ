@@ -75,10 +75,10 @@ scale with total players rather than with chat use.
 
 ## Phase 1: Setup
 
-- [ ] T001 Create `apps/api/src/chat/` and `apps/client/src/features/chat/`, and register `/v1/chat/:scope/messages`, `/v1/chat/token` and `/v1/chat/:scope/history` in `apps/api/src/index.ts`
-- [ ] T002 Define the chat schema in **its own file** `apps/api/src/db/schema/chat.ts` — `chat_messages` (scope, author_id, body, embed, created_at), `chat_embeds`, `ad_credits` (guild_id, date, granted, used). **Separate from the outset** (FR-009): it costs nothing now and is what makes a later split mechanical rather than a rewrite
-- [ ] T003 [P] Add a `chat` test project to `apps/api/vitest.config.ts`
-- [ ] T004 Generate and apply the chat migration from `apps/api/drizzle/`
+- [X] T001 Create `apps/api/src/chat/` and `apps/client/src/features/chat/`, and register `/v1/chat/:scope/messages`, `/v1/chat/token` and `/v1/chat/:scope/history` in `apps/api/src/index.ts`
+- [X] T002 Define the chat schema in **its own file** `apps/api/src/db/schema/chat.ts` — `chat_messages` (scope, author_id, body, embed, created_at), `chat_embeds`, `ad_credits` (guild_id, date, granted, used). **Separate from the outset** (FR-009): it costs nothing now and is what makes a later split mechanical rather than a rewrite
+- [X] T003 [P] Add a `chat` test project to `apps/api/vitest.config.ts`
+- [X] T004 Generate and apply the chat migration from `apps/api/drizzle/`
 
 ---
 
@@ -91,12 +91,12 @@ scale with total players rather than with chat use.
 > **Token scoping before message sending.** If clients ever hold a publish-capable
 > credential during development, the charge is bypassable and the habit is set.
 
-- [ ] T005 Define `RealtimeBroker` in `apps/api/src/chat/transport.ts` — **publish only, from us**. The interface has **no method that produces a publish credential at any privilege level** (FR-008, Constitution XIX)
-- [ ] T006 Implement `mintChatToken(accountId)` in `apps/api/src/chat/tokens.ts` returning a **subscribe-only** token, the exact channel list, and a **60-minute** expiry (FR-007)
-- [ ] T007 Implement `revokeChatToken(accountId)` in `apps/api/src/chat/tokens.ts`, and call it **inside the transaction** that changes each of the four inputs — guild membership, starter-league status, language preference, and ban scope. **A revocation issued after the commit is a revocation an early return can skip**
-- [ ] T008 Add the per-account control channel in `apps/api/src/chat/tokens.ts` carrying `token-stale` **and nothing else** — no content, so no moderation surface and no cost worth counting
-- [ ] T009 Define the six scopes, their audiences and their retention in `apps/api/src/chat/scopes.ts` — Global (split by language) · Guild (≤24, ~30 days) · Direct (**longest, the evidence channel**) · Admin (team only, permanent) · Guild Ads (split by language) · Beginner (starter players **+ Envoys**)
-- [ ] T010 **Build no league-scoped chat.** Promotion is one-way and permanent, so a league room would eject a player from their own conversations **as a consequence of gearing up** — turning the currency the game is built on into a social cost (FR-004)
+- [X] T005 Define `RealtimeBroker` in `apps/api/src/chat/transport.ts` — **publish only, from us**. The interface has **no method that produces a publish credential at any privilege level** (FR-008, Constitution XIX)
+- [X] T006 Implement `mintChatToken(accountId)` in `apps/api/src/chat/tokens.ts` returning a **subscribe-only** token, the exact channel list, and a **60-minute** expiry (FR-007)
+- [X] T007 Implement `revokeChatToken(accountId)` in `apps/api/src/chat/tokens.ts`, and call it **inside the transaction** that changes each of the four inputs — guild membership, starter-league status, language preference, and ban scope. **A revocation issued after the commit is a revocation an early return can skip**
+- [X] T008 Add the per-account control channel in `apps/api/src/chat/tokens.ts` carrying `token-stale` **and nothing else** — no content, so no moderation surface and no cost worth counting
+- [X] T009 Define the six scopes, their audiences and their retention in `apps/api/src/chat/scopes.ts` — Global (split by language) · Guild (≤24, ~30 days) · Direct (**longest, the evidence channel**) · Admin (team only, permanent) · Guild Ads (split by language) · Beginner (starter players **+ Envoys**)
+- [X] T010 **Build no league-scoped chat.** Promotion is one-way and permanent, so a league room would eject a player from their own conversations **as a consequence of gearing up** — turning the currency the game is built on into a social cost (FR-004)
 
 **Checkpoint**: A client holds a credential that cannot publish, and the six scopes exist
 
@@ -225,7 +225,7 @@ Global is busy enough to need splitting — and at *that* point the room needs a
 
 **This is a deferral, not a silent drop.** The obligation it carries:
 
-- [ ] T047 **WIRING** Make the scope key carry an **unused `lang` slot from the
+- [X] T047 **WIRING** Make the scope key carry an **unused `lang` slot from the
   outset** in `apps/api/src/chat/scopes.ts` — `global:<lang>` and `ads:<lang>`,
   resolving to a single constant room today. Turning the split on later becomes a
   **data migration and a default**, not a redesign of every channel name, every
@@ -242,7 +242,7 @@ Global is busy enough to need splitting — and at *that* point the room needs a
 
 ### W2 — the Envoy role (T026, T027, and 015's T023)
 
-- [ ] T050 **WIRING** Add `is_envoy` to `apps/api/src/db/schema/accounts.ts` and a grant path in `apps/api/src/chat/envoys.ts`. **Without this nobody can be an Envoy**, and every test that asserts an Envoy is refused a power passes because the route refuses everybody
+- [X] T050 **WIRING** Add `is_envoy` to `apps/api/src/db/schema/accounts.ts` and a grant path in `apps/api/src/chat/envoys.ts`. **Without this nobody can be an Envoy**, and every test that asserts an Envoy is refused a power passes because the route refuses everybody
 - [ ] T051 **WIRING** Prove the role is real in `apps/api/tests/chat/envoys.test.ts` — **grant it, then assert the Envoy reaches Beginner chat after graduating**, which is the one thing the role does. Then assert it grants nothing else. **The positive case is the one that fails when the role is fake**; the negative case is green either way
 
 ### W3 — the ban hook, whose caller arrives in 015

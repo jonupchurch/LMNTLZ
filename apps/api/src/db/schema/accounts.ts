@@ -149,6 +149,29 @@ export const accounts = pgTable(
     banScope: text('ban_scope', { enum: BAN_SCOPES }),
 
     /**
+     * An **Envoy** — a graduated player admitted back into Beginner chat (014
+     * FR-003, T050).
+     *
+     * ### The role exists so that the tests about it are not vacuous
+     *
+     * 014 admits Envoys to Beginner and gives them **no powers at all**; 015
+     * asserts an Envoy attempting to mute or ban gets `403`. Before this column
+     * there was no way for anyone to *be* an Envoy — `auth/username.ts` reserved
+     * the word and nothing else — so every one of those assertions passed
+     * because the route refused everybody. **A negative test about a role that
+     * cannot exist is green forever and proves nothing.**
+     *
+     * ### It grants exactly one thing, and it must stay that way
+     *
+     * Reading Beginner chat after graduating. Not a bypass of DM gating, not a
+     * moderation power, not a badge that changes what anyone may do to them.
+     * They report exactly as any player reports. The value of the room is that a
+     * new player can ask somebody experienced; the moment the role carries
+     * authority it becomes something to farm.
+     */
+    isEnvoy: boolean('is_envoy').notNull().default(false),
+
+    /**
      * How many battles this account walked away from (007 T007, FR-013).
      *
      * **A counter here rather than a row in `battles`, and the distinction is
