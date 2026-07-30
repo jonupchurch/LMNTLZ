@@ -23,11 +23,53 @@
  * player would show them a name they did not choose.
  */
 
-import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 /** How wide a ban reaches. `null` in `banScope` means no ban has ever applied. */
 export const BAN_SCOPES = ['chat', 'guild', 'full'] as const;
 export type BanScope = (typeof BAN_SCOPES)[number];
+
+/**
+ * Which pool a bot was authored for (009 · FR-015).
+ *
+ * **The one bit of a bot that its gear score cannot tell you.** For every other band
+ * the label is derivable — `leagueOf(gearScore)` says it — but the *starter* ramp is
+ * deliberately built across the Bronze floor: bots 1–5 carry no rune fill and sit
+ * *below* the 1,500 grant every real account starts with, while bots 13–20 *"set the
+ * graduation standard"* and therefore sit at or above it. `leagueOf` clamps
+ * everything under the floor to `bronze`, so the two ends of one authored ramp would
+ * come back as different bands.
+ *
+ * So this is not derived data stored twice (Constitution XV) — it is the authoring
+ * intent, which is what the starter pool has to select on.
+ */
+export const BOT_BANDS = ['starter', 'bronze', 'silver', 'gold', 'platinum', 'diamond'] as const;
+export type BotBand = (typeof BOT_BANDS)[number];
+
+/**
+ * Why an account is no longer in the starter league (009 · FR-022).
+ *
+ * Four exits, and the reason is worth keeping rather than collapsing to a boolean:
+ * *which* door a player left by is the only measure of whether the week is the right
+ * length. If everybody leaves on `time` the shard cap is doing nothing; if everybody
+ * leaves on `shards` the week is too long.
+ *
+ * **`time` never appears in this column**, and that is deliberate — see
+ * `starterLeague.ts`. It is derived from `created_at`, so it needs no write and
+ * therefore no job that could fail and leave somebody protected past their week.
+ */
+export const STARTER_EXIT_REASONS = ['time', 'shards', 'voluntary', 'guild'] as const;
+export type StarterExitReason = (typeof STARTER_EXIT_REASONS)[number];
 
 export const accounts = pgTable(
   'accounts',
@@ -95,12 +137,54 @@ export const accounts = pgTable(
      * account, and the cheap version is also the correct one.
      */
     abandonedBattles: integer('abandoned_battles').notNull().default(0),
+
+    /**
+     * **A bot is an account** (009 · settled). Not a parallel table, not a shadow
+     * type — a row here with no identity in `identities`, so nothing can sign into
+     * one and every table that points at `accounts.id` works unchanged.
+     *
+     * The cost of that choice is that **every aggregate must remember to exclude
+     * bots**, and forgetting is silent. Two things mitigate it: the flag is
+     * `notNull` with a `false` default so it is never ambiguous, and
+     * `battle_records.defender_is_bot` already carries the same fact on the row
+     * feature 008 actually queries — so a balance question answered from the battle
+     * record cannot be polluted even if a bot slips into a player query.
+     */
+    isBot: boolean('is_bot').notNull().default(false),
+
+    /** `null` for a real player. Non-null exactly when `is_bot`. */
+    botBand: text('bot_band', { enum: BOT_BANDS }),
+
+    /**
+     * When this account left the starter league, or `null` if it never has.
+     *
+     * **A timestamp rather than a boolean, and the same argument as `bannedUntil`
+     * one field up** — except inverted. Leaving is *permanent*, so what a boolean
+     * would lose is not correctness but the answer to *when*: a week whose players
+     * all leave on day two is a week that is not working, and that question cannot
+     * be asked of a flag.
+     *
+     * **Null does not mean "in the starter league."** The time exit is derived from
+     * `created_at`, so an account seven days old has left with nothing written here.
+     * `starterStatus()` is the only correct reader of this column.
+     */
+    starterExitedAt: timestamp('starter_exited_at', { withTimezone: true }),
+
+    /** Why they left. `null` while `starterExitedAt` is null. Never `'time'`. */
+    starterExitReason: text('starter_exit_reason', { enum: STARTER_EXIT_REASONS }),
   },
   (table) => [
     uniqueIndex('accounts_username_key_unique').on(table.usernameKey),
     // Feature 015 lists currently-banned accounts; feature 009 excludes them
     // from matchmaking. Both scan on this and neither wants a seq scan.
     index('accounts_banned_until_idx').on(table.bannedUntil),
+    /**
+     * **Partial, because bots are a rounding error of the table.** The derived floor
+     * is ~66 bots against every account ever created, so an index on the whole
+     * column would be useless for the `false` case and is unnecessary for it — no
+     * query asks for "every human". Every query asks for the bots.
+     */
+    index('accounts_bot_band_idx').on(table.botBand).where(sql`${table.isBot}`),
   ],
 );
 

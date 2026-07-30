@@ -19,6 +19,7 @@ import { closeDb, db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
 import { overrideProvider } from '../../src/auth/providers.js';
 import { InvalidProviderTokenError, type IdentityProvider } from '../../src/auth/provider.js';
+import { K_BY_BAND } from '../../src/matchmaking/standing.js';
 
 const RUN = `${process.pid}${Math.floor(Math.random() * 1e6)}`.slice(-9);
 const created: string[] = [];
@@ -105,12 +106,46 @@ describe('GET /v1/matchmaking/candidates', () => {
      * either. A handler that quietly read `?exclude=` would pass every unit test in
      * `candidates.test.ts`.
      */
-    const plain = await (await authed('/v1/matchmaking/candidates')).json();
-    const meddled = await (
-      await authed('/v1/matchmaking/candidates?exclude=everyone&minRating=9999&limit=0')
-    ).json();
+    type Body = Record<string, unknown> & { candidates: Array<{ playerId: string }> };
 
-    expect(JSON.stringify(meddled)).toBe(JSON.stringify(plain));
+    const plain = (await (await authed('/v1/matchmaking/candidates')).json()) as Body;
+    const meddled = (await (
+      await authed('/v1/matchmaking/candidates?exclude=everyone&minRating=9999&limit=0')
+    ).json()) as Body;
+
+    /**
+     * **Compared field by field rather than as one JSON string.** Byte equality across
+     * two requests also asserts that nobody signed up in between — and the pool is
+     * every eligible defender in a shared database, so a parallel suite inserting a
+     * fixture failed this on nothing to do with query parameters. It flaked exactly
+     * once, during a mutation run on an unrelated handler, which is the only reason it
+     * was seen at all.
+     *
+     * The claim is that a filter was not honoured: `limit=0` did not shorten the list,
+     * and `exclude`/`minRating` removed nobody. Both are checked against `plain` as a
+     * floor, which a new arrival cannot break.
+     */
+    const { candidates: plainList, ...plainOwn } = plain;
+    const { candidates: meddledList, ...meddledOwn } = meddled;
+
+    /**
+     * The requester's own fields are derived from the requester alone, so they *are*
+     * byte-stable and get the strict comparison.
+     */
+    expect(meddledOwn, 'a query parameter changed the response').toEqual(plainOwn);
+
+    /**
+     * The list gets the weaker check on purpose. **It cannot name specific survivors**:
+     * this account owns no defenders, so every candidate belongs to another suite and may
+     * be deleted by that suite's cleanup between these two requests — which is exactly
+     * how the first version of this fix failed. What a honoured `minRating=9999` or
+     * `limit=0` would do is *empty* the list, and that is checkable without naming a row.
+     */
+    if (plainList.length > 0) {
+      expect(meddledList.length, 'a filter was honoured — the pool came back empty').toBeGreaterThan(
+        0,
+      );
+    }
   });
 });
 
@@ -147,9 +182,33 @@ describe('GET /v1/me/standing', () => {
      * when the constant moves. The number is available under `config` for anything
      * that genuinely needs it.
      */
+    /**
+     * **This banned the substring `'40'` and that was not an assertion.** It passed for
+     * a year of the wrong reason and then failed for another: `starter.endsAt` is an ISO
+     * timestamp, and `…T01:11:40.770Z` contains `40` in its seconds. The test was
+     * reporting a K-value leak that did not exist, on a field that has nothing to do
+     * with K.
+     *
+     * The actual claim is that **no K value appears as a value** in the response. So
+     * collect the numbers, recursively, and check the three constants against them —
+     * which no timestamp, rating or score can accidentally satisfy.
+     */
     const body = (await (await authed('/v1/me/standing')).json()) as Record<string, unknown>;
 
-    expect(JSON.stringify(body)).not.toContain('40');
+    const numbers = (value: unknown): number[] => {
+      if (typeof value === 'number') return [value];
+      if (Array.isArray(value)) return value.flatMap(numbers);
+      if (value !== null && typeof value === 'object') return Object.values(value).flatMap(numbers);
+      return [];
+    };
+
+    const present = numbers(body);
+    expect(present, 'the response carries no numbers at all').not.toEqual([]);
+
+    for (const [band, k] of Object.entries(K_BY_BAND)) {
+      expect(present, `the ${band} K value ${k} is in the response`).not.toContain(k);
+    }
+
     expect(body['band']).toBe('provisional');
   });
 

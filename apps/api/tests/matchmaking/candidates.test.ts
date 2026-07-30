@@ -28,11 +28,28 @@ const SUFFIX = `test-${process.pid}-${Math.floor(Math.random() * 1e9)}`;
 const ROSTER = getAllHeroes().map((h) => h.id);
 const created: string[] = [];
 
-/** An account with a complete Visible defense — the minimum to be a candidate. */
+/**
+ * An account with a complete Visible defense — the minimum to be a candidate.
+ *
+ * **Backdated past the starter week, and that is load-bearing rather than cosmetic.**
+ * Every account here is about the *ordinary* pool, and a brand-new account is a starter
+ * player: bot-only opponents and a dormant defense. Left at `now`, these fixtures
+ * changed meaning the moment `starter.test.ts` authored a bot in a parallel worker —
+ * two of the tests below failed intermittently on nothing but file scheduling.
+ *
+ * Fixing it here rather than by serialising the project: a test file that depends on
+ * another file's global state is the actual defect, and ordering only hides it.
+ */
+const GRADUATED_DAYS = 8;
+
 async function defender(label: string, options: { seats?: number; rating?: number } = {}) {
   const [account] = await db()
     .insert(accounts)
-    .values({ username: `${label}${SUFFIX}`.slice(0, 16), usernameKey: `${label}-${SUFFIX}` })
+    .values({
+      username: `${label}${SUFFIX}`.slice(0, 16),
+      usernameKey: `${label}-${SUFFIX}`,
+      createdAt: new Date(Date.now() - GRADUATED_DAYS * 86_400_000),
+    })
     .returning();
   const id = account!.id;
   created.push(id);
@@ -205,10 +222,46 @@ describe('no slate, no rotation, no cooldown (T013)', () => {
     }
   }, 60_000);
 
-  it('is byte-identical across calls, so nothing is being consumed', async () => {
+  it('keeps every candidate it already offered, so nothing is being consumed', async () => {
+    /**
+     * **This asserted byte equality and that was stronger than the claim.** Two calls
+     * returning identical JSON also requires that *no other account was created in
+     * between* — and the pool is every eligible defender in a shared database, so a
+     * parallel suite inserting a fixture made this fail with a diff of one extra
+     * candidate. Nothing had been consumed; somebody else had signed up.
+     *
+     * The actual promise is that attacking somebody does not remove them, so it is
+     * *survival* that has to be checked: everything in the first response is still in
+     * the second, with every field unchanged. A new arrival is not consumption, and a
+     * test that treats it as one is a test that fails for being right.
+     */
     const first = await candidates(attacker);
     const second = await candidates(attacker);
 
-    expect(JSON.stringify(second)).toBe(JSON.stringify(first));
+    /**
+     * **Scoped to this file's own defenders, and it took two tries to get there.** The
+     * first rewrite checked that *every* candidate survived, which failed when another
+     * suite's `afterAll` deleted its fixture mid-test: a candidate really did vanish,
+     * and nothing had been consumed. The pool is every eligible defender in one shared
+     * database, so rows appear and disappear for reasons this file cannot see.
+     *
+     * `strong` and `weak` are ours, they live until this file's own cleanup, and they are
+     * the only two the claim is about.
+     */
+    const find = (list: typeof first, id: string) => list.candidates.find((c) => c.playerId === id);
+
+    for (const [label, id] of [
+      ['strong', strong],
+      ['weak', weak],
+    ] as const) {
+      const before = find(first, id);
+      expect(before, `${label} was not offered on the first call`).toBeDefined();
+      expect(find(second, id), `${label} vanished between calls`).toEqual(before);
+    }
+
+    // The requester's own fields are per-player, so those *are* byte-stable.
+    const { candidates: _first, ...mineFirst } = first;
+    const { candidates: _second, ...mineSecond } = second;
+    expect(mineSecond).toEqual(mineFirst);
   });
 });

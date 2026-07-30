@@ -38,7 +38,7 @@
  * worse than one that errors.
  */
 
-import { and, desc, eq, gte, lt, ne, or, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
 import { SQUAD_SIZE } from '@lmntlz/sim/rules';
 import { db } from '../db/client.js';
 import { accounts } from '../db/schema/accounts.js';
@@ -46,7 +46,8 @@ import { playerRatings, STARTING_RATING } from '../db/schema/ratings.js';
 import { squads, squadSeats } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
-import { INACTIVITY_DAYS } from './config.js';
+import { INACTIVITY_DAYS, STARTER_DAYS } from './config.js';
+import { starterLeagueOpen, starterStatus } from './starterLeague.js';
 import { STARTER_GRANT_SCORE, bandOf, leagueOf, positionInLeague, type League } from './league.js';
 
 export interface Candidate {
@@ -134,11 +135,70 @@ export async function candidates(accountId: string): Promise<CandidateList> {
   ) = ${SQUAD_SIZE}`;
 
   const cutoff = new Date(Date.now() - INACTIVITY_DAYS * 86_400_000);
+  const starterCutoff = new Date(Date.now() - STARTER_DAYS * 86_400_000);
+
+  /**
+   * **A starter player is offered authored bots and nothing else** (FR-019).
+   *
+   * The gear band is deliberately *not* applied to this pool. `09-matchmaking.md`:
+   * a fresh account is 1,500 against a full kit's 10,125 — 6.75× — and *"leagues
+   * bound that to 1.67× only if Bronze is populated. An authored pool bounds it by
+   * construction, with no dependence on who happens to be playing."* The ramp is the
+   * bound, and the ramp crosses the Bronze floor on purpose (see `BOT_BANDS`), so a
+   * band filter would cut the bottom half of it off.
+   */
+  const starter = await starterStatus(accountId);
+
+  /**
+   * **Asked separately from the caller's own status, because the two answer different
+   * questions.** `starter.active` is *"is this player protected"*; this is *"does the
+   * league exist at all"* — and a player thirty days old reports `time` either way, so
+   * their status cannot tell us. Without this gate the dormant-defense clause below
+   * would remove every account under a week old from every pool **while none of them
+   * were actually protected**, which is a pool that silently thins for no reason.
+   */
+  const leagueOpen = await starterLeagueOpen();
+
+  const pool = starter.active
+    ? and(eq(accounts.isBot, true), eq(accounts.botBand, 'starter'))
+    : and(
+        // Gear restricts — and this is the only place it does.
+        gte(effectiveGearScore, band.floor),
+        lt(effectiveGearScore, band.ceiling),
+        /**
+         * **The nursery is not farmable, and this clause is the reason opting out can
+         * be permanent.** A starter bot's gear score sits at or below the Bronze floor,
+         * so without this it would land in every Bronze player's ordinary pool — and
+         * `09-matchmaking.md` rejects exactly that: *"a player who returns after leaving
+         * would be farming a pool built for beginners."* One-way is only meaningful if
+         * the door stays shut from the other side too.
+         *
+         * Band rather than `is_bot`: Bronze **is** padded with bots by design (FR-015),
+         * and those are meant to be offered. It is the authored beginner ramp that is
+         * reserved.
+         */
+        or(isNull(accounts.botBand), ne(accounts.botBand, 'starter')),
+        /**
+         * **A starter player's defense is dormant** (FR-020), so they are removed from
+         * everybody else's pool rather than merely told nothing will happen.
+         * Expressed as the negation of "still in the starter league", which is the
+         * same three conditions `starterStatus()` applies, in SQL: an exit is
+         * recorded, *or* the week has elapsed, *or* it is a bot.
+         */
+        leagueOpen
+          ? or(
+              isNotNull(accounts.starterExitedAt),
+              lt(accounts.createdAt, starterCutoff),
+              eq(accounts.isBot, true),
+            )
+          : undefined,
+      );
 
   const rows = await db()
     .select({
       playerId: accounts.id,
       username: accounts.username,
+      isBot: accounts.isBot,
       rating: sql<number>`coalesce(${playerRatings.rating}, ${STARTING_RATING})`,
       visibleHoldStreak: squads.holdStreak,
       hiddenHoldStreak: sql<number>`coalesce((
@@ -163,15 +223,21 @@ export async function candidates(accountId: string): Promise<CandidateList> {
       and(
         ne(accounts.id, accountId),
         seatedSix,
-        // Gear restricts — and this is the only place it does.
-        gte(effectiveGearScore, band.floor),
-        lt(effectiveGearScore, band.ceiling),
+        pool,
         /**
          * **In the query, not a nightly job.** A job leaves a returning player
          * invisible until it next runs. The `isNull` arm is the seam above: with no
          * standing row, fall back to when the account was created.
+         *
+         * **A bot is never inactive, and this arm is load-bearing rather than
+         * tidy.** A bot has no activity row and never will — nothing signs into one —
+         * so it would fall through to `created_at`, and every authored bot would
+         * silently drop out of every pool thirty days after it was seeded. The whole
+         * bot layer would stop working with no error anywhere, which is the failure
+         * mode this project keeps finding.
          */
         or(
+          eq(accounts.isBot, true),
           gte(playerRatings.lastActivityAt, cutoff),
           and(isNull(playerRatings.lastActivityAt), gte(accounts.createdAt, cutoff)),
         ),
@@ -189,9 +255,11 @@ export async function candidates(accountId: string): Promise<CandidateList> {
     candidates: rows.map((r) => ({
       playerId: r.playerId,
       username: r.username,
-      // Bots are Phase 7. No account is one yet, and the field is not optional
-      // because a client that has to ask twice will forget the second time.
-      isBot: false,
+      // Read from the row rather than hard-coded false. No account is a bot until
+      // Phase 7 authors one, so this is `false` for everybody today — but it is
+      // false *because the column says so*, which is the difference between a seam
+      // and a placeholder.
+      isBot: r.isBot,
       rating: Number(r.rating),
       visibleHoldStreak: r.visibleHoldStreak,
       hiddenHoldStreak: Number(r.hiddenHoldStreak),

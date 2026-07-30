@@ -33,6 +33,7 @@ import {
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
 import { STARTER_GRANT_SCORE, leagueOf, positionInLeague, type League } from './league.js';
+import { starterStatus, type StarterStatus } from './starterLeague.js';
 
 export type ConvergenceBand = 'provisional' | 'settling' | 'established';
 
@@ -66,8 +67,15 @@ export interface Standing {
   readonly band: ConvergenceBand;
   readonly ambushChance: number;
   readonly consecutiveWins: number;
-  /** Phase 5 fills this in. `active: false` is the honest answer until it does. */
-  readonly starter: { readonly active: boolean };
+  /**
+   * The starter league, from `starterLeague.ts`.
+   *
+   * Carries `endsAt` while active and `reason` once it is not — the client needs the
+   * first to count down the week and the second to explain a pool that changed. It is
+   * **not** repeated on `candidates`: an opponent list already says `isBot` per
+   * candidate, and a second copy of one fact is how the two disagree.
+   */
+  readonly starter: StarterStatus;
 }
 
 export async function standing(accountId: string): Promise<Standing> {
@@ -99,6 +107,6 @@ export async function standing(accountId: string): Promise<Standing> {
     band: bandFor(ratedBattles),
     ambushChance: ambushChance(consecutiveWins),
     consecutiveWins,
-    starter: { active: false },
+    starter: await starterStatus(accountId),
   };
 }
