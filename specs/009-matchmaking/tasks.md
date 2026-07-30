@@ -66,7 +66,7 @@ is not.
 
 ## Phase 1: Setup
 
-- [ ] T001 Create `apps/api/src/matchmaking/` and register `/v1/matchmaking` and `/v1/me/standing` in `apps/api/src/index.ts`
+- [x] T001 Create `apps/api/src/matchmaking/` and register `/v1/matchmaking` and `/v1/me/standing` in `apps/api/src/index.ts`
 - [x] T002 Define `player_ratings` in `apps/api/src/db/schema/ratings.ts` — `rating` starting at 1000, `rated_battles` driving the K band (≤30 → 40, ≤200 → 20, else 10), `attack_streak`, `gear_score`, `last_activity_at`
 - [x] T003 [P] Add a `matchmaking` test project to `apps/api/vitest.config.ts`
 - [x] T004 **Build the simulated-population harness** in `apps/api/tests/matchmaking/population.ts` — league shares, bleed behaviour and bot sufficiency are all population questions, and reasoning will not settle them
@@ -104,9 +104,9 @@ is not.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T011 [US1] Write `apps/api/tests/matchmaking/gearBound.test.ts` as a **property test over the whole score range** — no player is ever offered an opponent above **1.67×** their gear, with zero exceptions (SC-001)
-- [ ] T012 [P] [US1] Write `apps/api/tests/matchmaking/candidates.test.ts` — **read the signature**: there is no `excludeIds`, no `minRating`, no `maxAttempts`, no parameter that could exclude anybody (SC-004)
-- [ ] T013 [P] [US1] Add the behavioural half to `apps/api/tests/matchmaking/candidates.test.ts` — attack the same defender 20 times in a row and confirm they appear in `candidates` all 20 times. **No slate, no rotation, no cooldown**
+- [x] T011 [US1] Write `apps/api/tests/matchmaking/gearBound.test.ts` as a **property test over the whole score range** — no player is ever offered an opponent above **1.67×** their gear, with zero exceptions (SC-001)
+- [x] T012 [P] [US1] Write `apps/api/tests/matchmaking/candidates.test.ts` — **read the signature**: there is no `excludeIds`, no `minRating`, no `maxAttempts`, no parameter that could exclude anybody (SC-004)
+- [x] T013 [P] [US1] Add the behavioural half to `apps/api/tests/matchmaking/candidates.test.ts` — attack the same defender 20 times in a row and confirm they appear in `candidates` all 20 times. **No slate, no rotation, no cooldown**
 
 > **T012 is the enforcement of *the pool is every defender*.** A rule restricting
 > *who* you may attack restricts the playing itself, and the daily income curve
@@ -114,9 +114,9 @@ is not.
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement `candidates(accountId)` in `apps/api/src/matchmaking/candidates.ts` — pool assembly, then rating **ORDER**. The signature takes no filter parameter (FR-011)
-- [ ] T015 [US1] Implement `GET /v1/matchmaking/candidates` in `apps/api/src/matchmaking/routes.ts` with `league`, `positionInLeague`, `gearScore`, `widened`, the candidate list, `ambushChance` and `consecutiveWins`
-- [ ] T016 [US1] Implement `GET /v1/me/standing` in `apps/api/src/matchmaking/routes.ts` — a player sees their own league and score. **An opponent's league is not named** unless the match was widened, because knowing your own already tells you every opponent's band (FR-006)
+- [x] T014 [US1] Implement `candidates(accountId)` in `apps/api/src/matchmaking/candidates.ts` — pool assembly, then rating **ORDER**. The signature takes no filter parameter (FR-011)
+- [x] T015 [US1] Implement `GET /v1/matchmaking/candidates` in `apps/api/src/matchmaking/routes.ts` with `league`, `positionInLeague`, `gearScore`, `widened`, the candidate list, `ambushChance` and `consecutiveWins`
+- [x] T016 [US1] Implement `GET /v1/me/standing` in `apps/api/src/matchmaking/routes.ts` — a player sees their own league and score. **An opponent's league is not named** unless the match was widened, because knowing your own already tells you every opponent's band (FR-006)
 - [x] T017 [US1] **ALREADY BUILT BY 006** — `ambushChance(attackStreak)` in `apps/api/src/squads/ambush.js`, reused rather than reimplemented; `config.test.ts` asserts the reuse. Original text: Implement `ambushChance(accountId)` in `apps/api/src/matchmaking/candidates.ts` — `+2%` per consecutive attack win, capped at **90%**, **always displayed**, reset on a loss
 - [x] T018 [US1] **ALREADY BUILT BY 007** — the zone roll lives in `apps/api/src/battle/create.ts` and no request body carries a zone field. Original text: Implement `rollZone(seed, accountId)` in `apps/api/src/matchmaking/candidates.ts` — **the zone is the server's decision** and the field does not exist in any request body (Constitution XII)
 - [x] T019 [US1] Serve every threshold, bleed constant and bot count from the server in `apps/api/src/matchmaking/config.ts` — **tunable without a client release**
