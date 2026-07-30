@@ -1,9 +1,23 @@
 ## Current phase
 
-**Features 001–012 are built and THE GAME IS PLAYABLE.** Sign in at
+**Features 001–013 are built and THE GAME IS PLAYABLE.** Sign in at
 `www.lmntlz.com`, build two defense squads and three attack squads, scout an
-opponent, fight them turn by turn — and now **look at a profile, change your
-name, pick an avatar and download your own data**.
+opponent, fight them turn by turn, look at a profile, change your name, pick an
+avatar, download your own data — and now **find a guild, apply to five at once,
+found your own with an emblem, and run its roster**.
+
+> ### 013 got its task list a **wiring pass before any code was written**
+>
+> The rule the task template grew after 012 was applied for the first time, and it
+> found **four wires the generated list never mentioned** — three of them seams
+> another feature had already written and left inert (`guildJoined`,
+> `guildDoorConfirm`, `publicProfile.guild`), plus the entire client surface.
+>
+> **And it found a fifth by reading the contract**: `POST
+> /v1/guilds/:guildId/applications` exists with **no way on earth to learn a
+> `guildId`**. The client shipped a form asking a human to type a UUID. Every route
+> worked, every test passed, and joining a guild was impossible. `directory.ts` and
+> `GuildBrowser.tsx` are not in the spec; they are what makes the spec usable.
 
 **1,501 unit tests** (content 70 · sim 322 · **api 913** · client 196) + **54
 Playwright end-to-end**; lint, typecheck and build clean. Counted 2026-07-30 by
@@ -109,8 +123,9 @@ variables.
 | **010** progression | **54/56** | shards, the append-only ledger, runes, the rating ladder · fills 009's `setRuneSource` seam |
 | **011** payments | **41/44** | the rail interface, idempotent webhook, account-level entitlements, reconcile, receipt · **built against a fake rail with real HMAC and no vendor account** |
 | **012** profiles | **36/44** | selected-not-filtered battle record, the export, the rename charge, curated avatars · **+ Phase 7, the wiring** |
+| **013** guilds | **67/70** | `UNIQUE (account_id)` as the whole concurrency design · the injected clock banned by lint · succession's four branches including day 22 · **+ a directory the contract forgot** |
 
-**Features 001–012 are complete, bar the tasks that cannot be done yet** — each
+**Features 001–013 are complete, bar the tasks that cannot be done yet** — each
 blocked on something real rather than merely unfinished:
 
 | Blocked | On |
@@ -261,9 +276,35 @@ expensive each would have been to find later:
 
 ## Next — code, in the settled build order
 
-**Start at `specs/013-guilds/tasks.md` T001**, and give its task list the wiring
-pass described above before writing any code. 013 also unblocks 012's guild
-export — though the *event* half stays blocked on deferred design.
+**Start at `specs/014-chat/tasks.md`, and give its task list the wiring pass
+first** — 014, 015 and 016 all predate the template rule, exactly as 013 did.
+
+**013 is closed at 67/70.** It also unblocked 012's guild export in principle,
+though the *event* half stays blocked on deferred design, so that task does not
+move. What 013 left named rather than done:
+
+- **T039 `/motd`** — schema, permission and display exist; there is **no route to
+  set one**, and its *"announce in guild chat"* half is 014's. Left whole.
+- **T007** — the clock ban covers `src/guilds` and `sim/rules`. *"Every feature
+  with a timer"* is **45 calls across 24 files in 8 features**, which is bigger than
+  013 was and touches deployed code.
+- **T059 / T067** — the expiry and succession jobs exist as
+  `POST /v1/jobs/guild-*` with **no schedule**, the same gap 008's replay cleanup
+  has carried since feature 008. Both also run on the read path, and succession
+  resolves lazily, because *"the job never ran"* freezing a guild forever is the
+  failure that story exists to prevent.
+
+> ### ⚠️ The starter-league warning cannot fire, and it is not 013's fault
+>
+> There are **zero bots in the database**, so `starterLeagueOpen()` is false, so
+> every account reports `no-authored-pool`, so `guildDoorConfirm()` returns `null`
+> and **nobody is warned on any of the three doors**. That is 009 answering
+> honestly — *"a feature that has no pool should say so"* — and it switches itself
+> on when **009 T047** seeds the starter bots, deferred to the hero-numbers pass.
+>
+> **The test consequence is the dangerous half**: without seeding a bot, every
+> *"was it warned?"* assertion passes *because the warning is absent*.
+> `tests/guilds/helpers.ts` seeds one and says why at length.
 
 ### ✅ SC-008: I reported a conflict that was not there. Corrected 2026-07-30.
 
