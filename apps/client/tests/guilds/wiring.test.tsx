@@ -113,8 +113,45 @@ describe('the guild screen requests its data', () => {
     });
   });
 
-  it('renders the application form, with the budget and the first-acceptance rule', async () => {
-    stubFetch({ '/me/guild': EMPTY });
+  it('BROWSES guilds — the wire that makes applying possible at all', async () => {
+    stubFetch({
+      '/me/guild': EMPTY,
+      '/v1/guilds?q=': {
+        guilds: [
+          {
+            id: 'g-7',
+            name: 'The Long Reach',
+            emblem: { icon: 4, ink: 2, ground: 6 },
+            pitch: 'Counter-builders welcome.',
+            memberCount: 9,
+            capacity: 24,
+            hasRoom: true,
+          },
+        ],
+      },
+    });
+
+    render(
+      <GuildScreen accountId="me" onViewProfile={() => {}} onUnauthenticated={() => {}} />,
+    );
+
+    await waitFor(() => {
+      expect(
+        requested.some((u) => u.includes('/v1/guilds?q=')),
+        `never browsed the directory — asked for: ${JSON.stringify(requested)}`,
+      ).toBe(true);
+    });
+
+    /**
+     * The guild is reachable **by name**, and Apply is on its card. Before this
+     * existed the form asked a human to type a UUID nothing ever displayed.
+     */
+    expect(await screen.findByText('The Long Reach')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
+  });
+
+  it('renders the budget and the first-acceptance rule where a player applies', async () => {
+    stubFetch({ '/me/guild': EMPTY, '/v1/guilds?q=': { guilds: [] } });
 
     render(
       <GuildScreen accountId="me" onViewProfile={() => {}} onUnauthenticated={() => {}} />,
@@ -130,9 +167,27 @@ describe('the guild screen requests its data', () => {
     ).toBeInTheDocument();
   });
 
+  it('asks a human for no identifiers — no UUID field anywhere', async () => {
+    stubFetch({ '/me/guild': EMPTY, '/v1/guilds?q=': { guilds: [] } });
+
+    render(
+      <GuildScreen accountId="me" onViewProfile={() => {}} onUnauthenticated={() => {}} />,
+    );
+
+    await screen.findByTestId('application-budget');
+
+    /**
+     * The regression this guards: every route worked and the feature was
+     * unusable, because the only way in was a field labelled *"Guild id"*.
+     */
+    expect(screen.queryByLabelText(/guild id/i)).toBeNull();
+    expect(screen.queryByPlaceholderText(/guild id/i)).toBeNull();
+  });
+
   it('asks for the founding prerequisites — including the starter warning', async () => {
     stubFetch({
       '/me/guild': EMPTY,
+      '/v1/guilds?q=': { guilds: [] },
       '/guilds/new': {
         cost: 650,
         capacity: 24,
@@ -164,6 +219,7 @@ describe('the guild screen requests its data', () => {
   it('renders the emblem designer inside the founding flow', async () => {
     stubFetch({
       '/me/guild': EMPTY,
+      '/v1/guilds?q=': { guilds: [] },
       '/guilds/new': {
         cost: 650,
         capacity: 24,
@@ -210,6 +266,7 @@ describe('the starter warning cannot be satisfied by half', () => {
   it('both boxes are required before founding is possible', async () => {
     stubFetch({
       '/me/guild': EMPTY,
+      '/v1/guilds?q=': { guilds: [] },
       '/guilds/new': {
         cost: 650,
         capacity: 24,
@@ -247,6 +304,7 @@ describe('the starter warning cannot be satisfied by half', () => {
   it('names BOTH losses in words — opponents and income', async () => {
     stubFetch({
       '/me/guild': EMPTY,
+      '/v1/guilds?q=': { guilds: [] },
       '/guilds/new': {
         cost: 650,
         capacity: 24,

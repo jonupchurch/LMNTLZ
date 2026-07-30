@@ -16,6 +16,7 @@ import { inArray } from 'drizzle-orm';
 import { db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
 import { guilds, guildMembers, type GuildRole } from '../../src/db/schema/guilds.js';
+import { usernameKey } from '../../src/auth/username.js';
 
 export const suffix = (tag: string): string =>
   `${tag}-${process.pid}-${Math.floor(Math.random() * 1e9)}`;
@@ -77,12 +78,21 @@ export class Fixtures {
     return row!.id;
   }
 
-  /** A guild with a master already in it — the state every other test starts from. */
+  /**
+   * A guild with a master already in it — the state every other test starts from.
+   *
+   * **`nameKey` is folded exactly as `foundGuild` folds it**, and that is not
+   * cosmetic: it stored the raw suffix at first, so a fixture guild's key kept its
+   * capitals while every real guild's key is lower-cased. The directory's
+   * case-sensitive `LIKE` then found nothing, and **six tests failed against
+   * correct code** — the fixture was the thing that was wrong. A fixture that
+   * writes rows a different way from production tests a database nobody has.
+   */
   async guild(tag: string, masterId?: string): Promise<{ id: string; masterId: string }> {
-    const key = suffix(tag);
+    const name = `GT ${suffix(tag)}`;
     const [row] = await db()
       .insert(guilds)
-      .values({ name: `GT ${key}`, nameKey: key })
+      .values({ name, nameKey: usernameKey(name) })
       .returning({ id: guilds.id });
 
     const master = masterId ?? (await this.account(`${tag}-m`));

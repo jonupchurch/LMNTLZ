@@ -28,6 +28,7 @@ import { api, ApiError } from '../../lib/api.js';
 import { EmblemDesigner } from './EmblemDesigner.js';
 import { GuildRoster } from './GuildRoster.js';
 import { ApplicationForm } from './ApplicationForm.js';
+import { GuildBrowser } from './GuildBrowser.js';
 import { InviteList } from './InviteList.js';
 import { StarterWarningNotice, bothAcknowledged } from './StarterWarningNotice.js';
 import type { Emblem, FoundingInfo, MyGuildState } from './types.js';
@@ -124,9 +125,21 @@ export function GuildScreen({
         <>
           <InviteList invites={invites} onChanged={load} onUnauthenticated={onUnauthenticated} />
 
-          <ApplicationForm
+          {/**
+           * **Browse first, then the list of what you have already sent.** The
+           * decision is made against a guild's card — its pitch and its free
+           * seats — so that is where the Apply button lives. `ApplicationForm`
+           * is now only the withdraw-and-review half.
+           */}
+          <GuildBrowser
             applications={applications}
             budget={applicationBudget}
+            onChanged={load}
+            onUnauthenticated={onUnauthenticated}
+          />
+
+          <ApplicationForm
+            applications={applications}
             onChanged={load}
             onUnauthenticated={onUnauthenticated}
           />

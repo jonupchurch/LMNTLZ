@@ -1,20 +1,17 @@
 /**
- * Applying, and **the first-acceptance contract stated where the decision is made**
- * (013 T017 · FR-011).
+ * The applications you have already sent (013 T017 · FR-008, FR-011).
  *
- * ### The contract goes here, not on a confirmation screen
+ * ### This file used to ask a human to type a UUID
  *
- * FR-011 is specific: *"the first-acceptance-wins contract MUST be stated **where a
- * player applies**"*. A player firing off five applications is making a decision
- * about all five at once, and the thing they need to know — that the first guild to
- * say yes takes them and the other four close — is only useful *before* they send
- * them.
+ * It was the *"apply to a guild"* form, and its first field was a guild id — which
+ * nothing in the game ever showed you. Every route behind it worked. **The feature
+ * was unusable and every test passed**, which is the same defect as an unrendered
+ * component, one level up: the wire was connected to a socket no hand could reach.
  *
- * ### The budget is a number, not an error
- *
- * FR-008 says *"shown as a budget rather than discovered as an error"*. `used / max`
- * is rendered whether or not it is full. A cap a player only meets by hitting it
- * reads as a fault, because they cannot tell a rule from a bug.
+ * Applying now happens from a guild's card in `GuildBrowser`, where the decision is
+ * actually made. What is left here is the half that was always sound — *what have
+ * I sent, and can I take one back* — because the five-at-once budget is only a
+ * budget if you can see what is spending it.
  */
 
 import { useState, type JSX } from 'react';
@@ -23,86 +20,52 @@ import type { ApplicationView } from './types.js';
 
 export function ApplicationForm({
   applications,
-  budget,
   onChanged,
   onUnauthenticated,
 }: {
   applications: readonly ApplicationView[];
-  budget: { readonly used: number; readonly max: number };
   onChanged: () => void;
   onUnauthenticated: () => void;
-}): JSX.Element {
-  const [guildId, setGuildId] = useState('');
-  const [message, setMessage] = useState('');
+}): JSX.Element | null {
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   const open = applications.filter((a) => a.state === 'open');
-  const full = budget.used >= budget.max;
+  const dismissed = applications.filter((a) => a.state === 'dismissed');
 
-  const submit = async (): Promise<void> => {
-    setBusy(true);
+  if (open.length === 0 && dismissed.length === 0) return null;
+
+  const withdraw = async (id: string): Promise<void> => {
     setError(null);
     try {
-      await api(`/guilds/${guildId}/applications`, {
-        method: 'POST',
-        body: JSON.stringify({ message }),
-      });
-      setGuildId('');
-      setMessage('');
+      await api(`/applications/${id}/withdraw`, { method: 'POST' });
       onChanged();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         onUnauthenticated();
         return;
       }
-      setError(
-        err instanceof ApiError && err.status === 404
-          ? 'No such guild.'
-          : err instanceof ApiError && err.status === 409
-            ? 'That application was refused — check your budget and any cooldown.'
-            : 'Could not apply.',
-      );
-    } finally {
-      setBusy(false);
+      setError('Could not withdraw that application.');
     }
   };
 
   return (
     <div className="rounded-lg border border-stone-800 p-5">
-      <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold">Apply to a guild</h2>
-        <span className="text-sm text-stone-400" data-testid="application-budget">
-          {budget.used} of {budget.max} open
-        </span>
-      </div>
-
-      {/**
-       * FR-011. Stated here, always — not behind a tooltip and not only when the
-       * player already has several open.
-       */}
-      <p className="mb-3 text-sm text-stone-400">
-        You can hold {budget.max} applications at once, and they are free.{' '}
-        <strong className="text-stone-200">
-          The first guild to accept you takes you, and the rest are withdrawn
-          automatically.
-        </strong>{' '}
-        An application you never hear back about expires after seven days.
-      </p>
+      <h2 className="mb-3 text-lg font-semibold">Your applications</h2>
 
       {open.length > 0 ? (
-        <ul className="mb-3 grid gap-1 text-sm text-stone-300">
+        <ul className="grid gap-2">
           {open.map((a) => (
-            <li key={a.id} className="flex items-center justify-between">
-              <span>{a.guildId}</span>
+            <li key={a.id} className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-stone-200">
+                Waiting ·{' '}
+                <span className="text-stone-400">
+                  expires {new Date(a.expiresAt).toLocaleDateString()}
+                </span>
+              </span>
               <button
                 type="button"
                 className="text-xs text-stone-400 underline"
-                onClick={() => {
-                  void api(`/applications/${a.id}/withdraw`, { method: 'POST' })
-                    .then(onChanged)
-                    .catch(() => setError('Could not withdraw.'));
-                }}
+                onClick={() => void withdraw(a.id)}
               >
                 Withdraw
               </button>
@@ -111,37 +74,22 @@ export function ApplicationForm({
         </ul>
       ) : null}
 
-      <div className="grid gap-2 md:grid-cols-[1fr_2fr_auto]">
-        <input
-          aria-label="Guild id"
-          placeholder="Guild id"
-          className="rounded border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
-          value={guildId}
-          onChange={(e) => setGuildId(e.currentTarget.value)}
-        />
-        <input
-          aria-label="Message"
-          placeholder="Say something (optional)"
-          className="rounded border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
-          value={message}
-          maxLength={300}
-          onChange={(e) => setMessage(e.currentTarget.value)}
-        />
-        <button
-          type="button"
-          disabled={guildId.trim() === '' || full || busy}
-          className="rounded bg-amber-700 px-4 py-2 text-sm font-medium disabled:opacity-40"
-          onClick={() => void submit()}
-        >
-          Apply
-        </button>
-      </div>
-
-      {full ? (
-        <p className="mt-2 text-sm text-amber-400">
-          All {budget.max} are open. Withdraw one to apply somewhere else.
-        </p>
+      {/**
+       * FR-014 — **shown as dismissed rather than vanishing.** A row that
+       * disappears reads as a bug; a row that says it was turned down is
+       * information, and it is what makes the 24-hour wait explicable instead of
+       * mysterious.
+       */}
+      {dismissed.length > 0 ? (
+        <ul className="mt-3 grid gap-1 text-sm text-stone-400">
+          {dismissed.map((a) => (
+            <li key={a.id}>
+              Dismissed — you can apply to that guild again a day later.
+            </li>
+          ))}
+        </ul>
       ) : null}
+
       {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
     </div>
   );

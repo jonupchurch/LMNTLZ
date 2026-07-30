@@ -41,6 +41,7 @@ import {
   MAX_CONCURRENT_APPLICATIONS,
 } from './config.js';
 import { foundGuild, setEmblem, setPitch, type Emblem } from './found.js';
+import { DIRECTORY_PAGE, accountIdByUsername, searchGuilds } from './directory.js';
 import {
   acceptApplication,
   applicationsOf,
@@ -102,6 +103,28 @@ async function starterDoorBlocked(
 
   return { warning: confirm.starterWarning };
 }
+
+/**
+ * **Browse and search** — the route that makes applying possible at all.
+ *
+ * Registered *before* `/guilds/:guildId` matters not at all to Hono (exact paths
+ * win), but `/guilds/new` below does need to precede it, and both are here for the
+ * same reason: a `guildId` has to come from somewhere.
+ */
+guildRoutes.get('/guilds', async (c) => {
+  const query = c.req.query('q') ?? '';
+  const offset = Number(c.req.query('offset') ?? '0');
+
+  return c.json(
+    {
+      guilds: await searchGuilds(query, {
+        offset: Number.isFinite(offset) && offset > 0 ? Math.floor(offset) : 0,
+      }),
+      pageSize: DIRECTORY_PAGE,
+    },
+    200,
+  );
+});
 
 /** What the client needs to render the founding screen before anything is typed. */
 guildRoutes.get('/guilds/new', async (c) => {
@@ -411,11 +434,29 @@ guildRoutes.post('/guilds/:guildId/invites', async (c) => {
   const { allowed } = await authorise(guildId, accountId, 'invite');
   if (!allowed) return c.json(apiError('forbidden', 'Officers and above only.'), 403);
 
-  if (typeof input['playerId'] !== 'string') {
-    return c.json(apiError('malformed_request', 'A `playerId` is required.'), 400);
+  /**
+   * **A username, resolved here** — and there is deliberately no player-search
+   * route to resolve it with. A `GET /v1/players?q=` would be a prefix-enumerable
+   * index of every account in the game; an exact lookup inside the action that
+   * needs it lets an officer reach somebody they can already name and nobody else
+   * (Constitution XVII). `playerId` is still accepted, because the roster and the
+   * scout list already hand out ids the client legitimately holds.
+   */
+  const targetId =
+    typeof input['playerId'] === 'string'
+      ? input['playerId']
+      : typeof input['username'] === 'string'
+        ? await accountIdByUsername(input['username'])
+        : null;
+
+  if (targetId === null) {
+    return c.json(
+      apiError('no_such_player', 'No player by that name. Names are exact.'),
+      typeof input['username'] === 'string' ? 404 : 400,
+    );
   }
 
-  const result = await invite(guildId, input['playerId'], accountId, systemClock);
+  const result = await invite(guildId, targetId, accountId, systemClock);
   if (result.ok) return c.json({ inviteId: result.inviteId, expiresAt: result.expiresAt }, 201);
 
   return c.json(apiError(result.reason.replace(/-/g, '_'), result.reason), 409);
