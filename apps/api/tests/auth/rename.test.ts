@@ -122,7 +122,23 @@ describe('a rename orphans nothing', () => {
 describe('the rename endpoint', () => {
   it('returns the display form exactly as typed', async () => {
     const { session } = await signIn(`ren-d-${RUN}`);
-    const typed = `Reyna_TwoRivers${RUN}`.slice(0, 16);
+    /**
+     * **The suffix has to survive the length limit, and it did not.**
+     *
+     * This read `` `Reyna_TwoRivers${RUN}`.slice(0, 16) ``. `Reyna_TwoRivers` is
+     * fifteen characters and `USERNAME_MAX` is sixteen, so the slice kept exactly
+     * **one** character of a nine-character run suffix — leaving about ten distinct
+     * names for a column with a uniqueness constraint. Any two runs starting with
+     * the same digit collide, and one leftover row makes it a one-in-ten failure
+     * forever.
+     *
+     * It flaked once during 009 and passed in isolation and on two re-runs, which is
+     * the shape that gets retried instead of read. Fifteen characters here keeps the
+     * whole suffix, and keeps what the test is actually about: mixed case and an
+     * underscore echoed back exactly. The sixteen-character boundary is covered by
+     * the `too-long` case below.
+     */
+    const typed = `Reyna_${RUN}`;
 
     const res = await putUsername(typed, session);
     expect(res.status).toBe(200);
