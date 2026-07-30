@@ -23,9 +23,18 @@ import { squadRoutes } from './squads/routes.js';
 import { battleRoutes } from './battle/routes.js';
 import { replayRoutes } from './replays/routes.js';
 import { matchmakingRoutes } from './matchmaking/routes.js';
+import { progressionRoutes } from './progression/routes.js';
+import { installRuneSource } from './progression/install.js';
 
 export { apiError } from './errors.js';
 export type { ApiError } from './errors.js';
+
+/**
+ * **Before any route can be served.** Installs 010's rune source into 009's
+ * `gearScore` seam; without it every account scores the 1,500 starter grant no
+ * matter how many runes it has placed, silently. See `progression/install.ts`.
+ */
+installRuneSource();
 
 const app = new Hono();
 
@@ -78,6 +87,7 @@ v1.route('/', squadRoutes);
 v1.route('/', battleRoutes);
 v1.route('/', replayRoutes);
 v1.route('/', matchmakingRoutes);
+v1.route('/', progressionRoutes);
 
 app.route('/v1', v1);
 

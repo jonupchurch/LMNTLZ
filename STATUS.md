@@ -209,6 +209,40 @@ complete set of screens rather than twice. Note the rule cuts the opposite way f
 the usual one here: the generated screens are **not** authority on rules, but they
 **are** the authority on look and feel.
 
+### ⏱️ Open, before launch: battle pacing — Jon wants **5× faster** (2026-07-30)
+
+**Raised from playing it.** A battle takes too long. Not to be done immediately, but
+settled before going live, and it belongs in the **hero-numbers pass** — that is the
+last moment numbers move freely under the no-nerf rule.
+
+**The constraint, computed rather than asserted.** A 6v6 runs ~102 hero-turns, so
+each of twelve heroes acts ~8 times. At 5× each hero acts **once**, and the tier-4
+and tier-5 gates (turns 3 and 5) land past the end of the battle:
+
+| Tier | cooldown / gate | fires today | at 5× |
+|---|---|---|---|
+| 0–3 | 0–3 / 1 | 8 · 4 · 3 · 2 | 1 each |
+| **4** | 5 / **3** | 1 | **0** |
+| **5** | 7 / **5** | 1 | **0** |
+
+So a 5× cut **deletes the top of the power ladder** — the two tiers canon says are
+never resisted. And they cannot be rescaled to match: **cooldowns are integer turn
+counts already at 0–7**, so there is no 5×-smaller cooldown of 1. The ladder
+compresses however the change is made.
+
+**Two different goals hide inside "faster", with very different costs:**
+
+- **Wall-clock** — ~51 player decisions per battle plus `WIND_UP_MS = 220` each
+  (`apps/client/src/features/battle/useIntent.ts`). Animation speed, batching or
+  auto-resolve fix this at **zero balance cost**.
+- **Turn count** — genuinely shorter fights. `HP = Toughness × 50` is the single
+  lever and the edit is trivial; HP, gate turns and cooldowns must then be
+  re-derived **together**.
+
+`01-stats.md` already carries the standing note that battle length was *"inherited
+rather than chosen"*, so this answers an open question rather than reopening a
+settled one.
+
 > ### ⚠️ Paddle verification is gated on a live website, not on a queue
 >
 > **Corrected 2026-07-28.** The earlier note here said to start merchant-of-record

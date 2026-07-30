@@ -46,6 +46,10 @@ import { playerStreaks } from '../db/schema/streaks.js';
 import { insertRecord } from '../replays/record.js';
 import { nextAttackStreak } from '../squads/ambush.js';
 import { touchActivity } from '../matchmaking/candidates.js';
+import { awardShards } from '../progression/income.js';
+import { applyRating, ratingDeltas, standingFor } from '../progression/rating.js';
+import { noteShardsEarned } from '../matchmaking/starterLeague.js';
+import { lifetimeEarned } from '../progression/ledger.js';
 
 /**
  * The engine says how the *fight* ended; this column says how the *record*
@@ -240,19 +244,68 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
     }
 
     /**
-     * **Not yet: the shard award and the rating update.**
+     * **The shard award and the rating update** (010 T035, T051).
      *
-     * Both belong to feature 010, which has no wallet table and no rating column
-     * to write to — `06-progression.md` is the design blocker and is parked on
-     * purpose. They go inside this transaction when they exist, which is why the
-     * transaction is here now rather than being introduced along with them: the
-     * once-only guard is the hard part and it is done.
+     * Inside the transaction, and that placement is the whole point: settlement is
+     * guarded by `WHERE concluded_at IS NULL`, so a battle settles exactly once,
+     * and anything paid outside this block could be paid twice by a concurrent
+     * request that lost the settlement race but still ran to completion.
      *
      * The battle row itself is the metadata row feature 008 reads — `turnCount`,
      * both compositions, `defenderIsBot`, the version stamps — and it is written
      * above, inside the transaction, because Constitution XVI cannot backfill a
      * battle that settled without recording itself.
+     *
+     * **A `null` account is skipped rather than defaulted.** Either id may be null
+     * because a deleted account nulls the column instead of removing the battle;
+     * there is nobody to pay and nobody whose rating means anything.
      */
+    const incomeZone = zone === 'hidden' ? 'hidden' : 'visible';
+
+    if (attackerId) {
+      await awardShards(
+        attackerId,
+        {
+          kind: attackerWon ? 'attack-victory' : 'loss',
+          /** An ambush pays as Hidden whichever zone the squad sits in. */
+          zone: wasAmbush ? 'hidden' : incomeZone,
+        },
+        battleId,
+        new Date(),
+        tx,
+      );
+    }
+
+    if (defenderId) {
+      await awardShards(
+        defenderId,
+        { kind: attackerWon ? 'loss' : 'defense-hold', zone: incomeZone },
+        battleId,
+        new Date(),
+        tx,
+      );
+    }
+
+    if (attackerId && defenderId) {
+      const [attackerStanding, defenderStanding] = await Promise.all([
+        standingFor(attackerId, tx),
+        standingFor(defenderId, tx),
+      ]);
+
+      await applyRating(
+        attackerId,
+        defenderId,
+        ratingDeltas({
+          attacker: attackerStanding.rating,
+          defender: defenderStanding.rating,
+          attackerRatedBattles: attackerStanding.ratedBattles,
+          defenderRatedBattles: defenderStanding.ratedBattles,
+          attackerWon,
+          zone: incomeZone,
+        }),
+        tx,
+      );
+    }
 
     return { settled: true, winner: conclusion.winner, attackStreak, holdStreak };
   });
@@ -281,6 +334,29 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
       await Promise.all(present.map((id) => touchActivity(id)));
     } catch (err) {
       console.warn(`[battle] could not stamp activity for ${battleId}: ${String(err)}`);
+    }
+
+    /**
+     * **The starter-league shard signal** (010 T051 · 009 FR-022, exit 2).
+     *
+     * A push rather than a pull, which is 009's own design: 010 calls in when it
+     * credits shards rather than 009 reaching into an economy that did not exist.
+     * `noteShardsEarned` is idempotent — it returns early unless the account is
+     * still in the nursery and has crossed 3,250 lifetime — so calling it after
+     * every settlement costs one query and nothing else.
+     *
+     * **Outside the transaction, for the same reason as the activity stamp.**
+     * Graduating from the starter league is a consequence of a battle, not part of
+     * it; a failure here must not roll back a concluded fight. Without this caller
+     * exit 2 could never fire and a heavy player would serve the full week instead
+     * of leaving on day 4.8.
+     */
+    try {
+      await Promise.all(
+        present.map(async (id) => noteShardsEarned(id, await lifetimeEarned(id))),
+      );
+    } catch (err) {
+      console.warn(`[battle] could not check starter exit for ${battleId}: ${String(err)}`);
     }
   }
 

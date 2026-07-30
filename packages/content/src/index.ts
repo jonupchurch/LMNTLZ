@@ -27,6 +27,13 @@ export type { Hero, HeroStats, Power, Role, Reach, Tier } from './hero.js';
 export { validateHeroes } from './validate.js';
 export type { ValidationFailure, ValidationRule } from './schema.js';
 export { STAT_CAP, STAT_KEYS, ROSTER_SIZE, LEGAL_PAIRING_COUNT } from './schema.js';
+/**
+ * `StatKey` accompanies `STAT_KEYS` because a consumer that can iterate the stats
+ * almost always needs to key by one — 010's rune allocations are
+ * `Partial<Record<StatKey, number>>`. Exporting the values without the type left
+ * every caller re-deriving `(typeof STAT_KEYS)[number]` for itself.
+ */
+export type { StatKey } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // The startup guard (T021, FR-015)

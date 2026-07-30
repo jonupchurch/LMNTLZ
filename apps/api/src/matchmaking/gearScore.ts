@@ -58,9 +58,21 @@ export interface RuneSource {
   /**
    * Effective stat points over every rune the account currently has placed, or
    * **`null` if rune placement does not exist yet** (no 010).
+   *
+   * `tx` is threaded through so a rescore that runs inside a placement
+   * transaction **sees the rune that transaction just wrote**. Reading through
+   * `db()` instead would open a second connection outside the transaction and
+   * score the account as it was *before* the placement — silently, and only for
+   * the write that matters most.
    */
-  placedStatPoints(accountId: string): Promise<number | null>;
+  placedStatPoints(accountId: string, tx?: Transactional): Promise<number | null>;
 }
+
+/**
+ * The subset of the Drizzle client a rescore needs. Accepting the narrow shape
+ * rather than the client means a transaction handle satisfies it too.
+ */
+export type Transactional = Pick<ReturnType<typeof db>, 'select' | 'insert'>;
 
 /** The pre-010 source. Answers `null` for everybody — never `0`. */
 export const noRuneSource: RuneSource = {
@@ -114,13 +126,15 @@ export async function gearScore(accountId: string): Promise<number> {
  * ask, in which case **nothing is written**: storing the placeholder would leave a
  * row that cannot be told apart from a genuinely-scored Bronze player.
  */
-export async function recordPlacement(accountId: string): Promise<number> {
-  const statPoints = await source.placedStatPoints(accountId);
+export async function recordPlacement(accountId: string, tx?: Transactional): Promise<number> {
+  const handle: Transactional = tx ?? db();
+
+  const statPoints = await source.placedStatPoints(accountId, handle);
   if (statPoints === null) return STARTER_GRANT_SCORE;
 
   const score = scoreFromStatPoints(statPoints);
 
-  await db()
+  await handle
     .insert(playerRatings)
     .values({ accountId, gearScore: score })
     .onConflictDoUpdate({

@@ -20,8 +20,9 @@
  * | Settling | 31 – 200 | 20 |
  * | Established | 200 + | 10 |
  *
- * `kFactor()` lives in `../../matchmaking/rating.ts` with the rest of the rating
+ * `kFactor()` lives in `../../progression/rating.ts` with the rest of the rating
  * math; the boundaries are here because they are a property of this column.
+ * (009 forward-referenced it as `matchmaking/rating.ts` — 010 owns the ladder.)
  *
  * > **The bands are a starting point, not a decision** — `06-progression.md` says
  * > so explicitly. Convergence speed is what a simulated population settles; the

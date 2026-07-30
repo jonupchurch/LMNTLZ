@@ -211,6 +211,22 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'progression',
+          include: ['tests/progression/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+          /**
+           * **Same reason as `matchmaking`, and it borrows that project's
+           * harness.** `rating.test.ts` runs 2,000 synthetic players to 400
+           * battles each and asserts on rank correlation, because SC-003 —
+           * *"the ladder measures skill, not hours"* — is a population property
+           * that no unit test can reach.
+           */
+          testTimeout: 30_000,
+        },
+      },
+      {
         /**
          * **Cross-cutting concerns that belong to no feature.** The projects
          * above are named for features, and a rule that holds for every route —
