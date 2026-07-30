@@ -12,17 +12,41 @@ Sweep one player's gear score across a league boundary and confirm the opponent 
 moves **continuously, with no step change**.
 
 ```
-gearScore 2400  (top of Bronze)     → ~50% Silver in the pool
-gearScore 2500  (Bronze ceiling)    → 50% Silver
-gearScore 2501  (Silver floor)      → 50% Bronze
-gearScore 2600  (bottom of Silver)  → ~50% Bronze
+gearScore 2400  (pos 0.900, Bronze) →   0% Silver — the ramp starts here
+gearScore 2450  (pos 0.950, Bronze) →  25% Silver
+gearScore 2499  (top of Bronze)     →  49.5% Silver
+gearScore 2500  (Silver's floor)    →  50% Bronze
+gearScore 2600  (pos 0.067, Silver) →  16.7% Bronze
+gearScore 2650  (pos 0.100, Silver) →   0% Bronze — the ramp ends here
 gearScore 3000  (middle of Silver)  → 100% Silver
 ```
 
-**The crossing is the assertion.** 2500 → 2501 must not produce a discontinuity in
+> **⚠️ Three of these numbers were wrong until 2026-07-29**, and the sweep as written
+> would have produced a wrong test.
+>
+> - **2,500 belongs to Silver, not Bronze.** `league.ts` settled *floor-inclusive*
+>   half-open bands, with the reasoning recorded there: a shared boundary must belong to
+>   exactly one league or 2,500 is simultaneously at a ceiling (bleeding up) and at a
+>   floor (bleeding down), which is opposite behaviour from one number. So the crossing
+>   pair is **2,499 → 2,500**, not 2,500 → 2,501.
+> - **2,400 bleeds 0%, not ~50%.** `pos` is exactly 0.9 there, which is where the ramp
+>   *starts*: `P(up) = 0.5 × max(0, (0.9 − 0.9) / 0.1) = 0`. The first Bronze score that
+>   bleeds at all is **2,401**.
+> - **2,600 bleeds 16.7%, not ~50%.** Silver is 1,500 wide, so 2,600 is only `pos` 0.067
+>   — two thirds of the way through the downward ramp rather than at its start.
+
+**The crossing is the assertion.** 2,499 → 2,500 must not produce a discontinuity in
 expected opponent strength. Leagues bleed at **both** edges precisely because the
 upward ramp alone left a sawtooth: a player at the top of Bronze faced 52.5% win
 odds, crossed the line, and faced 52.5% again as the *bottom* of Silver.
+
+**How `bleed.test.ts` states it, since a score grid is discrete.** Nothing on a grid of
+whole numbers is exactly continuous — 2,499 is `pos` 0.999, a thousandth of a band short
+of the ceiling — so the real assertion is that **the boundary is not special**. Measured:
+the crossing costs **0.1124** points of win rate and the largest ordinary within-band
+step costs **0.1121**, a ratio of **1.002**. Crossing a threshold is 0.2% more expensive
+than placing any other single rune. The upward ramp alone leaves **12.6** points there,
+112× worse, which is what the test fails with when that half is removed.
 
 Then the end cases: **Bronze bleeds up only, Diamond bleeds down only.** Confirm a
 Bronze-floor player sees no league below and a Diamond-ceiling player sees none

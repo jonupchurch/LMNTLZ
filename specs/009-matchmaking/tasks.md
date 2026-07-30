@@ -197,8 +197,8 @@ is not.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T036 [US3] Write `apps/api/tests/matchmaking/bleed.test.ts` — the continuity sweep from the quickstart: 2400 → ~50% Silver, 2500 → 50% Silver, **2501 → 50% Bronze**, 2600 → ~50% Bronze, 3000 → 100% Silver. **The crossing is the assertion** (SC-003)
-- [ ] T037 [P] [US3] Add the end cases to `apps/api/tests/matchmaking/bleed.test.ts` — **Bronze bleeds up only and Diamond bleeds down only**
+- [x] T036 [US3] Write `apps/api/tests/matchmaking/bleed.test.ts` — the continuity sweep. **The crossing is the assertion** (SC-003). ⚠️ **The quickstart's sweep numbers were wrong and are corrected there**: the crossing pair is **2499 → 2500**, not 2500 → 2501 (bands are floor-inclusive), 2400 bleeds **0%** not ~50% (`pos` is exactly 0.9, where the ramp *starts*), and 2600 bleeds **16.7%** not ~50%. Stated on a discrete grid as *the boundary is not special*: the crossing costs **0.1124** points against a largest within-band step of **0.1121** — a ratio of **1.002**
+- [x] T037 [P] [US3] Add the end cases to `apps/api/tests/matchmaking/bleed.test.ts` — **Bronze bleeds up only and Diamond bleeds down only**, swept across every score in both bands, with the raw ramp checked to confirm the clip is doing work rather than agreeing. The unbled share **stays in the player's own league** rather than being redirected, or a Bronze-floor player would get 50% Silver opponents
 
 > **Leagues bleed at *both* edges precisely because the upward ramp alone left a
 > sawtooth**: a player at the top of Bronze faced 52.5% win odds, crossed the line,
@@ -206,9 +206,17 @@ is not.
 
 ### Implementation for User Story 3
 
-- [ ] T038 [US3] Implement the two ramps in `apps/api/src/matchmaking/bleed.ts` — above 90% position the chance of drawing from above ramps to **50%** at the ceiling; below 10% the chance of drawing from below ramps to **50%** at the floor; **10%–90% is pure league** (FR-008, FR-009)
-- [ ] T039 [US3] Keep `bleed.ts` separate from `candidates.ts` — the ramp is a pure function of position and is **the piece most likely to need retuning**, so isolating it keeps the tuning surface small
-- [ ] T040 [US3] Implement one-directional bleed for the end leagues in `apps/api/src/matchmaking/bleed.ts` (FR-010)
+- [x] T038 [US3] Implement the two ramps in `apps/api/src/matchmaking/bleed.ts` — above 90% position the chance of drawing from above ramps to **50%** at the ceiling; below 10% the chance of drawing from below ramps to **50%** at the floor; **10%–90% is pure league** (FR-008, FR-009)
+- [x] T039 [US3] Keep `bleed.ts` separate from `candidates.ts` — the ramp is a pure function of position, so isolating it keeps the tuning surface small. ⚠️ **Correction to this task's premise: only `BLEED_RAMP` is a dial.** `BLEED_EDGE_MIX` is **solved, not chosen** — equating the top-of-band and bottom-of-next win rates gives `(a−b) = 2m(a−b)`, so `m = ½` for *any* skill gradient, and the 65/40 pair drops out. Retuning it to 0.4 puts a **5.1-point** step back at the Bronze/Silver line. Found by a mutant
+- [x] T040 [US3] Implement one-directional bleed for the end leagues in `apps/api/src/matchmaking/bleed.ts` (FR-010)
+- [x] T040a [US3] **Bleeding cannot break the 1.67× bound** — swept. The document asserts this in *Considered and rejected: drawing only from the lower half above* (`4000 / 2400 = 1.67×`) and it holds, but it is a coincidence rather than a designed result: the ramp threshold and the band widths were chosen independently. Worst case is **2401 vs 3999 = 1.6656×**, at the lowest score that bleeds at all — 2,401, not the document's round 2,400
+- [x] T040b [US3] **Reproduce all four published parking advantages** — 25.0 / 22.5 / 12.5 / 0 points, exact in the continuum limit. This is what makes the continuity tests non-vacuous: a sawtooth is 12.5 points tall and the suite can show it
+
+> ⚠️ **`bleed.ts` is not yet wired into the candidate pool, deliberately.** Turning a
+> mix into an actual list is *pool composition*, which is **T052's job in Phase 7** —
+> the same place bots are padded in and widening is decided. Doing it in Phase 6 would
+> mean choosing a selection rule before the bots that share the list exist. Recorded in
+> the module header too, because an unwired component is this project's recurring defect.
 
 **Checkpoint**: The difficulty curve is continuous at every boundary.
 
