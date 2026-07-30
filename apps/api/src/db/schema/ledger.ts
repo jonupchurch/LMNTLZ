@@ -92,6 +92,20 @@ export const LEDGER_REASONS = [
    * checkable precisely because both rows carry this reason.
    */
   'guild-succession',
+  /**
+   * A chat embed (014) — 5 looking-for-guild · 10 own squad · 10 Visible replay ·
+   * 25 an opponent's Visible wall.
+   *
+   * **Charged after the blocklist and before the write**, which is the ordering
+   * FR-010 turns on: a player must never pay for a message that is then refused,
+   * because refunding is a second mechanism and a second thing to get wrong.
+   *
+   * **Guild ads are not here, deliberately.** They are funded from a guild's own
+   * daily credits and never from a member's shards (FR-019), so they touch no
+   * personal ledger at all — the two economies do not meet, and a reason shared
+   * between them is the first place that would stop being true.
+   */
+  'chat-embed',
 ] as const;
 
 export type LedgerReason = (typeof LEDGER_REASONS)[number];
