@@ -39,9 +39,11 @@ import {
   FOUNDING_COST_SHARDS,
   GUILD_CAPACITY,
   MAX_CONCURRENT_APPLICATIONS,
+  SUCCESSION_INACTIVE_DAYS,
 } from './config.js';
 import { foundGuild, setEmblem, setPitch, type Emblem } from './found.js';
 import { DIRECTORY_PAGE, accountIdByUsername, searchGuilds } from './directory.js';
+import { pendingSuccession, requestSuccession, resolveDue } from './succession.js';
 import {
   acceptApplication,
   applicationsOf,
@@ -70,6 +72,7 @@ guildRoutes.use('/applications/*', requireSession);
 guildRoutes.use('/invites', requireSession);
 guildRoutes.use('/invites/*', requireSession);
 guildRoutes.use('/me/guild', requireSession);
+guildRoutes.use('/jobs/*', requireSession);
 
 const ACKNOWLEDGEMENTS = ['bot-opponents-end', 'income-multiplier-ends'] as const;
 
@@ -216,10 +219,21 @@ guildRoutes.get('/me/guild', async (c) => {
   await expireOverdue(systemClock);
   await expireOverdueInvites(systemClock);
 
+  /**
+   * **Succession resolves on read** (T067), because no cron exists yet — 016 owns
+   * schedules and 008's replay cleanup has been waiting on it for five features.
+   * This is the one timer where *"the job never ran"* means a guild is frozen
+   * forever, which is the exact failure the story exists to prevent. A guild being
+   * read is a guild somebody is looking at, which is when it matters.
+   */
+  await resolveDue(systemClock);
+
   return c.json(
     {
       guild: membership ? await guildView(membership.guildId) : null,
       role: membership?.role ?? null,
+      /** So the roster can show a countdown, and a returning master a reassurance. */
+      succession: membership ? await pendingSuccession(membership.guildId) : null,
       applications: membership ? [] : await applicationsOf(accountId),
       invites: membership ? [] : await invitesFor(accountId),
       applicationBudget: {
@@ -608,6 +622,67 @@ guildRoutes.post('/guilds/:guildId/leave', async (c) => {
         ),
         409,
       );
+});
+
+guildRoutes.post('/guilds/:guildId/succession', async (c) => {
+  const { accountId } = requireContext(c);
+
+  const result = await requestSuccession(c.req.param('guildId'), accountId, systemClock);
+  if (result.ok) {
+    return c.json(
+      { successionId: result.succession.id, completesAt: result.succession.completesAt },
+      202,
+    );
+  }
+
+  switch (result.reason) {
+    case 'forbidden':
+      return c.json(apiError('forbidden', 'Officers only, and never the master.'), 403);
+    case 'insufficient-shards':
+      return c.json(
+        {
+          ...apiError('insufficient_shards', `Inheriting costs ${FOUNDING_COST_SHARDS} shards.`),
+          required: result.required,
+          available: result.available,
+        },
+        402,
+      );
+    case 'master-is-active':
+      return c.json(
+        {
+          ...apiError(
+            'master_is_active',
+            `The master has to be inactive for ${SUCCESSION_INACTIVE_DAYS} days first.`,
+          ),
+          masterLastSeen: result.masterLastSeen,
+        },
+        409,
+      );
+    default:
+      return c.json(apiError(result.reason.replace(/-/g, '_'), result.reason), 409);
+  }
+});
+
+/**
+ * Resolve everything due. **A route because there is no cron** (T067).
+ *
+ * 016 will point a schedule at this; until then `GET /v1/me/guild` also resolves
+ * on read, so a succession completes with no scheduler at all.
+ */
+guildRoutes.post('/jobs/guild-successions/complete', async (c) => {
+  requireContext(c);
+  return c.json({ completed: await resolveDue(systemClock) }, 200);
+});
+
+guildRoutes.post('/jobs/guild-applications/expire', async (c) => {
+  requireContext(c);
+  return c.json(
+    {
+      applications: await expireOverdue(systemClock),
+      invites: await expireOverdueInvites(systemClock),
+    },
+    200,
+  );
 });
 
 guildRoutes.delete('/guilds/:guildId', async (c) => {

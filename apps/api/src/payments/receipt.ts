@@ -127,6 +127,31 @@ export async function contactAddress(accountId: string): Promise<string | null> 
   return row?.email ?? null;
 }
 
+/**
+ * Send one message through the installed mailer, whatever it is for.
+ *
+ * **Added for 013's succession notice, and it lives here rather than in `guilds/`
+ * because this module owns the `mailer` handle.** A guilds module that imported an
+ * SDK directly would be a second vendor dependency for one job and would fail
+ * `grantPath.test.ts`'s scan (Constitution XIX).
+ *
+ * Returns `false` when nothing is installed, which is the ordinary state in tests
+ * and in development. **A caller must be able to proceed on `false`** — a mail
+ * outage that blocked succession would silently freeze every guild in the game.
+ */
+export async function deliver(email: Email): Promise<boolean> {
+  if (!mailer || !email.to) return false;
+
+  try {
+    await mailer.send(email);
+    return true;
+  } catch (err) {
+    /** The message, never the key. */
+    console.warn(`[mail] could not send "${email.subject}": ${String(err)}`);
+    return false;
+  }
+}
+
 export async function sendReceipt(
   notification: RailNotification,
   to: string,

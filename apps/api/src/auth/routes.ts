@@ -27,6 +27,8 @@ import { requireContext, type AuthedEnv } from './context.js';
 import { requireSession } from './middleware.js';
 import { RenameRejectedError } from './rename.js';
 import { renameWithCharge } from '../profiles/identity.js';
+import { noteSignedIn } from '../guilds/succession.js';
+import { systemClock } from '../guilds/clock.js';
 
 export const authRoutes = new Hono<AuthedEnv>();
 
@@ -84,6 +86,21 @@ authRoutes.post('/auth/google', async (c) => {
     assertNotBanned(account);
 
     const pair = await issuePair(account.id);
+
+    /**
+     * **Presence is the reply** (013 FR-022 · T065).
+     *
+     * A pending succession against this account lapses the moment they sign in.
+     * It has to be called *here*, in the auth path, and not from a guilds route:
+     * an absent master hits no guilds route **by definition**, so a lapse written
+     * only inside `succession.ts` would be a function the one person it protects
+     * never triggers — and they would lose their guild by logging in.
+     *
+     * That is also why the email carries no link: there is nothing to click, so
+     * there is nothing to phish.
+     */
+    await noteSignedIn(account.id, systemClock);
+
     return c.json({ ...pairBody(pair, account), isNewAccount }, 200);
   } catch (err) {
     if (err instanceof InvalidProviderTokenError) {

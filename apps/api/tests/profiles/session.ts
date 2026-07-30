@@ -26,11 +26,24 @@ export interface Signed {
   headers(): Record<string, string>;
 }
 
-export async function signIn(tag: string): Promise<Signed> {
+/**
+ * Sign in, creating a fresh account each call.
+ *
+ * `options.subject` pins the provider subject instead, so **signing in twice
+ * returns the SAME account** — which is the only way to test anything that happens
+ * *on* a sign-in rather than on account creation. 013's succession lapse needs it:
+ * *presence is the reply*, and proving the auth route lapses a pending request
+ * means signing an existing master back in.
+ */
+export async function signIn(
+  tag: string,
+  options: { readonly subject?: string } = {},
+): Promise<Signed> {
   const restore = overrideProvider('google', provider);
 
   try {
-    const subject = `${tag}-${process.pid}-${Math.floor(Math.random() * 1e9)}`;
+    const subject =
+      options.subject ?? `${tag}-${process.pid}-${Math.floor(Math.random() * 1e9)}`;
     const res = await app.request('/v1/auth/google', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
