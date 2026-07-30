@@ -68,20 +68,28 @@ export const AVATAR_COST_SHARDS = 1_350;
 export const AVATAR_COST_CENTS = 500;
 
 /**
- * The shards a dollar buys, implied by the dual price.
+ * The shards a dollar buys, implied by the dual price. **270/$.**
  *
- * ### ⚠️ This number is why SC-008 cannot currently be satisfied
+ * ### SC-008 holds, and the story of nearly concluding otherwise is worth keeping
  *
  * FR-015 requires a dual-priced item to be **worse** shards-per-dollar than the
- * best boost pass. `payments/catalog.ts` reports `bestShardsPerDollar()` as
- * **0** — deliberately, because no product converts money into shards at all.
+ * best boost pass. `bestShardsPerDollar()` used to return **0**, and against zero
+ * every dual price is better — so the requirement appeared to forbid dual pricing
+ * outright, and this comment said the two requirements could not both hold.
  *
- * A dual price of $5 *or* 1,350 shards implies 270 shards per dollar: paying the
- * money *saves* the shards, and the saved shards are fungible into runes. So any
- * dual price at all is better than 0, and **FR-012 and FR-015 cannot both hold
- * while the catalog sells no shards.** One of them has to move; that is a design
- * decision, not an implementation one, so it is surfaced rather than resolved
- * here. The arithmetic is in `specs/012-profiles/tasks.md` under T026.
+ * **The `0` was the error.** It answered *"does any SKU hand over shards?"* —
+ * which is `noShardSku()` and is still absolutely true — rather than *"what is the
+ * best money→shards rate?"*, which is what FR-015 asks. A boost pass **doubles
+ * shard income**, `+388/day` by `06-progression.md`'s published figure, and that is
+ * a conversion whatever the mechanism.
+ *
+ * Computed, the best pass is **~883/$** against this **270/$**. FR-015 holds with a
+ * **3.3× margin** and nothing in the spec had to move.
+ *
+ * > **The one real caveat**: a pass only pays out on battles actually fought, so
+ * > parity arrives at about **31% of typical volume — roughly 6 attacks a day** —
+ * > and below that the avatar is the better money→shards path. Asserted in
+ * > `tests/profiles/pricing.test.ts` rather than left to be rediscovered.
  */
 export const impliedShardsPerDollar = (): number =>
   AVATAR_COST_SHARDS / (AVATAR_COST_CENTS / 100);

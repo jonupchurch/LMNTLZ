@@ -19,6 +19,8 @@ import { stripComments } from '../stripComments.js';
 import {
   CATALOG,
   bestShardsPerDollar,
+  noShardSku,
+  BOOST_SHARDS_PER_DAY,
   maxPurchasableAdvantage,
   nonPassProducts,
   type Sku,
@@ -74,10 +76,34 @@ describe('the catalog rules', () => {
     }
   });
 
-  it('converts no money into shards', () => {
-    // Zero is the honest answer and the important one. The pass doubles income the
-    // player still has to EARN; it never hands them a balance.
-    expect(bestShardsPerDollar()).toBe(0);
+  /**
+   * **Two claims, and they used to be one function returning `0`.**
+   *
+   * *"No SKU hands over shards"* is true and is the catalog's audit promise.
+   * *"Money cannot become shards at all"* is **false** — a boost pass doubles
+   * income, which is a conversion by any measure a requirement would care about.
+   *
+   * Conflating them made FR-015 unfalsifiable: against `0`, every dual price is
+   * better, so the rule forbade dual pricing outright and SC-008 could never pass.
+   */
+  it('sells no shard SKU — the audit claim, and it is absolute', () => {
+    expect(noShardSku()).toBe(true);
+  });
+
+  it('reports the real money→shards rate, which is not zero', () => {
+    // The pass doubles income the player still has to EARN, but it converts all
+    // the same. ~883/$ on the 364-day pass at the published +388/day.
+    const rate = bestShardsPerDollar();
+
+    expect(rate).toBeGreaterThan(0);
+    expect(Math.round(rate)).toBe(883);
+  });
+
+  it('finds its best rate on the longest pass, like every other per-day metric', () => {
+    const longest = CATALOG[CATALOG.length - 1]!;
+    const rate = (BOOST_SHARDS_PER_DAY * longest.days) / (longest.price / 100);
+
+    expect(Math.round(bestShardsPerDollar())).toBe(Math.round(rate));
   });
 
   it('gets cheaper per day as duration rises, so the long pass is a discount', () => {

@@ -143,39 +143,42 @@ amount of code review reliably catches** the bug it prevents.
 - [X] T025 [P] [US3] Add the harm-gate structural check to `apps/api/tests/profiles/avatar.test.ts` — the rejection-reason enum has **no `low-quality` member**, so a reviewer who wants to reject on taste has no value to submit (Constitution XVIII enforced by the type)
 - [X] T026 [P] [US3] Write `apps/api/tests/profiles/pricing.test.ts` — a voluntary rename costs **325 shards**, a forced rename is **free**, and the avatar's shards-per-dollar is **worse than the best boost pass** as reported by feature 011's `bestShardsPerDollar()` (SC-007, SC-008)
 
-> ### ⚠️ SC-008 is arithmetically unsatisfiable as written — a decision, not a bug
+> ### ✅ SC-008 HOLDS — and the first answer here was wrong. Corrected 2026-07-30.
 >
-> Found while implementing T026 on **2026-07-30**. **FR-012 and FR-015 cannot
-> both hold.**
+> **This block previously said FR-012 and FR-015 were unsatisfiable together. They
+> are not.**
 >
 > | | |
 > |---|---|
-> | FR-012 | a custom avatar costs **$5 or 1,350 shards** |
-> | FR-015 | a dual-priced item must be **worse** shards-per-dollar than the best boost pass |
-> | `bestShardsPerDollar()` | **0** — deliberately; *no* product converts money into shards |
+> | FR-012 | a custom avatar costs **$5 or 1,350 shards** → implies **270 shards/$** |
+> | FR-015 | a dual-priced item must be **worse** shards-per-dollar than the best pass |
+> | best pass | **883 shards/$** — the 364-day pass at $160 |
 >
-> A dual price of $5-or-1,350-shards implies **270 shards per dollar**: paying the
-> money *saves* the shards, and saved shards are fungible into runes. 270 > 0, so
-> the only dual-priced item in the game is *better* value than the best pass.
-> **Any dual price at all is better than zero**, so FR-015 forbids dual pricing
-> outright while the catalog sells no shards.
+> **270 < 883. The requirement holds, with a 3.3× margin.**
 >
-> **Scale, so the decision is informed rather than theoretical.** A full rune is
-> 650 shards and costs ~1.7 days of typical income, so income is ~380 shards/day.
-> One $5 avatar therefore frees **~3.5 days** of income, or about two full runes.
-> At a realistic 2–3 changes a year that is ~4,000 shards — six runes — and at the
-> $160/year advantage cap it would be 32 changes, 43,200 shards, **66 runes**.
-> That is not cosmetic.
+> **The error was trusting `bestShardsPerDollar()`, which returned a hard-coded
+> `0`.** Its reasoning — *"no product converts money into shards; the doubling is
+> on income the player still has to earn"* — answers *"does any SKU hand over
+> shards?"*, not *"what is the best money→shards rate?"*. A boost pass **doubles
+> shard income**, `+388/day` by `06-progression.md`'s own published figure, and that
+> is a conversion whatever the mechanism.
 >
-> **Three ways out, no recommendation taken:** price the avatar in shards *only*
-> (FR-015 becomes vacuous, and the $5 throttle on moderation volume is lost);
-> raise the shard price until the implied rate is unattractive (does not reach
-> zero, so FR-015 still fails literally); or **restate FR-015** as *no dual-priced
-> item may convert money into gameplay advantage faster than the $160/year cap
-> allows*, which is the rule the design actually wants.
+> Against `0`, every dual price is better, so FR-015 forbade dual pricing outright
+> and SC-008 could never pass. **A check that cannot pass is one everybody learns to
+> ignore** — the third time this project has hit that.
 >
-> `pricing.test.ts` **asserts the conflict** rather than pretending it is
-> resolved, and fails the moment either number moves.
+> **Fixed by splitting one function into the two questions it was answering:**
+> `noShardSku()` keeps the catalog's absolute audit claim, and
+> `bestShardsPerDollar()` now computes the rate over the catalog. Note the type
+> system already made a shard *grant* unrepresentable, so the runtime check is on
+> the SKU id — the part that can actually fail.
+>
+> **One real caveat, asserted rather than left to be rediscovered.** A pass only
+> pays out on battles fought, so parity with the avatar arrives at about **31% of
+> typical volume — roughly 6 attacks a day** — and below that the avatar genuinely
+> is the better money→shards path. The 3-day pass at 233/$ is likewise worse value
+> than the avatar; `pricing.test.ts` asserts that **only** the 3-day pass is, so a
+> moving curve fails rather than drifts.
 
 ### Implementation for User Story 3
 

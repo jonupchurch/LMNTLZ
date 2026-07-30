@@ -87,20 +87,76 @@ export function maxPurchasableAdvantage(days = 364, catalog: readonly Sku[] = CA
 }
 
 /**
- * The best shards-per-dollar any product offers — **the ratio features 012 and 014
- * ask for, rather than a threshold** (T037).
+ * **No SKU hands over shards. This is the audit claim and it stays absolute.**
  *
- * A boost pass doubles shard income for the first 10 victories and 10 holds a day.
- * Returning the ratio rather than a yes/no keeps the judgment where it belongs:
- * 012 wants it to show what a purchase is worth, 014 wants it to reason about
- * whether a chat posting cost is meaningful, and a boolean here would force both
- * to re-derive it from prices they should not be reading.
+ * The catalog is the surface anyone checks to confirm that money never *directly*
+ * buys currency — which is why T038 forbids even a commented-out or feature-flagged
+ * shard SKU, and why `catalogRules.test.ts` scans for one.
  *
- * **Zero is the honest answer, and it is the important one**: no product converts
- * money into shards. The doubling is on income the player still has to *earn*.
+ * Split out from `bestShardsPerDollar()` on **2026-07-30**, because that function
+ * was answering this question and being consumed as though it answered a different
+ * one. See below.
+ *
+ * ### It checks the id, because the type already checks the grant
+ *
+ * `Sku['grants']` is `EntitlementKind`, which is `'boost-pass'` and nothing else —
+ * so `sku.grants !== 'shards'` is a comparison TypeScript rejects as having no
+ * overlap. **The type makes a shard grant unrepresentable, which is the strongest
+ * form of this guarantee and needs no test at all.**
+ *
+ * What a type cannot stop is a SKU that *is* shards wearing the pass's grant, so
+ * the runtime check is on the id. That one can fail, which is the only reason to
+ * write it.
  */
-export function bestShardsPerDollar(): number {
-  return 0;
+export const noShardSku = (): boolean =>
+  CATALOG.every((sku) => !/shard|currency|coin|gem/i.test(sku.id));
+
+/**
+ * How many shards a day a boost pass is worth.
+ *
+ * **Published in `06-progression.md`, not chosen here**: *"Boosts double income
+ * within the caps: **+388/day** × 28 = +10,864"*, for a typical day of 20 attacks
+ * and 10 holds. It is an average over a modelled player, so it is an estimate of a
+ * real quantity rather than a constant of the design — which is exactly why it is
+ * named, sourced and used in one place instead of inlined.
+ */
+export const BOOST_SHARDS_PER_DAY = 388;
+
+/**
+ * The best shards-per-dollar any product offers — **computed over the catalog**
+ * (T037).
+ *
+ * ### This returned `0` and it made FR-015 unfalsifiable
+ *
+ * The old body was `return 0`, on the reasoning that *"no product converts money
+ * into shards; the doubling is on income the player still has to earn."* The first
+ * half is true and is now `noShardSku()`. The second half is a real distinction and
+ * **it is not the question either caller is asking.**
+ *
+ * 012's FR-015 requires a dual-priced item to be **worse** shards-per-dollar than
+ * the best pass. Against `0`, *any* dual price is better, so the requirement forbids
+ * dual pricing outright and SC-008 can never pass — and a check that cannot pass is
+ * one everybody learns to ignore. **I reported SC-008 as unsatisfiable on the
+ * strength of this number, and it was the number that was wrong.**
+ *
+ * Computed, the answer is **~883/$** on the 364-day pass, against the custom
+ * avatar's implied **270/$**. FR-015 holds with a **3.3× margin**, for a reason.
+ *
+ * > **The realised rate depends on playing.** A pass only pays out on battles
+ * > actually fought, so this is the rate for a *typical* day. Parity with the
+ * > avatar arrives at about **31% of typical volume — roughly 6 attacks a day** —
+ * > and below that the avatar really is the better money→shards path. That is a
+ * > tuning fact worth knowing, not a violation: the players below the line are the
+ * > ones least likely to be optimising it, and they would have to want avatar
+ * > changes to realise it at all.
+ *
+ * Computed rather than stated for the same reason `maxPurchasableAdvantage` is: a
+ * constant is a claim that stops being true the moment a price moves, silently.
+ */
+export function bestShardsPerDollar(catalog: readonly Sku[] = CATALOG): number {
+  return Math.max(
+    ...catalog.map((sku) => (BOOST_SHARDS_PER_DAY * sku.days) / (sku.price / 100)),
+  );
 }
 
 /** Whether any product grants something other than the one gameplay-affecting kind. */

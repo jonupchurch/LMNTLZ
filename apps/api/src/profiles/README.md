@@ -107,15 +107,35 @@ submit. **A $5 ugly avatar is approved.**
 `GET /me/avatar` reports `customAvailable: false` **in the payload**, not only in
 copy, so a client renders an honest screen rather than guessing.
 
-## ⚠️ One open decision, recorded rather than resolved
+## SC-008 holds — and the near-miss is worth keeping
 
-**FR-012 and FR-015 cannot both hold.** A custom avatar costs *$5 or 1,350
-shards*; FR-015 requires a dual-priced item be worse shards-per-dollar than the
-best boost pass; `bestShardsPerDollar()` is **0**, because nothing converts money
-into shards. The dual price implies **270 shards per dollar** — paying the money
-saves the shards, and saved shards buy runes.
+FR-015 requires a dual-priced item to be **worse** shards-per-dollar than the best
+boost pass. This was reported as **unsatisfiable** on 2026-07-30, and the report
+was wrong.
 
-One $5 avatar frees ~3.5 days of income, about two full runes. That is not
-cosmetic. `tests/profiles/pricing.test.ts` **asserts the conflict** rather than
-faking a pass, and fails the moment either number moves. Three ways out are
-written up in `specs/012-profiles/tasks.md` under T026; none has been taken.
+`bestShardsPerDollar()` returned **0**, and against zero any dual price is better —
+so the rule appeared to forbid dual pricing outright. **The `0` was the defect.** It
+answered *"does any SKU hand over shards?"*, which is `noShardSku()` and is still
+absolutely true, rather than *"what is the best money→shards rate?"*, which is what
+FR-015 asks. A boost pass **doubles shard income** — `+388/day`, published in
+`06-progression.md` — and that is a conversion whatever the mechanism.
+
+| | shards per dollar |
+|---|---|
+| custom avatar ($5 **or** 1,350 shards) | **270** |
+| best pass — 364-day at $160 | **883** |
+
+**270 < 883. FR-015 holds with a 3.3× margin** and nothing in the spec had to move.
+The two questions are now two functions, because conflating them is what made a
+requirement unfalsifiable — and a check that cannot pass is one everybody learns to
+ignore.
+
+> **One caveat, asserted rather than left to be found.** A pass only pays out on
+> battles actually fought. Parity arrives at about **31% of typical volume — roughly
+> 6 attacks a day** — and below that the avatar really is the better money→shards
+> path. Not a violation (FR-015 compares against the best pass, for a typical
+> player), but the sort of fact that becomes a surprise later.
+>
+> The 3-day pass at 233/$ is likewise worse value than the avatar.
+> `pricing.test.ts` asserts that **only** the 3-day pass is, so the curve moving
+> shows up as a failure.

@@ -265,28 +265,30 @@ expensive each would have been to find later:
 pass described above before writing any code. 013 also unblocks 012's guild
 export — though the *event* half stays blocked on deferred design.
 
-### ⚠️ Open for Jon, found building 012: SC-008 cannot be satisfied as written
+### ✅ SC-008: I reported a conflict that was not there. Corrected 2026-07-30.
 
-**FR-012 and FR-015 contradict each other.** A custom avatar costs *$5 **or** 1,350
-shards*; FR-015 requires any dual-priced item be **worse** shards-per-dollar than
-the best boost pass; and `bestShardsPerDollar()` is **0** by design, because no
-product converts money into shards.
+**FR-012 and FR-015 do not contradict each other.** The custom avatar's dual price
+implies **270 shards/$**; the best boost pass gives **883 shards/$**. The
+requirement holds with a **3.3× margin** and nothing in the spec had to move.
 
-The dual price implies **270 shards per dollar** — paying the money *saves* the
-shards, and saved shards buy runes. Any dual price beats zero, so FR-015 forbids
-dual pricing outright while the catalog sells no shards.
+**The error was `bestShardsPerDollar()` returning a hard-coded `0`.** That answers
+*"does any SKU hand over shards?"* — true, and now `noShardSku()` — rather than
+*"what is the best money→shards rate?"*, which is what FR-015 asks. A boost pass
+**doubles shard income**, `+388/day` by `06-progression.md`'s own figure. Against
+zero, every dual price is better, so the rule forbade dual pricing outright and
+SC-008 could never pass. **A check that cannot pass is one everybody learns to
+ignore** — the third instance of that failure mode in this project.
 
-**Scale, so the call is informed.** A full rune is 650 shards at ~1.7 days of
-income, so income is ~380/day. One $5 avatar frees **~3.5 days** — about two runes.
-At 2–3 changes a year that is ~4,000 shards; at the $160/year cap it would be
-43,200, or 66 runes. **Not cosmetic.**
+Split into the two questions it was conflating; both are tested, and the rate is
+computed over the catalog rather than stated, for the same reason
+`maxPurchasableAdvantage` is.
 
-Three ways out, none taken: price the avatar in shards only (loses the $5
-moderation throttle); raise the shard price (never reaches zero, so FR-015 still
-fails literally); or **restate FR-015** as *no dual-priced item may convert money
-into gameplay advantage faster than the $160/year cap allows*, which is the rule
-the design actually wants. `pricing.test.ts` asserts the conflict and fails the
-moment either number moves.
+> **The one genuine finding underneath it.** A pass only pays out on battles
+> actually fought, so parity with the avatar arrives at **~31% of typical volume —
+> roughly 6 attacks a day**. Below that the avatar really is the better
+> money→shards path, and the 3-day pass at 233/$ is worse value than the avatar
+> outright. Neither breaks FR-015, which compares against the *best* pass, but both
+> are asserted in `pricing.test.ts` so a moving curve fails rather than drifts.
 
 The build order `packages/content` → `packages/sim` → `apps/api` →
 `apps/client` is complete through **012**; every remaining feature inherits all

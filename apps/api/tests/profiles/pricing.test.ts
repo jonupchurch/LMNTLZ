@@ -4,9 +4,12 @@
  * ### TL;DR
  *
  * A rename costs 325 shards — unless it is your first, or a moderator forced it,
- * both of which are free. A curated avatar is free. And this file records an
- * arithmetic conflict the spec has not resolved: **FR-012's dual price and
- * FR-015's value rule cannot both hold** while the catalog sells no shards.
+ * both of which are free. A curated avatar is free. And the custom avatar's dual
+ * price is **worse value than the best boost pass**, which is what FR-015 asks
+ * for — 270 shards per dollar against the pass's 883.
+ *
+ * > That last one was first reported here as an unsatisfiable conflict. It was
+ * > not; the number it rested on was wrong. See the SC-008 block at the bottom.
  *
  * ### The important assertion is that the ledger actually moves
  *
@@ -23,7 +26,12 @@ import app from '../../src/index.js';
 import { closeDb, db } from '../../src/db/client.js';
 import { shardLedger } from '../../src/db/schema/ledger.js';
 import { balance } from '../../src/progression/ledger.js';
-import { bestShardsPerDollar } from '../../src/payments/catalog.js';
+import {
+  BOOST_SHARDS_PER_DAY,
+  CATALOG,
+  bestShardsPerDollar,
+  noShardSku,
+} from '../../src/payments/catalog.js';
 import {
   AVATAR_COST_CENTS,
   AVATAR_COST_SHARDS,
@@ -206,31 +214,83 @@ describe('the harm-only rejection enum (T025, Constitution XVIII)', () => {
   });
 });
 
-describe('⚠️ SC-008 is currently unsatisfiable, and this test says so (T026)', () => {
+describe('SC-008: the dual price is worse value than the best pass (T026, FR-015)', () => {
   /**
-   * **This asserts the conflict rather than pretending it is resolved.**
+   * ### This test used to assert a conflict, and the conflict was my arithmetic
    *
-   * FR-015: a dual-priced item must be **worse** shards-per-dollar than the best
-   * boost pass. `bestShardsPerDollar()` is **0** by design — no product converts
-   * money into shards.
+   * I reported SC-008 as **unsatisfiable**: FR-015 wants a dual-priced item to be
+   * worse shards-per-dollar than the best pass, `bestShardsPerDollar()` returned
+   * **0**, and against zero every dual price is better.
    *
-   * FR-012: a custom avatar costs **$5 or 1,350 shards**. That implies 270 shards
-   * per dollar, because paying the money *saves* the shards and saved shards buy
-   * runes. 270 > 0, so the item is *better* value than the best pass and FR-015
-   * fails on the only dual-priced item in the game.
+   * **The `0` was wrong.** It answered *"does any SKU hand over shards?"* — which
+   * is `noShardSku()` and is still absolutely true — rather than *"what is the
+   * best money→shards rate?"*, which is what FR-015 asks. A boost pass **doubles
+   * shard income**, `+388/day` by `06-progression.md`'s own published figure, and
+   * that is a conversion whatever the mechanism.
    *
-   * The two requirements cannot both hold. Which one moves is a design decision,
-   * so this test locks the arithmetic in place and fails the moment either side
-   * changes — at which point somebody has to look.
+   * Computed, the best pass is **~883/$** against the avatar's **270/$**. FR-015
+   * holds with a 3.3× margin and nothing in the spec needed to move.
    */
-  it('records that the implied rate beats the best pass, which FR-015 forbids', () => {
-    expect(bestShardsPerDollar()).toBe(0);
-    expect(impliedShardsPerDollar()).toBe(270);
+  it('the avatar is worse shards-per-dollar than the best boost pass', () => {
+    const avatar = impliedShardsPerDollar();
+    const bestPass = bestShardsPerDollar();
+
+    expect(avatar).toBe(270);
+    expect(Math.round(bestPass)).toBe(883);
 
     expect(
-      impliedShardsPerDollar() > bestShardsPerDollar(),
-      'If this is now false, the conflict has been resolved — delete this test ' +
-        'and assert FR-015 properly.',
-    ).toBe(true);
+      avatar,
+      `FR-015: a dual-priced item must be worse value than the best pass. ` +
+        `Avatar implies ${avatar}/$, best pass gives ${Math.round(bestPass)}/$.`,
+    ).toBeLessThan(bestPass);
+  });
+
+  it('holds against EVERY pass that a rational buyer would pick, not just the best', () => {
+    /**
+     * The letter of FR-015 only asks about the best pass. Worth knowing how
+     * broadly it holds: the 3-day pass at 233/$ is **worse** than the avatar, so
+     * a player buying the shortest pass would do better buying an avatar. That is
+     * not a violation — FR-015 names the best — but it is the kind of fact that
+     * turns into a surprise later, so it is asserted rather than discovered.
+     */
+    const rates = CATALOG.map((s) => ({
+      id: s.id,
+      rate: (BOOST_SHARDS_PER_DAY * s.days) / (s.price / 100),
+    }));
+    const beaten = rates.filter((r) => r.rate < impliedShardsPerDollar()).map((r) => r.id);
+
+    expect(
+      beaten,
+      'Passes offering worse shards-per-dollar than the avatar. Expected only ' +
+        'the shortest; more than that means the curve has moved.',
+    ).toEqual(['pass-3d']);
+  });
+
+  it('the audit claim survives the split: no SKU hands over shards', () => {
+    // `noShardSku()` is the absolute one and stays absolute. The rate above is a
+    // different question, and conflating them is what made FR-015 unfalsifiable.
+    expect(noShardSku()).toBe(true);
+  });
+
+  /**
+   * **The realised rate depends on playing, and the crossover is worth recording.**
+   *
+   * A pass only doubles income on battles actually fought. At roughly **31% of
+   * typical volume — about 6 attacks a day** — the pass and the avatar are level,
+   * and below that the avatar genuinely is the better money→shards path.
+   *
+   * Not a violation of FR-015, which compares against a typical player. Recorded
+   * because it is a tuning fact that would otherwise be rediscovered by someone
+   * puzzled at a light player's numbers.
+   */
+  it('names the play-rate parity point rather than leaving it implicit', () => {
+    const yearly = CATALOG.find((s) => s.id === 'pass-364d')!;
+    const fullRate = (BOOST_SHARDS_PER_DAY * yearly.days) / (yearly.price / 100);
+    const parity = impliedShardsPerDollar() / fullRate;
+
+    expect(parity).toBeGreaterThan(0.25);
+    expect(parity).toBeLessThan(0.35);
+    // ~31% of a typical 20-attack day is ~6 attacks.
+    expect(Math.round(parity * 20)).toBe(6);
   });
 });
