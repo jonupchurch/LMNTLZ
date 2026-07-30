@@ -45,7 +45,7 @@ against them forever.
 
 | # | The wire | State today | Owner |
 |---|---|---|---|
-| **W1** | **A language preference** — FR-002 splits Global *and* Guild Ads by it, and T007 revokes a token when it changes | **Does not exist.** No column, no setter, no UI. `profiles/publicProfile.ts` says it outright: *"neither is collected yet"*. The profile contract calls it `languages` — **plural**, a list — while a chat room needs **one** routing key | **new, T047–T049** |
+| **W1** | **A language preference** — FR-002 splits Global *and* Guild Ads by it, and T007 revokes a token when it changes | **Does not exist.** No column, no setter, no UI. `profiles/publicProfile.ts` says it outright: *"neither is collected yet"* | **DEFERRED 2026-07-30** — one Global room; the scope key keeps an unused `lang` slot so turning it on is a migration. T047–T048 |
 | **W2** | **The Envoy role** — T026 admits Envoys to Beginner, T027 gives them no powers, 015's T023 tests they get 403 | **Does not exist.** `auth/username.ts` reserves the *word* `envoy` and nothing else. No column, no grant route, nobody can become one | **new, T050–T051** |
 | **W3** | **Issuing a chat ban** — T007 revokes on ban | `BAN_SCOPES` already contains `'chat'` and `banScope` is **only ever read**, in `auth/accounts.ts`. Nothing writes it | **015 writes the caller**; 014 owns the hook and must say so |
 | **W4** | **The client surface** — T028 builds `ChatPanel.tsx` | `App.tsx`'s `Screen` union has no `chat`, and no tab renders it. **Exactly 013's shape** | **new, T052** |
@@ -215,11 +215,30 @@ scale with total players rather than with chat use.
 assume. **W1 and W2 come first inside this phase**, because tasks T009, T019, T020,
 T026 and T027 are all written against data that does not exist yet.
 
-### W1 — a language preference (blocks FR-002)
+### W1 — the language split, **deferred by decision 2026-07-30**
 
-- [ ] T047 **WIRING** Add `chat_language` to `apps/api/src/db/schema/accounts.ts` — **one** value, not the profile's plural `languages` list. A room is a routing key and a player is in exactly one Global room; a list cannot answer "which room". Default it from the `Accept-Language` header at signup and let it be changed. Migration in `apps/api/drizzle/`
-- [ ] T048 **WIRING** Implement `PUT /v1/me/chat-language` in `apps/api/src/profiles/routes.ts`, and **call `revokeChatToken` inside the same transaction** (T007) — a language change moves the player between rooms, so a token naming the old one is wrong the moment it commits
-- [ ] T049 **WIRING** Add the language control to the client in `apps/client/src/features/profile/`, and assert in `apps/api/tests/chat/language.test.ts` that **an account with no language set still lands in exactly one Global room** — the null case is the common one on day one, and a player who falls into *no* room sees an empty chat and reports it as broken
+**One Global room and one Guild Ads room at 1.0.** FR-002 splits both by language;
+there is no language data anywhere in the game, so satisfying it would mean adding
+a column, a route and a profile control to buy a benefit that is invisible until
+Global is busy enough to need splitting — and at *that* point the room needs a
+**cap** as well, which is already an open question in the Notes below.
+
+**This is a deferral, not a silent drop.** The obligation it carries:
+
+- [ ] T047 **WIRING** Make the scope key carry an **unused `lang` slot from the
+  outset** in `apps/api/src/chat/scopes.ts` — `global:<lang>` and `ads:<lang>`,
+  resolving to a single constant room today. Turning the split on later becomes a
+  **data migration and a default**, not a redesign of every channel name, every
+  token and every stored message. Assert in `apps/api/tests/chat/scopes.test.ts`
+  that **every Global subscriber lands in exactly one room and it is the same
+  one** — the property that makes the single room correct rather than accidental
+- [ ] T048 **WIRING** Record the deferral in `apps/api/src/chat/README.md` against
+  **FR-002 by name**, with what turning it on costs. An unimplemented `MUST` that
+  no document mentions is indistinguishable from one nobody noticed
+
+> **`languages` on the public profile is a different field and stays that way** —
+> it is plural, it is a *description* of a player, and it is not collected either.
+> A room needs one routing key; a profile can list five. Do not conflate them.
 
 ### W2 — the Envoy role (T026, T027, and 015's T023)
 
@@ -253,10 +272,15 @@ T026 and T027 are all written against data that does not exist yet.
 
 ## Status
 
-**54 tasks, numbered to T058** — 46 generated, **8 added by the wiring pass**
-(T047–T054); the four polish tasks moved to T055–T058 to make room. The highest id
-and the count are not the same number, deliberately: renumbering the eight would
-have churned every id in the file.
+**53 tasks, numbered to T058** — 46 generated, **7 added by the wiring pass**
+(T047, T048, T050–T054); the four polish tasks moved to T055–T058 to make room.
+
+**T049 is deliberately vacant.** It was the client control for a language
+preference, dropped when the language split was deferred on 2026-07-30. The id is
+left as a hole rather than closed up, because renumbering would churn every
+reference in the file to save a cosmetic gap — and a vacant id somebody can look up
+is better than a task that quietly changed meaning. The highest id and the count
+are not the same number, for the same reason.
 **Nothing implemented yet**; `apps/api/src/chat/`, `apps/client/src/features/chat/`
 and `apps/api/src/db/schema/chat.ts` do not exist. Verified 2026-07-30, not assumed:
 013's list claimed three tasks 009 had already built.
