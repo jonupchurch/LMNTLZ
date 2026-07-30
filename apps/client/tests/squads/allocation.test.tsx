@@ -18,7 +18,7 @@ import { SQUAD_SIZE } from '@lmntlz/sim/rules';
 import { useAllocation } from '../../src/features/squads/hooks/useAllocation.js';
 import { RosterView } from '../../src/features/squads/RosterView.js';
 import { SquadBuilder } from '../../src/features/squads/SquadBuilder.js';
-import { HEROES, IDS, nameOf, roster, seatsFrom } from './fixtures.js';
+import { IDS, nameOf, roster } from './fixtures.js';
 
 describe('the roster shows all 27, always', () => {
   it('renders every champion with no locked or unrecruited state', () => {

@@ -243,6 +243,14 @@ export default defineConfig({
         },
       },
       {
+        test: {
+          name: 'guilds',
+          include: ['tests/guilds/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'node',
+        },
+      },
+      {
         /**
          * **Cross-cutting concerns that belong to no feature.** The projects
          * above are named for features, and a rule that holds for every route —
