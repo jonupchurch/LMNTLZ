@@ -34,7 +34,37 @@ prints no numbers for them.
 | **api** | `apps/api` → **`api.lmntlz.com`** |
 
 `https://api.lmntlz.com/v1/health` returns `{"status":"ok","commit":"..."}`.
-**The commit is the point.** For two features that route returned `{"status":
+**The commit is the point, and on 2026-07-30 it earned its keep a second time.**
+
+> ### ⚠️ Two commits shipped red and were reported as live. Corrected 2026-07-30.
+>
+> `c3ec06c` and `c468780` both **failed the Vercel build**, and production went on
+> serving `ece3db4` with nothing to indicate it. `payments/vendor/mailer.ts` read
+> `.ok`/`.status` off the ambient `Response`: **`pnpm typecheck` green, Vercel build
+> red.** Vercel names the entrypoint on the command line, so TypeScript ignores
+> `tsconfig.json` (TS5112) and `types: ["node"]` never applies there.
+>
+> **It is not reproducible locally.** Imitating Vercel with
+> `tsc --ignoreConfig src/index.ts` passes *with the bug deliberately planted back*,
+> so the difference is the resolved `@types/node`, not the missing config. A green
+> local typecheck is **no evidence at all** about this class of error.
+>
+> Fixed by moving `FetchResponse` to `apps/api/src/types/fetch.ts` — it had lived
+> inside `replays/` since 008, where the next feature never looked — and by adding
+> `tests/platform/ambientFetch.test.ts`, which scans for the shape and has been
+> watched failing on a planted violation.
+>
+> **The standing rule: push, then poll `/v1/health` until it reports your commit.
+> Until it matches, the honest report is "pushed, deploy unverified", never "live".**
+> When it does not match, `list_deployments` gives `state: ERROR` and
+> `get_deployment_build_logs` with `errorsOnly` gives the reason, in two calls.
+>
+> **Verified after the fix**: API on `e32b163`; `/v1/players/:id/profile`,
+> `/v1/me/export` and `/v1/me/avatar` all answer **401 rather than 404**, and a
+> nonsense path answers 404. Client on `c468780` — its `e32b163` build was correctly
+> skipped, since that commit touched only `apps/api` — and the deployed bundle
+> contains `Export my data`, `Hidden hold`, `Battle record` and the `/me/shards`
+> call. For two features that route returned `{"status":
 "ok"}` and nothing else, which is the same answer in every build ever made — and
 production spent 13 hours serving a feature-005 build while six deploys failed,
 invisibly, because that was the only thing anyone checked. `/v1/roster` answering
