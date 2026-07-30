@@ -28,6 +28,7 @@
  */
 
 import type { Email, Mailer } from '../receipt.js';
+import type { FetchResponse } from '../../types/fetch.js';
 
 const API = 'https://api.resend.com/emails';
 
@@ -55,7 +56,22 @@ export function httpMailer(): Mailer | null {
 
   return {
     async send(email: Email): Promise<void> {
-      const response = await fetch(API, {
+      /**
+       * **Cast to `FetchResponse`, and never the ambient `Response`** — see
+       * `types/fetch.ts` for the full history. Short version: Vercel compiles
+       * this app's entrypoint by naming files on the command line, which makes
+       * TypeScript ignore `tsconfig.json` entirely (TS5112). So `types:
+       * ["node"]` does not apply, the ambient `Response` is some other
+       * `Response`, and `.ok` and `.status` do not exist on it.
+       *
+       * **This shipped as a failed deploy.** `pnpm typecheck` was green locally
+       * and the Vercel build was red on these two lines, so production went on
+       * serving an older build. `storage.ts` had already hit this and written
+       * the fix down; the mailer did not follow the precedent. Anything in
+       * `apps/api` that touches `fetch` must depend on the runtime shape rather
+       * than on whichever ambient `Response` happens to be in scope.
+       */
+      const response = (await fetch(API, {
         method: 'POST',
         headers: {
           authorization: `Bearer ${creds.key}`,
@@ -67,7 +83,7 @@ export function httpMailer(): Mailer | null {
           subject: email.subject,
           text: email.text,
         }),
-      });
+      })) as unknown as FetchResponse;
 
       if (!response.ok) {
         /**

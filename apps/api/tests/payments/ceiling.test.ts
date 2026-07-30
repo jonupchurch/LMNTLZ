@@ -15,6 +15,7 @@ import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { stripComments } from '../stripComments.js';
 import {
   CATALOG,
   bestShardsPerDollar,
@@ -105,9 +106,7 @@ describe('there is no shard product, not even as a stub', () => {
       if (!entry.isFile() || !entry.name.endsWith('.ts')) continue;
       const full = join(entry.parentPath ?? dir, entry.name);
       const raw = await readFile(full, 'utf8');
-      const code = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-
-      expect(code.length, `comment strip emptied ${entry.name}`).toBeGreaterThan(raw.length * 0.05);
+      const code = stripComments(raw, entry.name);
 
       // A product, not a mention: `grants: 'shards'` or an id containing shard.
       if (/id:\s*['"][^'"]*shard/i.test(code) || /grants:\s*['"][^'"]*shard/i.test(code)) {

@@ -87,45 +87,15 @@ export interface ReplayStorage {
 export const replayKey = (battleId: string): string => `battles/${battleId}.json`;
 
 /**
- * The four members of a `fetch` response this module reads, declared locally.
+ * **Moved to `src/types/fetch.ts`.** This module found the problem first (008)
+ * and the write-up lived here — which is exactly why feature 011's mailer hit
+ * the identical bug three features later and took a failed deploy to notice: a
+ * convention filed inside somebody else's feature is a convention nobody finds.
  *
- * ### Why this exists instead of just using the ambient `Response`
- *
- * **The API's Vercel build failed five times on exactly that.** `tsc -p
- * tsconfig.json` compiles clean locally and on CI, and the same command on Vercel
- * reported:
- *
- * ```
- * src/replays/storage.ts: error TS2339: Property 'status' does not exist on type 'Response'.
- * ```
- *
- * …once for each of `status`, `ok`, `statusText` and `text`. This app sets
- * `lib: ["ES2022"]` with no `DOM`, so `Response` comes from whatever `@types/node`
- * resolves — and in Vercel's build environment that resolves to a `Response` without
- * the fetch members, while locally it does not. `@types/node` is correctly declared
- * in this package, so it is not a phantom dependency; the difference is in the build
- * environment and is not observable from here.
- *
- * Rather than chase an environment we cannot see — the same conclusion the
- * `strictNullChecks` note in `tsconfig.json` reached — **this depends on the
- * runtime shape instead of on the ambient type.** The cast is safe because these
- * four members are guaranteed by the Fetch standard, and it cannot break this way
- * again regardless of which `Response` is in scope.
- *
- * Adding `"DOM"` to `lib` would also have fixed it and was rejected: it would put
- * `window` and `document` in scope for a server-only app, so a genuine mistake
- * would start typechecking.
- *
- * The SDK's own `get()` was the other candidate. It returns a
- * `ReadableStream<Uint8Array>`, which is the *same* class of ambient global, so it
- * would have traded a known problem for an unverifiable one.
+ * Re-exported so this module's own name for it still resolves.
  */
-export interface FetchResponse {
-  readonly status: number;
-  readonly ok: boolean;
-  readonly statusText: string;
-  text(): Promise<string>;
-}
+import type { FetchResponse } from '../types/fetch.js';
+export type { FetchResponse };
 
 /**
  * The real store.

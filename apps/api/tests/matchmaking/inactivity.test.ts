@@ -25,6 +25,7 @@ import { playerRatings } from '../../src/db/schema/ratings.js';
 import { squads, squadSeats } from '../../src/db/schema/squads.js';
 import { candidates, touchActivity } from '../../src/matchmaking/candidates.js';
 import { INACTIVITY_DAYS } from '../../src/matchmaking/config.js';
+import { stripComments } from '../stripComments.js';
 
 const DAY_MS = 86_400_000;
 const RUN = `inact-${process.pid}-${Date.now()}`;
@@ -168,23 +169,17 @@ describe('activity is a battle or a squad edit — never a bare login (T050 · T
    * Same for T051: "add no rule zeroing an idle account's hold income" is an instruction
    * *not* to write something, and the only way to check it is to look.
    */
-  const strip = (src: string) =>
-    src.replaceAll(/\/\*[\s\S]*?\*\//g, '').replaceAll(/(^|[^:])\/\/.*$/gm, '$1');
-
   const read = async (path: string) => {
     const raw = await readFile(new URL(path, import.meta.url), 'utf8');
-    const stripped = strip(raw);
-
     /**
-     * **The strip-check, which is the half that keeps getting skipped.** A greedy or
-     * mis-anchored comment pattern can eat most of a file, and a scan over an empty
-     * string passes every "must not contain" assertion it is given. So prove the file
-     * survived before trusting anything about it.
+     * **The strip-check is inside `stripComments`, not repeated here.** This file
+     * had its own copy with its own threshold (20% of the original), and four
+     * such copies existed across the suite with four different numbers. See
+     * `tests/stripComments.ts` for why a ratio was the wrong instrument and what
+     * replaced it — this file's careful `(^|[^:])` line-comment pattern is the
+     * one that survived into the shared helper.
      */
-    expect(stripped.length, `${path}: the comment strip ate the file`).toBeGreaterThan(
-      raw.length * 0.2,
-    );
-    return stripped;
+    return stripComments(raw, path);
   };
 
   it('never touches activity from the auth module', async () => {

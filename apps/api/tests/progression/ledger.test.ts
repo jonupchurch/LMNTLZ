@@ -15,6 +15,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { stripComments } from '../stripComments.js';
 import { eq } from 'drizzle-orm';
 import { closeDb, db } from '../../src/db/client.js';
 import { shardLedger } from '../../src/db/schema/ledger.js';
@@ -44,16 +45,7 @@ async function sourceFiles(): Promise<Array<{ path: string; code: string }>> {
       if (entry.isDirectory()) await walk(full);
       else if (entry.name.endsWith('.ts')) {
         const raw = await readFile(full, 'utf8');
-        const code = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-
-        /**
-         * **The strip-check.** A regex that swallowed the file would make every
-         * scan below pass for the worst possible reason. Asserted per file rather
-         * than in aggregate, so the failure names the file that broke.
-         */
-        expect(code.length, `comment strip emptied ${entry.name}`).toBeGreaterThan(
-          raw.length * 0.1,
-        );
+        const code = stripComments(raw, entry.name);
 
         out.push({ path: full, code });
       }

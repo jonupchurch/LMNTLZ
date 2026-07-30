@@ -14,6 +14,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { stripComments } from '../stripComments.js';
 
 const SRC = new URL('../../src/', import.meta.url).pathname.replace(/^\//, '');
 
@@ -33,11 +34,7 @@ async function sources(root = SRC): Promise<SourceFile[]> {
         await walk(full);
       } else if (entry.name.endsWith('.ts')) {
         const raw = await readFile(full, 'utf8');
-        const code = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-
-        expect(code.length, `comment strip emptied ${entry.name}`).toBeGreaterThan(
-          raw.length * 0.05,
-        );
+        const code = stripComments(raw, entry.name);
 
         out.push({ path: full, name: entry.name, code });
       }
