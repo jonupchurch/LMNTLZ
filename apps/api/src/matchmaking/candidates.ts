@@ -30,12 +30,12 @@
  * game**, which is exactly the shape of failure this project keeps meeting — no
  * error, no log, just nothing.
  *
- * **`last_activity_at` has no writer yet.** The column exists and the query uses it,
- * but nothing updates it, so it falls back to `accounts.created_at` and the pool
- * would quietly thin as accounts age past thirty days. `touchActivity()` below is
- * the writer; wiring it into battle settlement and defense-squad saves is its own
- * task and is **not** done here. Recorded because a pool that empties silently is
- * worse than one that errors.
+ * **`last_activity_at` now has one writer of the two.** `PUT /squads/defense/:zone`
+ * calls `touchActivity()`; **battle settlement still does not**, so an account that
+ * only ever attacks and never edits a squad still ages out of the pool after thirty
+ * days. The `isNull` fallback to `accounts.created_at` is what keeps that from being
+ * an empty pool today rather than a thin one. Recorded, because a pool that empties
+ * silently is worse than one that errors.
  */
 
 import { and, asc, desc, eq, gte, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
@@ -84,9 +84,8 @@ const effectiveGearScore = sql<number>`coalesce(${playerRatings.gearScore}, ${ST
  *
  * Upserts, because the standing row may not exist yet: pre-010 nothing creates one.
  *
- * > **No caller yet.** Battle settlement (007) and defense-squad saves (006) are
- * > where this belongs, and neither calls it. Until they do, eligibility falls back
- * > to `accounts.created_at`.
+ * > **One of the two callers is wired.** `PUT /v1/squads/defense/:zone` calls this;
+ * > battle settlement does not yet. A player who only attacks still ages out.
  */
 export async function touchActivity(accountId: string): Promise<void> {
   const now = new Date();

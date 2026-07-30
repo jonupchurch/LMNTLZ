@@ -28,6 +28,7 @@ import { accounts } from '../db/schema/accounts.js';
 import { serializeScoutView } from './scoutSerializer.js';
 import { ambushChance, ambushConfig } from './ambush.js';
 import { warningsFor } from './warnings.js';
+import { needsAllyRule } from '@lmntlz/sim/ai';
 import {
   HeroUnavailableError,
   InvalidSquadError,
@@ -36,6 +37,9 @@ import {
   defenseReadiness,
   evictionImpact,
   isPowerRanking,
+  isTargetRule,
+  resolvedSeatConfig,
+  targetRuleMenu,
   validateSquadShape,
   type SquadShape,
 } from './allocation.js';
@@ -46,6 +50,7 @@ import {
   saveOffenseSquad,
   type SeatInput,
 } from './repository.js';
+import { touchActivity } from '../matchmaking/candidates.js';
 
 export const squadRoutes = new Hono<AuthedEnv>();
 
@@ -56,8 +61,23 @@ squadRoutes.use('/players/*', requireSession);
 const isZone = (value: string): value is SquadZone => (SQUAD_ZONES as readonly string[]).includes(value);
 
 /**
- * Parse the seat array. **`config` is required on defense and forbidden on
+ * Parse the seat array. **`config` is optional on defense and forbidden on
  * offense**, which is the shape difference between the two and the only one.
+ *
+ * ### Why optional rather than required
+ *
+ * It used to be required, and that made the builder impossible to finish. The
+ * role-default table is **server-only** — `allocation.ts` says why: shipping it
+ * would hand every player the exact ranking the engine plays against them — so a
+ * client seating a champion for the first time has no config to send and no way
+ * to derive one. Requiring the field meant the only legal save was one that
+ * invented a configuration, which is worse than the default in every case.
+ *
+ * **Absent means "the Role default", stated once and resolved server-side** — the
+ * same promise T049/FR-023 already makes about a squad saved without touching a
+ * control. It deliberately does *not* mean "keep whatever is stored": this
+ * endpoint replaces a whole squad, and a per-field merge is how a player ends up
+ * with a configuration nobody chose.
  */
 function parseSeats(body: unknown, kind: 'defense' | 'offense'): SeatInput[] {
   if (!body || typeof body !== 'object' || !Array.isArray((body as { seats?: unknown }).seats)) {
@@ -86,14 +106,23 @@ function parseSeats(body: unknown, kind: 'defense' | 'offense'): SeatInput[] {
 
     const config = seat['config'] as Record<string, unknown> | undefined;
     if (!config) {
-      throw new InvalidSquadError('wrong-size', `Seat ${i} needs a config on a defense squad.`);
+      // Resolved to the champion's Role default below, once, where the squad is
+      // saved — so the stored row and the streak hash both hold a real config
+      // rather than the empty one `repository.ts` falls back to.
+      return { row: row as SeatInput['row'], index, heroId };
     }
 
     const targeting = config['targeting'];
-    if (!Array.isArray(targeting) || targeting.length !== 2 || targeting.some((t) => typeof t !== 'string')) {
+    /**
+     * **Checked against the rules the engine actually has, not merely that they
+     * are strings.** An unknown rule saved here is a squad `battle/snapshot.ts`
+     * refuses to parse — so the failure landed on whoever attacked this player,
+     * about a value this player supplied. Same predicate, both boundaries.
+     */
+    if (!Array.isArray(targeting) || targeting.length !== 2 || !targeting.every(isTargetRule)) {
       throw new InvalidSquadError(
         'wrong-size',
-        `Seat ${i} needs a targeting pair: a primary rule and a fallback.`,
+        `Seat ${i} needs a targeting pair of known rules: a primary and a fallback.`,
       );
     }
 
@@ -108,8 +137,11 @@ function parseSeats(body: unknown, kind: 'defense' | 'offense'): SeatInput[] {
     }
 
     const allyRule = config['allyRule'];
-    if (allyRule !== null && allyRule !== undefined && typeof allyRule !== 'string') {
-      throw new InvalidSquadError('wrong-size', `Seat ${i}: \`allyRule\` must be a string or null.`);
+    if (allyRule !== null && allyRule !== undefined && !isTargetRule(allyRule)) {
+      throw new InvalidSquadError(
+        'wrong-size',
+        `Seat ${i}: \`allyRule\` must be a known rule, or null.`,
+      );
     }
 
     return {
@@ -143,6 +175,33 @@ squadRoutes.get('/roster', async (c) => {
 
   const zoneOf = (zone: SquadZone) => stored.find((s) => s.kind === 'defense' && s.zone === zone);
 
+  /**
+   * **Each seated champion's configuration, resolved** (T049, FR-023).
+   *
+   * The editor cannot function without this and cannot compute it: the
+   * role-default table is server-only on purpose. So the seat arrives carrying
+   * either the player's own stored choice or the Role default that is already
+   * being played on their behalf — the same value either way, which is the point.
+   * A player who never opened the controls sees what the engine is doing rather
+   * than a set of empty dropdowns.
+   *
+   * **Only seated champions.** Resolving the other twenty-one would publish the
+   * role-default table one champion at a time, which is the thing the server-only
+   * import exists to prevent.
+   */
+  const seatsWithConfig = (squad: (typeof stored)[number] | undefined) =>
+    (squad?.seats ?? []).map((seat) => {
+      const config = resolvedSeatConfig(seat.heroId, squad?.configs.get(seat.heroId));
+      return {
+        ...seat,
+        config: {
+          targeting: [config.targetPrimary, config.targetFallback],
+          ranking: config.powerRanking,
+          allyRule: config.allyRule,
+        },
+      };
+    });
+
   const defense = Object.fromEntries(
     SQUAD_ZONES.map((zone) => {
       const squad = zoneOf(zone);
@@ -150,7 +209,7 @@ squadRoutes.get('/roster', async (c) => {
       return [
         zone,
         {
-          seats: squad?.seats ?? [],
+          seats: seatsWithConfig(squad),
           holdStreak: squad?.holdStreak ?? 0,
           editedAt: squad?.editedAt ?? null,
           // FR-011: an incomplete zone is a stated state, never a squad that
@@ -201,6 +260,24 @@ squadRoutes.get('/roster', async (c) => {
      * leaves the two builds disagreeing for a week.
      */
     ambush: { chance: ambushChance(attackStreak), ...ambushConfig() },
+    /**
+     * **The two menus, served** (Constitution XII).
+     *
+     * The client holds no rule list of its own — it cannot, since
+     * `@lmntlz/sim/ai` is unreachable from it by a purity test, and it should not,
+     * since a Steam build compiling the menu in would disagree with the browser
+     * for however long a patch takes. `ally` is the same list: the ally menu
+     * discriminates *better* than the enemy one, not differently.
+     *
+     * `needsAllyRule` names the champions who own a friendly power, because the
+     * third control is offered only to them (FR-004) — and the predicate for that
+     * is also server-side.
+     */
+    rules: {
+      target: targetRuleMenu(),
+      ally: targetRuleMenu(),
+      needsAllyRule: roster.filter((h) => needsAllyRule(h)).map((h) => h.id),
+    },
     available: {
       // **Every hero, deliberately.** Moving one off an attack squad onto
       // defense is legal — that is what the eviction warning covers.
@@ -228,6 +305,16 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
   try {
     seats = parseSeats(await c.req.json().catch(() => null), 'defense');
     validateSquadShape(seatsToShape('pending', 'defense', seats).seats);
+    /**
+     * **Materialised here rather than left to the repository's fallback.** That
+     * fallback is empty strings and an empty ranking — enough to store a row, and
+     * enough to make the streak hash of a defaulted squad differ from the hash of
+     * the *same* squad saved again with its defaults spelled out. A player would
+     * lose a hold streak by pressing Save twice.
+     */
+    seats = seats.map((seat) =>
+      seat.config ? seat : { ...seat, config: resolvedSeatConfig(seat.heroId) },
+    );
   } catch (err) {
     if (err instanceof InvalidSquadError) {
       return c.json(apiError(err.code, err.detail), 422);
@@ -270,6 +357,28 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
     accountId,
     seats.map((s) => s.heroId),
   );
+
+  /**
+   * **Editing a defense squad is activity** (009 `candidates.ts`).
+   *
+   * The pool of defenders anybody can be offered requires activity inside thirty
+   * days, and `touchActivity()` shipped with 009 with **no caller** — so
+   * eligibility fell back to `accounts.created_at` and every account would have
+   * quietly dropped out of every pool a month after signing up. This is one of the
+   * two places it belongs; battle settlement is the other.
+   *
+   * **Awaited, and its failure swallowed** — which is not the same as fire-and-
+   * forget. A floating promise is the obvious shape here and it is wrong on this
+   * platform: the function is torn down when the response returns, so an unawaited
+   * upsert may simply never run, and nothing would say so. Awaiting costs one
+   * round trip; catching is what keeps a stamp failure from reporting a saved
+   * squad as unsaved.
+   */
+  try {
+    await touchActivity(accountId);
+  } catch (err) {
+    console.warn(`[squads] could not stamp activity for ${accountId}: ${String(err)}`);
+  }
 
   return c.json({
     holdStreak: result.holdStreak,

@@ -54,7 +54,16 @@ export function SquadBuilder({
             <span className="w-16 shrink-0 font-display text-xs tracking-widest uppercase text-faint">
               {ROW_LABEL[row]}
             </span>
-            <div className="flex flex-wrap gap-3">
+            {/**
+             * **`flex-wrap` was wrong here, and it looked like a rendering bug.**
+             * The formation is 2 front · 3 middle · 1 back, and the middle row is
+             * the widest — so at the column width this panel actually gets, wrapping
+             * put two seats on one line and the third underneath, which reads as a
+             * 2/2/1/1 formation that does not exist. A squad's shape is a rule, not
+             * a layout preference: it never reflows. The seats shrink instead, and
+             * the panel scrolls if it must.
+             */}
+            <div className="flex min-w-0 gap-3">
               {Array.from({ length: ROW_CAPACITY[row] }, (_, index) => {
                 const seat = at(row, index);
                 return (
@@ -71,7 +80,12 @@ export function SquadBuilder({
                         : `${ROW_LABEL[row]} seat ${index + 1}, empty`
                     }
                     className={[
-                      'h-20 w-32 rounded border px-3 text-left text-sm transition-colors',
+                      // `w-32` was a fixed width and it is what forced the wrap:
+                      // three of them plus two gaps exceed the column this panel
+                      // gets, even at the 1600px target. Flexible up to that same
+                      // width instead, so every seat stays the same size as every
+                      // other and the three-wide row fits at the 1280px floor.
+                      'h-20 min-w-0 flex-1 basis-0 max-w-32 rounded border px-3 text-left text-sm transition-colors',
                       seat
                         ? 'border-gold/60 bg-raised text-parchment'
                         : 'border-dashed border-line bg-void/40 text-faint',

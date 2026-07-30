@@ -187,6 +187,77 @@ test.describe('keyboard only (T052)', () => {
   });
 });
 
+test.describe('the squad actually saves', () => {
+  /**
+   * ### The gap this closes was found by using the site, not by a test
+   *
+   * Every component on this screen was built, unit-tested and reachable — and
+   * nothing called `PUT /v1/squads/defense/:zone`. A player could compose a legal
+   * squad, reload, and find it gone. `save.test.tsx` asserts the request's shape;
+   * this asserts that a real browser, driving the real DOM, produces it at all.
+   */
+  test('sends the composed squad and reports what the save cost', async ({ page }) => {
+    const puts: { url: string; body: unknown }[] = [];
+
+    await mockApi(page);
+    await page.route('**/v1/squads/defense/visible', async (route) => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      puts.push({ url: route.request().url(), body: route.request().postDataJSON() });
+      await route.fulfill({
+        json: {
+          holdStreak: 0,
+          streakReset: true,
+          evictedSquadIds: [],
+          warnings: [
+            {
+              code: 'reach-1-back-seat',
+              heroId: IDS[5],
+              message: `${nameOf(IDS[5]!)} has reach 1 in the back seat.`,
+            },
+          ],
+        },
+      });
+    });
+    await page.goto('/');
+
+    await page.getByRole('button', { name: /Save Zone I/ }).click();
+
+    // The request happened, once, at the zone on screen.
+    await expect.poll(() => puts.length).toBe(1);
+    expect(puts[0]!.url).toMatch(/\/v1\/squads\/defense\/visible$/);
+    expect((puts[0]!.body as { seats: unknown[] }).seats).toHaveLength(6);
+
+    // And the player is told the cost, and the warning that does not block it.
+    await expect(page.getByText(/hold streak reset to 0/)).toBeVisible();
+    await expect(page.getByText(/has reach 1 in the back seat/)).toBeVisible();
+  });
+
+  test('a refused save keeps the squad on screen', async ({ page }) => {
+    await mockApi(page);
+    await page.route('**/v1/squads/defense/visible', (route) =>
+      route.request().method() === 'PUT'
+        ? route.fulfill({
+            status: 409,
+            json: {
+              error: {
+                code: 'hero_on_other_zone',
+                message: 'Ossic is already defending your hidden zone.',
+              },
+            },
+          })
+        : route.continue(),
+    );
+    await page.goto('/');
+
+    await page.getByRole('button', { name: /Save Zone I/ }).click();
+
+    await expect(page.getByRole('alert')).toContainText(/already defending your hidden zone/);
+    // Not a blank page with a sentence on it: the work is still there.
+    await expect(page.getByLabel('defense squad formation')).toBeVisible();
+    await expect(page.getByRole('button', { name: /reach \d/ })).toHaveCount(27);
+  });
+});
+
 test.describe('the preview is never skipped silently', () => {
   test('a failed eviction check changes nothing and says so', async ({ page }) => {
     // Routes its own mocks rather than using `mockApi`, so the session has to

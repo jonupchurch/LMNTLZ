@@ -17,6 +17,7 @@ is forced, not optional**.
                   role, reach, stats, powers, runes. From @lmntlz/content. */ ],
   "assignments": {
     "defense": {
+      // Each defense seat carries its RESOLVED config. See below.
       "visible": { "seats": [...], "holdStreak": 14, "editedAt": "..." },
       "hidden":  { "seats": [...], "holdStreak":  3, "editedAt": "..." }
     },
@@ -25,6 +26,11 @@ is forced, not optional**.
       { "slot": 1, "name": "Second Wind", "seats": [...], "complete": false }
     ]
   },
+  "rules": {
+    "target":        [ /* the 15 targeting rules, in menu order */ ],
+    "ally":          [ /* the same list — it discriminates better, not differently */ ],
+    "needsAllyRule": [ /* hero ids that own a friendly power */ ]
+  },
   "available": { "forDefense": [...], "forOffense": [...] }
 }
 ```
@@ -32,6 +38,29 @@ is forced, not optional**.
 `available.forOffense` is the 15 heroes **not** on either defense squad.
 `available.forDefense` is every hero — moving one from an attack squad is legal and
 is what the eviction warning covers.
+
+### Configuration travels in both directions, and only for seated champions
+
+A defense seat is served with its config resolved — the player's own stored choice
+if there is one, otherwise **the champion's Role default**, which is what the engine
+is already playing on their behalf:
+
+```jsonc
+{ "row": "front", "index": 0, "heroId": "bramwen",
+  "config": { "targeting": ["lowest-current-hp", "nearest"],
+              "ranking":   [5, 4, 3, 2, 1, 0],
+              "allyRule":  null } }
+```
+
+**Seated champions only, and the menus are served rather than compiled in.** Both
+follow from the same constraint: the role-default table lives behind
+`@lmntlz/sim/ai`, which a purity test makes unreachable from the client — shipping
+it would hand every player the exact ranking the engine plays against them.
+Resolving all 27 would publish that table one champion at a time; a client holding
+its own menu would disagree with the server for however long a patch takes.
+
+`allyRule` is `null` for a champion who owns no friendly power (FR-004). The
+predicate is server-side too, which is what `needsAllyRule` is for.
 
 ## `PUT /v1/squads/defense/:zone` — `zone` ∈ `visible` | `hidden`
 
@@ -69,6 +98,23 @@ is what the eviction warning covers.
 | `409` | a hero appears on the other defense zone |
 | `422` | not exactly 6 seats, or not 2 front / 3 middle / 1 back |
 | `422` | a `ranking` is not a permutation of 0–5 |
+| `422` | a `targeting` entry or `allyRule` names a rule the engine does not have |
+
+> **`config` is optional, and absent means the Role default.** It was required once
+> and that made the builder impossible to finish: the client cannot derive a
+> default (the table is server-only, above), so the only accepted save was one
+> where the client had invented a configuration. Absent does **not** mean "keep
+> what is stored" — this endpoint replaces a whole squad, and a per-field merge is
+> how a player ends up with a configuration nobody chose.
+>
+> The default is materialised into the stored row rather than left implicit,
+> because the streak hash reads it: a defaulted squad and the same squad saved
+> again with the defaults spelled out have to hash identically, or a player loses
+> a hold streak by pressing Save twice.
+>
+> **An unknown rule name is refused here rather than at battle time.** The snapshot
+> parser has always rejected one — so before this check existed, a squad saved with
+> a bad rule raised `MalformedSnapshotError` against *whoever attacked it*.
 
 > **`warnings` never blocks.** A reach-1 back seat and a self-defeating ranking are
 > both **surfaced, not prevented** — the seat is priced, the ranking is a lever.

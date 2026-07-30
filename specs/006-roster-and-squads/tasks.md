@@ -200,6 +200,32 @@ plausible implementation gets backwards.
 
 ---
 
+## Phase 9: The wiring nobody wrote a task for
+
+> ### Added after the fact, and that is the point of adding it
+>
+> Every task above was completed honestly and the feature was still not usable: a
+> player could compose a legal squad, reload, and find it gone, because **nothing
+> called `PUT /v1/squads/defense/:zone`**. T018–T020 and T047–T048 each say *build
+> this component*; T015 says *build the route*. No task says **connect them**, and
+> a component suite cannot see the difference — it asks whether a button renders,
+> not whether pressing it reaches the server.
+>
+> It was found by signing in to the deployed site and using it. These five are
+> written down rather than quietly fixed so the *shape* of the omission is on the
+> record: **a decomposition that names every part can still omit the assembly.**
+> The same gap is already noted at the top of `SquadsScreen.tsx` (nothing said "put
+> them on a page") and in `ResumeBattle.tsx` for 007 — this is its third instance.
+
+- [x] T055 Wire the save in `apps/client/src/features/squads/SquadsScreen.tsx` — a Save control per zone calling `PUT /v1/squads/defense/:zone`, reporting the streak cost, every warning and any eviction, then **refetching the roster** rather than patching it from the response
+- [x] T056 Serve each seated champion's resolved config and the two rule menus from `GET /v1/roster` (`apps/api/src/squads/routes.ts`) — seated champions **only**, since resolving all 27 publishes the server-only role-default table one champion at a time
+- [x] T057 Make `config` **optional** on `PUT /v1/squads/defense/:zone`, resolving an absent one to the Role default and **materialising it into the stored row** so the streak hash cannot differ between a defaulted squad and the same squad re-saved (T049 held; the route contradicted it)
+- [x] T058 Validate targeting rules against the engine's own list at the save boundary, sharing one `isTargetRule` with `battle/snapshot.ts` — an unknown rule used to be accepted here and rejected there, so the error landed on **whoever attacked** the player
+- [x] T059 Call `touchActivity()` from the defense save (009's `candidates.ts` shipped it with no caller, so every account would have aged out of every defender pool after thirty days). **Battle settlement is still not wired — that belongs to 007 and is open.**
+- [x] T060 Fix the formation grid: the middle row wrapped 2 + 1 at every real column width, which reads as a formation that does not exist
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

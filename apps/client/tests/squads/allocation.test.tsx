@@ -14,40 +14,11 @@ import userEvent from '@testing-library/user-event';
 import { act, renderHook } from '@testing-library/react';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { getAllHeroes } from '@lmntlz/content';
 import { SQUAD_SIZE } from '@lmntlz/sim/rules';
 import { useAllocation } from '../../src/features/squads/hooks/useAllocation.js';
 import { RosterView } from '../../src/features/squads/RosterView.js';
 import { SquadBuilder } from '../../src/features/squads/SquadBuilder.js';
-import type { RosterResponse } from '../../src/features/squads/types.js';
-
-const HEROES = getAllHeroes();
-const IDS = HEROES.map((h) => h.id);
-const nameOf = (id: string) => HEROES.find((h) => h.id === id)?.name ?? id;
-
-const seatsFrom = (ids: readonly string[]) => [
-  { row: 'front' as const, index: 0, heroId: ids[0]! },
-  { row: 'front' as const, index: 1, heroId: ids[1]! },
-  { row: 'middle' as const, index: 0, heroId: ids[2]! },
-  { row: 'middle' as const, index: 1, heroId: ids[3]! },
-  { row: 'middle' as const, index: 2, heroId: ids[4]! },
-  { row: 'back' as const, index: 0, heroId: ids[5]! },
-];
-
-const roster = (over: Partial<RosterResponse['assignments']> = {}): RosterResponse => ({
-  heroes: HEROES,
-  assignments: {
-    defense: {
-      visible: { seats: seatsFrom(IDS.slice(0, 6)), holdStreak: 14, editedAt: null, canDefend: true },
-      hidden: { seats: seatsFrom(IDS.slice(6, 12)), holdStreak: 3, editedAt: null, canDefend: true },
-    },
-    offense: [],
-    ...over,
-  },
-  streaks: { attack: 7, hold: { visible: 14, hidden: 3 } },
-  ambush: { chance: 14, perWin: 2, cap: 90, capAt: 45 },
-  available: { forDefense: IDS, forOffense: IDS.slice(12) },
-});
+import { HEROES, IDS, nameOf, roster, seatsFrom } from './fixtures.js';
 
 describe('the roster shows all 27, always', () => {
   it('renders every champion with no locked or unrecruited state', () => {
@@ -189,6 +160,33 @@ describe('the client never decides eviction or the streak (SC — server authori
     });
   })(dir);
 
+  /**
+   * The file with its comments removed.
+   *
+   * **Both scans below use this, and the second one did not, and that was a
+   * defect in the test rather than in the code.** These files explain *why* the
+   * client may not reach the defense AI — and a scan that reads prose flags the
+   * explanation, so the only way to make it pass is to delete the reason. The
+   * whole point of a comment is that it is not code; a scan for code must not
+   * read it.
+   *
+   * **The strip is checked, because a bad regex that ate the file would make
+   * every assertion below vacuously true** — which is the failure mode of a
+   * comment-stripping scan and the one that leaves no trace.
+   */
+  const codeOf = (path: string): string => {
+    const stripped = readFileSync(path, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '');
+
+    expect(
+      /\b(import|export|const|function)\b/.test(stripped),
+      `stripping comments emptied ${path} — the scan below would pass on nothing`,
+    ).toBe(true);
+
+    return stripped;
+  };
+
   it('scans a non-empty feature tree', () => {
     expect(sources.length).toBeGreaterThan(0);
   });
@@ -200,9 +198,7 @@ describe('the client never decides eviction or the streak (SC — server authori
     const FORBIDDEN = [/streakResets/, /canonicalHash/, /canonicalForm/, /evictionImpact/];
 
     for (const path of sources) {
-      const source = readFileSync(path, 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\/\/.*$/gm, '');
+      const source = codeOf(path);
       for (const pattern of FORBIDDEN) {
         expect(pattern.test(source), `${path} computes ${String(pattern)} locally`).toBe(false);
       }
@@ -213,9 +209,10 @@ describe('the client never decides eviction or the streak (SC — server authori
     // eslint blocks a direct import and purity.test.ts walks the graph; this is
     // the third layer, and the cheap one to read.
     for (const path of sources) {
-      const source = readFileSync(path, 'utf8');
-      expect(source).not.toContain('@lmntlz/sim/resolver');
-      expect(source).not.toContain('@lmntlz/sim/ai');
+      const source = codeOf(path);
+      for (const forbidden of ['@lmntlz/sim/resolver', '@lmntlz/sim/ai']) {
+        expect(source.includes(forbidden), `${path} imports ${forbidden}`).toBe(false);
+      }
     }
   });
 });

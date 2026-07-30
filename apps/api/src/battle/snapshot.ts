@@ -25,7 +25,15 @@
  */
 
 import { isPowerRanking } from '@lmntlz/sim/rules';
-import { TARGET_RULES, type SquadMemberConfig, type TargetRule } from '@lmntlz/sim/ai';
+import type { SquadMemberConfig } from '@lmntlz/sim/ai';
+/**
+ * **The same predicate the save route rejects with**, deliberately shared rather
+ * than spelled out twice. This boundary and `PUT /squads/defense/:zone` are the
+ * two places a targeting rule can arrive from outside, and while only this one
+ * checked, a squad could be *saved* with a rule that made it unreadable *here* —
+ * i.e. the error landed on whoever attacked you.
+ */
+import { isTargetRule } from '../squads/allocation.js';
 import { instanceIdOf, type SeatRow, type SnapshotSeat } from './board.js';
 import type { DefenderConfigs } from './packet.js';
 
@@ -53,9 +61,6 @@ const SEAT_ROWS: readonly SeatRow[] = ['front', 'middle', 'back'];
 
 const isSeatRow = (value: unknown): value is SeatRow =>
   typeof value === 'string' && (SEAT_ROWS as readonly string[]).includes(value);
-
-const isTargetRule = (value: unknown): value is TargetRule =>
-  typeof value === 'string' && (TARGET_RULES as readonly string[]).includes(value);
 
 function seatArray(side: 'attacker' | 'defender', raw: unknown): readonly Record<string, unknown>[] {
   const seats = (raw as { seats?: unknown } | null)?.seats;

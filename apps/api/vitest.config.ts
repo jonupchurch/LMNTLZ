@@ -108,14 +108,37 @@ export default defineConfig({
      * **Treat the nested `projects` array as a way to name and filter files, and nothing
      * else.** `name`, `include` and `exclude` do their job there because the root run does
      * not need them. Everything *behavioural* — `environment`, `setupFiles`,
-     * `fileParallelism`, `testTimeout` — must be stated here or it silently applies only
-     * when somebody runs vitest from inside `apps/api`, which is not how CI runs.
+     * `fileParallelism`, `testTimeout`, `hookTimeout` — must be stated here or it silently
+     * applies only when somebody runs vitest from inside `apps/api`, which is not how CI
+     * runs.
      *
      * Generous rather than tuned: every suite in this app talks to a network database, so
      * the failure this guards against is a slow round trip, and a timeout that fires on
      * one of those reports a defect that is not there.
      */
     testTimeout: 30_000,
+
+    /**
+     * **The same thirty seconds for hooks, and this is the third setting the
+     * default caught out — this time by omission rather than by nesting.**
+     *
+     * `testTimeout` does not cover `beforeAll`/`afterAll`; they have their own budget
+     * and it defaults to **10 seconds**. Almost every suite in this app opens with a
+     * `beforeAll` that signs an account in over HTTP and then writes squads —
+     * several Neon round trips before a single test runs — and the heavier suites
+     * fight whole battles in theirs.
+     *
+     * It surfaced the way the other two did: two files failed on
+     * `Hook timed out in 10000ms` in a full root run, and the same run passed
+     * completely on a re-run. **A failure set that changes between runs is a race or
+     * a budget, not a defect in the newest code** — and the tell here was that both
+     * failures were in `beforeAll`, not in any assertion.
+     *
+     * Raising it cannot hide a real hang: a genuinely stuck hook still fails, thirty
+     * seconds later. What it stops is a slow round trip being reported as a broken
+     * test.
+     */
+    hookTimeout: 30_000,
 
     projects: [
       {

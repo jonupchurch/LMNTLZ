@@ -12,6 +12,20 @@ import { getAllHeroes } from '@lmntlz/content';
 export const HEROES = getAllHeroes();
 export const IDS = HEROES.map((h) => h.id);
 
+/**
+ * A served defense configuration.
+ *
+ * **Real rule names, because the route validates them now.** A fixture carrying
+ * `'whatever'` would render perfectly and be rejected by the only request that
+ * matters.
+ */
+const CONFIG = {
+  targeting: ['lowest-current-hp', 'nearest'],
+  ranking: [5, 4, 3, 2, 1, 0],
+  allyRule: 'lowest-hp-percentage',
+};
+
+/** Offense seats carry no config — the player commands offense. */
 const seats = (ids: readonly string[]) => [
   { row: 'front', index: 0, heroId: ids[0] },
   { row: 'front', index: 1, heroId: ids[1] },
@@ -20,6 +34,10 @@ const seats = (ids: readonly string[]) => [
   { row: 'middle', index: 2, heroId: ids[4] },
   { row: 'back', index: 0, heroId: ids[5] },
 ];
+
+/** Defense seats do, and the editor is unusable without them. */
+const defenseSeats = (ids: readonly string[]) =>
+  seats(ids).map((seat) => ({ ...seat, config: CONFIG }));
 
 /** Both zones full, three overlapping attack squads — the ordinary end state. */
 export function rosterPayload(over: { visibleSeats?: unknown[] } = {}) {
@@ -31,12 +49,17 @@ export function rosterPayload(over: { visibleSeats?: unknown[] } = {}) {
     assignments: {
       defense: {
         visible: {
-          seats: over.visibleSeats ?? seats(IDS.slice(0, 6)),
+          seats: over.visibleSeats ?? defenseSeats(IDS.slice(0, 6)),
           holdStreak: 14,
           editedAt: null,
           canDefend: true,
         },
-        hidden: { seats: seats(IDS.slice(6, 12)), holdStreak: 3, editedAt: null, canDefend: true },
+        hidden: {
+          seats: defenseSeats(IDS.slice(6, 12)),
+          holdStreak: 3,
+          editedAt: null,
+          canDefend: true,
+        },
       },
       offense: [
         { slot: 0, name: 'Vanguard', seats: seats([shared, ...free.slice(1, 6)]), complete: true, valid: true },
@@ -46,6 +69,17 @@ export function rosterPayload(over: { visibleSeats?: unknown[] } = {}) {
     },
     streaks: { attack: 7, hold: { visible: 14, hidden: 3 } },
     ambush: { chance: 14, perWin: 2, cap: 90, capAt: 45 },
+    /**
+     * **Served, so the client compiles no menu of its own.** Trimmed to the four
+     * the specs actually pick from — the real list is fifteen, and a fixture that
+     * mirrored it would drift the moment one is added without proving anything the
+     * API's own test does not already prove.
+     */
+    rules: {
+      target: ['lowest-current-hp', 'nearest', 'highest-might', 'furthest'],
+      ally: ['lowest-hp-percentage', 'lowest-current-hp'],
+      needsAllyRule: HEROES.filter((h) => h.powers.some((p) => p.friendly)).map((h) => h.id),
+    },
     available: { forDefense: IDS, forOffense: free },
   };
 }
@@ -114,7 +148,11 @@ export async function signedIn(page: Page): Promise<void> {
 
 export async function mockApi(
   page: Page,
-  options: { roster?: ReturnType<typeof rosterPayload>; preview?: unknown } = {},
+  options: {
+    roster?: ReturnType<typeof rosterPayload>;
+    preview?: unknown;
+    save?: unknown;
+  } = {},
 ): Promise<void> {
   await signedIn(page);
 
@@ -123,5 +161,28 @@ export async function mockApi(
   );
   await page.route('**/v1/squads/defense/*/preview-move', (route) =>
     route.fulfill({ json: options.preview ?? THREE_SQUAD_PREVIEW }),
+  );
+
+  /**
+   * The save, mocked here rather than per spec for the same reason as the two
+   * above: an unmocked `PUT` escapes to a real API, and a spec about a seat then
+   * fails on a network error somewhere else entirely.
+   *
+   * **Disjoint from the `preview-move` pattern**, so registration order does not
+   * matter — a single `*` does not cross a `/`, which is what keeps this from
+   * swallowing `…/visible/preview-move`. The method is still checked, because a
+   * `GET` to this path is a different request.
+   */
+  await page.route('**/v1/squads/defense/*', (route) =>
+    route.request().method() === 'PUT'
+      ? route.fulfill({
+          json: options.save ?? {
+            holdStreak: 0,
+            streakReset: true,
+            evictedSquadIds: [],
+            warnings: [],
+          },
+        })
+      : route.continue(),
   );
 }

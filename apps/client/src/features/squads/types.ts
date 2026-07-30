@@ -5,13 +5,72 @@ import type { Seat } from '@lmntlz/sim/rules';
 
 export type Zone = 'visible' | 'hidden';
 
+/**
+ * How the engine plays one seated champion.
+ *
+ * **Served, never derived here** (T049, FR-023). The role-default table lives
+ * behind `@lmntlz/sim/ai`, which a purity test makes unreachable from this app —
+ * deliberately, because shipping it would hand every player the exact ranking the
+ * engine plays against them. So a seat arrives carrying either the player's own
+ * choice or the default already being played on their behalf, and the client's
+ * only job is to render it and send it back.
+ */
+export interface SeatConfigWire {
+  readonly targeting: readonly [string, string];
+  readonly ranking: readonly number[];
+  readonly allyRule: string | null;
+}
+
+/** A defense seat as served: the placement, plus the behaviour that goes with it. */
+export interface ConfiguredSeat extends Seat {
+  readonly config: SeatConfigWire;
+}
+
 export interface DefenseZoneState {
-  readonly seats: readonly Seat[];
+  readonly seats: readonly ConfiguredSeat[];
   readonly holdStreak: number;
   readonly editedAt: string | null;
   /** FR-011 — an incomplete zone is a stated state, not a squad fighting short. */
   readonly canDefend: boolean;
   readonly reason?: string;
+}
+
+/**
+ * The menus, and who faces the third one.
+ *
+ * `ally` is the same list as `target` rather than a subset — the ally menu
+ * discriminates better than the enemy one, not differently.
+ */
+export interface RuleMenus {
+  readonly target: readonly string[];
+  readonly ally: readonly string[];
+  /** Hero ids that own a friendly power. The predicate is server-side too. */
+  readonly needsAllyRule: readonly string[];
+}
+
+/**
+ * `PUT /v1/squads/defense/:zone`.
+ *
+ * **`warnings` never blocks** — the save above it already happened. A reach-1 back
+ * seat and a self-defeating ranking are both priced decisions, and this screen
+ * surfaces them rather than preventing them.
+ */
+export interface SaveDefenseResponse {
+  readonly holdStreak: number;
+  readonly streakReset: boolean;
+  readonly evictedSquadIds: readonly string[];
+  readonly warnings: readonly {
+    readonly code: string;
+    readonly heroId: string;
+    readonly message: string;
+  }[];
+}
+
+/** `PUT /v1/squads/offense/:slot`. */
+export interface SaveOffenseResponse {
+  readonly slot: number;
+  readonly complete: boolean;
+  readonly valid: boolean;
 }
 
 export interface OffenseSquadState {
@@ -73,6 +132,7 @@ export interface RosterResponse {
   };
   readonly streaks: StreakState;
   readonly ambush: AmbushState;
+  readonly rules: RuleMenus;
   readonly available: {
     /** Every hero — moving one off an attack squad is legal. */
     readonly forDefense: readonly string[];

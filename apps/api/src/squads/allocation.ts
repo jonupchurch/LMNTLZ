@@ -24,6 +24,7 @@
 
 import {
   SQUAD_SIZE,
+  isPowerRanking as isRanking,
   validateFormation,
   type FormationFaultCode,
   type Seat,
@@ -35,8 +36,9 @@ import { getHero } from '@lmntlz/content';
  * never sees a role default until the server sends one back — shipping the table
  * would hand every player the exact ranking the engine uses against them.
  */
-import { resolveConfig, type SquadMemberConfig } from '@lmntlz/sim/ai';
+import { TARGET_RULES, resolveConfig, type SquadMemberConfig, type TargetRule } from '@lmntlz/sim/ai';
 import { MAX_ATTACK_SQUADS } from '../db/schema/squads.js';
+import type { SeatConfig } from './canonical.js';
 
 export type { Seat };
 
@@ -84,6 +86,24 @@ export function validateSquadShape(seats: readonly Seat[]): void {
  * with the same predicate the route rejects with.
  */
 export { isPowerRanking } from '@lmntlz/sim/rules';
+
+/**
+ * **A targeting rule the engine actually has** (Constitution XII, AGENTS rule 2).
+ *
+ * `battle/snapshot.ts` has always rejected an unknown rule, because a defender it
+ * cannot read is a defender nobody can attack. `PUT /squads/defense/:zone` did
+ * **not**, and the two together were a way to store a squad that fails at battle
+ * time rather than at save time — a `MalformedSnapshotError` raised against
+ * whoever attacks you, for a string you typed.
+ *
+ * So the predicate lives here, beside the shape validator, and both boundaries
+ * use this one. `TARGET_RULES` never reaches the client; the *menu* is served.
+ */
+export const isTargetRule = (value: unknown): value is TargetRule =>
+  typeof value === 'string' && (TARGET_RULES as readonly string[]).includes(value);
+
+/** The menu the builder renders, served rather than compiled into the client. */
+export const targetRuleMenu = (): readonly string[] => TARGET_RULES;
 
 /** Every hero id in a squad, in seat order. */
 export const heroesOf = (squad: SquadShape): readonly string[] => squad.seats.map((s) => s.heroId);
@@ -207,6 +227,50 @@ export function defenseReadiness(
  */
 export function configFor(heroId: string, saved: SquadMemberConfig | undefined): SquadMemberConfig {
   return resolveConfig(getHero(heroId), saved);
+}
+
+/**
+ * The same resolution, in the shape the database column and the wire both use.
+ *
+ * **One converter, because there were already two.** `battle/snapshot.ts` and
+ * `matchmaking/seedBots.ts` each spell the `SquadMemberConfig` ↔ column mapping
+ * out by hand, and a third copy would be how `allyRule` ends up written for a
+ * champion who cannot heal on one path and omitted on another.
+ *
+ * **Each stored field is guarded before it overrides a default, and the guards
+ * are load-bearing.** `repository.ts` represents "no config row" as empty
+ * strings and an empty ranking, and `resolveConfig` merges on truthiness — so an
+ * unguarded `targeting: ['', '']` is a truthy array that would replace a Role
+ * default with two rules the engine does not have.
+ */
+export function resolvedSeatConfig(heroId: string, stored?: Partial<SeatConfig>): SeatConfig {
+  const resolved = resolveConfig(getHero(heroId), {
+    ...(stored?.targetPrimary && stored.targetFallback
+      ? {
+          targeting: [stored.targetPrimary, stored.targetFallback] as SquadMemberConfig['targeting'],
+        }
+      : {}),
+    ...(isRanking(stored?.powerRanking)
+      ? { ranking: stored.powerRanking as unknown as SquadMemberConfig['ranking'] }
+      : {}),
+    // `TargetRule`, not `SquadMemberConfig['allyRule']` — the latter includes
+    // `undefined`, which `exactOptionalPropertyTypes` will not accept in a
+    // present key. The field's absence is the signal; `undefined` is not.
+    ...(stored?.allyRule ? { allyRule: stored.allyRule as TargetRule } : {}),
+  });
+
+  return {
+    targetPrimary: resolved.targeting[0],
+    targetFallback: resolved.targeting[1],
+    /**
+     * `null` rather than omitted, because this is the *column* shape and the
+     * column is `NOT NULL`-free rather than optional. `SquadMemberConfig` keeps
+     * the field absent to say which champions face the decision; that
+     * distinction is restored on the way back in, by `resolveConfig` itself.
+     */
+    allyRule: resolved.allyRule ?? null,
+    powerRanking: resolved.ranking,
+  };
 }
 
 /** Fill every seat's config, leaving explicit choices untouched. */

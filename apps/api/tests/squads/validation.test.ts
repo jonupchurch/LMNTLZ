@@ -52,7 +52,14 @@ afterAll(async () => {
   await closeDb();
 });
 
-const config = (ranking: number[] = [5, 4, 3, 2, 1, 0]) => ({
+interface WireConfig {
+  targeting: string[];
+  ranking: number[];
+  /** Widened from `null` so a test can substitute an unknown rule. */
+  allyRule: string | null;
+}
+
+const config = (ranking: number[] = [5, 4, 3, 2, 1, 0]): WireConfig => ({
   targeting: ['lowest-current-hp', 'nearest'],
   ranking,
   allyRule: null,
@@ -103,9 +110,51 @@ describe('the shape is 422', () => {
     expect(res.status).toBe(422);
   });
 
-  it('rejects a defense seat with no config at all', async () => {
+  /**
+   * ### This assertion was inverted on purpose, and the reason is worth keeping
+   *
+   * It used to require `422` for a defense seat with no `config`, and that made
+   * the builder impossible to finish. The role-default table is **server-only** —
+   * shipping it would hand every player the exact ranking the engine plays against
+   * them — so a client seating a champion for the first time has no configuration
+   * to send and no legal way to derive one. Requiring the field meant the only
+   * accepted save was one where the client had *invented* a configuration.
+   *
+   * So an absent config now means *"the Role default"*, which is the promise
+   * FR-023 already made about a squad saved without touching a control. See
+   * `defaults.test.ts` for what actually gets stored.
+   */
+  it('accepts a defense seat with no config, and does not silently drop it', async () => {
     const seats = defenseSeats(ROSTER.slice(0, 6)).map(({ config: _c, ...rest }) => rest);
-    expect((await putDefense('visible', seats)).status).toBe(422);
+    expect((await putDefense('visible', seats)).status).toBe(200);
+  });
+
+  it('rejects a targeting rule the engine does not have', async () => {
+    /**
+     * **The failure this prevents landed on the wrong player.** `battle/snapshot.ts`
+     * refuses to parse a defender carrying an unknown rule — so a squad saved with
+     * one was a squad that raised `MalformedSnapshotError` against *whoever attacked
+     * it*, about a value its owner supplied. Both boundaries now use one predicate.
+     */
+    const seats = defenseSeats(ROSTER.slice(0, 6));
+    seats[0]!.config = { targeting: ['lowest-current-hp', 'whatever'], ranking: [5, 4, 3, 2, 1, 0], allyRule: null };
+
+    const res = await putDefense('visible', seats);
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { message: string } }).error.message).toMatch(/known rules/i);
+  });
+
+  it('rejects an allyRule the engine does not have', async () => {
+    const seats = defenseSeats(ROSTER.slice(0, 6));
+    seats[0]!.config = {
+      targeting: ['lowest-current-hp', 'nearest'],
+      ranking: [5, 4, 3, 2, 1, 0],
+      allyRule: 'heal-the-strongest',
+    };
+
+    const res = await putDefense('visible', seats);
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { message: string } }).error.message).toMatch(/known rule/i);
   });
 });
 

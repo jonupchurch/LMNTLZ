@@ -22,7 +22,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SQUAD_SIZE, validateFormation, type FormationFault, type Seat, type SquadRow } from '@lmntlz/sim/rules';
-import type { RosterResponse, Zone } from '../types.js';
+import type { ConfiguredSeat, RosterResponse, SeatConfigWire, Zone } from '../types.js';
 
 export const DEFENSE_TOTAL = 12;
 export const ATTACK_SQUADS = 3;
@@ -37,10 +37,20 @@ export interface AllocationView {
   readonly defending: ReadonlySet<string>;
   /** How many of the 27 remain for offense once defense is committed. */
   readonly poolForOffense: number;
+  /**
+   * The served behaviour for each seated champion, by hero id.
+   *
+   * **A champion seated in this session is deliberately absent** rather than given
+   * a locally invented config. The save omits her `config`, the server resolves
+   * her Role default — the one place that table exists — and the refetch brings it
+   * back. Anything else here would be the client guessing at the engine.
+   */
+  readonly behaviour: ReadonlyMap<string, SeatConfigWire>;
   place(hero: string, row: SquadRow, index: number): void;
   remove(hero: string): void;
   clear(): void;
   reset(to: readonly Seat[]): void;
+  configure(hero: string, next: SeatConfigWire): void;
 }
 
 export function useAllocation(roster: RosterResponse | null, editing: Zone | number): AllocationView {
@@ -51,7 +61,24 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
       : roster.assignments.defense[editing].seats;
   }, [roster, editing]);
 
+  /**
+   * The served config for each champion already seated in this zone.
+   *
+   * Offense has none by design — the player commands offense, so there is nothing
+   * to configure — which is why this is keyed off the same `editing` discriminant
+   * rather than fetched separately.
+   */
+  const initialBehaviour = useMemo<ReadonlyMap<string, SeatConfigWire>>(() => {
+    if (!roster || typeof editing === 'number') return new Map();
+    return new Map(
+      (roster.assignments.defense[editing].seats as readonly ConfiguredSeat[])
+        .filter((seat) => seat.config)
+        .map((seat) => [seat.heroId, seat.config]),
+    );
+  }, [roster, editing]);
+
   const [seats, setSeats] = useState<readonly Seat[]>(initial);
+  const [behaviour, setBehaviour] = useState<ReadonlyMap<string, SeatConfigWire>>(initialBehaviour);
 
   /**
    * **`useState(initial)` reads its argument once, on the first render only.**
@@ -71,12 +98,33 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
    * Content-keyed, a re-created-but-equal roster is a no-op, and edits in
    * progress survive a refetch that returned the same stored squad.
    */
-  const signature = `${String(editing)}|${initial.map((s) => `${s.row}${s.index}${s.heroId}`).join(',')}`;
+  /**
+   * **The served config is part of the signature, not only the seats.** The rule
+   * this module opens with is that the response to `PUT` is the truth and replaces
+   * the local view rather than merging with it — and a save that changed only a
+   * ranking leaves the seats identical, so a seats-only signature would keep
+   * showing the submitted value instead of the stored one. They agree in the
+   * ordinary case; the case where they do not is the one worth being right about.
+   */
+  const signature = [
+    String(editing),
+    initial.map((s) => `${s.row}${s.index}${s.heroId}`).join(','),
+    [...initialBehaviour]
+      .map(([id, c]) => `${id}:${c.targeting.join('/')}:${c.ranking.join('.')}:${c.allyRule ?? '-'}`)
+      .join(','),
+  ].join('|');
   const seeded = useRef<string | null>(null);
   useEffect(() => {
     if (seeded.current === signature) return;
     seeded.current = signature;
     setSeats(initial);
+    /**
+     * **Re-seeded with the seats, on the same signature.** A refetch after a save
+     * is exactly when the server's newly resolved defaults arrive, and a behaviour
+     * map that kept its old contents would leave a champion the player just seated
+     * looking unconfigured forever.
+     */
+    setBehaviour(initialBehaviour);
     // `initial` is intentionally NOT a dependency: it is a fresh array whenever
     // the caller rebuilds the roster, and depending on it is the loop above.
     // (`react-hooks/exhaustive-deps` is not installed here, so there is no rule
@@ -122,6 +170,10 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
   const clear = useCallback(() => setSeats([]), []);
   const reset = useCallback((to: readonly Seat[]) => setSeats(to), []);
 
+  const configure = useCallback((heroId: string, next: SeatConfigWire) => {
+    setBehaviour((current) => new Map(current).set(heroId, next));
+  }, []);
+
   const fault = useMemo(() => validateFormation(seats), [seats]);
 
   const defending = useMemo(() => {
@@ -145,9 +197,11 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
     isComplete: seats.length === SQUAD_SIZE && fault === null,
     defending,
     poolForOffense: (roster?.heroes.length ?? 0) - defending.size,
+    behaviour,
     place,
     remove,
     clear,
     reset,
+    configure,
   };
 }

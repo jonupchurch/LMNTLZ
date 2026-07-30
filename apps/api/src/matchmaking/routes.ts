@@ -21,9 +21,11 @@
  * per candidate is redundant on an ordinary match. It **is** named on a widened one,
  * because there the shared-band assumption is exactly what stopped being true.
  *
- * Since widening arrives with bots in Phase 7, no candidate carries a league today
- * and `widened` is always `false`. The field is present regardless: an optional
- * field is a field clients forget to read.
+ * Widening shipped in Phase 7, so `widened` is now a real answer — `true` when a
+ * league under `MIN_POOL` had to reach a band out. **A candidate still carries no
+ * league of its own**, and that is the remaining half of FR-006: `widened` says the
+ * shared-band assumption broke, and per-candidate leagues are what would say *how*.
+ * Named here so the omission is a known one rather than an oversight.
  */
 
 import { Hono } from 'hono';
