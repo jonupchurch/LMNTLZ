@@ -28,6 +28,7 @@
  * new convention; it is the one already in production.**
  */
 
+import type { BotBand } from '../db/schema/accounts.js';
 import { ambushConfig, type AmbushConfig } from '../squads/ambush.js';
 import { LEAGUE_BANDS, COMPLETE_RUNE_SCORE, FULL_KIT_SCORE, STARTER_GRANT_SCORE } from './league.js';
 import { SCORE_PER_STAT_POINT } from './gearScore.js';
@@ -79,13 +80,29 @@ export const WIDENED_GEAR_BOUND = 2.67;
 export const INACTIVITY_DAYS = 30;
 
 /**
+ * Every bot band that receives *generated* padding — which is every band except
+ * Diamond.
+ *
+ * **Typed as an exclusion rather than as its own list**, so it cannot drift from
+ * `BOT_BANDS`: adding a seventh band to the schema makes this a compile error until
+ * somebody decides whether it pads.
+ */
+export type PaddedBand = Exclude<BotBand, 'diamond'>;
+
+/**
  * Bot allocation across the bands, as shares of the whole pool.
  *
  * Diamond is absent on purpose: `spec.md` US4 requires its bots be **hand-seeded
  * only** — *"bots that were written, never bots that were needed"* — so it takes no
  * share of a distribution and gets no automatic padding.
+ *
+ * **`Record<PaddedBand, …>` rather than `Record<string, …>`, and the type is the
+ * guard.** As `Record<string, number>` this object would accept `diamond: 0.1` — the
+ * one entry the design forbids — and would accept a typo'd band name that then
+ * silently allocated nothing. Now Diamond is a compile error and a missing band is
+ * too. Shares are checked to sum to 1 in `bots.test.ts`; a type cannot do that half.
  */
-export const BOT_DISTRIBUTION: Readonly<Record<string, number>> = {
+export const BOT_DISTRIBUTION: Readonly<Record<PaddedBand, number>> = {
   starter: 0.3,
   bronze: 0.2,
   silver: 0.2,

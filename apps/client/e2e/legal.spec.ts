@@ -18,7 +18,7 @@
  * hand. No API is involved, so these run with no database and no credentials.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { mockApi } from './fixtures.js';
 
 const PAGES = [
@@ -173,7 +173,7 @@ test.describe('they are reachable from the game, not just by typing a URL', () =
  * is where to look if the sentence is ever challenged.
  */
 test.describe('the storage promise on the privacy page', () => {
-  const keys = (page: import('@playwright/test').Page) =>
+  const keys = (page: Page) =>
     page.evaluate(() => ({
       cookie: document.cookie,
       local: Object.keys(localStorage),
