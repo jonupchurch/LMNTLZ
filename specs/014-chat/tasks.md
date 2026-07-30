@@ -75,7 +75,7 @@ scale with total players rather than with chat use.
 
 ## Phase 1: Setup
 
-- [X] T001 Create `apps/api/src/chat/` and `apps/client/src/features/chat/`, and register `/v1/chat/:scope/messages`, `/v1/chat/token` and `/v1/chat/:scope/history` in `apps/api/src/index.ts`
+- [ ] T001 **PARTIAL** — `apps/api/src/chat/` exists; `apps/client/src/features/chat/` does not, and no chat route is registered because none exists yet (T023–T025 own them). **Left open deliberately rather than counted**: the directory is the easy third and registering a route that returns nothing is worse than not registering it. Create `apps/api/src/chat/` and `apps/client/src/features/chat/`, and register `/v1/chat/:scope/messages`, `/v1/chat/token` and `/v1/chat/:scope/history` in `apps/api/src/index.ts`
 - [X] T002 Define the chat schema in **its own file** `apps/api/src/db/schema/chat.ts` — `chat_messages` (scope, author_id, body, embed, created_at), `chat_embeds`, `ad_credits` (guild_id, date, granted, used). **Separate from the outset** (FR-009): it costs nothing now and is what makes a later split mechanical rather than a rewrite
 - [X] T003 [P] Add a `chat` test project to `apps/api/vitest.config.ts`
 - [X] T004 Generate and apply the chat migration from `apps/api/drizzle/`
