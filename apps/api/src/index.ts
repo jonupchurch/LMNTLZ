@@ -26,6 +26,7 @@ import { matchmakingRoutes } from './matchmaking/routes.js';
 import { progressionRoutes } from './progression/routes.js';
 import { paymentRoutes } from './payments/routes.js';
 import { profileRoutes } from './profiles/routes.js';
+import { guildRoutes } from './guilds/routes.js';
 import { installRuneSource, installMailer } from './progression/install.js';
 
 export { apiError } from './errors.js';
@@ -93,6 +94,7 @@ v1.route('/', matchmakingRoutes);
 v1.route('/', progressionRoutes);
 v1.route('/', paymentRoutes);
 v1.route('/', profileRoutes);
+v1.route('/', guildRoutes);
 
 app.route('/v1', v1);
 

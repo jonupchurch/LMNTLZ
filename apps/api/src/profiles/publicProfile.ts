@@ -32,6 +32,7 @@ import { db } from '../db/client.js';
 import { accounts } from '../db/schema/accounts.js';
 import { playerRatings } from '../db/schema/ratings.js';
 import { squads } from '../db/schema/squads.js';
+import { guildMembers, guilds } from '../db/schema/guilds.js';
 import { leagueOf } from '../matchmaking/league.js';
 import { avatarFrom, type AvatarChoice } from './identity.js';
 import { recentVisibleBattles, type ProfileBattle } from './visibleRecord.js';
@@ -63,9 +64,14 @@ export interface PublicProfile {
    */
   readonly holdStreaks: { readonly visible: number; readonly hidden: number };
   /**
-   * **Null until feature 013 exists.** Guild membership is 013's table; the field
-   * is in the shape now because the contract declares it and because a client
-   * built against a profile without it would need changing twice.
+   * **Filled by feature 013** (013 T063). `null` means *not in a guild*, which is
+   * an ordinary state — it no longer means *not built*.
+   *
+   * Guild membership is **public**, which is why it is here at all: Constitution
+   * XVII is *storing is not exposing*, and this is the half that is deliberately
+   * exposed. What stays private is the **application** history — whether somebody
+   * applied to four guilds and was turned down by three is between them and those
+   * guilds. `boundary.test.ts` asserts that separation from the other side.
    */
   readonly guild: { readonly id: string; readonly name: string; readonly role: string } | null;
   readonly recentBattles: readonly ProfileBattle[];
@@ -74,6 +80,35 @@ export interface PublicProfile {
 export class PlayerNotFoundError extends Error {}
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * The public half of guild membership (013 T063).
+ *
+ * **Three fields and no fourth.** Not the roster — that is `GET /v1/guilds/:id`,
+ * which a viewer can follow if they want it — and never the guild's applications.
+ * A profile that carried the roster would make every player's profile a way to
+ * enumerate every guild's membership without asking for it.
+ *
+ * Kept in this module rather than imported from `guilds/` as a view helper because
+ * **this file owns what a profile discloses**; a guild-shaped object arriving from
+ * elsewhere is exactly how a field nobody audited gets published.
+ */
+async function guildBadge(
+  accountId: string,
+): Promise<{ readonly id: string; readonly name: string; readonly role: string } | null> {
+  const [row] = await db()
+    .select({
+      id: guilds.id,
+      name: guilds.name,
+      role: guildMembers.role,
+    })
+    .from(guildMembers)
+    .innerJoin(guilds, eq(guilds.id, guildMembers.guildId))
+    .where(eq(guildMembers.accountId, accountId))
+    .limit(1);
+
+  return row ?? null;
+}
 
 /**
  * Build one player's public profile.
@@ -146,7 +181,7 @@ export async function publicProfile(targetId: string): Promise<PublicProfile> {
     rating: standing?.rating ?? null,
     gearScore,
     holdStreaks: { visible: streakFor('visible'), hidden: streakFor('hidden') },
-    guild: null,
+    guild: await guildBadge(targetId),
     recentBattles,
   };
   /**
