@@ -119,6 +119,16 @@ export default defineConfig({
           setupFiles: ['./tests/setup.ts'],
         },
       },
+      {
+        plugins: [react()],
+        test: {
+          name: 'profile',
+          include: ['tests/profile/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
     ],
     // Repeated inside the project above on purpose: an `exclude` here does NOT
     // reach nested projects, and one `pnpm build` otherwise doubles the suite

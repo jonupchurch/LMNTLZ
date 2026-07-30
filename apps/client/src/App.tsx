@@ -7,6 +7,7 @@ import { BattleScreen } from './features/battle/BattleScreen.js';
 import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import type { StartedBattle } from './features/battle/types.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
+import { ProfileScreen } from './features/profile/ProfileScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
 import { analyticsEnabled, scrubEvent } from './lib/analytics.js';
 import {
@@ -56,7 +57,14 @@ type Phase =
 type Screen =
   | { readonly kind: 'squads' }
   | { readonly kind: 'attack' }
-  | { readonly kind: 'battle'; readonly started: StartedBattle };
+  | { readonly kind: 'battle'; readonly started: StartedBattle }
+  /**
+   * **One screen for both your profile and somebody else's**, carrying the id
+   * it is showing. Two components would be two disclosure surfaces to keep in
+   * step, and the difference between them is a single flag: whose controls to
+   * render. The *data* difference is the server's job, not this union's.
+   */
+  | { readonly kind: 'profile'; readonly targetId: string };
 
 export function App(): JSX.Element {
   const [phase, setPhase] = useState<Phase>(() =>
@@ -149,10 +157,21 @@ export function App(): JSX.Element {
                 />
               ) : (
                 <>
-                  <ScreenNav screen={screen.kind} onNavigate={setScreen} />
+                  <ScreenNav
+                    screen={screen.kind}
+                    accountId={phase.account.id}
+                    onNavigate={setScreen}
+                  />
                   {screen.kind === 'attack' ? (
                     <AttackScreen
                       onBattleStarted={(started) => setScreen({ kind: 'battle', started })}
+                      onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
+                      onUnauthenticated={onUnauthenticated}
+                    />
+                  ) : screen.kind === 'profile' ? (
+                    <ProfileScreen
+                      targetId={screen.targetId}
+                      isSelf={screen.targetId === phase.account.id}
                       onUnauthenticated={onUnauthenticated}
                     />
                   ) : (
@@ -194,18 +213,27 @@ export function App(): JSX.Element {
  */
 function ScreenNav({
   screen,
+  accountId,
   onNavigate,
 }: {
-  screen: 'squads' | 'attack';
-  onNavigate: (next: { kind: 'squads' } | { kind: 'attack' }) => void;
+  screen: 'squads' | 'attack' | 'profile';
+  /** Needed because "My profile" is a profile *of somebody*, and that is you. */
+  accountId: string;
+  onNavigate: (
+    next: { kind: 'squads' } | { kind: 'attack' } | { kind: 'profile'; targetId: string },
+  ) => void;
 }): JSX.Element {
-  const tab = (kind: 'squads' | 'attack', label: string) => (
+  const tab = (
+    kind: 'squads' | 'attack' | 'profile',
+    label: string,
+    next: Parameters<typeof onNavigate>[0],
+  ) => (
     <button
       key={kind}
       type="button"
       role="tab"
       aria-selected={screen === kind}
-      onClick={() => onNavigate({ kind })}
+      onClick={() => onNavigate(next)}
       className={[
         'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
         screen === kind ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
@@ -218,8 +246,9 @@ function ScreenNav({
   return (
     <nav className="mx-auto max-w-[1600px] px-8 pt-8">
       <div className="flex items-center gap-2" role="tablist" aria-label="Screen">
-        {tab('squads', 'Squads')}
-        {tab('attack', 'Attack')}
+        {tab('squads', 'Squads', { kind: 'squads' })}
+        {tab('attack', 'Attack', { kind: 'attack' })}
+        {tab('profile', 'Profile', { kind: 'profile', targetId: accountId })}
       </div>
     </nav>
   );

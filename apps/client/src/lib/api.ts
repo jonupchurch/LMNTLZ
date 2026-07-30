@@ -106,3 +106,39 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 export async function apiUnauthenticated<T>(path: string, init: RequestInit = {}): Promise<T> {
   return send<T>(path, init, false);
 }
+
+/**
+ * The same request, for a route that answers with text rather than JSON.
+ *
+ * **Added for feature 012's CSV export, and deliberately not left to the caller.**
+ * The obvious alternative was a bare `fetch` in the export component, which would
+ * have needed the base URL and the session token exported from this module — and
+ * would have **silently opted that one route out of renewal**, so a player whose
+ * session had just expired would see an export fail where every other action
+ * quietly recovered.
+ *
+ * Sharing `send`'s renew-once rule is the whole point; only the body parsing
+ * differs.
+ */
+export async function apiText(path: string, init: RequestInit = {}): Promise<string> {
+  return sendText(path, init, true);
+}
+
+async function sendText(path: string, init: RequestInit, mayRenew: boolean): Promise<string> {
+  const headers = new Headers(init.headers);
+  if (sessionToken) headers.set('authorization', `Bearer ${sessionToken}`);
+
+  const res = await fetch(`${BASE}/v1${path}`, { ...init, headers });
+
+  if (res.status === 401 && mayRenew && renewSession && (await renewSession())) {
+    return sendText(path, init, false);
+  }
+
+  if (!res.ok) {
+    // A failing text route still answers JSON errors — `errors.ts` is global.
+    const body = (await res.json().catch(() => null)) as unknown;
+    throw new ApiError(res.status, body as ApiErrorBody | null);
+  }
+
+  return res.text();
+}

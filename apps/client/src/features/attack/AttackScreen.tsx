@@ -31,10 +31,16 @@ import type { RosterResponse } from '../squads/types.js';
 
 export interface AttackScreenProps {
   readonly onBattleStarted: (started: StartedBattle) => void;
+  /** Optional so existing tests that mount this screen alone still compile. */
+  readonly onViewProfile?: (targetId: string) => void;
   readonly onUnauthenticated?: () => void;
 }
 
-export function AttackScreen({ onBattleStarted, onUnauthenticated }: AttackScreenProps) {
+export function AttackScreen({
+  onBattleStarted,
+  onViewProfile,
+  onUnauthenticated,
+}: AttackScreenProps) {
   const [list, setList] = useState<CandidateList | null>(null);
   const [standing, setStanding] = useState<Standing | null>(null);
   const [squads, setSquads] = useState<RosterResponse['assignments']['offense']>([]);
@@ -306,6 +312,22 @@ export function AttackScreen({ onBattleStarted, onUnauthenticated }: AttackScree
                 {/* Stated before the choice, never computed here. */}
                 {list.ambushChance}% chance this becomes a Hidden battle instead, which pays more.
               </p>
+
+              {/**
+               * **The profile link, 012 T040.** Scouting shows the Visible
+               * squad; the profile shows the record. They are two routes with
+               * two disclosure rules and deliberately no shared serialiser, so
+               * this is a navigation, not an expansion of the panel.
+               */}
+              {onViewProfile && target ? (
+                <button
+                  type="button"
+                  onClick={() => onViewProfile(target)}
+                  className="self-start font-mono text-[11px] text-faint underline underline-offset-4"
+                >
+                  View {scout.username}&rsquo;s record
+                </button>
+              ) : null}
             </div>
           </ScoutPanel>
         ) : (
