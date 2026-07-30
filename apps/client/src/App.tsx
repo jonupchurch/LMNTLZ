@@ -155,11 +155,18 @@ export function App(): JSX.Element {
                     /**
                      * **Left on the result rather than navigated away from.** The
                      * player just finished a fight and the outcome is what they came
-                     * for; going back to a list would animate over it. The next load
-                     * lands them on the squad screen on its own, because
-                     * `GET /battles/open` answers `204` once a battle has settled.
+                     * for; going back to a list would animate over it.
+                     *
+                     * This used to add that `GET /battles/open` answers `204` once a
+                     * battle settles, so *"the next load lands them on the squad
+                     * screen on its own"* — which is true, and was doing the work of
+                     * an exit. The tab bar is hidden while `kind === 'battle'`, so
+                     * **the result screen was terminal**: the only way on was to
+                     * reload the browser. `onLeave` below is the way out; staying
+                     * put is still the default.
                      */
                   }}
+                  onLeave={() => setScreen({ kind: 'attack' })}
                   onUnauthenticated={onUnauthenticated}
                 />
               ) : (

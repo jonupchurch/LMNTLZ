@@ -48,6 +48,21 @@ export interface BattleScreenProps {
   readonly started: StartedBattle;
   /** Called when the battle concludes, so the shell can move on. */
   readonly onConcluded?: (conclusion: Conclusion) => void;
+  /**
+   * **The way out, and without it there is not one.**
+   *
+   * While a battle is open the shell hides the tab bar deliberately — the
+   * one-at-a-time rule means every other screen would refuse the player anyway.
+   * But it never gave the tab bar back when the battle *ended*, so the result
+   * screen was terminal: no button, no nav, and the only exit was reloading the
+   * browser. `onConcluded` reasoned that "the next load lands them on the squad
+   * screen", which is true and is not a way out of the current one.
+   *
+   * Called by an explicit control on the result, never automatically — going
+   * straight back to a list would animate over the outcome the player just
+   * fought for.
+   */
+  readonly onLeave?: () => void;
   readonly onUnauthenticated?: () => void;
 }
 
@@ -59,7 +74,12 @@ const heroName = (heroId: string): string => {
   }
 };
 
-export function BattleScreen({ started, onConcluded, onUnauthenticated }: BattleScreenProps) {
+export function BattleScreen({
+  started,
+  onConcluded,
+  onLeave,
+  onUnauthenticated,
+}: BattleScreenProps) {
   const [state, setState] = useState<BattleState>(started.packet.state);
   const [sequence, setSequence] = useState(started.sequence);
   const [events, setEvents] = useState(started.packet.events);
@@ -188,7 +208,7 @@ export function BattleScreen({ started, onConcluded, onUnauthenticated }: Battle
           <Board state={state} activeInstanceId={up} targets={targets} onTarget={send} busy={busy} />
 
           {conclusion ? (
-            <Outcome conclusion={conclusion} />
+            <Outcome conclusion={conclusion} onLeave={onLeave} />
           ) : busy ? (
             /**
              * **The move panel is replaced, not disabled.** A greyed-out panel
@@ -373,7 +393,13 @@ function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
   );
 }
 
-function Outcome({ conclusion }: { readonly conclusion: Conclusion }) {
+function Outcome({
+  conclusion,
+  onLeave,
+}: {
+  readonly conclusion: Conclusion;
+  readonly onLeave?: (() => void) | undefined;
+}) {
   const won = conclusion.winner === 'attacker';
 
   return (
@@ -385,6 +411,16 @@ function Outcome({ conclusion }: { readonly conclusion: Conclusion }) {
         {won ? 'Victory' : 'Defeat'}
       </h3>
       <p className="mt-1 font-mono text-xs text-faint">{conclusion.reason}</p>
+
+      {onLeave ? (
+        <button
+          type="button"
+          onClick={onLeave}
+          className="mt-4 rounded border border-gold bg-raised px-4 py-2 font-display text-xs tracking-widest uppercase text-parchment hover:bg-surface"
+        >
+          Choose another target
+        </button>
+      ) : null}
     </section>
   );
 }
