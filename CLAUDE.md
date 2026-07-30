@@ -201,16 +201,18 @@ final   = max(packet × 0.25, mitigated × typeMultiplier)
 
 ## Deliberately undecided
 
-**Both documents this section used to name as missing are written** — `06` (1,660
-lines) and `07` (533) — and `07`'s feature shipped as **004**. What is left is
-narrower than "undecided":
+**Every mechanism is now decided.** The two documents this section once named as
+missing are written — `06` (1,660 lines) and `07` (533) — `07`'s feature shipped as
+**004**, and **the rating ladder settled on 2026-07-27**: one visible,
+skill-convergent number doing exactly two jobs, standing and the order league-mates
+are offered in, with K bands 40 / 20 / 10, a 2× rating bonus on a Hidden win, and
+no seasonal reset. `06-progression.md` closes all five of its open questions and
+says what is left plainly — *"numbers, not mechanisms."* `08-guilds.md` marks
+itself **unblocked** on the same date and records that it *gates nothing*.
 
-- **The rating ladder, inside `06-progression.md`.** The currency, power model,
-  income rates and daily curve are settled; the ladder is not, and it is what
-  **009's rating axis and 010 both wait on** — `009-matchmaking.md` says so
-  explicitly. Guild rewards and equipment costs wait on the same section. It still
-  has to answer the thing the design made hard on purpose: all 27 heroes are
-  unlocked from the start, so progression cannot be roster power.
+**So nothing below blocks a spec or an implementation.** What remains is authoring
+and tuning:
+
 - **The hero-numbers pass** — every formula is specified; the values are still a
   Role-shaped template. Blocks no spec and blocks all balance, and under the
   no-nerf rule this is the last moment numbers move freely. **Reactive powers are
@@ -218,6 +220,11 @@ narrower than "undecided":
   here.
 - **~130 bot squads** — the single largest authoring job in the project, inside
   009. Each bot's Hidden squad is authored one band up its own ramp.
+- **Three sets of numbers whose shape is settled and whose values are not**: the
+  convergence bands and the 33 utility magnitudes (`06`), and the guild payout
+  sizes (`08`). The last carries a constraint a tuner must check explicitly —
+  **three mid-tier placements must beat one top placement plus two floors**, or
+  graded brackets reward stacking exactly as a hard cut would.
 - **`10-equipment.md` is deliberately not started** — a planned fast-follower, not
   a gap. See `resources/mechanics/README.md` for the index, the dependency read,
   and what each remaining document is waiting on.

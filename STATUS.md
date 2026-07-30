@@ -1,10 +1,20 @@
 ## Current phase
 
-**Features 001–008 are built. 374 of 772 tasks, and both halves are live on
-their own domains.** **997 unit tests** (content 70 · sim 322 · api 474 · client
-131, across 90 files) + **36 Playwright end-to-end**; lint, typecheck and build
-all clean. Counted 2026-07-29 by running each suite rather than by trusting
-Turbo, which had cached four of the six tasks and printed no numbers for them.
+**Features 001–009 are built and THE GAME IS PLAYABLE**, live on `af00bde`. Sign
+in at `www.lmntlz.com`, build two defense squads and three attack squads, scout an
+opponent and fight them turn by turn.
+
+**1,288 unit tests** (content 70 · sim 322 · **api 712** · client 184) + **50
+Playwright end-to-end**; lint, typecheck and build clean. Counted 2026-07-30 by
+running each suite rather than by trusting Turbo, which had cached four of the six
+tasks and printed no numbers for them.
+
+> **Playability and gates are two different claims and they diverge silently.**
+> 001–008 were reported complete — every box checked, every gate green — while the
+> squad screen persisted nothing, because 006's task list had no task to call the
+> save. **006 grew a Phase 9 (T055–T071)** for the assembly nobody had written
+> tasks for: the save, the offense UI, the attack flow. The client now calls **14
+> of the API's 23 routes**, up from 8. Report the two claims on separate lines.
 
 | | |
 |---|---|
@@ -38,16 +48,20 @@ variables.
 | **003** sim-resolver | 40/40 | SplitMix64, seed custody, replay, re-derivation |
 | **004** defense-ai | 45/45 | firing profile, power choice, the five-step tiebreak, role defaults, reach window |
 | **005** auth | **49/49** | `apps/api` — Hono, Drizzle, Neon, Google, rotation, linking, usernames |
-| **006** roster & squads | **54/54** | `apps/client` — Vite/React/Tailwind · allocation, eviction, streaks, scout, defense config |
+| **006** roster & squads | **71/71** | `apps/client` — Vite/React/Tailwind · allocation, eviction, streaks, scout, defense config · **+ Phase 9, the wiring** |
 | **007** battle | **52/52** | the log is the state · settlement, conclusion, expiry, hold streaks, sign-in wired at last |
 | **008** replays | **37/39** | permanent `battle_records` + a 7-day private blob · retention holds, cleanup, watch and list |
+| **009** matchmaking | **62/63** | leagues, the rating axis, candidates, scout, bots · fills the four columns 008 wrote null into |
 
-**Features 001–008 are complete, bar two tasks that cannot be done yet.** 008's
+**Features 001–009 are complete, bar three tasks that cannot be done yet.** 008's
 **T029** (cron registration) waits on 016 and its **T035** moderator exception
-waits on 015's operator identity; neither is dead code, and 008's own spec names
-012 as the consumer of its list endpoint. **Feature 009, matchmaking, is next** —
-it fills the four league and rating columns 008 currently writes null into, and
-gives the battle screen an attack button instead of resume-only.
+waits on 015's operator identity; 009's **T047** (~46 padding bot squads) is
+deferred by decision until after the hero-numbers pass, since authoring bots
+against placeholder stats means authoring them twice. None is dead code.
+
+**Feature 010, progression, is next** — shards, the append-only ledger, runes and
+the rating ladder. Its prerequisites (005, 007, 008, 009) are all closed, and
+**the ladder it needs was settled on 2026-07-27**; see `06-progression.md`.
 
 > **006 ended by finding a gap in its own task list.** T018–T020 and T047–T048
 > each say "build this component"; nothing said "put them on a page". Every squad
@@ -164,29 +178,36 @@ expensive each would have been to find later:
 
 ## Next — code, in the settled build order
 
-`packages/content` → `packages/sim` (rules, then resolver) → `apps/api` →
-`apps/client`. **Start at `specs/001-content-package/tasks.md` T001** — it carries
-the monorepo bootstrap, which runs once for the whole project.
+**Start at `specs/010-progression/tasks.md` T001.** The build order
+`packages/content` → `packages/sim` → `apps/api` → `apps/client` is complete
+through 009; every remaining feature inherits all four and none opens a new app.
 
-**Three features open a new app and the rest inherit it**: 001 stands up the pnpm +
-Turborepo workspace, 005 stands up `apps/api`, 006 stands up `apps/client`. Nothing
-else has a Setup phase worth more than a few tasks.
+**The infrastructure gate at 004 → 005 is closed.** Vercel, Neon and the Google
+OAuth client all exist and are wired; Neon moved to a **paid plan on 2026-07-30**
+after the free data-transfer allowance ran out mid-suite. Vendors still ahead, and
+each is Jon's to create because they are billable in his name: **Paddle** and
+**Resend** at 011, **Ably** at 014. **Announce each at the feature boundary, not
+when a task fails.**
 
-### ⛔ The infrastructure gate sits at 004 → 005
+### 🎨 Known gap, deliberately deferred: the visual pass
 
-**Features 001–004 — 182 tasks, roughly a quarter of the project — need no
-database, no hosting, no vendor account and no bill.** Pure TypeScript and Vitest.
+**The look and feel is temporary and Jon has seen it.** What is done: the nine-force
+palette is transcribed exactly from `LMNTLZ Brand Book.dc.html` into
+`apps/client/src/styles/base.css`, and every component uses the tokens. What is not:
 
-**Feature 005 is the first task in the project that needs infrastructure**, and
-`specs/005-auth/tasks.md` opens with a STOP block listing it: a **Vercel project**,
-a **Neon project**, and a **Google OAuth client**. Jon creates all three himself —
-they are billable accounts in his name — and he asked to be told when the moment
-arrives. **Tell him at the boundary, not when T001 fails.**
+- **The three fonts are declared and never loaded.** No `@font-face`, no font files,
+  nothing in `index.html` — so Chakra Petch, Barlow and JetBrains Mono all fall
+  through to `system-ui`. `index.html` says *"Added with the first screen that needs
+  them"*; that screen arrived and the fonts did not.
+- **There is not a single `<img>` in the client.** The 27 hero SVGs and the status
+  icons in `resources/designsystem/` were never copied into `apps/client/public/`.
+- **No screen was composed from its generated design** — tokens borrowed, layout
+  invented.
 
-**Neon is the database for every environment**, tests included. Local PostgreSQL 15
-exists on the machine as a fallback if the DB suite ever gets slow; it is not part
-of the design. Vendors after that: **Vercel Blob** at 008, **Paddle** and **Resend**
-at 011, **Ably** at 014.
+**Deferred by decision on 2026-07-30**, so the pass happens once over a more
+complete set of screens rather than twice. Note the rule cuts the opposite way from
+the usual one here: the generated screens are **not** authority on rules, but they
+**are** the authority on look and feel.
 
 > ### ⚠️ Paddle verification is gated on a live website, not on a queue
 >
