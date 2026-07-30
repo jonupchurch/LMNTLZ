@@ -77,6 +77,21 @@ export const LEDGER_REASONS = [
    * the throttle, not an oversight.
    */
   'avatar',
+  /**
+   * Founding a guild (013), 650 — one full rune. **Non-refundable on disband**,
+   * so there is never a matching credit. *A guild costs 650 to hold*, not *you
+   * get your money back*.
+   */
+  'guild-founding',
+  /**
+   * Succession (013), and **the only reason that writes two rows for one event**:
+   * −650 from the inheriting officer, +650 to the displaced master, same instant.
+   *
+   * It is a *transfer*, not revenue — it prices a manual support ticket and makes
+   * the displaced master whole. SC-006 asserts the pair sums to zero, which is
+   * checkable precisely because both rows carry this reason.
+   */
+  'guild-succession',
 ] as const;
 
 export type LedgerReason = (typeof LEDGER_REASONS)[number];

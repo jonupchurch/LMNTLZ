@@ -46,6 +46,37 @@ export class Fixtures {
     return row!.id;
   }
 
+  /**
+   * **One authored bot, so the starter league is OPEN.**
+   *
+   * `starterLeagueOpen()` answers "does an authored pool exist?" by looking for a
+   * single `is_bot` row in the `starter` band, and **this database has none** —
+   * 009 T047 (~46 padding bots) is deferred to the hero-numbers pass. Until it
+   * lands, `starterStatus()` reports `no-authored-pool` for every account, so
+   * `guildDoorConfirm()` returns a `null` warning and **FR-015 cannot fire at
+   * all**.
+   *
+   * That is 009 answering honestly rather than a bug — *"a feature that has no
+   * pool should say so"* — but it means a test that did not seed this would assert
+   * the warning is absent and pass for entirely the wrong reason. Seeding one bot
+   * is what makes the starter tests test the starter league.
+   */
+  async starterBot(): Promise<string> {
+    const key = suffix('bot');
+    const [row] = await db()
+      .insert(accounts)
+      .values({
+        username: `GT ${key}`,
+        usernameKey: key,
+        isBot: true,
+        botBand: 'starter',
+      })
+      .returning({ id: accounts.id });
+
+    this.accountIds.push(row!.id);
+    return row!.id;
+  }
+
   /** A guild with a master already in it — the state every other test starts from. */
   async guild(tag: string, masterId?: string): Promise<{ id: string; masterId: string }> {
     const key = suffix(tag);
