@@ -18,10 +18,13 @@
  * ### The vendor is behind an interface, like the payment rail
  *
  * Constitution XIX, and the same reason: `tests/payments/grantPath.test.ts` scans
- * `src/` for vendor names outside `payments/provider/`. The mailer is injected,
+ * `src/` for vendor names outside `payments/vendor/`. The mailer is injected,
  * so every test here runs without an account and without sending mail.
  */
 
+import { desc, eq, isNotNull, and } from 'drizzle-orm';
+import { db } from '../db/client.js';
+import { identities } from '../db/schema/identities.js';
 import { entitlementFor } from './entitlements.js';
 import { skuById } from './catalog.js';
 import type { RailNotification } from './rail.js';
@@ -101,6 +104,29 @@ export function receiptBody(
  * Returns whether anything was sent, so a caller that wants to assert on it can,
  * without the return value being load-bearing for the payment.
  */
+/**
+ * The contact address for an account, or `null`.
+ *
+ * **`identities.email` is contact-only and allowed to be stale** — that file says
+ * so at length, because keying identity on a mutable attribute is how a player who
+ * changes their Google address becomes a stranger. Reading it *for contact* is the
+ * one thing it is for.
+ *
+ * `null` is an ordinary outcome, not a failure: Steam supplies no address, so a
+ * Steam-only account has nowhere to send a receipt and the purchase is still
+ * perfectly valid.
+ */
+export async function contactAddress(accountId: string): Promise<string | null> {
+  const [row] = await db()
+    .select({ email: identities.email })
+    .from(identities)
+    .where(and(eq(identities.accountId, accountId), isNotNull(identities.email)))
+    .orderBy(desc(identities.linkedAt))
+    .limit(1);
+
+  return row?.email ?? null;
+}
+
 export async function sendReceipt(
   notification: RailNotification,
   to: string,

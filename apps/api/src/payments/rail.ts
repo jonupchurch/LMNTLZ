@@ -5,7 +5,7 @@
  * The order matters and is the whole point. Written the other way round, the
  * provider's shape *becomes* the interface: its field names leak into the schema,
  * its event taxonomy becomes ours, and the second rail is not an implementation
- * but a rewrite. **No file outside `payments/provider/` names a vendor**, and
+ * but a rewrite. **No file outside `payments/vendor/` names a vendor**, and
  * `tests/payments/accountLevel.test.ts` greps for it rather than trusting this
  * sentence.
  *
@@ -65,7 +65,7 @@ export interface PaymentRail {
    * Which request header carries the signature.
    *
    * **The provider names its own header**, because the route must not. A route
-   * reading `paddle-signature` directly is a vendor name outside `provider/` —
+   * reading `paddle-signature` directly is a vendor name outside `vendor/` —
    * Constitution XIX — and `tests/payments/grantPath.test.ts` caught exactly that
    * in the first draft of `routes.ts`.
    */

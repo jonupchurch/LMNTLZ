@@ -21,6 +21,8 @@
 
 import { setRuneSource } from '../matchmaking/gearScore.js';
 import { runeSource } from './runes.js';
+import { setMailer } from '../payments/receipt.js';
+import { httpMailer } from '../payments/vendor/mailer.js';
 
 let installed = false;
 
@@ -32,4 +34,25 @@ export function installRuneSource(): void {
   if (installed) return;
   setRuneSource(runeSource);
   installed = true;
+}
+
+let mailerInstalled = false;
+
+/**
+ * Install the mail vendor, if this environment has credentials.
+ *
+ * **Written immediately after `httpMailer()` shipped with no caller** — the same
+ * omission this file was created to fix for 010, in the same session. The symptom
+ * is the quiet one every time: receipts simply never send, no error, and the only
+ * evidence is a customer who says they got nothing.
+ *
+ * `null` when there are no credentials is a legitimate state, not a failure. A
+ * developer without a key gets no email and everything else works; `sendReceipt`
+ * returns `false` and the payment is unaffected.
+ */
+export function installMailer(): void {
+  if (mailerInstalled) return;
+  const mailer = httpMailer();
+  if (mailer) setMailer(mailer);
+  mailerInstalled = true;
 }

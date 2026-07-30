@@ -25,7 +25,7 @@ import { replayRoutes } from './replays/routes.js';
 import { matchmakingRoutes } from './matchmaking/routes.js';
 import { progressionRoutes } from './progression/routes.js';
 import { paymentRoutes } from './payments/routes.js';
-import { installRuneSource } from './progression/install.js';
+import { installRuneSource, installMailer } from './progression/install.js';
 
 export { apiError } from './errors.js';
 export type { ApiError } from './errors.js';
@@ -36,6 +36,7 @@ export type { ApiError } from './errors.js';
  * matter how many runes it has placed, silently. See `progression/install.ts`.
  */
 installRuneSource();
+installMailer();
 
 const app = new Hono();
 

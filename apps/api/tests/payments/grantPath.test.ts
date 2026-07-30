@@ -106,7 +106,7 @@ describe('the entitlement belongs to the account, never a storefront', () => {
   });
 });
 
-describe('no vendor is named outside payments/provider', () => {
+describe('no vendor is named outside payments/vendor', () => {
   /**
    * **No word boundaries, deliberately.**
    *
@@ -121,11 +121,11 @@ describe('no vendor is named outside payments/provider', () => {
    */
   const VENDORS = /(paddle|stripe|braintree|lemonsqueezy|fastspring|resend)/i;
 
-  it('names no payment vendor anywhere in src outside the provider directory', async () => {
+  it('names no payment vendor anywhere in src outside the vendor directory', async () => {
     const files = await sources();
 
     const offenders = files
-      .filter((f) => !f.path.includes(join('payments', 'provider')))
+      .filter((f) => !f.path.includes(join('payments', 'vendor')))
       .filter((f) => VENDORS.test(f.code))
       .map((f) => `${f.name}: ${VENDORS.exec(f.code)?.[0]}`);
 

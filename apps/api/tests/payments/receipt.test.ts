@@ -12,7 +12,8 @@
  */
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { closeDb } from '../../src/db/client.js';
+import { closeDb, db } from '../../src/db/client.js';
+import { identities } from '../../src/db/schema/identities.js';
 import { setRail } from '../../src/payments/rail.js';
 import { applyNotification } from '../../src/payments/webhook.js';
 import {
@@ -23,7 +24,7 @@ import {
   setMailer,
   type Email,
 } from '../../src/payments/receipt.js';
-import { mailCredentials } from '../../src/payments/provider/mailer.js';
+import { mailCredentials } from '../../src/payments/vendor/mailer.js';
 import { cleanup, fakeRail, makeAccount, notification } from './fixtures.js';
 
 let accountId: string;
@@ -43,6 +44,18 @@ afterAll(async () => {
   await cleanup([accountId]);
   await closeDb();
 });
+
+/** An account with a contact address on it, since `contactAddress` reads identities. */
+async function accountWithEmail(tag: string): Promise<string> {
+  const id = await makeAccount(tag);
+  await db().insert(identities).values({
+    accountId: id,
+    provider: 'google',
+    providerSubject: `sub-${id}`,
+    email: `${id}@example.com`,
+  });
+  return id;
+}
 
 function capture(): { sent: Email[]; install: () => void } {
   const sent: Email[] = [];
@@ -181,6 +194,65 @@ describe('the happy path', () => {
     await sendReceipt(second, 'player@example.com');
 
     expect(sent[0]!.text).toContain('35 days');
+  });
+});
+
+describe('the webhook actually sends it', () => {
+  it('sends a receipt when a purchase is granted', async () => {
+    // THE test this file was missing. sendReceipt() and httpMailer() both shipped
+    // with no caller — the same omission as 010's rune source, in the same
+    // session. The symptom is silence: receipts never send and nothing errors.
+    undos.push(setRail(fakeRail().rail));
+    const { install, sent } = capture();
+    install();
+
+    const withEmail = await accountWithEmail('recv');
+    try {
+      await applyNotification(notification({ accountId: withEmail, sku: 'pass-28d' }));
+
+      expect(sent, 'the webhook granted a pass and sent no receipt').toHaveLength(1);
+      expect(sent[0]!.to).toBe(`${withEmail}@example.com`);
+    } finally {
+      await cleanup([withEmail]);
+    }
+  });
+
+  it('grants normally for an account with no address', async () => {
+    // Steam supplies no email. That purchase is still perfectly valid.
+    undos.push(setRail(fakeRail().rail));
+    const { install, sent } = capture();
+    install();
+
+    const outcome = await applyNotification(notification({ accountId, sku: 'pass-7d' }));
+
+    expect(outcome.status === 200 && outcome.handled).toBe('granted');
+    expect(sent).toHaveLength(0);
+  });
+
+  it('sends no receipt for a refund', async () => {
+    undos.push(setRail(fakeRail().rail));
+    const { install, sent } = capture();
+    install();
+
+    const withEmail = await accountWithEmail('recv-ref');
+    try {
+      const purchase = notification({ accountId: withEmail, sku: 'pass-7d' });
+      await applyNotification(purchase);
+      sent.length = 0;
+
+      await applyNotification(
+        notification({
+          accountId: withEmail,
+          kind: 'refund',
+          sku: 'pass-7d',
+          reverses: purchase.providerEventId,
+        }),
+      );
+
+      expect(sent, 'a refund sent a purchase confirmation').toHaveLength(0);
+    } finally {
+      await cleanup([withEmail]);
+    }
   });
 });
 

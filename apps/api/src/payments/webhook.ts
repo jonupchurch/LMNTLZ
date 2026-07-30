@@ -45,6 +45,7 @@ import { db } from '../db/client.js';
 import { paymentEvents } from '../db/schema/payments.js';
 import { getRail, type RailNotification } from './rail.js';
 import { grantFromNotification, revokeForNotification } from './entitlements.js';
+import { contactAddress, sendReceipt } from './receipt.js';
 
 export type WebhookOutcome =
   | { readonly status: 200; readonly handled: 'granted' | 'revoked' | 'ignored' | 'replay' }
@@ -109,6 +110,22 @@ export async function applyNotification(
 
   if (notification.kind === 'purchase' || notification.kind === 'comp') {
     await grantFromNotification(notification);
+
+    /**
+     * **The receipt, after the grant and never in front of it.**
+     *
+     * `sendReceipt` cannot throw and returns `false` when there is no mailer, no
+     * address, or the send failed — all three are ordinary states. A Steam-only
+     * account has no address at all, and that purchase is perfectly valid.
+     *
+     * It must not be able to affect the return value: answering the provider
+     * non-2xx because a mail server was slow makes them retry a **working
+     * payment**, and the retry would find the event already claimed and do nothing
+     * except generate load and alarm.
+     */
+    const to = await contactAddress(notification.accountId);
+    if (to) await sendReceipt(notification, to);
+
     return { status: 200, handled: 'granted' };
   }
 

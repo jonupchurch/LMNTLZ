@@ -5,7 +5,7 @@
  * `receipt.ts` owns what the email *says* and when it is sent; this owns who sends
  * it. The split is the same one `rail.ts` makes for payments, and it exists so the
  * scan in `tests/payments/grantPath.test.ts` can be absolute rather than
- * approximate — *no vendor named outside `provider/`*, with no carve-outs to
+ * approximate — *no vendor named outside `vendor/`*, with no carve-outs to
  * remember.
  *
  * > **This module first lived in `receipt.ts` and the scan did not catch it**,

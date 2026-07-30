@@ -63,7 +63,7 @@ and it stops being true silently. `ceiling.test.ts` adds a hypothetical
 
 ## The vendor boundary
 
-**No file outside `provider/` names a vendor** (Constitution XIX), scanned in
+**No file outside `vendor/` names a vendor** (Constitution XIX), scanned in
 `grantPath.test.ts` — which caught a `paddle-signature` header string in the first
 draft of `routes.ts`. The rail declares its own `signatureHeader` so the route
 does not have to know one.
@@ -76,7 +76,7 @@ adds is one implementation of five members.
 
 | | Blocked on |
 |---|---|
-| `provider/` — the real rail | a Paddle account: API key + webhook secret |
+| `vendor/` — the real rail | a Paddle account: API key + webhook secret |
 | `receipt.ts` — the confirmation email | a Resend account + DNS verification on `lmntlz.com` |
 | The statement descriptor string | reading it from the live provider dashboard |
 | `apps/client/src/features/store/` | the descriptor above; no store screen exists |
