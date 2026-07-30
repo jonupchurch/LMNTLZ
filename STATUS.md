@@ -1,20 +1,32 @@
 ## Current phase
 
-**Features 001–009 are built and THE GAME IS PLAYABLE**, live on `af00bde`. Sign
-in at `www.lmntlz.com`, build two defense squads and three attack squads, scout an
-opponent and fight them turn by turn.
+**Features 001–012 are built and THE GAME IS PLAYABLE.** Sign in at
+`www.lmntlz.com`, build two defense squads and three attack squads, scout an
+opponent, fight them turn by turn — and now **look at a profile, change your
+name, pick an avatar and download your own data**.
 
-**1,288 unit tests** (content 70 · sim 322 · **api 712** · client 184) + **50
+**1,501 unit tests** (content 70 · sim 322 · **api 913** · client 196) + **54
 Playwright end-to-end**; lint, typecheck and build clean. Counted 2026-07-30 by
-running each suite rather than by trusting Turbo, which had cached four of the six
-tasks and printed no numbers for them.
+running each suite separately rather than trusting Turbo, which caches tasks and
+prints no numbers for them.
+
+> **Feature 012 put the first shard balance on a screen.** `GET /me/shards` had
+> existed since feature 010 with **no client caller at all** — shards were earned,
+> spent on runes and capped entirely out of sight. Runes and entitlements still
+> have no surface; that is named below, not fixed here.
 
 > **Playability and gates are two different claims and they diverge silently.**
 > 001–008 were reported complete — every box checked, every gate green — while the
 > squad screen persisted nothing, because 006's task list had no task to call the
 > save. **006 grew a Phase 9 (T055–T071)** for the assembly nobody had written
-> tasks for: the save, the offense UI, the attack flow. The client now calls **14
-> of the API's 23 routes**, up from 8. Report the two claims on separate lines.
+> tasks for: the save, the offense UI, the attack flow. Report the two claims on
+> separate lines, always.
+>
+> **The route-count measurement, re-run 2026-07-30 after 012:** the client calls
+> **19 of the API's 33 paths**, up from 14 of 23. The denominator grew because 010
+> and 011 added routes with no client at all — which is the same gap measured from
+> the other side. Runes, entitlements, the catalog and checkout are the bulk of
+> what is still unreached.
 
 | | |
 |---|---|
@@ -28,8 +40,10 @@ production spent 13 hours serving a feature-005 build while six deploys failed,
 invisibly, because that was the only thing anyone checked. `/v1/roster` answering
 **401 rather than 404** is what proves feature 006 actually shipped.
 
-Six migrations are applied to Neon and verified by querying `information_schema`
-rather than by trusting the migrator.
+**Twelve migrations** are applied to Neon and verified by querying
+`information_schema` rather than by trusting the migrator — most recently `0011`,
+which adds `accounts.avatar_key`, `accounts.custom_avatar_url` and
+`avatar_submissions`.
 
 **Vercel, as of 2026-07-29.** Scope `jupchurch-7994s-projects`, on **Pro**.
 `lmntlz` carries exactly **two** environment variables — `VITE_API_BASE_URL` and
@@ -52,22 +66,51 @@ variables.
 | **007** battle | **52/52** | the log is the state · settlement, conclusion, expiry, hold streaks, sign-in wired at last |
 | **008** replays | **37/39** | permanent `battle_records` + a 7-day private blob · retention holds, cleanup, watch and list |
 | **009** matchmaking | **62/63** | leagues, the rating axis, candidates, scout, bots · fills the four columns 008 wrote null into |
+| **010** progression | **54/56** | shards, the append-only ledger, runes, the rating ladder · fills 009's `setRuneSource` seam |
+| **011** payments | **41/44** | the rail interface, idempotent webhook, account-level entitlements, reconcile, receipt · **built against a fake rail with real HMAC and no vendor account** |
+| **012** profiles | **36/44** | selected-not-filtered battle record, the export, the rename charge, curated avatars · **+ Phase 7, the wiring** |
 
-**Features 001–009 are complete, bar three tasks that cannot be done yet.** 008's
-**T029** (cron registration) waits on 016 and its **T035** moderator exception
-waits on 015's operator identity; 009's **T047** (~46 padding bot squads) is
-deferred by decision until after the hero-numbers pass, since authoring bots
-against placeholder stats means authoring them twice. None is dead code.
+**Features 001–012 are complete, bar the tasks that cannot be done yet** — each
+blocked on something real rather than merely unfinished:
 
-**Feature 010, progression, is next** — shards, the append-only ledger, runes and
-the rating ladder. Its prerequisites (005, 007, 008, 009) are all closed, and
-**the ladder it needs was settled on 2026-07-27**; see `06-progression.md`.
+| Blocked | On |
+|---|---|
+| 008 **T029** cron registration · **T035** moderator exception | 016 · 015's operator identity |
+| 009 **T047** ~46 padding bot squads | deferred by decision to the hero-numbers pass — authoring bots against placeholder stats means authoring them twice |
+| 010 **T054**, **T056** | 016's runbook · a client surface for runes |
+| 011 **T031 / T042 / T026 / T044** | **Paddle, which will not verify an account without a live site** |
+| 012 **T021** guild export | 013 **and** guild-event design, which is deferred with Wings and guild funds |
+| 012 **T028–T034** custom avatar upload | 016's review queue |
 
-> **006 ended by finding a gap in its own task list.** T018–T020 and T047–T048
-> each say "build this component"; nothing said "put them on a page". Every squad
+None is dead code. **012's two blocks were decisions rather than omissions.** The
+guild export carries *event* data and there are no events, so every honest version
+of that route returns an empty file or a `403` — and a route that always refuses
+reads as a permissions bug. The custom avatar charges on submission and refunds
+nothing on rejection, which *is* the throughput control and only works if somebody
+is reviewing; shipping it without 016 would charge players for an image that sits
+pending forever.
+
+> ### The task template is fixed, and 012 is the first feature built under it
+>
+> **006 ended by finding a gap in its own task list.** T018–T020 and T047–T048 each
+> say *"build this component"*; nothing said *"put them on a page"*. Every squad
 > component was complete and unit-tested while unreachable from the running app.
-> `SquadsScreen.tsx` now composes them. **Features 007–016 should each check that
-> something renders what they build** — the task template does not.
+>
+> **That defect has now occurred seven times across five features and has never once
+> announced itself.** So `.specify/templates/tasks-template.md` now **mandates a
+> WIRING task in every user-story phase**, with a table naming the caller for each
+> kind of thing built and the `rg` that finds a symbol nothing invokes. Checkpoints
+> assert **reachability**, not "functional" — the two claims diverge silently, so
+> report them on separate lines.
+>
+> **012 gained the rule retroactively as Phase 7 (T038–T044), and it was needed.**
+> Before it, `PublicProfile` and `BattleRecord` were complete, typed and unreachable,
+> and nothing in the browser requested a single one of the four routes 012
+> registered. `wiring.test.tsx` asserts each call, and **two wires were cut to watch
+> it fail**.
+>
+> **013–016 each need the same pass** at the start of their build — their task lists
+> were generated before the rule existed.
 
 Spec-Kit itself is finished; all sixteen features carry `tasks.md`.
 
@@ -77,13 +120,13 @@ checklist items; and each of the sixteen now carries the full set —
 `plan.md` · `research.md` · `contracts/` · `quickstart.md` · `tasks.md` —
 against one shared `specs/data-model.md`.
 
-**767 tasks across the sixteen**, each with a checkbox, a sequential id, a story
-label where it belongs to one, and an exact file path. Zero malformed, zero
-duplicate ids, zero gaps.
+**774 tasks across the sixteen** — 767 as generated, plus **012's seven wiring
+tasks** added when the template rule landed. Each carries a checkbox, a sequential
+id, a story label where it belongs to one, and an exact file path.
 
 | | |
 |---|---|
-| Total tasks | **767** |
+| Total tasks | **774** |
 | Parallelizable `[P]` | 207 |
 | Inside a user-story phase | 563 |
 | Features whose Phase 1 is a one-time bootstrap | **3** — 001 (monorepo) · 005 (`apps/api`) · 006 (`apps/client`) |
@@ -178,16 +221,44 @@ expensive each would have been to find later:
 
 ## Next — code, in the settled build order
 
-**Start at `specs/010-progression/tasks.md` T001.** The build order
-`packages/content` → `packages/sim` → `apps/api` → `apps/client` is complete
-through 009; every remaining feature inherits all four and none opens a new app.
+**Start at `specs/013-guilds/tasks.md` T001**, and give its task list the wiring
+pass described above before writing any code. 013 also unblocks 012's guild
+export — though the *event* half stays blocked on deferred design.
+
+### ⚠️ Open for Jon, found building 012: SC-008 cannot be satisfied as written
+
+**FR-012 and FR-015 contradict each other.** A custom avatar costs *$5 **or** 1,350
+shards*; FR-015 requires any dual-priced item be **worse** shards-per-dollar than
+the best boost pass; and `bestShardsPerDollar()` is **0** by design, because no
+product converts money into shards.
+
+The dual price implies **270 shards per dollar** — paying the money *saves* the
+shards, and saved shards buy runes. Any dual price beats zero, so FR-015 forbids
+dual pricing outright while the catalog sells no shards.
+
+**Scale, so the call is informed.** A full rune is 650 shards at ~1.7 days of
+income, so income is ~380/day. One $5 avatar frees **~3.5 days** — about two runes.
+At 2–3 changes a year that is ~4,000 shards; at the $160/year cap it would be
+43,200, or 66 runes. **Not cosmetic.**
+
+Three ways out, none taken: price the avatar in shards only (loses the $5
+moderation throttle); raise the shard price (never reaches zero, so FR-015 still
+fails literally); or **restate FR-015** as *no dual-priced item may convert money
+into gameplay advantage faster than the $160/year cap allows*, which is the rule
+the design actually wants. `pricing.test.ts` asserts the conflict and fails the
+moment either number moves.
+
+The build order `packages/content` → `packages/sim` → `apps/api` →
+`apps/client` is complete through **012**; every remaining feature inherits all
+four and none opens a new app.
 
 **The infrastructure gate at 004 → 005 is closed.** Vercel, Neon and the Google
 OAuth client all exist and are wired; Neon moved to a **paid plan on 2026-07-30**
-after the free data-transfer allowance ran out mid-suite. Vendors still ahead, and
-each is Jon's to create because they are billable in his name: **Paddle** and
-**Resend** at 011, **Ably** at 014. **Announce each at the feature boundary, not
-when a task fails.**
+after the free data-transfer allowance ran out mid-suite. **Resend landed at 011**
+as a marketplace resource on `lmntlz-api` only — verified on both projects, nothing
+leaked. Still ahead, and each Jon's to create because they are billable in his
+name: **Paddle** (gated on a live site, see below) and **Ably** at 014.
+**Announce each at the feature boundary, not when a task fails.**
 
 ### 🎨 Known gap, deliberately deferred: the visual pass
 

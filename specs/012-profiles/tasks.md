@@ -32,8 +32,8 @@ amount of code review reliably catches** the bug it prevents.
 
 ## Phase 1: Setup
 
-- [ ] T001 Create `apps/api/src/profiles/` and `apps/client/src/features/profile/`, and register `/v1/players/:targetId/profile`, `/v1/me/export`, `/v1/guilds/:id/export` and `/v1/me/avatar` in `apps/api/src/index.ts`
-- [ ] T002 [P] Add a `profiles` test project to `apps/api/vitest.config.ts`
+- [X] T001 Create `apps/api/src/profiles/` and `apps/client/src/features/profile/`, and register `/v1/players/:targetId/profile`, `/v1/me/export`, `/v1/guilds/:id/export` and `/v1/me/avatar` in `apps/api/src/index.ts`
+- [X] T002 [P] Add a `profiles` test project to `apps/api/vitest.config.ts`
 
 ---
 
@@ -43,9 +43,9 @@ amount of code review reliably catches** the bug it prevents.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Write `apps/api/tests/profiles/visibleRecord.test.ts` — a fixture whose last **40** battles alternate strictly Visible/Hidden. A **filtered** implementation returns ~10 entries; a **selected** one returns **20**
-- [ ] T004 [P] Add the three sharper fixtures to `apps/api/tests/profiles/visibleRecord.test.ts` — fewer than 20 Visible ever returns **as many as exist, never padded**; the 20 most recent all Hidden returns 20 Visible **from further back**; a brand-new account returns an empty list and the profile **still renders**
-- [ ] T005 [P] Add the timestamp assertion to `apps/api/tests/profiles/visibleRecord.test.ts` — entries carry `concludedOn` as a **day**, never a precise `concludedAt`
+- [X] T003 Write `apps/api/tests/profiles/visibleRecord.test.ts` — a fixture whose last **40** battles alternate strictly Visible/Hidden. A **filtered** implementation returns ~10 entries; a **selected** one returns **20**
+- [X] T004 [P] Add the three sharper fixtures to `apps/api/tests/profiles/visibleRecord.test.ts` — fewer than 20 Visible ever returns **as many as exist, never padded**; the 20 most recent all Hidden returns 20 Visible **from further back**; a brand-new account returns an empty list and the profile **still renders**
+- [X] T005 [P] Add the timestamp assertion to `apps/api/tests/profiles/visibleRecord.test.ts` — entries carry `concludedOn` as a **day**, never a precise `concludedAt`
 
 > **T003 is task one and it fails loudly on the wrong implementation.** Both queries
 > read correctly and differ only in where `LIMIT` sits:
@@ -78,18 +78,18 @@ amount of code review reliably catches** the bug it prevents.
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T006 [P] [US1] Write `apps/api/tests/profiles/boundary.test.ts` — assert **absent** by searching the whole serialised response: email, provider identity, entitlements, shard balance, **either zone's composition**, **any Hidden battle**, and **any gap where one would be** (SC-001, SC-002)
-- [ ] T007 [P] [US1] Add the structural check to `apps/api/tests/profiles/boundary.test.ts` — `profile` and feature 006's `scout` **must not share a serialiser**. Two routes, two disclosure rules; a shared serialiser is precisely how the Hidden squad leaks
+- [X] T006 [P] [US1] Write `apps/api/tests/profiles/boundary.test.ts` — assert **absent** by searching the whole serialised response: email, provider identity, entitlements, shard balance, **either zone's composition**, **any Hidden battle**, and **any gap where one would be** (SC-001, SC-002)
+- [X] T007 [P] [US1] Add the structural check to `apps/api/tests/profiles/boundary.test.ts` — `profile` and feature 006's `scout` **must not share a serialiser**. Two routes, two disclosure rules; a shared serialiser is precisely how the Hidden squad leaks
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Write `apps/api/src/profiles/visibleRecord.ts` as **its own module with one query in it** — `SELECT … WHERE zone = 'visible' ORDER BY concluded_at DESC LIMIT 20`. The difference between selecting and filtering is a single clause, and it is the clause the whole disclosure model rests on (FR-003)
-- [ ] T009 [US1] Round displayed timestamps to the day in `apps/api/src/profiles/visibleRecord.ts` (FR-004)
-- [ ] T010 [US1] Implement `apps/api/src/profiles/publicProfile.ts` with the **fixed** field set — username, avatar, account age, league, rating, gear score, **both** hold streaks, and guild name and role
-- [ ] T011 [US1] Withhold everything on the research list in `apps/api/src/profiles/publicProfile.ts` — email, provider identity, entitlements, shard balance, **either zone's composition**, and anything about another player's guild application (FR-005)
-- [ ] T012 [US1] Make **time zone and languages the only hideable fields** in `apps/api/src/profiles/publicProfile.ts` — with **no per-field visibility controls** anywhere else (FR-001, FR-002)
-- [ ] T013 [US1] Implement `GET /v1/players/:targetId/profile` in `apps/api/src/profiles/routes.ts` — note `targetId`, per feature 005's convention
-- [ ] T014 [P] [US1] Build `apps/client/src/features/profile/PublicProfile.tsx` and `BattleRecord.tsx`
+- [X] T008 [US1] Write `apps/api/src/profiles/visibleRecord.ts` as **its own module with one query in it** — `SELECT … WHERE zone = 'visible' ORDER BY concluded_at DESC LIMIT 20`. The difference between selecting and filtering is a single clause, and it is the clause the whole disclosure model rests on (FR-003)
+- [X] T009 [US1] Round displayed timestamps to the day in `apps/api/src/profiles/visibleRecord.ts` (FR-004)
+- [X] T010 [US1] Implement `apps/api/src/profiles/publicProfile.ts` with the **fixed** field set — username, avatar, account age, league, rating, gear score, **both** hold streaks, and guild name and role
+- [X] T011 [US1] Withhold everything on the research list in `apps/api/src/profiles/publicProfile.ts` — email, provider identity, entitlements, shard balance, **either zone's composition**, and anything about another player's guild application (FR-005)
+- [X] T012 [US1] Make **time zone and languages the only hideable fields** in `apps/api/src/profiles/publicProfile.ts` — with **no per-field visibility controls** anywhere else (FR-001, FR-002)
+- [X] T013 [US1] Implement `GET /v1/players/:targetId/profile` in `apps/api/src/profiles/routes.ts` — note `targetId`, per feature 005's convention
+- [X] T014 [P] [US1] Build `apps/client/src/features/profile/PublicProfile.tsx` and `BattleRecord.tsx`
 
 > **Never render a Hidden squad on this surface, at any stage of development.** A
 > temporary debug view is how it ends up in a screenshot.
@@ -106,18 +106,18 @@ amount of code review reliably catches** the bug it prevents.
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T015 [US2] Write `apps/api/tests/profiles/export.test.ts` asserting the header **exactly** — `battleId · concludedAt · role · opponentUsername · opponentWasBot · zone · outcome · turnCount · leagueAtTime · ratingAfter`. **An exact match, never `toContain`**, so a widened export fails CI
-- [ ] T016 [P] [US2] Add the composition scan to `apps/api/tests/profiles/export.test.ts` — export a player with 200 battles and grep the CSV for any hero name, row name or the word `squad`. **Nothing** (SC-004)
-- [ ] T017 [P] [US2] Add the two-routes check to `apps/api/tests/profiles/export.test.ts` — `rg -n "scope|includeGuild" apps/api/src/profiles` returns **nothing**
+- [X] T015 [US2] Write `apps/api/tests/profiles/export.test.ts` asserting the header **exactly** — `battleId · concludedAt · role · opponentUsername · opponentWasBot · zone · outcome · turnCount · leagueAtTime · ratingAtBattle` (**corrected from `ratingAfter` — nothing stores a post-battle rating**). **An exact match, never `toContain`**, so a widened export fails CI
+- [X] T016 [P] [US2] Add the composition scan to `apps/api/tests/profiles/export.test.ts` — export a player with 200 battles and grep the CSV for any hero name, row name or the word `squad`. **Nothing** (SC-004)
+- [X] T017 [P] [US2] Add the two-routes check to `apps/api/tests/profiles/export.test.ts` — `rg -n "scope|includeGuild" apps/api/src/profiles` returns **nothing**
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implement `GET /v1/me/export` in `apps/api/src/profiles/export.ts` as **a `SELECT` naming ten columns** — never `SELECT *` and never an object spread. **Default-deny by construction**: adding a column to `battle_records` is a schema change; adding one to the export is an edit to this list (FR-007)
-- [ ] T019 [US2] **Drop both squad columns rather than conditionally emitting one** in `apps/api/src/profiles/export.ts`. A conditional is wrong twice — a player can publish their own export, so including their own Hidden squad is a **self-service leak**; and it is one inverted boolean from full disclosure, producing a plausible file nobody notices for months
-- [ ] T020 [US2] Include a player's own **Hidden battles** in their export in `apps/api/src/profiles/export.ts` — the rows, never the compositions (FR-006)
-- [ ] T021 [US2] Implement `GET /v1/guilds/:id/export` in `apps/api/src/profiles/export.ts` as **a second route with a different query**, officers only, **event data only** and no member battle detail — not even the officer's own (FR-008, SC-005)
-- [ ] T022 [US2] Emit a plain tabular format from `apps/api/src/profiles/export.ts` that a player can open without special software (FR-009)
-- [ ] T023 [US2] Rate-limit both export routes in `apps/api/src/profiles/routes.ts` — it is a bulk read (FR-010)
+- [X] T018 [US2] Implement `GET /v1/me/export` in `apps/api/src/profiles/export.ts` as **a `SELECT` naming ten columns** — never `SELECT *` and never an object spread. **Default-deny by construction**: adding a column to `battle_records` is a schema change; adding one to the export is an edit to this list (FR-007)
+- [X] T019 [US2] **Drop both squad columns rather than conditionally emitting one** in `apps/api/src/profiles/export.ts`. A conditional is wrong twice — a player can publish their own export, so including their own Hidden squad is a **self-service leak**; and it is one inverted boolean from full disclosure, producing a plausible file nobody notices for months
+- [X] T020 [US2] Include a player's own **Hidden battles** in their export in `apps/api/src/profiles/export.ts` — the rows, never the compositions (FR-006)
+- [ ] ⛔ T021 [US2] Implement `GET /v1/guilds/:id/export` in `apps/api/src/profiles/export.ts` as **a second route with a different query**, officers only, **event data only** and no member battle detail — not even the officer's own (FR-008, SC-005)
+- [X] T022 [US2] Emit a plain tabular format from `apps/api/src/profiles/export.ts` that a player can open without special software (FR-009)
+- [X] T023 [US2] Rate-limit both export routes in `apps/api/src/profiles/routes.ts` — it is a bulk read (FR-010)
 
 > **Two exports, two routes, not one parameterised route.** A `scope` parameter
 > invites the bug where an officer requests the wider scope; two routes with two
@@ -139,9 +139,9 @@ amount of code review reliably catches** the bug it prevents.
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T024 [P] [US3] Write `apps/api/tests/profiles/avatar.test.ts` — submission is **charged immediately** with state `pending`; the avatar URL is **not publicly reachable while pending**; a rejection **refunds nothing**; a resubmission is **charged again**
-- [ ] T025 [P] [US3] Add the harm-gate structural check to `apps/api/tests/profiles/avatar.test.ts` — the rejection-reason enum has **no `low-quality` member**, so a reviewer who wants to reject on taste has no value to submit (Constitution XVIII enforced by the type)
-- [ ] T026 [P] [US3] Write `apps/api/tests/profiles/pricing.test.ts` — a voluntary rename costs **325 shards**, a forced rename is **free**, and the avatar's shards-per-dollar is **worse than the best boost pass** as reported by feature 011's `bestShardsPerDollar()` (SC-007, SC-008)
+- [X] T024 [P] [US3] Write `apps/api/tests/profiles/avatar.test.ts` — submission is **charged immediately** with state `pending`; the avatar URL is **not publicly reachable while pending**; a rejection **refunds nothing**; a resubmission is **charged again**
+- [X] T025 [P] [US3] Add the harm-gate structural check to `apps/api/tests/profiles/avatar.test.ts` — the rejection-reason enum has **no `low-quality` member**, so a reviewer who wants to reject on taste has no value to submit (Constitution XVIII enforced by the type)
+- [X] T026 [P] [US3] Write `apps/api/tests/profiles/pricing.test.ts` — a voluntary rename costs **325 shards**, a forced rename is **free**, and the avatar's shards-per-dollar is **worse than the best boost pass** as reported by feature 011's `bestShardsPerDollar()` (SC-007, SC-008)
 
 > ### ⚠️ SC-008 is arithmetically unsatisfiable as written — a decision, not a bug
 >
@@ -179,14 +179,14 @@ amount of code review reliably catches** the bug it prevents.
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Build the curated avatar set in `apps/client/src/features/profile/AvatarPicker.tsx` — **curated avatars need no review**
-- [ ] T028 [US3] Implement `POST /v1/me/avatar` in `apps/api/src/profiles/avatar.ts` — **$5 or 1,350 shards, charged per change** rather than once to unlock (FR-012)
-- [ ] T029 [US3] Charge **on submission, not on approval**, in `apps/api/src/profiles/avatar.ts` — otherwise a rejected submission is free and the throttle disappears. **A rejection refunds nothing and says so before payment.** That is harsh and it is the mechanism
-- [ ] T030 [US3] Treat a resubmission as a new submission with a new fee in `apps/api/src/profiles/avatar.ts` — otherwise one purchase buys unlimited attempts
-- [ ] T031 [US3] Hold every custom avatar **invisible to everyone until a human approves it** in `apps/api/src/profiles/avatar.ts` — a genuine harm gate: a bad image seen by every opponent cannot be undone by a later removal (FR-013)
-- [ ] T032 [US3] Store avatars in **the same private Blob store as replays under a distinct prefix** — an unapproved avatar must not be reachable by URL while it sits in the queue, and a public store cannot express that
-- [ ] T033 [US3] Notify the player of the decision in `apps/api/src/profiles/avatar.ts`, with a **free resubmission** on rejection (FR-014)
-- [ ] T034 [US3] Confirm the review queue surface exists in feature 016's `apps/admin` — a review is a **~20-second glance** and the **$5 fee is the throughput control**, at ~180/hour and $900 of submissions per reviewer-hour
+- [X] T027 [US3] Build the curated avatar set in `apps/client/src/features/profile/AvatarPicker.tsx` — **curated avatars need no review**
+- [ ] ⛔ T028 [US3] Implement `POST /v1/me/avatar` in `apps/api/src/profiles/avatar.ts` — **$5 or 1,350 shards, charged per change** rather than once to unlock (FR-012)
+- [ ] ⛔ T029 [US3] Charge **on submission, not on approval**, in `apps/api/src/profiles/avatar.ts` — otherwise a rejected submission is free and the throttle disappears. **A rejection refunds nothing and says so before payment.** That is harsh and it is the mechanism
+- [ ] ⛔ T030 [US3] Treat a resubmission as a new submission with a new fee in `apps/api/src/profiles/avatar.ts` — otherwise one purchase buys unlimited attempts
+- [ ] ⛔ T031 [US3] Hold every custom avatar **invisible to everyone until a human approves it** in `apps/api/src/profiles/avatar.ts` — a genuine harm gate: a bad image seen by every opponent cannot be undone by a later removal (FR-013)
+- [ ] ⛔ T032 [US3] Store avatars in **the same private Blob store as replays under a distinct prefix** — an unapproved avatar must not be reachable by URL while it sits in the queue, and a public store cannot express that
+- [ ] ⛔ T033 [US3] Notify the player of the decision in `apps/api/src/profiles/avatar.ts`, with a **free resubmission** on rejection (FR-014)
+- [ ] ⛔ T034 [US3] Confirm the review queue surface exists in feature 016's `apps/admin` — a review is a **~20-second glance** and the **$5 fee is the throughput control**, at ~180/hour and $900 of submissions per reviewer-hour
 
 **Checkpoint**: All three stories independently functional.
 
@@ -194,9 +194,9 @@ amount of code review reliably catches** the bug it prevents.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T035 [P] Add the Playwright pass in `apps/client/e2e/profile.spec.ts` — view a heavy-Hidden player's profile and confirm 20 Visible entries with no measurable gap
-- [ ] T036 [P] Write `apps/api/src/profiles/README.md` — the fixed-profile rationale, the selected-not-filtered rule, and the standing instruction that `profile` and `scout` never share a serialiser
-- [ ] T037 Run the full quickstart manual pass, including the `rg` scans over an exported CSV
+- [X] T035 [P] Add the Playwright pass in `apps/client/e2e/profile.spec.ts` — view a heavy-Hidden player's profile and confirm 20 Visible entries with no measurable gap
+- [X] T036 [P] Write `apps/api/src/profiles/README.md` — the fixed-profile rationale, the selected-not-filtered rule, and the standing instruction that `profile` and `scout` never share a serialiser
+- [X] T037 Run the full quickstart manual pass, including the `rg` scans over an exported CSV
 
 ---
 
@@ -214,13 +214,13 @@ single one of the four routes T001 registers.
 > `.specify/templates/tasks-template.md` now mandates a wiring task per user story;
 > this phase is that rule applied retroactively to a list generated before it.
 
-- [ ] T038 [US1] **WIRING** — add `{ kind: 'profile'; targetId: string }` to the `Screen` union in `apps/client/src/App.tsx` and render `ProfileScreen`; the nav gains a **My profile** entry
-- [ ] T039 [US1] **WIRING** — `apps/client/src/features/profile/ProfileScreen.tsx` calls `GET /v1/players/:targetId/profile` via `lib/api.ts` and composes `PublicProfile` + `BattleRecord`. Without this, T013's route has no client caller at all
-- [ ] T040 [US1] **WIRING** — the scout panel in `apps/client/src/features/attack/` links each candidate to their profile, since scouting is the stated reason this surface exists
-- [ ] T041 [US2] **WIRING** — an **Export my data** control in `ProfileScreen.tsx` requests `GET /v1/me/export` and saves the CSV. A download nobody can trigger is not an export
-- [ ] T042 [US3] **WIRING** — render `AvatarPicker` and the rename control from `ProfileScreen.tsx`, and have the rename call `PUT /v1/me/username`
-- [ ] T043 [US3] **WIRING** — show the player's **shard balance** beside the 325-shard rename price by calling feature 010's `GET /v1/me/shards`. **This is the first client call to any progression route**; 010 and 011 are otherwise invisible in the browser
-- [ ] T044 **Assert the wires, then cut them.** `apps/client/tests/profile/wiring.test.tsx` fails if `ProfileScreen` stops requesting the profile, the export, or the shard balance. Mutate each of the three and confirm three failures — *"is it called?"* is a testable claim
+- [X] T038 [US1] **WIRING** — add `{ kind: 'profile'; targetId: string }` to the `Screen` union in `apps/client/src/App.tsx` and render `ProfileScreen`; the nav gains a **My profile** entry
+- [X] T039 [US1] **WIRING** — `apps/client/src/features/profile/ProfileScreen.tsx` calls `GET /v1/players/:targetId/profile` via `lib/api.ts` and composes `PublicProfile` + `BattleRecord`. Without this, T013's route has no client caller at all
+- [X] T040 [US1] **WIRING** — the scout panel in `apps/client/src/features/attack/` links each candidate to their profile, since scouting is the stated reason this surface exists
+- [X] T041 [US2] **WIRING** — an **Export my data** control in `ProfileScreen.tsx` requests `GET /v1/me/export` and saves the CSV. A download nobody can trigger is not an export
+- [X] T042 [US3] **WIRING** — render `AvatarPicker` and the rename control from `ProfileScreen.tsx`, and have the rename call `PUT /v1/me/username`
+- [X] T043 [US3] **WIRING** — show the player's **shard balance** beside the 325-shard rename price by calling feature 010's `GET /v1/me/shards`. **This is the first client call to any progression route**; 010 and 011 are otherwise invisible in the browser
+- [X] T044 **Assert the wires, then cut them.** `apps/client/tests/profile/wiring.test.tsx` fails if `ProfileScreen` stops requesting the profile, the export, or the shard balance. Mutate each of the three and confirm three failures — *"is it called?"* is a testable claim
 
 > **T043 closes half of a known gap and names the other half.** Runes and
 > entitlements still have no client surface after this feature; that belongs to the
