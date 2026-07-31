@@ -196,14 +196,17 @@ forces from real content, matching `LMNTLZ Codex.dc.html`.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T066 Run the token scan across the **whole** client — zero colour literals outside `base.css` (SC-002)
-- [ ] T067 [P] `rg` for transcribed multipliers: every `1.25`, `0.8`, `1.5`, `0.5` in `apps/client/src` must be an import from `@lmntlz/content`, never a literal (SC-010)
-- [ ] T068 [P] Confirm `git diff --stat resources/mechanics/` is **empty** — 017 changes no rule, and a moved mechanics file means a number leaked from an export into canon (FR-017, SC-008)
-- [ ] T069 [P] Full keyboard pass: every interactive element reachable with a visible focus ring, rail groups expandable from the keyboard (SC-006)
-- [ ] T070 [P] Viewport pass at **1280 / 1600 / 2400** — no horizontal page scroll at the floor, no reflow to one column, content capped and centred at the top end (SC-007)
-- [ ] T071 [P] Write `apps/client/src/components/README.md` — the three rules from `contracts/components.md`, why colour is derived, and why the ladder is five tiers where the export draws four
-- [ ] T072 Add `icons:build` to CI and **diff the generated manifest against a fresh build**, exactly as `heroes.generated.ts` is diffed today
-- [ ] T073 Run the full [quickstart.md](quickstart.md) manual pass, including the offline font check and the icon-guard mutation
+- [X] T066 Run the token scan across the **whole** client — zero colour literals outside `base.css` (SC-002)
+- [X] T067 [P] `rg` for transcribed multipliers: every `1.25`, `0.8`, `1.5`, `0.5` in `apps/client/src` must be an import from `@lmntlz/content`, never a literal (SC-010)
+- [X] T068 [P] Confirm `git diff --stat resources/mechanics/` is **empty** — 017 changes no rule, and a moved mechanics file means a number leaked from an export into canon (FR-017, SC-008)
+- [X] T069 [P] Full keyboard pass: every interactive element reachable with a visible focus ring, rail groups expandable from the keyboard (SC-006)
+- [X] T070 [P] Viewport pass at **1280 / 1600 / 2400** — no horizontal page scroll at the floor, no reflow to one column, content capped and centred at the top end (SC-007)
+- [X] T071 [P] Write `apps/client/src/components/README.md` — the three rules from `contracts/components.md`, why colour is derived, and why the ladder is five tiers where the export draws four
+- [X] T072 Add `icons:build` to CI and **diff the generated manifest against a fresh build**, exactly as `heroes.generated.ts` is diffed today
+- [ ] T073 **(manual, not run)** — its automated parts are done: the offline font
+  check is `e2e/fonts.spec.ts`, the icon-guard mutation was performed in Phase 5,
+  and the viewport/keyboard passes are `e2e/shell.spec.ts`. What remains is the
+  human read-through. Run the full [quickstart.md](quickstart.md) manual pass, including the offline font check and the icon-guard mutation
 
 ---
 

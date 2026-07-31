@@ -18,6 +18,32 @@ import { useMemo, type JSX } from 'react';
 import type { Emblem } from './types.js';
 
 /**
+ * ---------------------------------------------------------------------------
+ * ⚠️ **The one documented exception to "no colour literal outside `base.css`"**
+ * (017 T066 / SC-002).
+ *
+ * Twenty-four hexes live here and they are **data, not styling**. The rule they
+ * appear to break exists to stop a *component* hardcoding a brand colour
+ * instead of spending a token — the nine Forces are the brand, and duplicating
+ * them makes colour a second source of truth for a rule (Constitution XV).
+ *
+ * These are neither. They are a **palette a player picks from**, addressed by
+ * index: the server owns only the *count* (`EMBLEM_INKS = 12`,
+ * `EMBLEM_GROUNDS = 12` in `apps/api/src/guilds/config.ts`) and validates
+ * `ink: 0..11`, while what index 3 looks like is a client concern because
+ * emblems are rendered client-side and never sent as colour. Promoting them to
+ * `@theme` would put twenty-four one-off values in the brand palette and imply
+ * a component could reach for `bg-emblem-ink-7`, which nothing should.
+ *
+ * The first nine of each list are the nine Forces so a guild can fly its
+ * allegiance — those *are* near the brand, and they are intentionally not the
+ * Force tokens: an emblem sits on parchment and on deep grounds, so it needs
+ * its own lightness range rather than the on-dark values the interface uses.
+ *
+ * If this file ever styles chrome rather than emblem content, that is the
+ * moment this exception stops applying.
+ * ---------------------------------------------------------------------------
+ *
  * Twelve inks and twelve grounds, **chosen so illegibility is unreachable by
  * accident** (FR-003).
  *
