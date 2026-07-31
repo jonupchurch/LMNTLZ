@@ -14,12 +14,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Hero } from '@lmntlz/content';
-import type { PowerRanking, SquadRow } from '@lmntlz/sim/rules';
+import { ROW_CAPACITY, SQUAD_ROWS, type PowerRanking, type SquadRow } from '@lmntlz/sim/rules';
 import { Panel } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { DefenseConfig } from './DefenseConfig.js';
 import { RosterView } from './RosterView.js';
 import { SquadBuilder } from './SquadBuilder.js';
+import { SquadHeader, isAttack, labelOf, type Editing } from './SquadHeader.js';
+import { SquadReadout } from './SquadReadout.js';
 import { EvictionWarning } from './EvictionWarning.js';
 import { useAllocation } from './hooks/useAllocation.js';
 import type {
@@ -34,20 +36,16 @@ import type {
 const ZONE_LABEL: Readonly<Record<Zone, string>> = { visible: 'Zone I', hidden: 'Zone II' };
 
 /**
- * Which squad the builder is editing: a defense zone, or an attack slot.
+ * `Editing`, `isAttack` and `labelOf` moved to `SquadHeader.js` (019 US2).
  *
- * **One discriminant across five tabs rather than a mode plus a selection.**
+ * **One discriminant across five squads rather than a mode plus a selection.**
  * `useAllocation` already takes exactly this union, because there is exactly one
- * squad on screen at a time — and a separate "Defense / Attack" toggle would add a
- * second piece of state that has to agree with the first. The two nested selections
- * would then have a state nobody wants: attack mode with a zone selected.
+ * squad on screen at a time — and a separate "Defense / Attack" toggle would add
+ * a second piece of state that has to agree with the first. The two nested
+ * selections would then have a state nobody wants: attack mode with a zone
+ * selected. The design's two-level control derives its upper level from this one
+ * rather than storing a second; see that file's header.
  */
-type Editing = Zone | number;
-
-const ATTACK_SLOTS = [0, 1, 2] as const;
-const isAttack = (editing: Editing): editing is number => typeof editing === 'number';
-const labelOf = (editing: Editing): string =>
-  isAttack(editing) ? `Attack ${editing + 1}` : ZONE_LABEL[editing];
 
 export interface SquadsScreenProps {
   /**
@@ -61,9 +59,17 @@ export interface SquadsScreenProps {
    * judging the product saw.
    */
   readonly onUnauthenticated?: () => void;
+  /**
+   * Leave for matchmaking with the squad on screen.
+   *
+   * **Optional, and the button is absent without it** — the design's primary
+   * action on an attack squad is `FIND BATTLE`, and a primary action that
+   * cannot navigate is a button that lies about what it does.
+   */
+  readonly onFindBattle?: () => void;
 }
 
-export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
+export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenProps = {}) {
   const [roster, setRoster] = useState<RosterResponse | null>(null);
   /**
    * **Two failure states, because they deserve different screens.**
@@ -111,6 +117,74 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
     (id: string) => roster?.heroes.find((h: Hero) => h.id === id)?.name ?? id,
     [roster],
   );
+
+  /**
+   * `id -> Hero`, built once per roster rather than scanned per card.
+   *
+   * The picker draws 27 of these and the board six; a `find()` inside each
+   * would be 33 linear scans of the roster on every keystroke in the search
+   * box.
+   */
+  const heroIndex = useMemo(() => {
+    const map = new Map<string, Hero>();
+    for (const hero of roster?.heroes ?? []) map.set(hero.id, hero);
+    return map;
+  }, [roster]);
+
+  const heroById = useCallback((id: string) => heroIndex.get(id), [heroIndex]);
+
+  /** The seated champions, in seat order, for the readout. */
+  const squadHeroes = useMemo(
+    () =>
+      allocation.seats
+        .map((seat) => heroIndex.get(seat.heroId))
+        .filter((hero): hero is Hero => hero !== undefined),
+    [allocation.seats, heroIndex],
+  );
+
+  const seatedIds = useMemo(
+    () => new Set(allocation.seats.map((s) => s.heroId)),
+    [allocation.seats],
+  );
+
+  const backSeat = useMemo(() => {
+    const seat = allocation.seats.find((s) => s.row === 'back');
+    return seat ? (heroIndex.get(seat.heroId) ?? null) : null;
+  }, [allocation.seats, heroIndex]);
+
+  /**
+   * Fill the empty seats from whoever is free.
+   *
+   * **Offense only, and that is a safety rule rather than a scope cut.** Seating
+   * a champion on *defense* evicts her from every attack squad she is in, and
+   * `seatActivate` blocks on a confirm that names which squads break. An
+   * auto-fill on a zone would perform up to six of those moves without showing
+   * one of them — the most destructive action on the screen, run silently.
+   *
+   * A reach-2 champion is preferred for the back seat because the server warns
+   * about the alternative (`reach-1-back-seat`): the single protected seat is
+   * the one place reach 1 reaches nobody at all. Beyond that the order is the
+   * roster's, which is stable and therefore predictable.
+   */
+  const autoFill = useCallback(() => {
+    if (!roster || !isAttack(editing)) return;
+
+    const taken = new Set(allocation.seats.map((s) => s.heroId));
+    const free = roster.available.forOffense
+      .map((id) => heroIndex.get(id))
+      .filter((hero): hero is Hero => hero !== undefined && !taken.has(hero.id));
+
+    for (const row of SQUAD_ROWS) {
+      for (let index = 0; index < ROW_CAPACITY[row]; index += 1) {
+        if (allocation.seats.some((s) => s.row === row && s.index === index)) continue;
+        const wants = row === 'back' ? 2 : 0;
+        const pick = free.findIndex((hero) => hero.reach >= wants);
+        const chosen = free.splice(pick === -1 ? 0 : pick, 1)[0];
+        if (!chosen) return;
+        allocation.place(chosen.id, row, index);
+      }
+    }
+  }, [roster, editing, allocation, heroIndex]);
 
   /**
    * **The eviction check runs before the seat is filled, not after.**
@@ -342,100 +416,37 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
   }
 
   /**
-   * **`SPAN 8 · squad board` beside `SPAN 4 · inspector`** (017 T049) — the
-   * Design System export's worked example, and until now the shell's grid had
-   * no way to express it: every screen was handed one `<Panel span={12}>` and
-   * this one drew a `2fr / 1fr` grid inside a `max-w-[1600px]` container of its
-   * own, a second layout authority competing with `AppShell`'s.
+   * **The board, the picker, and a readout rail beside them** (019 US2).
    *
-   * The proportion is unchanged, because it was already right. What changed is
-   * that it is now the *shell's* proportion, so the gutter, the 1400 cap and
-   * the centring above ~2100 all apply to this screen for the first time.
+   * 017 T049 put this screen on the shell's 12-column grid as `SPAN 8` beside
+   * `SPAN 4`, quoting the Design System export's worked example — *squad board*
+   * beside *inspector*. The squad screen's right-hand column is not an
+   * inspector: it is a fixed readout rail carrying four stacked panels of text,
+   * which wants a narrower column than a panel that has to hold hero detail.
+   * `9 / 3` is ~350px at the 1400 cap, which is what the design draws.
+   *
+   * The main column stacks header → board → picker rather than putting the
+   * picker beside the board, because the picker is 27 cards and the board is
+   * six: side by side, one of them is always the wrong width.
    */
   return (
     <>
-      <Panel span={12}>
-      {/**
-       * **Five tabs on one row, because there are five squads.** Two defense zones
-       * and three attack slots, and exactly one is open at a time. A "Defense /
-       * Attack" toggle above a second selection would be two pieces of state that
-       * have to agree, with a combination — attack mode, zone selected — that means
-       * nothing.
-       *
-       * The 12/15 split is stated beside them: it is why the three attack squads
-       * overlap, and no per-squad message conveys it.
-       */}
-      <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Squad">
-        {(['visible', 'hidden'] as const).map((z) => (
-          <button
-            key={z}
-            role="tab"
-            aria-selected={editing === z}
-            /**
-             * **Explicit, because the computed name runs the words together.**
-             * The label and the streak are adjacent elements with no whitespace
-             * between them, so the accessible name computed from the content is
-             * `"Zone Ihold 14"` — announced as one nonsense word. Caught by an
-             * e2e locator failing to match, which is a fair way to find it.
-             */
-            aria-label={`${ZONE_LABEL[z]}, hold streak ${roster.assignments.defense[z].holdStreak}`}
-            onClick={() => setEditing(z)}
-            className={[
-              'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
-              editing === z ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment' : 'border-line text-faint',
-            ].join(' ')}
-          >
-            {ZONE_LABEL[z]}
-            <span className="ml-2 font-mono text-[11px] text-faint">
-              hold {roster.assignments.defense[z].holdStreak}
-            </span>
-          </button>
-        ))}
-
-        <span aria-hidden className="mx-2 h-6 w-px bg-line" />
-
-        {ATTACK_SLOTS.map((slot) => {
-          const squad = roster.assignments.offense.find((o) => o.slot === slot);
-          /**
-           * **"Broken" and "unfinished" are different states and both are shown.**
-           * A squad our own eviction rule emptied a seat in did not get that way
-           * through anything the player did deliberately, and it cannot attack until
-           * it is refilled — so it says so rather than reading as a squad nobody
-           * has got round to.
-           */
-          const state = !squad || squad.seats.length === 0
-            ? 'empty'
-            : !squad.valid
-              ? 'broken'
-              : squad.complete
-                ? 'ready'
-                : `${squad.seats.length}/6`;
-
-          return (
-            <button
-              key={slot}
-              role="tab"
-              aria-selected={editing === slot}
-              aria-label={`Attack ${slot + 1}${squad?.name ? `, ${squad.name}` : ''}, ${state}`}
-              onClick={() => setEditing(slot)}
-              className={[
-                'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
-                editing === slot ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment' : 'border-line text-faint',
-              ].join(' ')}
-            >
-              Attack {slot + 1}
-              <span
-                className={[
-                  'ml-2 font-mono text-[11px]',
-                  state === 'broken' ? 'text-slash-lit' : 'text-faint',
-                ].join(' ')}
-              >
-                {state}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <Panel span={9}>
+        <div className="flex flex-col gap-4">
+          <SquadHeader
+            roster={roster}
+            editing={editing}
+            onEdit={setEditing}
+            placed={allocation.seats.length}
+            isComplete={allocation.isComplete}
+            saving={saving}
+            name={attackName}
+            onName={setAttackName}
+            onSave={() => void save()}
+            onClear={allocation.clear}
+            onAutoFill={isAttack(editing) ? autoFill : undefined}
+            {...(onFindBattle ? { onFindBattle } : {})}
+          />
 
       {/* FR-011 — an incomplete zone says so rather than defending a man down. */}
       {!isAttack(editing) && !roster.assignments.defense[editing].canDefend && (
@@ -462,54 +473,30 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
           {problem}
         </p>
       )}
-      </Panel>
 
-      <Panel span={8}>
-        <RosterView roster={roster} selectedHeroId={selected} onSelect={setSelected} />
-      </Panel>
-
-      <Panel span={4}>
-        <div className="flex flex-col gap-6">
           <SquadBuilder
             allocation={allocation}
             heroName={heroName}
+            heroById={heroById}
             kind={isAttack(editing) ? 'offense' : 'defense'}
             selectedHeroId={selected}
             onSeatActivate={(row, index) => void seatActivate(row, index)}
           />
 
-          {/* Offense only. A zone's name is its zone; there is nothing to call it. */}
-          {isAttack(editing) && (
-            <label className="flex flex-col gap-1">
-              <span className="font-display text-[11px] tracking-widest uppercase text-faint">
-                Squad name
-              </span>
-              <input
-                type="text"
-                value={attackName}
-                maxLength={40}
-                placeholder={`Attack ${editing + 1}`}
-                onChange={(e) => setAttackName(e.target.value)}
-                className="rounded border border-line bg-void px-2 py-1 text-body text-parchment"
-              />
-            </label>
-          )}
+          <RosterView
+            roster={roster}
+            selectedHeroId={selected}
+            onSelect={setSelected}
+            seatedIds={seatedIds}
+          />
+        </div>
+      </Panel>
+
+      <Panel span={3}>
+        <div className="flex flex-col gap-6">
+          <SquadReadout squad={squadHeroes} backSeat={backSeat} />
 
           <section aria-label="Save this squad" className="flex flex-col gap-3">
-            <button
-              type="button"
-              disabled={!allocation.isComplete || saving}
-              onClick={() => void save()}
-              className={[
-                'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
-                allocation.isComplete && !saving
-                  ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment hover:bg-gold/20'
-                  : 'border-line text-faint',
-              ].join(' ')}
-            >
-              {saving ? 'Saving…' : `Save ${labelOf(editing)}`}
-            </button>
-
             {savedAttack && (
               <p role="status" className="font-mono text-caption text-earth-lit">
                 Saved. {savedAttack.name ?? `Attack ${savedAttack.slot + 1}`} is{' '}

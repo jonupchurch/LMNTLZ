@@ -47,11 +47,23 @@ export {
   RESISTED_SECONDARY,
   RESISTED_PRIMARY,
 } from './type/effectiveness.js';
-export { FORCE_ABBR, FORCE_DEEP, FORCE_FILL, FORCE_RING, FORCE_TEXT } from './type/forceClasses.js';
+export {
+  FORCE_ABBR,
+  FORCE_DEEP,
+  FORCE_FILL,
+  FORCE_GRADIENT,
+  FORCE_RING,
+  FORCE_TEXT,
+  FORCE_WASH,
+} from './type/forceClasses.js';
 
 // --- hero ------------------------------------------------------------------
 export { HeroCard, maxHpOf } from './hero/HeroCard.js';
 export type { HeroCardProps, HeroCardScale } from './hero/HeroCard.js';
+export { HeroPortrait } from './hero/HeroPortrait.js';
+export type { HeroPortraitProps } from './hero/HeroPortrait.js';
+export { HERO_PORTRAITS, PORTRAIT_ASPECT } from './hero/portraits.generated.js';
+export type { HeroPortraitSources } from './hero/portraits.generated.js';
 export { PowerSlot, stateOf } from './hero/PowerSlot.js';
 export type { PowerSlotProps, PowerSlotState } from './hero/PowerSlot.js';
 export { CooldownRing } from './hero/CooldownRing.js';

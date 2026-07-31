@@ -51,6 +51,11 @@ CLIENT = ROOT / "apps" / "client" / "src"
 SCREENS: dict[str, tuple[str, list[str]]] = {
     "landing":   ("LMNTLZ Onboarding Flows.dc.html", ["features/landing", "features/auth"]),
     "roster":    ("LMNTLZ Roster.dc.html",           ["features/roster"]),
+    # ⚠️ **There is no squad-builder export.** The design for this screen is a
+    # wireframe Jon holds outside the repo, so this row is measured against the
+    # Design System's component gallery as a stand-in. Its 19 `clip-path`s are
+    # that gallery's shape catalogue, NOT a requirement of the squad screen —
+    # which the wireframe draws with rounded rectangles. Do not chase them.
     "squads":    ("LMNTLZ Design System.dc.html",    ["features/squads"]),
     "battle":    ("LMNTLZ Battle.dc.html",           ["features/battle"]),
     "turnqueue": ("LMNTLZ Turn Sequence.dc.html",    ["features/battle"]),
@@ -155,7 +160,56 @@ def project_classes() -> dict[str, set[str]]:
     return classes
 
 
-def client_vocabulary(sources: list[Path], classes: dict[str, set[str]]) -> Counter:
+def project_components() -> dict[str, set[str]]:
+    """`HeroPortrait` -> {"portrait", "gradient"}, `Meter` -> {"gradient"}, ...
+
+    ### The same defect as `project_classes`, one level up
+
+    `project_classes` taught the audit that a treatment can be spent through a
+    named CSS class. It can equally be spent through a **component**: 019 US2
+    gave the squad screen 33 hero portraits, and the audit went on reporting
+    `portrait  ABSENT` because the `<img>` is inside `HeroPortrait` and the
+    screen only writes `<HeroPortrait ...>`.
+
+    That is the eleventh-and-twelfth instance of one mistake in this repo, and
+    the tell is always the same: **a metric that barely moves after work aimed
+    straight at it is measuring the wrong thing.** So the component layer is
+    scanned for what each file spends, and a screen that names a component is
+    credited with it.
+
+    Deliberately shallow — one hop, and only for components exported from
+    `components/`. A transitive graph would be more correct and would make the
+    number harder to explain, and this is a floor rather than a pass mark.
+    """
+    contributed: dict[str, set[str]] = {}
+    classes = project_classes()
+
+    for path in sorted((CLIENT / "components").rglob("*.tsx")):
+        name = path.stem
+        if name.endswith(".generated"):
+            continue
+        spent = set(client_vocabulary([path], classes).elements())
+        keep = spent & {
+            "clip-path",
+            "box-shadow",
+            "inset-shadow",
+            "glow",
+            "gradient",
+            "dashed",
+            "backdrop-filter",
+            "keyframes",
+            "portrait",
+        }
+        if keep:
+            contributed[name] = keep
+    return contributed
+
+
+def client_vocabulary(
+    sources: list[Path],
+    classes: dict[str, set[str]],
+    components: dict[str, set[str]] | None = None,
+) -> Counter:
     v: Counter = Counter()
     for path in sources:
         code = strip_comments(path.read_text(encoding="utf-8"))
@@ -183,6 +237,14 @@ def client_vocabulary(sources: list[Path], classes: dict[str, set[str]]) -> Coun
         # Spent through a named class in `base.css`.
         for name, props in classes.items():
             uses = len(re.findall(rf"\b{re.escape(name)}\b", code))
+            for prop in props:
+                v[prop] += uses
+
+        # Spent through a shared component. `<HeroPortrait` only — a bare
+        # mention in an import list is not a use, and counting it would credit
+        # a screen for something it renders nowhere.
+        for name, props in (components or {}).items():
+            uses = len(re.findall(rf"<{re.escape(name)}[\s/>]", code))
             for prop in props:
                 v[prop] += uses
     return v
@@ -215,6 +277,14 @@ def main() -> int:
         print(f"Resolved {len(classes)} treatment classes from base.css: "
               f"{', '.join(sorted(classes))}\n")
 
+    components = project_components()
+    if not components:
+        print("!! no shared components resolved — a screen that spends a treatment")
+        print("   through <HeroPortrait> or <Meter> will read as absent. Check the path.")
+    else:
+        print(f"Resolved {len(components)} treatment-bearing components: "
+              f"{', '.join(sorted(components))}\n")
+
     rows: list[tuple[str, str, Counter, Counter, list[str]]] = []
     for name, (export_name, dirs) in SCREENS.items():
         if only and name != only:
@@ -228,7 +298,7 @@ def main() -> int:
         if not srcs:
             print(f"!! no sources for {name}: {dirs}")
             continue
-        have = client_vocabulary(srcs, classes)
+        have = client_vocabulary(srcs, classes, components)
         missing = [k for k in want if want[k] > 0 and have[k] == 0]
         rows.append((name, export_name, want, have, missing))
 

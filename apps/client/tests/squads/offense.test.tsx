@@ -84,26 +84,71 @@ afterEach(() => {
 
 const puts = () => calls.filter((c) => c.method === 'PUT');
 
+/**
+ * Open The Striking Six.
+ *
+ * **019 US2 put the five squads behind a two-level control** — a mode above
+ * numbered chips, which is what the design draws — so an attack slot is one
+ * click further away than it was. The state underneath is unchanged: `editing`
+ * is still one discriminant and the mode is derived from it, which is exactly
+ * what the last test in this block proves.
+ */
+async function striking(): Promise<void> {
+  await userEvent.click(screen.getByRole('tab', { name: /The Striking Six/i }));
+}
+
 async function onAttack(slot: 1 | 2 | 3) {
   render(<SquadsScreen />);
   await waitFor(() => expect(screen.getByLabelText('Champion roster')).toBeInTheDocument());
+  await striking();
   await userEvent.click(screen.getByRole('tab', { name: new RegExp(`Attack ${slot}`) }));
 }
 
-describe('all five squads are reachable from one row of tabs', () => {
+describe('all five squads are reachable from the header', () => {
   it('offers both defense zones and all three attack slots', async () => {
     render(<SquadsScreen />);
     await waitFor(() => expect(screen.getByLabelText('Champion roster')).toBeInTheDocument());
 
-    expect(screen.getAllByRole('tab')).toHaveLength(5);
-    for (const name of [/Zone I,/, /Zone II,/, /Attack 1/, /Attack 2/, /Attack 3/]) {
+    /* Two modes plus the two zones — the standing side is what opens on. */
+    expect(screen.getAllByRole('tab')).toHaveLength(4);
+    for (const name of [/Zone I,/, /Zone II,/]) {
       expect(screen.getByRole('tab', { name })).toBeInTheDocument();
     }
+
+    await striking();
+    expect(screen.getAllByRole('tab')).toHaveLength(5);
+    for (const name of [/Attack 1/, /Attack 2/, /Attack 3/]) {
+      expect(screen.getByRole('tab', { name })).toBeInTheDocument();
+    }
+  });
+
+  /**
+   * **The mode is derived, not stored**, which is the claim the two-level
+   * control has to earn: selecting an attack slot leaves The Striking Six lit,
+   * because "which mode" is read off "which squad" rather than held beside it.
+   * A second piece of state would let these two disagree.
+   */
+  it('lights the mode belonging to the squad that is open', async () => {
+    render(<SquadsScreen />);
+    await waitFor(() => expect(screen.getByLabelText('Champion roster')).toBeInTheDocument());
+
+    expect(screen.getByRole('tab', { name: /The Standing Six/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+
+    await striking();
+    await userEvent.click(screen.getByRole('tab', { name: /Attack 3/ }));
+    expect(screen.getByRole('tab', { name: /The Striking Six/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
   });
 
   it('says which attack squads are ready and which are short', async () => {
     render(<SquadsScreen />);
     await waitFor(() => expect(screen.getByLabelText('Champion roster')).toBeInTheDocument());
+    await striking();
 
     expect(screen.getByRole('tab', { name: /Attack 1, Vanguard, ready/ })).toBeInTheDocument();
     // Slot 2 is unnamed and empty in the fixture, which is a stated state.
@@ -140,6 +185,7 @@ describe('all five squads are reachable from one row of tabs', () => {
 
     render(<SquadsScreen />);
     await waitFor(() => expect(screen.getByLabelText('Champion roster')).toBeInTheDocument());
+    await striking();
 
     expect(screen.getByRole('tab', { name: /Attack 1, Vanguard, broken/ })).toBeInTheDocument();
 

@@ -87,7 +87,7 @@ describe('pressing Save reaches the server', () => {
   it('PUTs the composed squad to the zone being edited', async () => {
     await screenReady();
 
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     await waitFor(() => expect(saves()).toHaveLength(1));
     const [save] = saves();
@@ -115,7 +115,7 @@ describe('pressing Save reaches the server', () => {
     await screenReady();
 
     await userEvent.click(screen.getByRole('tab', { name: /Zone II/ }));
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone II/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone II/ }));
 
     await waitFor(() => expect(saves()).toHaveLength(1));
     expect(saves()[0]!.path).toMatch(/\/v1\/squads\/defense\/hidden$/);
@@ -123,7 +123,7 @@ describe('pressing Save reaches the server', () => {
 
   it('sends each seated champion’s served config back unchanged', async () => {
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     await waitFor(() => expect(saves()).toHaveLength(1));
     const body = saves()[0]!.body as {
@@ -157,7 +157,7 @@ describe('pressing Save reaches the server', () => {
     await userEvent.click(screen.getByRole('button', { name: new RegExp(nameOf(newcomer)) }));
     await userEvent.click(screen.getByRole('button', { name: /Front seat 1: / }));
 
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
     await waitFor(() => expect(saves()).toHaveLength(1));
 
     const body = saves()[0]!.body as { seats: { heroId: string; config?: unknown }[] };
@@ -181,7 +181,7 @@ describe('what the screen says about the save', () => {
       body: { holdStreak: 0, streakReset: true, evictedSquadIds: [], warnings: [] },
     };
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     expect(await screen.findByText(/hold streak reset to 0/)).toBeInTheDocument();
   });
@@ -197,7 +197,7 @@ describe('what the screen says about the save', () => {
       body: { holdStreak: 14, streakReset: false, evictedSquadIds: [], warnings: [] },
     };
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     expect(await screen.findByText(/Hold streak 14 is intact/)).toBeInTheDocument();
   });
@@ -216,7 +216,7 @@ describe('what the screen says about the save', () => {
       },
     };
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     expect(await screen.findByText(/Silka has reach 1/)).toBeInTheDocument();
     expect(screen.getByText(/tier 4 and 5 never fire/)).toBeInTheDocument();
@@ -235,7 +235,7 @@ describe('what the screen says about the save', () => {
       },
     };
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     expect(await screen.findByText(/2 attack squads lost champions/)).toBeInTheDocument();
   });
@@ -250,7 +250,7 @@ describe('what the screen says about the save', () => {
     await screenReady();
     expect(rosterReads()).toHaveLength(1);
 
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
     await waitFor(() => expect(rosterReads()).toHaveLength(2));
   });
 });
@@ -275,12 +275,12 @@ describe('a refused save', () => {
       },
     };
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/already defending your hidden zone/);
     // The screen the player was working on is still there.
     expect(screen.getByLabelText('defense squad formation')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Save Zone I/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Set as defense, Zone I/ })).toBeInTheDocument();
   });
 
   it('does not refetch, because nothing changed', async () => {
@@ -289,7 +289,7 @@ describe('a refused save', () => {
       body: { error: { code: 'wrong-size', message: 'A squad is exactly six champions.' } },
     };
     await screenReady();
-    await userEvent.click(screen.getByRole('button', { name: /Save Zone I/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(rosterReads()).toHaveLength(1);

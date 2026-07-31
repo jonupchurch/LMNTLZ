@@ -12,6 +12,7 @@
  */
 
 import type { DamageType } from '@lmntlz/content';
+import { FORCE_GRADIENT } from '../type/forceClasses.js';
 
 export type MeterTone = DamageType | 'strong' | 'danger' | 'success' | 'neutral';
 
@@ -23,34 +24,6 @@ export interface MeterProps {
   /** Hides the numeric read; the bar alone. */
   readonly bare?: boolean;
 }
-
-/**
- * **019 US1 — a bar is a gradient, deep to base** (FR-002).
- *
- * `LMNTLZ Battle.dc.html` fills every health bar with
- * `linear-gradient(90deg, <force>-deep, <force>)` — four times on one screen —
- * and the client filled them with one flat colour. On a 2px bar that is
- * invisible; on the battle board's health bars, which is where a player spends
- * the whole fight looking, it is the difference between a readout and a
- * coloured rectangle.
- *
- * Written as `bg-linear-to-r from-x-deep to-x` rather than an arbitrary value,
- * so the two stops stay tokens and a force's shade can be retuned in one place.
- * Written out per force rather than interpolated because **Tailwind scans
- * source text** — a template literal generates no class and every bar would
- * render with no fill at all.
- */
-const FORCE_GRADIENT: Record<DamageType, string> = {
-  earth: 'bg-linear-to-r from-earth-deep to-earth',
-  air: 'bg-linear-to-r from-air-deep to-air',
-  fire: 'bg-linear-to-r from-fire-deep to-fire',
-  water: 'bg-linear-to-r from-water-deep to-water',
-  light: 'bg-linear-to-r from-light-deep to-light',
-  dark: 'bg-linear-to-r from-dark-deep to-dark',
-  slash: 'bg-linear-to-r from-slash-deep to-slash',
-  pierce: 'bg-linear-to-r from-pierce-deep to-pierce',
-  crush: 'bg-linear-to-r from-crush-deep to-crush',
-};
 
 const SEMANTIC_FILL: Record<'strong' | 'danger' | 'success' | 'neutral', string> = {
   /* The export's CTA ramp, `linear-gradient(140deg,#F2C744,#B5732E)` — gold

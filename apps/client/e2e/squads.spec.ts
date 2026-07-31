@@ -220,7 +220,7 @@ test.describe('the squad actually saves', () => {
     });
     await page.goto('/');
 
-    await page.getByRole('button', { name: /Save Zone I/ }).click();
+    await page.getByRole('button', { name: /Set as defense, Zone I/ }).click();
 
     // The request happened, once, at the zone on screen.
     await expect.poll(() => puts.length).toBe(1);
@@ -249,7 +249,7 @@ test.describe('the squad actually saves', () => {
     );
     await page.goto('/');
 
-    await page.getByRole('button', { name: /Save Zone I/ }).click();
+    await page.getByRole('button', { name: /Set as defense, Zone I/ }).click();
 
     await expect(page.getByRole('alert')).toContainText(/already defending your hidden zone/);
     // Not a blank page with a sentence on it: the work is still there.
@@ -275,11 +275,16 @@ test.describe('the three attack squads are reachable and savable', () => {
     await page.goto('/');
 
     /**
-     * **Scoped to the squad tablist.** The shell has its own two-tab nav — Squads
-     * and Attack — so an unscoped count is 7 and would change again the next time a
-     * screen is added. The five here are the squads: two zones and three slots.
+     * **Scoped to the squad tablist.** The shell has its own nav and 019 US2
+     * added a `Squad kind` tablist above this one, so an unscoped count picks
+     * up both and would change again the next time a screen is added.
+     *
+     * Three rather than five since US2: the five squads sit behind a mode, so
+     * the numbered chips show one side at a time. `Squad kind` is asserted
+     * separately in `offense.test.tsx`.
      */
-    await expect(page.getByRole('tablist', { name: 'Squad' }).getByRole('tab')).toHaveCount(5);
+    await page.getByRole('tab', { name: /The Striking Six/i }).click();
+    await expect(page.getByRole('tablist', { name: 'Squad' }).getByRole('tab')).toHaveCount(3);
 
     await page.getByRole('tab', { name: /Attack 2/ }).click();
     await page.getByRole('button', { name: /Save Attack 2/ }).click();
@@ -293,6 +298,7 @@ test.describe('the three attack squads are reachable and savable', () => {
     await mockApi(page);
     await page.goto('/');
 
+    await page.getByRole('tab', { name: /The Striking Six/i }).click();
     await page.getByRole('tab', { name: /Attack 1/ }).click();
 
     // IDS[0] defends the Visible zone in the fixture.

@@ -79,6 +79,55 @@ export const FORCE_DEEP: Record<DamageType, string> = {
 };
 
 /**
+ * **A bar is a gradient, deep to base** (019 US1 · FR-002).
+ *
+ * `LMNTLZ Battle.dc.html` fills every health bar with
+ * `linear-gradient(90deg, <force>-deep, <force>)` — four times on one screen —
+ * and the client filled them with one flat colour. On a 2px bar that is
+ * invisible; on a health bar, which is where a player spends the whole fight
+ * looking, it is the difference between a readout and a coloured rectangle.
+ *
+ * Written as `bg-linear-to-r from-x-deep to-x` rather than an arbitrary value,
+ * so the two stops stay tokens and a force's shade can be retuned in one place.
+ * Written out per force rather than interpolated for the reason at the top of
+ * this file: **Tailwind scans source text**.
+ */
+export const FORCE_GRADIENT: Record<DamageType, string> = {
+  earth: 'bg-linear-to-r from-earth-deep to-earth',
+  air: 'bg-linear-to-r from-air-deep to-air',
+  fire: 'bg-linear-to-r from-fire-deep to-fire',
+  water: 'bg-linear-to-r from-water-deep to-water',
+  light: 'bg-linear-to-r from-light-deep to-light',
+  dark: 'bg-linear-to-r from-dark-deep to-dark',
+  slash: 'bg-linear-to-r from-slash-deep to-slash',
+  pierce: 'bg-linear-to-r from-pierce-deep to-pierce',
+  crush: 'bg-linear-to-r from-crush-deep to-crush',
+};
+
+/**
+ * A wash laid *over* hero art in the force's deep step (019 US2).
+ *
+ * The squad screen's cards are portrait-led, and 27 unrelated illustrations
+ * side by side read as 27 unrelated illustrations. A single low-opacity wash in
+ * the House colour is what makes the grid read as one roster and makes a
+ * champion's Force legible at picker size, where the emblem is 14px.
+ *
+ * Kept low deliberately: at `/40` the art is still the art. This is a tint, not
+ * a filter, and the moment it stops looking like a painting it has gone too far.
+ */
+export const FORCE_WASH: Record<DamageType, string> = {
+  earth: 'bg-earth-deep/40',
+  air: 'bg-air-deep/40',
+  fire: 'bg-fire-deep/40',
+  water: 'bg-water-deep/40',
+  light: 'bg-light-deep/40',
+  dark: 'bg-dark-deep/40',
+  slash: 'bg-slash-deep/40',
+  pierce: 'bg-pierce-deep/40',
+  crush: 'bg-crush-deep/40',
+};
+
+/**
  * The three-letter column heads the nine-type heat readout uses.
  *
  * Transcribed from the export's grid (`EAR AIR FIR WAT LGT DRK SLA PRC CRU`)

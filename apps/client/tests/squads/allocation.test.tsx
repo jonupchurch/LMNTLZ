@@ -22,10 +22,17 @@ import { IDS, nameOf, roster } from './fixtures.js';
 
 describe('the roster shows all 27, always', () => {
   it('renders every champion with no locked or unrecruited state', () => {
-    render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
+    const { container } = render(
+      <RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />,
+    );
 
-    const cards = screen.getAllByRole('button');
-    expect(cards).toHaveLength(27);
+    /**
+     * **By `data-hero`, not by counting every button.** 019 US2 gave the picker
+     * a search box, nine House chips and nine covers-bane swatches, so "every
+     * button on screen is a champion" stopped being true — and it was never the
+     * claim worth making. The claim is that all 27 are listed, unfiltered.
+     */
+    expect(container.querySelectorAll('[data-hero]')).toHaveLength(27);
 
     // A greyed-out card would be the first pixel of a collection system.
     for (const word of [/locked/i, /recruit/i, /unlock/i, /owned/i]) {
@@ -35,8 +42,8 @@ describe('the roster shows all 27, always', () => {
 
   it('names the zone a defender is committed to, not merely that she is busy', () => {
     render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
-    expect(screen.getAllByText(/Defending · visible/).length).toBe(6);
-    expect(screen.getAllByText(/Defending · hidden/).length).toBe(6);
+    expect(screen.getAllByText(/Def · visible/).length).toBe(6);
+    expect(screen.getAllByText(/Def · hidden/).length).toBe(6);
   });
 
   it('states the pool, which is why overlap keeps happening', () => {

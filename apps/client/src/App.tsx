@@ -343,7 +343,13 @@ function GameApp(): JSX.Element {
                       onUnauthenticated={onUnauthenticated}
                     />
                   ) : (
-                    <SquadsScreen onUnauthenticated={onUnauthenticated} />
+                    <SquadsScreen
+                      onUnauthenticated={onUnauthenticated}
+                      /* The design's primary action on an attack squad. It
+                         leaves for matchmaking rather than starting anything —
+                         choosing an opponent is that screen's job. */
+                      onFindBattle={() => setScreen({ kind: 'attack' })}
+                    />
                   )}
                 </AppShell>
               )
