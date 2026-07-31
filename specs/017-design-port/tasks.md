@@ -146,10 +146,10 @@ green**.
 
 **The rail lands first** so every port is reachable as it completes.
 
-- [ ] T043 [US3] Replace the four top tabs in `apps/client/src/App.tsx` with `AppShell` + `Rail`. **Register only destinations that exist**: Squads · Roster · Matchmaking · The Court · Codex. `RUNE FORGE` and `THE STORE` arrive with 018, `DISPATCHES` with 016
-- [ ] T044 [US3] Model `THE COURT` as a **rail section** grouping Profile · Battle Record · Guild — established from the active-state colour across the exports (`research.md` R6), and Chat joins it when 014 lands
-- [ ] T045 [US3] Split `ROSTER` out of `SquadsScreen` into its own destination, as the rail draws it
-- [ ] T046 [US3] Write `apps/client/tests/site/rail.test.tsx` — **every entry leads to a registered screen**, exactly one is active per screen, and the unbuilt entries are **absent rather than disabled** (FR-015)
+- [X] T043 [US3] Replace the four top tabs in `apps/client/src/App.tsx` with `AppShell` + `Rail`. **Register only destinations that exist**: Squads · Roster · Matchmaking · The Court · Codex. `RUNE FORGE` and `THE STORE` arrive with 018, `DISPATCHES` with 016
+- [X] T044 [US3] Model `THE COURT` as a **rail section** grouping Profile · Battle Record · Guild — established from the active-state colour across the exports (`research.md` R6), and Chat joins it when 014 lands
+- [X] T045 [US3] Split `ROSTER` out of `SquadsScreen` into its own destination, as the rail draws it
+- [X] T046 [US3] Write `apps/client/tests/site/rail.test.tsx` — **every entry leads to a registered screen**, exactly one is active per screen, and the unbuilt entries are **absent rather than disabled** (FR-015)
 - [ ] T047 [P] [US3] Port `features/landing/LandingScreen.tsx` + `features/auth/SignInPanel.tsx` against `LMNTLZ Onboarding Flows.dc.html`
 - [ ] T048 [P] [US3] Port `features/squads/RosterView.tsx` against `LMNTLZ Roster.dc.html`
 - [ ] T049 [P] [US3] Port `features/squads/{SquadsScreen,SquadBuilder,DefenseConfig,EvictionWarning,FiringProfile}.tsx` against the Design System's *Applied — squad builder row*. **Keep the 2/3/1 formation grid fixed** — it wrapped 2+1 once and reads as a formation that does not exist

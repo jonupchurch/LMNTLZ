@@ -31,8 +31,8 @@ test.describe('a player can reach an opponent from the squad screen', () => {
     await page.goto('/');
 
     // Signed in, on the squads screen, with a way out of it.
-    await expect(page.getByRole('tablist', { name: 'Screen' })).toBeVisible();
-    await page.getByRole('tab', { name: 'Attack', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+    await page.getByRole('button', { name: 'Matchmaking', exact: true }).click();
 
     await expect(page.getByLabel('Opponents')).toBeVisible();
     await page.getByLabel('Opponents').getByRole('button', { name: /Reyna/ }).click();
@@ -56,14 +56,14 @@ test.describe('a player can reach an opponent from the squad screen', () => {
      * this, `ResumeBattle` was the only route into it and only a player who was
      * *already* mid-battle could get there.
      */
-    await expect(page.getByRole('tablist', { name: 'Screen' })).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
   });
 
   test('shows the ambush odds and the bot flag, both served', async ({ page }) => {
     await mockApi(page);
     await mockAttack(page);
     await page.goto('/');
-    await page.getByRole('tab', { name: 'Attack', exact: true }).click();
+    await page.getByRole('button', { name: 'Matchmaking', exact: true }).click();
 
     // Neither is computed here: `perWin` and `cap` are text on the squad screen and
     // this is the current chance, straight from the server.
@@ -85,7 +85,7 @@ test.describe('a player can reach an opponent from the squad screen', () => {
     await mockApi(page);
     await mockAttack(page);
     await page.goto('/');
-    await page.getByRole('tab', { name: 'Attack', exact: true }).click();
+    await page.getByRole('button', { name: 'Matchmaking', exact: true }).click();
     await page.getByLabel('Opponents').getByRole('button', { name: /Reyna/ }).click();
 
     const panel = page.getByLabel('Scouting Reyna');

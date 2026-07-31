@@ -324,24 +324,24 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
 
   if (error) {
     return (
-      <main className="mx-auto max-w-[1600px] px-8 py-12">
+      <div className="mx-auto max-w-[1600px] px-8 py-12">
         <p role="alert" className="text-slash-lit">
           {error}
         </p>
-      </main>
+      </div>
     );
   }
 
   if (!roster) {
     return (
-      <main className="mx-auto max-w-[1600px] px-8 py-12">
+      <div className="mx-auto max-w-[1600px] px-8 py-12">
         <p className="text-faint">Loading your champions…</p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
       {/**
        * **Five tabs on one row, because there are five squads.** Two defense zones
        * and three attack slots, and exactly one is open at a time. A "Defense /
@@ -577,6 +577,6 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
           onCancel={() => setPending(null)}
         />
       )}
-    </main>
+    </div>
   );
 }

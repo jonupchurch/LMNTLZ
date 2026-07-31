@@ -14,7 +14,15 @@
 import type { ReactNode } from 'react';
 
 export interface HeaderProps {
-  readonly shards: number;
+  /**
+   * **Optional, and omitted means "not known" rather than zero.**
+   *
+   * There is no balance in the session payload today, so `App` passes nothing.
+   * Rendering `◈ 0` for an unknown balance would be a false statement about a
+   * player's money that looks authoritative — and the one number in this app
+   * nobody would think to doubt. Absent is honest; wrong is not.
+   */
+  readonly shards?: number;
   readonly username: string;
   /** The `ConnectionState` element, passed in rather than constructed here. */
   readonly connection?: ReactNode;
@@ -34,13 +42,15 @@ export function Header({
       <div className="flex items-center gap-(--gutter)">
         {connection}
 
-        <span className="flex items-center gap-1.5" title="Shards">
-          <span aria-hidden="true" className="text-gold">
-            ◈
+        {shards !== undefined && (
+          <span className="flex items-center gap-1.5" title="Shards">
+            <span aria-hidden="true" className="text-gold">
+              ◈
+            </span>
+            <span className="font-mono tabular-nums">{shards.toLocaleString('en-US')}</span>
+            <span className="sr-only">shards</span>
           </span>
-          <span className="font-mono tabular-nums">{shards.toLocaleString('en-US')}</span>
-          <span className="sr-only">shards</span>
-        </span>
+        )}
 
         {onProfile ? (
           <button

@@ -83,8 +83,10 @@ test.beforeEach(async ({ page }) => {
 test('a player can reach their own profile from the nav', async ({ page }) => {
   await page.goto('/');
 
-  // Starts on Squads. The profile must be one click away or it does not exist.
-  await page.getByRole('tab', { name: 'Profile' }).click();
+  // Starts on Squads. **Still one click** — 017 moved it from a top tab to the
+  // header username, which is where the export puts it. Two clicks would mean
+  // it had been buried in a rail group.
+  await page.getByRole('banner').getByRole('button', { name: 'Reyna' }).click();
 
   await expect(page.getByRole('heading', { level: 1, name: 'Reyna' })).toBeVisible();
 
@@ -100,7 +102,7 @@ test('a player can reach their own profile from the nav', async ({ page }) => {
 
 test('the battle record shows twenty entries with no measurable gap', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('tab', { name: 'Profile' }).click();
+  await page.getByRole('banner').getByRole('button', { name: 'Reyna' }).click();
 
   const rows = page.locator('table tbody tr');
   await expect(rows).toHaveCount(20);
@@ -117,7 +119,7 @@ test('the battle record shows twenty entries with no measurable gap', async ({ p
 
 test('own-account controls are present and the custom upload is closed', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('tab', { name: 'Profile' }).click();
+  await page.getByRole('banner').getByRole('button', { name: 'Reyna' }).click();
 
   await expect(page.getByRole('button', { name: /export my data/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /change name/i })).toBeVisible();
@@ -134,7 +136,7 @@ test('the export downloads a file', async ({ page }) => {
   );
 
   await page.goto('/');
-  await page.getByRole('tab', { name: 'Profile' }).click();
+  await page.getByRole('banner').getByRole('button', { name: 'Reyna' }).click();
 
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /export my data/i }).click();

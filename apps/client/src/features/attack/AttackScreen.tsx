@@ -150,24 +150,24 @@ export function AttackScreen({
 
   if (error) {
     return (
-      <main className="mx-auto max-w-[1600px] px-8 py-12">
+      <div className="mx-auto max-w-[1600px] px-8 py-12">
         <p role="alert" className="text-slash-lit">
           {error}
         </p>
-      </main>
+      </div>
     );
   }
 
   if (!list || !standing) {
     return (
-      <main className="mx-auto max-w-[1600px] px-8 py-12">
+      <div className="mx-auto max-w-[1600px] px-8 py-12">
         <p className="text-faint">Finding opponents…</p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
       <header className="flex flex-wrap items-baseline justify-between gap-6">
         <h2 className="font-display text-xl tracking-widest uppercase text-parchment">Attack</h2>
 
@@ -336,6 +336,6 @@ export function AttackScreen({
           </p>
         )}
       </div>
-    </main>
+    </div>
   );
 }

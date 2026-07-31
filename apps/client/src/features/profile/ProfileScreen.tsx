@@ -109,26 +109,26 @@ export function ProfileScreen({
 
   if (profile.kind === 'loading') {
     return (
-      <main className="mx-auto max-w-[1600px] px-8 py-10">
+      <div className="mx-auto max-w-[1600px] px-8 py-10">
         <p className="text-sm tracking-widest text-faint uppercase" role="status">
           Loading profile…
         </p>
-      </main>
+      </div>
     );
   }
 
   if (profile.kind === 'failed') {
     return (
-      <main className="mx-auto max-w-[1600px] px-8 py-10">
+      <div className="mx-auto max-w-[1600px] px-8 py-10">
         <p className="text-sm text-muted" role="alert">
           {profile.message}
         </p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-[1600px] px-8 py-10">
+    <div className="mx-auto max-w-[1600px] px-8 py-10">
       <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <PublicProfile profile={profile.value} />
 
@@ -156,7 +156,7 @@ export function ProfileScreen({
           </aside>
         ) : null}
       </div>
-    </main>
+    </div>
   );
 }
 

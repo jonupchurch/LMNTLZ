@@ -6,8 +6,11 @@ import { AttackScreen } from './features/attack/AttackScreen.js';
 import { BattleScreen } from './features/battle/BattleScreen.js';
 import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import type { StartedBattle } from './features/battle/types.js';
+import { ROSTER_SIZE } from '@lmntlz/content';
+import { AppShell, Header, Panel, Rail, type RailEntry } from './components/index.js';
 import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
+import { RosterScreen } from './features/roster/RosterScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
 import { GuildScreen } from './features/guilds/GuildScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
@@ -72,7 +75,14 @@ type Screen =
    * Which you see is a server fact (`GET /v1/me/guild`), not a navigation choice,
    * so it is a single member here rather than three.
    */
-  | { readonly kind: 'guild' };
+  | { readonly kind: 'guild' }
+  /**
+   * **`ROSTER` is its own destination** (T045), as the rail draws it. It is a
+   * study screen over content — all 27 are unlocked and identical for
+   * everybody — and it is *not* the squad builder's hero list, which is an
+   * allocation control that has to stay where the allocation happens.
+   */
+  | { readonly kind: 'roster' };
 
 /**
  * **The dev-only component gallery** (017 T032).
@@ -197,34 +207,51 @@ function GameApp(): JSX.Element {
                   onUnauthenticated={onUnauthenticated}
                 />
               ) : (
-                <>
-                  <ScreenNav
-                    screen={screen.kind}
-                    accountId={phase.account.id}
-                    onNavigate={setScreen}
-                  />
-                  {screen.kind === 'attack' ? (
-                    <AttackScreen
-                      onBattleStarted={(started) => setScreen({ kind: 'battle', started })}
-                      onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
-                      onUnauthenticated={onUnauthenticated}
+                <AppShell
+                  rail={
+                    <Rail
+                      entries={railEntries()}
+                      activeId={activeRailId(screen.kind)}
+                      onSelect={(id) => setScreen(screenFor(id, phase.account.id))}
                     />
-                  ) : screen.kind === 'profile' ? (
-                    <ProfileScreen
-                      targetId={screen.targetId}
-                      isSelf={screen.targetId === phase.account.id}
-                      onUnauthenticated={onUnauthenticated}
+                  }
+                  header={
+                    /* No `shards` — the session payload carries no balance, and
+                       a placeholder 0 would be a false claim about money.
+                       `onProfile` is how the profile is reached (T020): one
+                       click on your own name, never a rail slot. */
+                    <Header
+                      username={phase.account.username}
+                      onProfile={() => setScreen(screenFor('profile', phase.account.id))}
                     />
-                  ) : screen.kind === 'guild' ? (
-                    <GuildScreen
-                      accountId={phase.account.id}
-                      onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
-                      onUnauthenticated={onUnauthenticated}
-                    />
-                  ) : (
-                    <SquadsScreen onUnauthenticated={onUnauthenticated} />
-                  )}
-                </>
+                  }
+                >
+                  <Panel span={12}>
+                    {screen.kind === 'attack' ? (
+                      <AttackScreen
+                        onBattleStarted={(started) => setScreen({ kind: 'battle', started })}
+                        onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
+                        onUnauthenticated={onUnauthenticated}
+                      />
+                    ) : screen.kind === 'profile' ? (
+                      <ProfileScreen
+                        targetId={screen.targetId}
+                        isSelf={screen.targetId === phase.account.id}
+                        onUnauthenticated={onUnauthenticated}
+                      />
+                    ) : screen.kind === 'guild' ? (
+                      <GuildScreen
+                        accountId={phase.account.id}
+                        onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
+                        onUnauthenticated={onUnauthenticated}
+                      />
+                    ) : screen.kind === 'roster' ? (
+                      <RosterScreen />
+                    ) : (
+                      <SquadsScreen onUnauthenticated={onUnauthenticated} />
+                    )}
+                  </Panel>
+                </AppShell>
               )
             }
           />
@@ -258,52 +285,109 @@ function GameApp(): JSX.Element {
  * `lib/analytics.ts` records the consequence: every screen reports as `/` in the
  * dashboard, and a per-screen funnel would need routes or custom events.
  */
-function ScreenNav({
-  screen,
-  accountId,
-  onNavigate,
-}: {
-  screen: 'squads' | 'attack' | 'profile' | 'guild';
-  /** Needed because "My profile" is a profile *of somebody*, and that is you. */
-  accountId: string;
-  onNavigate: (
-    next:
-      | { kind: 'squads' }
-      | { kind: 'attack' }
-      | { kind: 'profile'; targetId: string }
-      | { kind: 'guild' },
-  ) => void;
-}): JSX.Element {
-  const tab = (
-    kind: 'squads' | 'attack' | 'profile' | 'guild',
-    label: string,
-    next: Parameters<typeof onNavigate>[0],
-  ) => (
-    <button
-      key={kind}
-      type="button"
-      role="tab"
-      aria-selected={screen === kind}
-      onClick={() => onNavigate(next)}
-      className={[
-        'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
-        screen === kind ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
-      ].join(' ')}
-    >
-      {label}
-    </button>
-  );
+/**
+ * ---------------------------------------------------------------------------
+ * The rail (017 T043, T044, T045 · FR-015)
+ * ---------------------------------------------------------------------------
+ *
+ * This replaces four top tabs — Squads · Attack · Profile · Guild — with the
+ * left rail every export draws.
+ *
+ * ### An entry cannot name a screen that does not exist
+ *
+ * FR-015, and it is enforced structurally rather than by care: `screenFor`
+ * returns a `Screen`, so **a rail id with no screen does not compile**. There
+ * is no href, no route table, and nothing to fall through to. Adding an entry
+ * for an unbuilt destination means adding a `Screen` member first, which is
+ * the point.
+ *
+ * ### What is deliberately absent, and why absent rather than disabled
+ *
+ * - **`CODEX`** — 017's own Phase 7 builds it. Registered when it exists.
+ * - **`RUNE FORGE`, `THE STORE`** — 018.
+ * - **`DISPATCHES`** — 016.
+ * - **`CHAT`** — 014, and it joins THE COURT group when it lands.
+ * - **`BATTLE RECORD`** — the export draws it inside THE COURT, but it is not
+ *   a destination: it is a *section of the profile*
+ *   (`features/profile/PublicProfile.tsx` renders `BattleRecord`). It becomes
+ *   an entry if it ever becomes a screen, and not before.
+ *
+ * A disabled entry invites the player to work out why; an absent one says
+ * nothing and promises nothing.
+ *
+ * ### THE COURT is where the social half lives, and PROFILE is not in it (T044)
+ *
+ * The Court is the game's word for the social half — a guild is a court, and
+ * *Court-Champion* is a rank inside that vocabulary rather than a standings
+ * page. `research.md` R6 established it from the active-state colour, which
+ * marks THE COURT lit on Profile, Battle Record, Guild Roster and Guild Admin.
+ *
+ * **That is evidence about which entry is LIT, not about which entries are
+ * children**, and the difference matters. The export's header design is
+ * explicit that *profile hangs off the username rather than taking a rail
+ * slot* (T020) — so Profile is reached by clicking your own name, and lights
+ * THE COURT while you are there.
+ *
+ * Reading it the other way put Profile inside a collapsed group and made it
+ * **two clicks**, which `e2e/profile.spec.ts` already forbids in as many
+ * words: *"the profile must be one click away or it does not exist."* Two
+ * independent sources, the same answer.
+ *
+ * THE COURT is a plain entry today because Guild is the only social screen
+ * built. It becomes a group when 014 lands Chat beside it.
+ */
+type RailId = 'squads' | 'roster' | 'attack' | 'court';
 
-  return (
-    <nav className="mx-auto max-w-[1600px] px-8 pt-8">
-      <div className="flex items-center gap-2" role="tablist" aria-label="Screen">
-        {tab('squads', 'Squads', { kind: 'squads' })}
-        {tab('attack', 'Attack', { kind: 'attack' })}
-        {tab('profile', 'Profile', { kind: 'profile', targetId: accountId })}
-        {tab('guild', 'Guild', { kind: 'guild' })}
-      </div>
-    </nav>
-  );
+export function railEntries(): RailEntry[] {
+  return [
+    { id: 'squads', label: 'Squads' },
+    { id: 'roster', label: 'Roster', badge: ROSTER_SIZE },
+    { id: 'attack', label: 'Matchmaking' },
+    { id: 'court', label: 'The Court' },
+  ];
+}
+
+/**
+ * Rail id → screen. Total over `RailId`, so every entry above resolves and a
+ * new entry cannot be added without a screen to land on.
+ *
+ * `accountId` is still taken because the profile route needs it — the header
+ * uses the same function, since "my profile" is a profile *of somebody*.
+ */
+export function screenFor(id: string, accountId: string): Screen {
+  switch (id as RailId | 'profile') {
+    case 'roster':
+      return { kind: 'roster' };
+    case 'attack':
+      return { kind: 'attack' };
+    case 'court':
+      return { kind: 'guild' };
+    case 'profile':
+      return { kind: 'profile', targetId: accountId };
+    case 'squads':
+    default:
+      return { kind: 'squads' };
+  }
+}
+
+/**
+ * Which entry is lit. Exactly one.
+ *
+ * **`profile` lights THE COURT** — that is the active-state reading R6 settled,
+ * and it is why the profile does not need a slot of its own. `battle` lights
+ * nothing meaningful because the rail is not rendered during a battle at all:
+ * a player with an open battle cannot start anything else.
+ */
+export function activeRailId(kind: Screen['kind']): string {
+  switch (kind) {
+    case 'guild':
+    case 'profile':
+      return 'court';
+    case 'battle':
+      return 'squads';
+    default:
+      return kind;
+  }
 }
 
 function Restoring(): JSX.Element {
