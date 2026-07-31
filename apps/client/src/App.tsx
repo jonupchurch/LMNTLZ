@@ -11,6 +11,7 @@ import { AppShell, Header, Rail, type RailEntry } from './components/index.js';
 import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { CodexScreen } from './features/codex/CodexScreen.js';
+import { ForgeScreen } from './features/forge/ForgeScreen.js';
 import { RosterScreen } from './features/roster/RosterScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
 import { GuildScreen } from './features/guilds/GuildScreen.js';
@@ -85,7 +86,16 @@ type Screen =
    */
   | { readonly kind: 'roster' }
   /** The Codex (T065). Content only — the roster is already in the bundle. */
-  | { readonly kind: 'codex' };
+  | { readonly kind: 'codex' }
+  /**
+   * **The Rune Forge** (018 T003, T020).
+   *
+   * The store export's rail reads `SQUADS · ROSTER 27 · RUNE FORGE ·
+   * MATCHMAKING · THE COURT · THE STORE · CODEX`, so the Forge is a top-level
+   * destination rather than a section of anything. It arrives here the same
+   * commit its screen does, which is FR-015 rather than bookkeeping.
+   */
+  | { readonly kind: 'forge' };
 
 /**
  * **The dev-only component gallery** (017 T032).
@@ -271,6 +281,12 @@ function GameApp(): JSX.Element {
                     <RosterScreen />
                   ) : screen.kind === 'codex' ? (
                     <CodexScreen />
+                  ) : screen.kind === 'forge' ? (
+                    /* 018 T020 — the caller. Feature 010 built runes end to
+                       end and no task anywhere created a screen, so shards
+                       were earned with nothing to spend them on and gear
+                       score never moved. */
+                    <ForgeScreen onUnauthenticated={onUnauthenticated} />
                   ) : (
                     <SquadsScreen onUnauthenticated={onUnauthenticated} />
                   )}
@@ -359,12 +375,16 @@ function GameApp(): JSX.Element {
  * THE COURT is a plain entry today because Guild is the only social screen
  * built. It becomes a group when 014 lands Chat beside it.
  */
-type RailId = 'squads' | 'roster' | 'attack' | 'court' | 'codex';
+type RailId = 'squads' | 'roster' | 'forge' | 'attack' | 'court' | 'codex';
 
 export function railEntries(): RailEntry[] {
   return [
     { id: 'squads', label: 'Squads' },
     { id: 'roster', label: 'Roster', badge: ROSTER_SIZE },
+    /* 018 T020. The store export puts RUNE FORGE between ROSTER and
+       MATCHMAKING, which is also the order a player meets them in: pick
+       champions, improve them, then go and fight. */
+    { id: 'forge', label: 'Rune Forge' },
     { id: 'attack', label: 'Matchmaking' },
     { id: 'court', label: 'The Court' },
     /* T065 — registered now that the screen exists, and not one commit
@@ -390,6 +410,8 @@ export function screenFor(id: string, accountId: string): Screen {
       return { kind: 'guild' };
     case 'codex':
       return { kind: 'codex' };
+    case 'forge':
+      return { kind: 'forge' };
     case 'profile':
       return { kind: 'profile', targetId: accountId };
     case 'squads':

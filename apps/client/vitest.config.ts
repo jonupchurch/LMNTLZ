@@ -130,6 +130,27 @@ export default defineConfig({
         },
       },
       {
+        /**
+         * **The Forge (018).** Its own project because the claims here are
+         * about *requests* — planning must send nothing, a refusal must happen
+         * before any charge — and a suite sharing a fetch stub with another
+         * screen cannot say whose call it was.
+         *
+         * **Adding this entry is not bookkeeping.** `include` is an explicit
+         * per-project list, so a suite in a directory no project names is not
+         * "unmatched", it is silently never run — which reads almost exactly
+         * like a pass. Check the collected count went up.
+         */
+        plugins: [react()],
+        test: {
+          name: 'forge',
+          include: ['tests/forge/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
+      {
         plugins: [react()],
         test: {
           name: 'guilds',

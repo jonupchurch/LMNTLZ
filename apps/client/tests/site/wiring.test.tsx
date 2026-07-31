@@ -37,12 +37,19 @@ const RENEWED = () =>
  * wrong component. `/battles/open` must answer, or `ResumeBattle` never
  * reaches its fallback and nothing renders at all.
  */
+let paths: string[] = [];
+
+/** Every path any screen asked for, so a caller test can name the routes. */
+const requestedPaths = (): readonly string[] => paths;
+
 function signIn(): void {
+  paths = [];
   localStorage.setItem('lmntlz.renewal', 'renewal-1');
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
+      paths.push(url);
       if (url.includes('/auth/renew')) return Promise.resolve(RENEWED());
       if (url.includes('/battles/open')) return Promise.resolve(new Response(null, { status: 204 }));
       return new Promise<Response>(() => undefined);
@@ -121,6 +128,44 @@ describe('every rail destination is reachable from App', () => {
       ).toBeInTheDocument(),
     );
     expect(document.body.textContent).toContain('×0.80');
+  });
+
+  /**
+   * **018 T020's caller assertion.** The Forge is the reason this pattern
+   * exists: feature 010 built runes end to end — stages, costs, the 75 cap, the
+   * destroy transaction, gear score — and its task list named **no screen and
+   * no nav entry anywhere**, so shards were earned with nothing to spend them
+   * on and every gate stayed green.
+   *
+   * Cut the `screen.kind === 'forge'` branch out of `App.tsx` and this goes red,
+   * which is the only thing that would have caught the original omission.
+   */
+  it('reaches the Rune Forge, and it asks for the two routes it needs', async () => {
+    signIn();
+    render(<App />);
+    await waitFor(() => expect(rail()).toBeInTheDocument());
+
+    within(rail()).getByRole('button', { name: /rune forge/i }).click();
+
+    /**
+     * Its loading state, like every other screen here — the fetches are left
+     * pending on purpose, so this proves `App` mounted the component without
+     * inventing a payload shape that would make the failure name the wrong
+     * thing.
+     */
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(/opening the forge/i),
+    );
+
+    /**
+     * **And that it asked for both reads**, because either alone renders a
+     * broken screen: without `/me/runes` there is nothing to show, and without
+     * `/me/shards` every price on it would have to be a literal.
+     */
+    await waitFor(() => {
+      expect(requestedPaths().some((p) => p.includes('/me/runes'))).toBe(true);
+      expect(requestedPaths().some((p) => p.includes('/me/shards'))).toBe(true);
+    });
   });
 
   /** The profile is the one destination that is NOT in the rail (T020). */

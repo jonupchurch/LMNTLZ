@@ -25,7 +25,7 @@ money) refuse before they charge.
 
 - [X] T001 [P] Create `apps/client/src/features/{forge,store,replays}/` — **`store/` uses the exact path 011 T026 already names**, so that task is satisfied here rather than duplicated
 - [X] T002 [P] Create `apps/client/tests/{forge,store,replays}/`
-- [ ] T003 Add `{ kind: 'forge' }`, `{ kind: 'store' }` and `{ kind: 'replays' }` to the `Screen` union in `apps/client/src/App.tsx` — **entries appear in the rail only as their screens land** (FR-015), matching the store export's `SQUADS · ROSTER · RUNE FORGE · MATCHMAKING · THE COURT · THE STORE · CODEX`
+- [X] T003 Add `{ kind: 'forge' }`, `{ kind: 'store' }` and `{ kind: 'replays' }` to the `Screen` union in `apps/client/src/App.tsx` — **entries appear in the rail only as their screens land** (FR-015), matching the store export's `SQUADS · ROSTER · RUNE FORGE · MATCHMAKING · THE COURT · THE STORE · CODEX`
 
 ---
 
@@ -57,21 +57,21 @@ Bronze forever**.
 
 ### Tests first
 
-- [ ] T009 [P] [US1] Write `apps/client/tests/forge/planning.test.tsx` — **planning charges nothing and stores nothing** (FR-002): move points, navigate away, assert no request was sent
-- [ ] T010 [P] [US1] Write `apps/client/tests/forge/refusal.test.tsx` — over the **75 cap** and under the balance both refuse **before** any charge, each naming why (FR-004)
-- [ ] T011 [P] [US1] Write `apps/client/tests/forge/destroy.test.tsx` — the destroy warning appears **before** confirmation, names the consequence, and **is not the default action** (FR-003)
+- [X] T009 [P] [US1] Write `apps/client/tests/forge/planning.test.tsx` — **planning charges nothing and stores nothing** (FR-002): move points, navigate away, assert no request was sent
+- [X] T010 [P] [US1] Write `apps/client/tests/forge/refusal.test.tsx` — over the **75 cap** and under the balance both refuse **before** any charge, each naming why (FR-004)
+- [X] T011 [P] [US1] Write `apps/client/tests/forge/destroy.test.tsx` — the destroy warning appears **before** confirmation, names the consequence, and **is not the default action** (FR-003)
 
 ### The screen
 
-- [ ] T012 [US1] `features/forge/ForgeScreen.tsx` — hero list with the export's *ALL 27 / OPEN / BARE* filter, over `GET /v1/me/runes`
-- [ ] T013 [US1] `features/forge/StageLadder.tsx` — the four stages with cost and boost **read from `GET /v1/me/shards` → `config.stageCosts` / `config.stageBoosts`**. Not one number is a literal (FR-001, research R2)
-- [ ] T014 [US1] `features/forge/SlotPlanner.tsx` — three slots (primary · secondary · common) per `slotAccepts()`, each boost targeting **a distinct stat**, the utility slot **gated behind all three**
-- [ ] T015 [US1] The stat line — base · placed · draft · total, against **`STAT_CAP` from `@lmntlz/content`**, never a literal 75
-- [ ] T016 [US1] `features/forge/DestroyConfirm.tsx` — the **650** rebuild, priced from `config.fullRuneCost`, stating that the existing rune is destroyed and rebuilding starts at stage one
-- [ ] T017 [US1] Commit a stage via `POST /v1/heroes/:heroId/runes/:slot`, then **refetch** rather than patching state from the response
-- [ ] T018 [US1] Show the balance beside every price, and re-derive it after a commit — the balance is a ledger sum, so a screen that trusts what it rendered with goes stale
-- [ ] T019 [P] [US1] Write `apps/client/e2e/forge.spec.ts` — place a rune, assert the balance, the stat and gear score all move
-- [ ] T020 [US1] **WIRING** — render `ForgeScreen` from `App.tsx`, add `RUNE FORGE` to the rail, and give the screen a way out that needs no page reload (FR-016). Assert the caller, then cut it and watch the test fail
+- [X] T012 [US1] `features/forge/ForgeScreen.tsx` — hero list with the export's *ALL 27 / OPEN / BARE* filter, over `GET /v1/me/runes`
+- [X] T013 [US1] `features/forge/StageLadder.tsx` — the four stages with cost and boost **read from `GET /v1/me/shards` → `config.stageCosts` / `config.stageBoosts`**. Not one number is a literal (FR-001, research R2)
+- [X] T014 [US1] `features/forge/SlotPlanner.tsx` — three slots (primary · secondary · common) per `slotAccepts()`, each boost targeting **a distinct stat**, the utility slot **gated behind all three**
+- [X] T015 [US1] The stat line — base · placed · draft · total, against **`STAT_CAP` from `@lmntlz/content`**, never a literal 75
+- [X] T016 [US1] `features/forge/DestroyConfirm.tsx` — the **650** rebuild, priced from `config.fullRuneCost`, stating that the existing rune is destroyed and rebuilding starts at stage one
+- [X] T017 [US1] Commit a stage via `POST /v1/heroes/:heroId/runes/:slot`, then **refetch** rather than patching state from the response
+- [X] T018 [US1] Show the balance beside every price, and re-derive it after a commit — the balance is a ledger sum, so a screen that trusts what it rendered with goes stale
+- [X] T019 [P] [US1] Write `apps/client/e2e/forge.spec.ts` — place a rune, assert the balance, the stat and gear score all move
+- [X] T020 [US1] **WIRING** — render `ForgeScreen` from `App.tsx`, add `RUNE FORGE` to the rail, and give the screen a way out that needs no page reload (FR-016). Assert the caller, then cut it and watch the test fail
 
 **Checkpoint**: a player can spend shards on a rune. Report **two claims
 separately** — tasks closed and gates green, and *a player can actually do this*.

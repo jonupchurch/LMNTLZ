@@ -63,9 +63,10 @@ describe('every rail entry leads somewhere real', () => {
  */
 describe('unbuilt destinations are absent, not disabled', () => {
   const UNBUILT = [
-    /* `Codex` graduated off this list in T065, which is the list working as
-       intended: an entry appears the commit its screen does, not before. */
-    ['Rune Forge', '018'],
+    /* `Codex` graduated off this list in 017 T065 and `Rune Forge` in 018 T020,
+       which is the list working as intended: an entry appears the commit its
+       screen does, not before — and adding the entry first *fails this file*,
+       which is how both graduations were noticed rather than remembered. */
     ['Store', '018'],
     ['Dispatches', '016'],
     ['Chat', '014'],
