@@ -120,16 +120,16 @@ is removed or a hero renamed.
 **Deliberately before US3** — the icons land in the Phase 4 components, and the
 screens in Phase 6 consume both.
 
-- [ ] T033 [US4] Write `tools/build-icons.ts` — read `resources/designsystem/hero-icons/` and `status-icons/`, copy the SVGs into `apps/client/src/assets/icons/`, emit a **generated** manifest. Sibling of `tools/build-content.ts`, same header: *GENERATED — DO NOT EDIT*
-- [ ] T034 [US4] Map a hero to its icon by **slug minus its leading ordinal** (`01-earth-bramwen` → `earth-bramwen.svg`). Verified total: 27/27, no orphans. **Exclude `00-overview-3x9` by name**, not by a filter that would also swallow a real miss
-- [ ] T035 [US4] Type `HERO_ICONS` as `Record<HeroId, string>` keyed off `@lmntlz/content`, so **a missing or misspelled hero icon is a compile error** (FR-010) — `tsc --noEmit` already runs before `vite build`
-- [ ] T036 [P] [US4] `components/icons/HeroIcon.tsx`, consumed by `HeroCard` and `RosterView`
-- [ ] T037 [P] [US4] `components/icons/StatusPip.tsx` + the 71-icon registry
-- [ ] T038 [US4] Write `apps/client/tests/components/icons.test.ts` — **assert the positive case**: all 27 heroes resolve, and no two share an icon. A test that only checks "no crash" passes on an empty map
-- [ ] T039 [US4] **Mutation-test the guard.** Copy `packages/content/src/heroes.generated.ts` to a temp path, rename one hero's slug, `pnpm icons:build`, and confirm `typecheck` **fails**. Restore **from the copy** and assert the file is byte-identical. **Never `git checkout`** — it restores HEAD, not your edit, and has silently destroyed work in this repo twice
-- [ ] T040 [US4] ⚠️ Document the status-icon guard as **vacuous today** in `components/icons/README.md`: `StatusInstance.kind` is an open `string`, nothing constructs one, and `apps/api/src/battle/board.ts:123` hardcodes `statuses: []`. **The engine emits no statuses**, so "every status has an icon" is an assertion over an empty set
-- [ ] T041 [US4] Write the **anti-vacuity guard** in `icons.test.ts` — it must **start failing** the moment `StatusInstance.kind` becomes a union or an authored status vocabulary appears and does not match the registry. It may not keep passing quietly once there is something to check
-- [ ] T042 [US4] **WIRING** — `HeroCard` and `RosterView` render `HeroIcon`; assert the caller, then cut it and watch the test fail. **`StatusPip` is deliberately NOT wired** — there is no data for it, and wiring it would create a component with no producer
+- [X] T033 [US4] Write `tools/build-icons.ts` — read `resources/designsystem/hero-icons/` and `status-icons/`, copy the SVGs into `apps/client/src/assets/icons/`, emit a **generated** manifest. Sibling of `tools/build-content.ts`, same header: *GENERATED — DO NOT EDIT*
+- [X] T034 [US4] Map a hero to its icon by **slug minus its leading ordinal** (`01-earth-bramwen` → `earth-bramwen.svg`). Verified total: 27/27, no orphans. **Exclude `00-overview-3x9` by name**, not by a filter that would also swallow a real miss
+- [X] T035 [US4] Type `HERO_ICONS` as `Record<HeroId, string>` keyed off `@lmntlz/content`, so **a missing or misspelled hero icon is a compile error** (FR-010) — `tsc --noEmit` already runs before `vite build`
+- [X] T036 [P] [US4] `components/icons/HeroIcon.tsx`, consumed by `HeroCard` and `RosterView`
+- [X] T037 [P] [US4] `components/icons/StatusPip.tsx` + the 71-icon registry
+- [X] T038 [US4] Write `apps/client/tests/components/icons.test.ts` — **assert the positive case**: all 27 heroes resolve, and no two share an icon. A test that only checks "no crash" passes on an empty map
+- [X] T039 [US4] **Mutation-test the guard.** Copy `packages/content/src/heroes.generated.ts` to a temp path, rename one hero's slug, `pnpm icons:build`, and confirm `typecheck` **fails**. Restore **from the copy** and assert the file is byte-identical. **Never `git checkout`** — it restores HEAD, not your edit, and has silently destroyed work in this repo twice
+- [X] T040 [US4] ⚠️ Document the status-icon guard as **vacuous today** in `components/icons/README.md`: `StatusInstance.kind` is an open `string`, nothing constructs one, and `apps/api/src/battle/board.ts:123` hardcodes `statuses: []`. **The engine emits no statuses**, so "every status has an icon" is an assertion over an empty set
+- [X] T041 [US4] Write the **anti-vacuity guard** in `icons.test.ts` — it must **start failing** the moment `StatusInstance.kind` becomes a union or an authored status vocabulary appears and does not match the registry. It may not keep passing quietly once there is something to check
+- [X] T042 [US4] **WIRING** — `HeroCard` and `RosterView` render `HeroIcon`; assert the caller, then cut it and watch the test fail. **`StatusPip` is deliberately NOT wired** — there is no data for it, and wiring it would create a component with no producer
 
 **Checkpoint**: every hero has a face; the status registry exists and says honestly
 that it is unwired.

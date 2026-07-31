@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Nyxara — dark emblem">
+  <title>Nyxara · DARK</title>
+  <defs><radialGradient id="inner-dark" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#42215B" stop-opacity="0"></stop><stop offset="100%" stop-color="#42215B" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="dark-nyxara"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#7A3FA0"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-dark)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#C64BB0" stroke-width="4"></polygon><path d="M38 32 q26 -9 52 0 v34 q-13 7 -13 13 q-13 -7 -26 0 q0 -6 -13 -13 z" fill="#F2EDDD"></path><path d="M51 30 v42 M64 27 v48 M77 30 v42" stroke="#7A3FA0" stroke-width="2.5" fill="none" opacity=".4"></path><polygon points="64,82 73,90 64,97 55,90" fill="#C64BB0"></polygon><circle cx="94" cy="84" r="13" fill="#42215B" opacity=".85"></circle><circle cx="94" cy="84" r="6" fill="#C64BB0"></circle><circle cx="97.5" cy="82" r="5.4" fill="#42215B"></circle></g>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Mauless — crush emblem">
+  <title>Mauless · CRUSH</title>
+  <defs><radialGradient id="inner-crush" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#6E4317" stop-opacity="0"></stop><stop offset="100%" stop-color="#6E4317" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="crush-mauless"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#B5732E"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-crush)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#E0A15A" stroke-width="4"></polygon><polygon points="64,26 88,40 82,80 64,94 46,80 40,40" fill="#14121F"></polygon><polygon points="86,54 96,48 90,64" fill="#E0A15A"></polygon><polygon points="42,54 32,48 38,64" fill="#E0A15A"></polygon><circle cx="94" cy="84" r="13" fill="#6E4317" opacity=".85"></circle><rect x="88" y="78" width="12" height="5" rx="1.5" fill="#E0A15A"></rect><rect x="86" y="86" width="16" height="2.4" rx="1.2" fill="#E0A15A"></rect></g>
+</svg>

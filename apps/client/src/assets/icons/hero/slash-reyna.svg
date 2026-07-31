@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Reyna Two-Rivers — slash emblem">
+  <title>Reyna Two-Rivers · SLASH</title>
+  <defs><radialGradient id="inner-slash" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#77161C" stop-opacity="0"></stop><stop offset="100%" stop-color="#77161C" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="slash-reyna"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#C0313A"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-slash)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#F06A72" stroke-width="4"></polygon><path d="M40 38 q35 15 47 48" stroke="#F2EDDD" stroke-width="8" fill="none" stroke-linecap="round"></path><path d="M88 38 q-35 15 -47 48" stroke="#F06A72" stroke-width="8" fill="none" stroke-linecap="round"></path><circle cx="94" cy="84" r="13" fill="#77161C" opacity=".85"></circle><rect x="86" y="83" width="16" height="2.8" rx="1.4" transform="rotate(-35 94 84)" fill="#F06A72"></rect></g>
+</svg>

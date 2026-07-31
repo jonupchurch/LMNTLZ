@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Ember Saelith — fire emblem">
+  <title>Ember Saelith · FIRE</title>
+  <defs><radialGradient id="inner-fire" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#8C2A12" stop-opacity="0"></stop><stop offset="100%" stop-color="#8C2A12" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="fire-ember-saelith"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#E8552B"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-fire)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#FFB347" stroke-width="4"></polygon><path d="M38 60 q2 30 26 32 q24 -2 26 -32" stroke="#14121F" stroke-width="8" fill="none" stroke-linecap="round"></path><path d="M64 22 q7 16 13 24 a15 15 0 0 1 -26 0 q6 -8 13 -24 z" fill="#FFB347"></path><path d="M64 40 q4 9 4 13 a5 5 0 0 1 -9 0 q0 -4 5 -13 z" fill="#E8552B"></path><circle cx="94" cy="84" r="13" fill="#8C2A12" opacity=".85"></circle><polygon points="94,78 100,90 88,90" fill="#FFB347"></polygon></g>
+</svg>

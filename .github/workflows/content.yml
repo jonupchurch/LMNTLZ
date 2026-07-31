@@ -116,15 +116,27 @@ jobs:
       # indefinitely: the emitted roster and the workbook it claims to come from
       # would disagree, and nothing would say so until a designer changed a cell
       # and their edit silently reverted someone else's.
-      - name: Regenerate content and fail on any difference
+      # 017 T033 — `icons:build` is regenerated in the SAME step, on purpose.
+      #
+      # It reads `heroes.generated.ts`, so the two are one dependency chain: a
+      # hero renamed in the workbook changes the roster AND invalidates the icon
+      # manifest keyed off it. Checking them separately would let a run pass the
+      # roster gate and leave a stale manifest, which is precisely the
+      # half-landed rename this guard exists to catch.
+      #
+      # It also fails loudly on its own terms — a hero with no icon, or an icon
+      # no hero claims — so a miss surfaces here rather than as a blank square.
+      - name: Regenerate content and icons, and fail on any difference
         run: |
           pnpm content:build
+          pnpm icons:build
           if ! git diff --exit-code --stat; then
             echo ""
-            echo "::error::The committed content does not match a fresh build."
-            echo "Either heroes.generated.ts / version.generated.ts / MATCHUPS.md"
-            echo "were edited by hand, or the workbook changed without running"
-            echo "'pnpm content:build'. Run it and commit the result."
+            echo "::error::The committed generated files do not match a fresh build."
+            echo "Either heroes.generated.ts / version.generated.ts / MATCHUPS.md /"
+            echo "icons.generated.ts were edited by hand, or a source changed without"
+            echo "running 'pnpm content:build' and 'pnpm icons:build'. Run them and"
+            echo "commit the result."
             exit 1
           fi
 

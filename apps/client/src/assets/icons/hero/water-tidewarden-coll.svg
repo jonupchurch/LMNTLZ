@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Tidewarden Coll — water emblem">
+  <title>Tidewarden Coll · WATER</title>
+  <defs><radialGradient id="inner-water" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#164A6E" stop-opacity="0"></stop><stop offset="100%" stop-color="#164A6E" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="water-tidewarden-coll"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#2A7FB8"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-water)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#4FC3D6" stroke-width="4"></polygon><path d="M40 32 h48 v30 q0 23 -24 32 q-24 -9 -24 -32 z" fill="#F2EDDD"></path><path d="M46 58 q9 -11 18 0 q9 11 18 0" stroke="#4FC3D6" stroke-width="5" fill="none" stroke-linecap="round"></path><circle cx="94" cy="84" r="13" fill="#164A6E" opacity=".85"></circle><path d="M94 77 l5.5 8 a5.5 5.5 0 1 1 -11 0 z" fill="#4FC3D6"></path></g>
+</svg>

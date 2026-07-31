@@ -40,6 +40,17 @@ export { contentVersion } from './version.js';
 
 export { UnknownHeroError } from './hero.js';
 export type { Hero, HeroStats, Power, Role, Reach, Tier } from './hero.js';
+/**
+ * The 27 ids as a literal union, generated with the roster (017 T035).
+ *
+ * `Hero['id']` is `string` and cannot narrow, so anything keyed *by* hero —
+ * the icon manifest, a rune allocation map — would accept `h99` and fail at
+ * runtime. `Record<HeroId, T>` makes that a compile error and makes the map
+ * exhaustive: add a 28th hero and every such record stops compiling until it
+ * is filled in, which is the point.
+ */
+export { HERO_IDS } from './heroes.generated.js';
+export type { HeroId } from './heroes.generated.js';
 
 export { validateHeroes } from './validate.js';
 export type { ValidationFailure, ValidationRule } from './schema.js';

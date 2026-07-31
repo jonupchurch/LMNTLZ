@@ -114,6 +114,21 @@ describe('every state the export draws has a case', () => {
     expect(document.querySelector(`[data-scale="${scale}"]`)).not.toBeNull();
   });
 
+  /**
+   * T042's caller assertion, against a real DOM rather than a source scan.
+   * Cut `<HeroIcon>` out of `HeroCard` and this goes red.
+   */
+  it('every hero card renders its emblem', () => {
+    const cards = document.querySelectorAll('[data-scale]');
+    expect(cards.length).toBeGreaterThan(0);
+    for (const card of cards) {
+      expect(
+        card.querySelector('[data-hero-icon]'),
+        'a HeroCard renders no HeroIcon — the manifest has no caller',
+      ).not.toBeNull();
+    }
+  });
+
   it.each(['connected', 'reconnecting', 'offline'])('connection state %s is rendered', (status) => {
     expect(document.querySelector(`[data-status="${status}"]`)).not.toBeNull();
   });

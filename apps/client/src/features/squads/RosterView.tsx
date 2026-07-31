@@ -13,7 +13,8 @@
  */
 
 import { useMemo } from 'react';
-import type { Hero } from '@lmntlz/content';
+import type { Hero, HeroId } from '@lmntlz/content';
+import { HeroIcon } from '../../components/index.js';
 import type { RosterResponse, Zone } from './types.js';
 import { ATTACK_SQUADS, DEFENSE_TOTAL } from './hooks/useAllocation.js';
 
@@ -103,11 +104,17 @@ export function RosterView({ roster, selectedHeroId, onSelect }: RosterViewProps
                   selected ? 'border-gold bg-raised' : 'border-line bg-surface hover:border-faint',
                 ].join(' ')}
               >
-                <span className="block font-display text-sm tracking-wide text-parchment">
-                  {hero.name}
-                </span>
-                <span className="mt-1 block font-mono text-[11px] tracking-wider uppercase text-faint">
-                  {hero.primary} · {hero.secondary} · reach {hero.reach}
+                {/* 017 T042 — the roster is where all 27 emblems appear at once. */}
+                <span className="flex items-center gap-2">
+                  <HeroIcon heroId={hero.id as HeroId} size="chip" />
+                  <span className="min-w-0">
+                    <span className="block truncate font-display text-sm tracking-wide text-parchment">
+                      {hero.name}
+                    </span>
+                    <span className="mt-1 block font-mono text-[11px] tracking-wider uppercase text-faint">
+                      {hero.primary} · {hero.secondary} · reach {hero.reach}
+                    </span>
+                  </span>
                 </span>
 
                 <span className="mt-2 block font-mono text-[11px]">

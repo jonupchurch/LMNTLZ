@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Ossic — earth emblem">
+  <title>Ossic · EARTH</title>
+  <defs><radialGradient id="inner-earth" cx="50%" cy="34%" r="72%"><stop offset="55%" stop-color="#2C4620" stop-opacity="0"></stop><stop offset="100%" stop-color="#2C4620" stop-opacity=".55"></stop></radialGradient></defs>
+  <g id="earth-ossic"><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="#4E7C3A"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="url(#inner-earth)"></polygon><polygon points="64,6 114,35 114,93 64,122 14,93 14,35" fill="none" stroke="#C9922E" stroke-width="4"></polygon><rect x="42" y="58" width="15" height="32" rx="3" fill="#F2EDDD"></rect><path d="M78 90 V54 a11 11 0 0 0 -22 0" stroke="#F2EDDD" stroke-width="9" fill="none" stroke-linecap="round"></path><circle cx="56" cy="48" r="6" fill="#C9922E"></circle><circle cx="94" cy="84" r="13" fill="#2C4620" opacity=".85"></circle><rect x="90" y="80" width="8" height="8" transform="rotate(45 94 84)" fill="#C9922E"></rect></g>
+</svg>

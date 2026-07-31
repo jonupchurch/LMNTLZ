@@ -23,7 +23,8 @@
  * fixes the formula and a second copy of it is a second thing to get wrong.
  */
 
-import type { Hero } from '@lmntlz/content';
+import type { Hero, HeroId } from '@lmntlz/content';
+import { HeroIcon } from '../icons/HeroIcon.js';
 import { RelationshipStrip } from '../type/RelationshipStrip.js';
 import { TypeBadge } from '../type/TypeBadge.js';
 import { Meter } from '../readouts/Meter.js';
@@ -61,8 +62,28 @@ export function HeroCard({ hero, scale = 'standard', hp, onSelect }: HeroCardPro
       data-hero={hero.id}
       className={`flex flex-col rounded-lg bg-surface text-left shadow-(--shadow-glow-1) ${SCALE[scale]}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className="min-w-0">
+      <div className="flex items-start gap-2">
+        {/*
+          T042 — the emblem.
+
+          `Hero['id']` is `string`, because it comes out of a zod schema and
+          cannot narrow; `HeroIcon` wants the 27-value `HeroId` union. This is
+          the one place the two meet, so the narrowing happens here, once, and
+          is justified rather than sprinkled:
+
+          **Every `Hero` originates in the generated roster**, and the manifest
+          is `Record<HeroId, string>` built from that same roster — the two
+          cannot disagree without `icons:build` failing first. What the union
+          actually buys is unaffected by this line: a literal `heroId="h99"` is
+          still a type error, and a hero added without an icon still breaks the
+          build on the record's exhaustiveness.
+        */}
+        <HeroIcon
+          heroId={hero.id as HeroId}
+          name={hero.name}
+          size={scale === 'full' ? 'detail' : 'chip'}
+        />
+        <span className="min-w-0 flex-1">
           <span className="text-h3 block truncate font-display font-semibold uppercase">
             {hero.name}
           </span>

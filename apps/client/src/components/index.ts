@@ -65,6 +65,19 @@ export type { PillProps, PillTone, PillTrend } from './readouts/Pill.js';
 export { EffectivenessGrid, exposure, isConcentrated } from './readouts/EffectivenessGrid.js';
 export type { EffectivenessGridProps, ForceExposure } from './readouts/EffectivenessGrid.js';
 
+// --- icons -----------------------------------------------------------------
+export { HeroIcon } from './icons/HeroIcon.js';
+export type { HeroIconProps, HeroIconSize } from './icons/HeroIcon.js';
+/**
+ * ⚠️ `StatusPip` has **no producer** — nothing constructs a status and
+ * `board.ts` hardcodes `statuses: []`. Exported for 014/018; deliberately not
+ * wired by 017. See `icons/README.md`.
+ */
+export { StatusPip } from './icons/StatusPip.js';
+export type { StatusPipProps } from './icons/StatusPip.js';
+export { HERO_ICONS, STATUS_ICONS, STATUS_ICON_KEYS } from './icons/icons.generated.js';
+export type { StatusIconKey } from './icons/icons.generated.js';
+
 // --- system ----------------------------------------------------------------
 export { ConnectionState, MaintenanceNotice } from './system/ConnectionState.js';
 export type {

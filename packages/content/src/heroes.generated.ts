@@ -36,3 +36,35 @@ export const HEROES: readonly Hero[] = Object.freeze([
   {"id":"h26","name":"Hettamar Ironfall","slug":"26-crush-hettamar","primary":"crush","secondary":"dark","role":"striker","reach":1,"stats":{"might":40,"perception":30,"agility":25,"toughness":40,"armor":40,"penetration":30,"magicResist":30,"speed":15,"resolve":25,"luck":25},"powers":[{"id":"Deadweight","name":"Deadweight","tier":0,"multiplier":1,"cooldown":0,"gateTurn":1,"types":["crush"],"targets":"single","friendly":false,"reactive":false},{"id":"Make an Opening","name":"Make an Opening","tier":1,"multiplier":1.5,"cooldown":1,"gateTurn":1,"types":["crush"],"targets":"single","friendly":false,"reactive":false},{"id":"The Sky Falls","name":"The Sky Falls","tier":2,"multiplier":2,"cooldown":2,"gateTurn":1,"types":["crush"],"targets":"single","friendly":false,"reactive":false},{"id":"The Silence Lends Cover","name":"The Silence Lends Cover","tier":3,"multiplier":2.5,"cooldown":3,"gateTurn":1,"types":["dark"],"targets":"single","friendly":false,"reactive":false},{"id":"End of Argument","name":"End of Argument","tier":4,"multiplier":3.5,"cooldown":6,"gateTurn":3,"types":["crush","dark"],"targets":"single","friendly":false,"reactive":false},{"id":"Ironfall","name":"Ironfall","tier":5,"multiplier":5,"cooldown":8,"gateTurn":5,"types":["crush","dark"],"targets":"single","friendly":false,"reactive":false}],"passives":["Finish It","Nothing Holds","Nothing to Discuss"],"family":"melee","strengths":["crush","dark"],"bane":"pierce","fault":"light"},
   {"id":"h27","name":"Mauless","slug":"27-crush-mauless","primary":"crush","secondary":"earth","role":"tank","reach":2,"stats":{"might":25,"perception":20,"agility":35,"toughness":40,"armor":40,"penetration":25,"magicResist":30,"speed":25,"resolve":35,"luck":25},"powers":[{"id":"Deadweight","name":"Deadweight","tier":0,"multiplier":1,"cooldown":0,"gateTurn":1,"types":["crush"],"targets":"single","friendly":false,"reactive":false},{"id":"Make an Opening","name":"Make an Opening","tier":1,"multiplier":1.5,"cooldown":1,"gateTurn":1,"types":["crush"],"targets":"single","friendly":false,"reactive":false},{"id":"The Sky Falls","name":"The Sky Falls","tier":2,"multiplier":2,"cooldown":2,"gateTurn":1,"types":["crush"],"targets":"single","friendly":false,"reactive":false},{"id":"The Deep Lends Weight","name":"The Deep Lends Weight","tier":3,"multiplier":2.5,"cooldown":3,"gateTurn":1,"types":["earth"],"targets":"single","friendly":false,"reactive":false},{"id":"Guards Break First","name":"Guards Break First","tier":4,"multiplier":3.5,"cooldown":5,"gateTurn":3,"types":["crush","earth"],"targets":"single","friendly":false,"reactive":false},{"id":"The Undenied","name":"The Undenied","tier":5,"multiplier":5,"cooldown":7,"gateTurn":5,"types":["crush","earth"],"targets":"single","friendly":false,"reactive":false}],"passives":["Hold the Line","Nothing Holds","Immovable"],"family":"melee","strengths":["crush","earth"],"bane":"pierce","fault":"air"},
 ] as const);
+
+export const HERO_IDS = Object.freeze([
+  'h01',
+  'h02',
+  'h03',
+  'h04',
+  'h05',
+  'h06',
+  'h07',
+  'h08',
+  'h09',
+  'h10',
+  'h11',
+  'h12',
+  'h13',
+  'h14',
+  'h15',
+  'h16',
+  'h17',
+  'h18',
+  'h19',
+  'h20',
+  'h21',
+  'h22',
+  'h23',
+  'h24',
+  'h25',
+  'h26',
+  'h27',
+] as const);
+
+export type HeroId = (typeof HERO_IDS)[number];

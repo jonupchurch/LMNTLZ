@@ -596,6 +596,23 @@ function emitHeroes(heroes: readonly AuthoredHero[]): void {
     })
     .join('\n');
 
+  /**
+   * **`HeroId` as a literal union** (017 T035).
+   *
+   * `Hero['id']` is `string` — it comes out of a zod schema, so it cannot
+   * narrow to the 27 ids that actually exist. That is fine for the roster and
+   * useless for anything keyed *by* hero: `Record<string, T>` accepts `h99`
+   * and a typo becomes a runtime `undefined`.
+   *
+   * Emitted here rather than hand-written because it is derived data, and a
+   * hand-maintained union would silently disagree with the workbook the first
+   * time a hero is added. `HERO_IDS` is the runtime value; `HeroId` is the
+   * type. Together they make `Record<HeroId, string>` an exhaustiveness check
+   * the compiler runs — which is what turns a missing hero icon into a build
+   * failure instead of a blank square.
+   */
+  const ids = heroes.map((h) => `  '${h.id}',`).join('\n');
+
   writeFileSync(
     OUT_HEROES,
     `${BANNER}
@@ -604,6 +621,12 @@ import type { Hero } from './hero.js';
 export const HEROES: readonly Hero[] = Object.freeze([
 ${body}
 ] as const);
+
+export const HERO_IDS = Object.freeze([
+${ids}
+] as const);
+
+export type HeroId = (typeof HERO_IDS)[number];
 `,
     'utf8',
   );
