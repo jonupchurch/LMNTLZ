@@ -26,7 +26,7 @@
 
 import type { Hero, HeroId } from '@lmntlz/content';
 import { ROW_CAPACITY, type Seat, type SquadRow } from '@lmntlz/sim/rules';
-import { FORCE_RING, HeroIcon, HeroPortrait } from '../../components/index.js';
+import { FORCE_RING, HeroIcon, HeroPortrait, TypeIcon } from '../../components/index.js';
 import type { AllocationView } from './hooks/useAllocation.js';
 import { enemyReach, ROW_NUMBER, seatReach } from './reachPreview.js';
 
@@ -35,6 +35,10 @@ export interface SquadBuilderProps {
   readonly heroName: (id: string) => string;
   readonly kind: 'defense' | 'offense';
   readonly selectedHeroId: string | null;
+  /** The seat waiting for a champion, lit so it is obvious what a click did. */
+  readonly armedSeat?: { readonly row: SquadRow; readonly index: number } | null;
+  /** Present only when the armed seat is occupied — see `RemoveArmed`. */
+  readonly onRemoveArmed?: (() => void) | undefined;
   readonly onSeatActivate: (row: SquadRow, index: number) => void;
   /**
    * Resolves a seated id to the whole champion, for the art and the emblem.
@@ -61,6 +65,8 @@ export function SquadBuilder({
   heroName,
   kind,
   selectedHeroId,
+  armedSeat = null,
+  onRemoveArmed,
   onSeatActivate,
   heroById,
 }: SquadBuilderProps) {
@@ -68,6 +74,12 @@ export function SquadBuilder({
     allocation.seats.find((s) => s.row === row && s.index === index);
 
   const enemy = enemyReach(allocation.seats);
+  const armedName = armedSeat
+    ? (() => {
+        const seat = at(armedSeat.row, armedSeat.index);
+        return seat ? heroName(seat.heroId) : null;
+      })()
+    : null;
 
   return (
     <section aria-label={`${kind} squad formation`} className="lz-surface lz-bloom-gold p-5">
@@ -75,12 +87,49 @@ export function SquadBuilder({
         <h3 className="text-caption font-mono tracking-widest text-faint uppercase">
           Formation · 1 back / 3 middle / 2 front · rows 1&ndash;6 on one axis
         </h3>
+
         {/**
-         * The export writes *"or drag a champion onto a seat"* here. **Drag is
+         * **The instruction now describes what the screen does.**
+         *
+         * It read *"Click a seat, then a champion"* while the code required a
+         * champion first and returned silently otherwise — so following the
+         * instruction did nothing at all, and the honest report was that heroes
+         * could not be changed. Both orders work; the line says so, and it says
+         * which one is currently in progress.
+         *
+         * The export also writes *"or drag a champion onto a seat"*. **Drag is
          * not built**, and an instruction for an interaction that does nothing
-         * is worse than no instruction — so the sentence stops at what works.
+         * is exactly the defect above wearing a different hat.
          */}
-        <p className="text-caption text-faint">Click a seat, then a champion.</p>
+        <p className="text-caption flex items-baseline gap-2">
+          {armedSeat ? (
+            <span className="text-gold">
+              Seat ready — now pick a champion below
+              {armedName ? ` to replace ${armedName}` : ''}.
+            </span>
+          ) : selectedHeroId ? (
+            <span className="text-gold">Champion in hand — now click a seat.</span>
+          ) : (
+            <span className="text-faint">Click a seat, then a champion — or the reverse.</span>
+          )}
+
+          {/**
+           * **Only when the armed seat is occupied**, because it is the only
+           * single-seat removal in the app: `CLEAR` empties all six, and until
+           * now the sole way to get one champion off a squad was to cover her
+           * with another. It renders nowhere else, so the board is still six
+           * buttons in every other state.
+           */}
+          {onRemoveArmed ? (
+            <button
+              type="button"
+              onClick={onRemoveArmed}
+              className="text-caption rounded border border-line px-2 py-0.5 font-mono tracking-wider text-slash-lit uppercase hover:border-slash"
+            >
+              Remove
+            </button>
+          ) : null}
+        </p>
       </header>
 
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)] gap-4">
@@ -106,8 +155,9 @@ export function SquadBuilder({
                     seats={allocation.seats}
                     heroName={heroName}
                     heroById={heroById}
-                    armed={selectedHeroId !== null}
-                  onActivate={() => onSeatActivate(row, index)}
+                    inHand={selectedHeroId !== null}
+                    lit={armedSeat?.row === row && armedSeat.index === index}
+                    onActivate={() => onSeatActivate(row, index)}
                   />
                 ))}
               </div>
@@ -213,7 +263,8 @@ function SeatCard({
   seats,
   heroName,
   heroById,
-  armed,
+  inHand,
+  lit,
   onActivate,
 }: {
   readonly row: SquadRow;
@@ -224,7 +275,10 @@ function SeatCard({
   /* Explicitly `| undefined` rather than `?`: `exactOptionalPropertyTypes` is
      on, so an optional prop forwarded from an optional prop must say so. */
   readonly heroById: ((id: string) => Hero | undefined) | undefined;
-  readonly armed: boolean;
+  /** A champion is selected, so this seat is a place to put her. */
+  readonly inHand: boolean;
+  /** This is the armed seat — it is what the next champion clicked will fill. */
+  readonly lit: boolean;
   readonly onActivate: () => void;
 }): React.JSX.Element {
   const label = seat
@@ -238,11 +292,18 @@ function SeatCard({
       type="button"
       onClick={onActivate}
       aria-label={label}
+      aria-pressed={lit}
       data-seat={`${row}-${index}`}
+      data-armed={lit || undefined}
       className={[
         'relative min-h-0 flex-1 overflow-hidden rounded-lg text-left transition-shadow duration-(--duration-fast)',
         seat ? 'bg-void' : 'lz-empty',
-        armed && !seat ? 'hover:shadow-(--shadow-glow-gold)' : '',
+        /* Armed beats everything: it is the answer to "did my click land?" */
+        lit
+          ? 'shadow-(--shadow-glow-gold)'
+          : inHand
+            ? 'hover:shadow-(--shadow-glow-gold)'
+            : 'hover:shadow-(--shadow-glow-air)',
       ].join(' ')}
     >
       {seat ? (
@@ -260,14 +321,18 @@ function SeatCard({
           <span
             aria-hidden
             className={[
-              'pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset',
-              hero ? FORCE_RING[hero.primary] : 'ring-line',
+              'pointer-events-none absolute inset-0 rounded-lg ring-inset',
+              lit ? 'ring-2 ring-gold' : `ring-1 ${hero ? FORCE_RING[hero.primary] : 'ring-line'}`,
             ].join(' ')}
           />
 
           <span className="relative flex h-full flex-col justify-between p-1.5">
             <span className="flex items-start justify-between gap-1">
-              {hero ? <HeroIcon heroId={hero.id as HeroId} size="chip" /> : <span />}
+              {/* The Force as a SHAPE. `badge` because this sits on art — the
+                  variant `resources/damage-types/README.md` draws for exactly
+                  this case, and the only one that holds at 20px over a
+                  painting. */}
+              {hero ? <TypeIcon type={hero.primary} variant="badge" size="pip" /> : <span />}
               {hero ? (
                 <span className="text-caption rounded-sm bg-void/70 px-1 font-mono text-parchment">
                   R{hero.reach}
@@ -276,8 +341,11 @@ function SeatCard({
             </span>
 
             <span className="min-w-0">
-              <span className="text-body block truncate font-display tracking-wide text-parchment uppercase">
-                {heroName(seat.heroId)}
+              <span className="flex items-center gap-1">
+                {hero ? <HeroIcon heroId={hero.id as HeroId} size="chip" /> : null}
+                <span className="text-body min-w-0 flex-1 truncate font-display tracking-wide text-parchment uppercase">
+                  {heroName(seat.heroId)}
+                </span>
               </span>
               {hero ? <ReachCaption seats={seats} seat={seat} /> : null}
             </span>

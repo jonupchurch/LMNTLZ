@@ -22,6 +22,7 @@ import { RosterView } from './RosterView.js';
 import { SquadBuilder } from './SquadBuilder.js';
 import { SquadHeader, isAttack, labelOf, type Editing } from './SquadHeader.js';
 import { SquadReadout } from './SquadReadout.js';
+import { coverage } from './analysis.js';
 import { EvictionWarning } from './EvictionWarning.js';
 import { useAllocation } from './hooks/useAllocation.js';
 import type {
@@ -85,6 +86,19 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
   const [problem, setProblem] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editing>('visible');
   const [selected, setSelected] = useState<string | null>(null);
+  /**
+   * The seat waiting for a champion.
+   *
+   * **Placement worked in one direction only, and the screen said the other.**
+   * The board's own instruction reads *"click a seat, then a champion"*, and
+   * clicking a seat with nobody selected returned silently — so the honest
+   * report from a player was *"you can't change any heroes"*. Both orders work
+   * now, and this is the state the seat-first one needs.
+   *
+   * It cannot disagree with `selected`: arming only happens when nothing is
+   * selected, and committing clears it.
+   */
+  const [armed, setArmed] = useState<{ row: SquadRow; index: number } | null>(null);
   const [pending, setPending] = useState<{ heroId: string; preview: EvictionPreview } | null>(null);
   /** The seat the confirm interrupted, so it can finish the placement. */
   const pendingSeat = useRef<{ row: SquadRow; index: number } | null>(null);
@@ -193,13 +207,14 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
    * empty warning dialog is worse than none. So the preview is fetched first and
    * the confirm only appears when it says something.
    */
-  const seatActivate = useCallback(
-    async (row: SquadRow, index: number) => {
-      if (!selected || !roster) return;
+  const commit = useCallback(
+    async (heroId: string, row: SquadRow, index: number) => {
+      if (!roster) return;
+      setArmed(null);
 
-      const alreadyHere = allocation.seats.some((s) => s.heroId === selected);
+      const alreadyHere = allocation.seats.some((s) => s.heroId === heroId);
       if (alreadyHere) {
-        allocation.place(selected, row, index);
+        allocation.place(heroId, row, index);
         return;
       }
 
@@ -215,29 +230,29 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
        */
       if (isAttack(editing)) {
         const zone = (['visible', 'hidden'] as const).find((z) =>
-          roster.assignments.defense[z].seats.some((s) => s.heroId === selected),
+          roster.assignments.defense[z].seats.some((s) => s.heroId === heroId),
         );
         if (zone) {
           setProblem(
-            `${heroName(selected)} is defending your ${ZONE_LABEL[zone]} and cannot attack. Move her off defense first.`,
+            `${heroName(heroId)} is defending your ${ZONE_LABEL[zone]} and cannot attack. Move her off defense first.`,
           );
           return;
         }
-        allocation.place(selected, row, index);
+        allocation.place(heroId, row, index);
         return;
       }
 
       try {
         const preview = await api<EvictionPreview>(`/squads/defense/${editing}/preview-move`, {
           method: 'POST',
-          body: JSON.stringify({ heroId: selected }),
+          body: JSON.stringify({ heroId: heroId }),
         });
 
         if (preview.evicts.length === 0 && preview.streakAtRisk === 0) {
-          allocation.place(selected, row, index);
+          allocation.place(heroId, row, index);
           return;
         }
-        setPending({ heroId: selected, preview });
+        setPending({ heroId: heroId, preview });
         // Remembered so the confirm can complete the placement it interrupted.
         pendingSeat.current = { row, index };
       } catch {
@@ -246,8 +261,54 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
         setProblem('Could not check what this move would break. Nothing was changed.');
       }
     },
-    [selected, roster, editing, allocation, heroName],
+    [roster, editing, allocation, heroName],
   );
+
+  /**
+   * A click on a seat.
+   *
+   * With a champion in hand it places her. With empty hands it **arms** the
+   * seat and waits — clicking the armed seat again puts it down. That second
+   * branch is the one that did not exist, and its absence was indistinguishable
+   * from a broken screen.
+   */
+  const seatActivate = useCallback(
+    async (row: SquadRow, index: number) => {
+      if (selected) {
+        await commit(selected, row, index);
+        return;
+      }
+      setArmed((a) => (a && a.row === row && a.index === index ? null : { row, index }));
+    },
+    [selected, commit],
+  );
+
+  /**
+   * A click on a champion in the picker.
+   *
+   * Into the armed seat if there is one; otherwise she is picked up, and
+   * clicking her again puts her down. **Toggling matters**: without it there is
+   * no way to cancel a selection, and a stray click leaves every later seat
+   * click placing somebody the player forgot they were holding.
+   */
+  const heroActivate = useCallback(
+    (heroId: string) => {
+      if (armed) {
+        void commit(heroId, armed.row, armed.index);
+        return;
+      }
+      setSelected((current) => (current === heroId ? null : heroId));
+    },
+    [armed, commit],
+  );
+
+  /** Take the armed champion off the board. The only single-seat removal. */
+  const removeArmed = useCallback(() => {
+    if (!armed) return;
+    const seat = allocation.seats.find((s) => s.row === armed.row && s.index === armed.index);
+    if (seat) allocation.remove(seat.heroId);
+    setArmed(null);
+  }, [armed, allocation]);
 
   const confirmMove = useCallback(() => {
     const seat = pendingSeat.current;
@@ -474,20 +535,40 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
         </p>
       )}
 
-          <SquadBuilder
-            allocation={allocation}
-            heroName={heroName}
-            heroById={heroById}
-            kind={isAttack(editing) ? 'offense' : 'defense'}
-            selectedHeroId={selected}
-            onSeatActivate={(row, index) => void seatActivate(row, index)}
-          />
+          {/**
+           * **Sticky, because the picker is 27 cards and the board is six.**
+           *
+           * Side by side, one of them is always the wrong width — so the picker
+           * sits underneath, and at 1600×900 that put the champion you were
+           * choosing and the seat you were filling on different scroll
+           * positions. Pinning the board means the six seats are on screen for
+           * every one of the 27 choices, which is the whole interaction.
+           */}
+          <div className="sticky top-0 z-10 -mx-1 bg-bg/95 px-1 pb-3 backdrop-blur-sm">
+            <SquadBuilder
+              allocation={allocation}
+              heroName={heroName}
+              heroById={heroById}
+              kind={isAttack(editing) ? 'offense' : 'defense'}
+              selectedHeroId={selected}
+              armedSeat={armed}
+              onSeatActivate={(row, index) => void seatActivate(row, index)}
+              {...(armed &&
+              allocation.seats.some((s) => s.row === armed.row && s.index === armed.index)
+                ? { onRemoveArmed: removeArmed }
+                : {})}
+            />
+          </div>
 
           <RosterView
             roster={roster}
             selectedHeroId={selected}
-            onSelect={setSelected}
+            onSelect={heroActivate}
             seatedIds={seatedIds}
+            awaitingSeat={armed !== null}
+            /* Same derivation the readout's DAMAGE COVERAGE spends, so the two
+               can never disagree about what this six can strike. */
+            covers={coverage(squadHeroes).covered}
           />
         </div>
       </Panel>

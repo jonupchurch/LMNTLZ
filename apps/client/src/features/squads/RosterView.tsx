@@ -12,27 +12,41 @@
  * says which zone rather than only that she is unavailable — "Bramwen cannot
  * attack" leaves the player hunting for her.
  *
- * ### 019 — art, and two filters that are not the same filter
+ * ### 019 — art, one filter, and a readout that is not a filter
  *
  * `resources/03-squad-builder.md` asks for a picker *"filterable by type and by
- * weakness, so players can counter-build"*, and the design draws both rows: nine
- * House chips, then nine `COVERS BANE` swatches. They read as duplicates and
- * are not —
+ * weakness, so players can counter-build"*, and the design draws two rows: nine
+ * House chips, then nine `COVERS BANE` swatches.
  *
- * - a **House** chip matches `primary`: which of the Nine a champion belongs to.
- * - a **covers-bane** swatch matches `strengths`, which is `{primary,
- *   secondary}`: who can punish an enemy whose Bane is that force.
+ * The first pass made both of them filters and split them on `primary` versus
+ * `strengths`. **That was wrong twice.** A Force chip has to match a champion
+ * who carries that Force *at all* — an Earth champion with a Fire secondary
+ * deals Fire, and a filter that hides her from a player hunting for Fire is
+ * simply broken. And once the chip matches both authored forces, a second
+ * "has this force" filter beside it is the same filter with a different label.
  *
- * An Earth champion with a Fire secondary opens a Fire-baned door and is not in
- * the Fire House. Filtering on `primary` alone would hide her from exactly the
- * player who needs her, which is the whole counter-building loop.
+ * So `COVERS BANE` is read as what it literally says: **which enemy Banes the
+ * squad on the board can already strike.** It is a readout, which is also why
+ * the design draws it as nine small squares rather than nine pressable chips —
+ * and it earns its place beside the picker, because *what am I still missing*
+ * is the question a player is asking while they choose.
  */
 
 import { useMemo, useState } from 'react';
 import { DAMAGE_TYPES, type DamageType, type Hero, type HeroId } from '@lmntlz/content';
-import { FORCE_FILL, FORCE_RING, FORCE_TEXT, HeroIcon, HeroPortrait } from '../../components/index.js';
+import {
+  FORCE_RING,
+  FORCE_TEXT,
+  HeroIcon,
+  HeroPortrait,
+  TypeIcon,
+} from '../../components/index.js';
 import type { RosterResponse, Zone } from './types.js';
 import { ATTACK_SQUADS, DEFENSE_TOTAL } from './hooks/useAllocation.js';
+
+/** The two zones and the three slots, in the header's own numbering. */
+const ZONE_LABEL: Readonly<Record<Zone, string>> = { visible: 'Zone I', hidden: 'Zone II' };
+const ROMAN = ['I', 'II', 'III'] as const;
 
 export interface RosterViewProps {
   readonly roster: RosterResponse;
@@ -40,6 +54,16 @@ export interface RosterViewProps {
   readonly onSelect: (heroId: string) => void;
   /** Who is already seated in the squad on screen, for the `IN SQUAD` tag. */
   readonly seatedIds?: ReadonlySet<string>;
+  /**
+   * A seat on the board is armed and waiting for a champion.
+   *
+   * The picker says so at the top, because the board can be scrolled past and
+   * a player who has forgotten they armed a seat will read the next click as
+   * the screen misbehaving.
+   */
+  readonly awaitingSeat?: boolean;
+  /** Which of the Nine the squad on the board can already strike. */
+  readonly covers?: ReadonlySet<DamageType>;
 }
 
 interface Commitment {
@@ -52,10 +76,11 @@ export function RosterView({
   selectedHeroId,
   onSelect,
   seatedIds,
+  awaitingSeat = false,
+  covers,
 }: RosterViewProps) {
   const [search, setSearch] = useState('');
-  const [houses, setHouses] = useState<ReadonlySet<DamageType>>(new Set());
-  const [covers, setCovers] = useState<ReadonlySet<DamageType>>(new Set());
+  const [forces, setForces] = useState<ReadonlySet<DamageType>>(new Set());
 
   const commitment = useMemo(() => {
     const map = new Map<string, Commitment>();
@@ -78,11 +103,17 @@ export function RosterView({
     const needle = search.trim().toLowerCase();
     return roster.heroes.filter((hero: Hero) => {
       if (needle !== '' && !hero.name.toLowerCase().includes(needle)) return false;
-      if (houses.size > 0 && !houses.has(hero.primary)) return false;
-      if (covers.size > 0 && !hero.strengths.some((force) => covers.has(force))) return false;
+      /**
+       * **`strengths`, not `primary`.** `strengths` is `{primary, secondary}`,
+       * and a champion deals both — so a Fire filter that skipped an Earth
+       * champion with a Fire secondary would hide her from precisely the player
+       * looking for Fire. Coverage is the union of the two everywhere else in
+       * this feature, and the filter has to agree with it.
+       */
+      if (forces.size > 0 && !hero.strengths.some((force) => forces.has(force))) return false;
       return true;
     });
-  }, [roster.heroes, search, houses, covers]);
+  }, [roster.heroes, search, forces]);
 
   const committed =
     roster.assignments.defense.visible.seats.length +
@@ -91,7 +122,14 @@ export function RosterView({
   return (
     <section aria-label="Champion roster" className="flex flex-col gap-3">
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <h2 className="text-caption font-mono tracking-widest text-faint uppercase">Picker</h2>
+        <h2
+          className={[
+            'text-caption font-mono tracking-widest uppercase',
+            awaitingSeat ? 'text-gold' : 'text-faint',
+          ].join(' ')}
+        >
+          {awaitingSeat ? 'Picker · seat waiting' : 'Picker'}
+        </h2>
 
         <label className="min-w-40 flex-1">
           <span className="sr-only">Search champions</span>
@@ -130,42 +168,52 @@ export function RosterView({
       </header>
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-        <ul className="flex flex-wrap gap-1.5" aria-label="Filter by House">
+        <ul className="flex flex-wrap gap-1.5" aria-label="Filter by Force">
           {DAMAGE_TYPES.map((type) => (
             <li key={type}>
               <FilterChip
                 type={type}
-                on={houses.has(type)}
+                on={forces.has(type)}
                 label={type}
-                onToggle={() => setHouses(toggled(houses, type))}
+                onToggle={() => setForces(toggled(forces, type))}
               />
             </li>
           ))}
         </ul>
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-caption font-mono tracking-widest text-faint uppercase">
-            Covers bane
-          </span>
-          <ul className="flex gap-1">
-            {DAMAGE_TYPES.map((type) => (
-              <li key={type}>
-                <button
-                  type="button"
-                  aria-pressed={covers.has(type)}
-                  aria-label={`Show champions who can strike ${type}`}
-                  onClick={() => setCovers(toggled(covers, type))}
-                  className={[
-                    'size-4 rounded-sm border transition-shadow duration-(--duration-fast)',
-                    covers.has(type)
-                      ? `${FORCE_FILL[type].split(' ')[0]!} border-parchment shadow-(--shadow-glow-gold-strong)`
-                      : 'border-line bg-void hover:border-faint',
-                  ].join(' ')}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/**
+         * **A readout, not a filter** — see the header. Nine squares saying
+         * which enemy Banes this squad can already open, lit from the board
+         * rather than from anything clicked here. `role="img"` with a sentence
+         * for a label, because a screen reader offered nine unlabelled squares
+         * gets nothing at all from them.
+         */}
+        {covers ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-caption font-mono tracking-widest text-faint uppercase">
+              Covers bane
+            </span>
+            <span
+              role="img"
+              aria-label={
+                covers.size === 0
+                  ? 'This squad covers no Banes yet'
+                  : `This squad can strike ${[...covers].join(', ')}`
+              }
+              className="flex gap-1"
+            >
+              {DAMAGE_TYPES.map((type) => (
+                <span
+                  key={type}
+                  data-covers={covers.has(type)}
+                  className={covers.has(type) ? 'opacity-100' : 'opacity-25 grayscale'}
+                >
+                  <TypeIcon type={type} size="pip" />
+                </span>
+              ))}
+            </span>
+          </div>
+        ) : null}
 
         <p className="text-caption font-mono text-faint">
           {/**
@@ -183,7 +231,10 @@ export function RosterView({
           No champion matches those filters.
         </p>
       ) : (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
+        /* 168 rather than 150: the card gained both forces, the Bane and the
+           commitment, and four text lines under a name need the width or every
+           one of them truncates to an ellipsis. */
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-2">
           {shown.map((hero: Hero) => (
             <li key={hero.id}>
               <PickerCard
@@ -224,11 +275,13 @@ function FilterChip({
       aria-pressed={on}
       onClick={onToggle}
       className={[
-        'text-caption inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono tracking-wider uppercase transition-colors duration-(--duration-fast)',
+        'text-caption inline-flex items-center gap-1 rounded-full border py-0.5 pr-2 pl-1 font-mono tracking-wider uppercase transition-colors duration-(--duration-fast)',
         on ? 'border-parchment bg-raised text-parchment' : 'border-line text-faint hover:text-muted',
       ].join(' ')}
     >
-      <span aria-hidden className={`size-1.5 rounded-full ${FORCE_FILL[type].split(' ')[0]!}`} />
+      {/* Was a coloured dot. A dot is one channel, and it is the channel a
+          colour-blind player cannot read — on the game's central mechanic. */}
+      <TypeIcon type={type} size="pip" />
       {label}
     </button>
   );
@@ -262,7 +315,7 @@ function PickerCard({
       aria-pressed={selected}
       data-hero={hero.id}
       className={[
-        'relative block aspect-4/5 w-full overflow-hidden rounded-lg bg-void text-left transition-shadow duration-(--duration-fast)',
+        'relative block aspect-3/4 w-full overflow-hidden rounded-lg bg-void text-left transition-shadow duration-(--duration-fast)',
         selected ? 'shadow-(--shadow-glow-gold)' : 'hover:shadow-(--shadow-glow-air)',
       ].join(' ')}
     >
@@ -284,36 +337,64 @@ function PickerCard({
 
       <span className="relative flex h-full flex-col justify-between p-2">
         <span className="flex items-start justify-between gap-1">
-          <HeroIcon heroId={hero.id as HeroId} size="chip" />
+          {/* The Force as a SHAPE, not only a colour — `badge` is the variant
+              drawn to hold against portrait art. */}
+          <TypeIcon type={hero.primary} variant="badge" size="pip" />
           {seated ? (
             <span className="text-caption rounded-sm bg-gold px-1 font-mono tracking-wider text-void uppercase">
               In squad
             </span>
-          ) : state?.zone ? (
-            /* **Name the zone.** "Unavailable" alone sends the player hunting.
-               `DEF ·` prefixes it because `visible` on its own, in a corner tag
-               at 10px, reads as a property of the card rather than a place. */
-            <span className="text-caption rounded-sm bg-void/80 px-1 font-mono tracking-wider text-dark-lit uppercase">
-              Def · {state.zone}
-            </span>
-          ) : state?.squads.length ? (
-            <span className="text-caption rounded-sm bg-void/80 px-1 font-mono tracking-wider text-gold uppercase">
-              Atk {state.squads.map((s) => s + 1).join(',')}
-            </span>
           ) : null}
         </span>
 
-        <span className="min-w-0">
-          <span className="text-body block truncate font-display tracking-wide text-parchment uppercase">
-            {hero.name}
-          </span>
-          <span className="flex items-baseline justify-between gap-2">
-            <span
-              className={`text-caption truncate font-mono tracking-wider uppercase ${FORCE_TEXT[hero.primary]}`}
-            >
-              {hero.primary}
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <span className="flex items-center gap-1">
+            <HeroIcon heroId={hero.id as HeroId} size="chip" />
+            <span className="text-body min-w-0 flex-1 truncate font-display tracking-wide text-parchment uppercase">
+              {hero.name}
             </span>
             <span className="text-caption shrink-0 font-mono text-faint">R{hero.reach}</span>
+          </span>
+
+          {/* Both authored forces, because coverage is the union of the two and
+              a card showing only the House hides half of what she can open. */}
+          <span className="text-caption flex items-center gap-1 font-mono tracking-wider uppercase">
+            <span className={FORCE_TEXT[hero.primary]}>{hero.primary}</span>
+            <span className="text-decor">·</span>
+            <span className={FORCE_TEXT[hero.secondary]}>{hero.secondary}</span>
+          </span>
+
+          {/**
+           * **The Bane, which is the whole reason to read this card.**
+           *
+           * LMNTLZ is counter-building, and until now nothing on the squad
+           * screen said what a champion bleeds to — the one fact that decides
+           * whether she belongs beside the other five. Derived, never authored:
+           * `hero.bane` is `counter(primary)` from `@lmntlz/content`.
+           */}
+          <span className="text-caption flex items-center gap-1 font-mono tracking-wider uppercase">
+            <span className="text-decor">Bane</span>
+            <TypeIcon type={hero.bane} size="pip" />
+            <span className={FORCE_TEXT[hero.bane]}>{hero.bane}</span>
+          </span>
+
+          {/**
+           * **Where she is committed, always** — not only when she is on some
+           * other squad. A player scanning 27 cards for somebody free needs to
+           * see *free*, and an absent tag is indistinguishable from a tag that
+           * failed to render.
+           */}
+          <span className="text-caption block truncate font-mono tracking-wider uppercase">
+            {state?.zone ? (
+              /* Name the zone. "Unavailable" alone sends the player hunting. */
+              <span className="text-dark-lit">Defending · {ZONE_LABEL[state.zone]}</span>
+            ) : state?.squads.length ? (
+              <span className="text-gold">
+                Striking · {state.squads.map((s) => ROMAN[s] ?? s + 1).join(', ')}
+              </span>
+            ) : (
+              <span className="text-decor">Unassigned</span>
+            )}
           </span>
         </span>
       </span>

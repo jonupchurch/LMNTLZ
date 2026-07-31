@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="air damage badge">
+  <title>AIR damage badge</title>
+  <g id="badge-air">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#8FCFE0" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><rect x="10" y="16" width="44" height="7" rx="3.5" fill="#8FCFE0"></rect><rect x="16" y="29" width="34" height="7" rx="3.5" fill="#8FCFE0"></rect><rect x="22" y="42" width="22" height="7" rx="3.5" fill="#DCE6EA"></rect></g>
+  </g>
+</svg>

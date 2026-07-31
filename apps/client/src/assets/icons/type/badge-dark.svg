@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="dark damage badge">
+  <title>DARK damage badge</title>
+  <g id="badge-dark">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#7A3FA0" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><path fill-rule="evenodd" d="M32 32 m-26 0 a26 26 0 1 0 52 0 a26 26 0 1 0 -52 0 z M42 30 m-20 0 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0 z" fill="#7A3FA0"></path><circle cx="17" cy="24" r="3.5" fill="#C64BB0"></circle></g>
+  </g>
+</svg>

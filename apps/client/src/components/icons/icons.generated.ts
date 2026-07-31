@@ -4,7 +4,7 @@
 // HERO_ICONS is Record<HeroId, string> over the 27-id literal union, so a hero
 // without an icon is a COMPILE ERROR rather than a blank square (FR-010).
 
-import type { HeroId } from '@lmntlz/content';
+import type { DamageType, HeroId } from '@lmntlz/content';
 
 import heroEarthBramwen from '../../assets/icons/hero/earth-bramwen.svg';
 import heroEarthOssic from '../../assets/icons/hero/earth-ossic.svg';
@@ -106,6 +106,25 @@ import statusStatusUnseen from '../../assets/icons/status/status-unseen.svg';
 import statusStatusWarded from '../../assets/icons/status/status-warded.svg';
 import statusStatusWithered from '../../assets/icons/status/status-withered.svg';
 
+import glyphEarth from '../../assets/icons/type/type-earth.svg';
+import badgeEarth from '../../assets/icons/type/badge-earth.svg';
+import glyphAir from '../../assets/icons/type/type-air.svg';
+import badgeAir from '../../assets/icons/type/badge-air.svg';
+import glyphFire from '../../assets/icons/type/type-fire.svg';
+import badgeFire from '../../assets/icons/type/badge-fire.svg';
+import glyphWater from '../../assets/icons/type/type-water.svg';
+import badgeWater from '../../assets/icons/type/badge-water.svg';
+import glyphLight from '../../assets/icons/type/type-light.svg';
+import badgeLight from '../../assets/icons/type/badge-light.svg';
+import glyphDark from '../../assets/icons/type/type-dark.svg';
+import badgeDark from '../../assets/icons/type/badge-dark.svg';
+import glyphSlash from '../../assets/icons/type/type-slash.svg';
+import badgeSlash from '../../assets/icons/type/badge-slash.svg';
+import glyphPierce from '../../assets/icons/type/type-pierce.svg';
+import badgePierce from '../../assets/icons/type/badge-pierce.svg';
+import glyphCrush from '../../assets/icons/type/type-crush.svg';
+import badgeCrush from '../../assets/icons/type/badge-crush.svg';
+
 export const HERO_ICONS: Record<HeroId, string> = {
   h01: heroEarthBramwen,
   h02: heroEarthOssic,
@@ -134,6 +153,37 @@ export const HERO_ICONS: Record<HeroId, string> = {
   h25: heroCrushBoldrek,
   h26: heroCrushHettamar,
   h27: heroCrushMauless,
+};
+
+/**
+ * The bare glyph, keylined so it survives a coloured ground. Flat panels.
+ *
+ * `Record<DamageType, string>` over the nine-force union, so a force without
+ * an icon is a COMPILE ERROR — the same guarantee HERO_ICONS gives.
+ */
+export const TYPE_ICONS: Record<DamageType, string> = {
+  earth: glyphEarth,
+  air: glyphAir,
+  fire: glyphFire,
+  water: glyphWater,
+  light: glyphLight,
+  dark: glyphDark,
+  slash: glyphSlash,
+  pierce: glyphPierce,
+  crush: glyphCrush,
+};
+
+/** The glyph in a dark disc ringed in the force colour. Over portrait art. */
+export const TYPE_BADGES: Record<DamageType, string> = {
+  earth: badgeEarth,
+  air: badgeAir,
+  fire: badgeFire,
+  water: badgeWater,
+  light: badgeLight,
+  dark: badgeDark,
+  slash: badgeSlash,
+  pierce: badgePierce,
+  crush: badgeCrush,
 };
 
 export const STATUS_ICON_KEYS = Object.freeze([

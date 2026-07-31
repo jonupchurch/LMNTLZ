@@ -87,7 +87,22 @@ export type { HeroIconProps, HeroIconSize } from './icons/HeroIcon.js';
  */
 export { StatusPip } from './icons/StatusPip.js';
 export type { StatusPipProps } from './icons/StatusPip.js';
-export { HERO_ICONS, STATUS_ICONS, STATUS_ICON_KEYS } from './icons/icons.generated.js';
+/**
+ * The nine forces as **shapes**, not only colours (019 US2).
+ *
+ * `resources/damage-types/` held these unused for the whole of 017 and 018,
+ * so every screen drew a Force as a coloured dot — the one channel a
+ * colour-blind player cannot read, on the game's central mechanic.
+ */
+export { TypeIcon } from './icons/TypeIcon.js';
+export type { TypeIconProps, TypeIconSize, TypeIconVariant } from './icons/TypeIcon.js';
+export {
+  HERO_ICONS,
+  STATUS_ICONS,
+  STATUS_ICON_KEYS,
+  TYPE_BADGES,
+  TYPE_ICONS,
+} from './icons/icons.generated.js';
 export type { StatusIconKey } from './icons/icons.generated.js';
 
 // --- system ----------------------------------------------------------------

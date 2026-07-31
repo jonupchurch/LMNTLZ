@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="earth damage badge">
+  <title>EARTH damage badge</title>
+  <g id="badge-earth">
+    <circle cx="32" cy="32" r="30" fill="#14121F"></circle>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#4E7C3A" stroke-width="3"></circle>
+    <g transform="translate(32,32) scale(.64) translate(-32,-32)"><polygon points="32,6 50,26 32,58 14,26" fill="#4E7C3A"></polygon><polygon points="32,6 50,26 32,58" fill="#C9922E" opacity=".55"></polygon><path d="M14 26 h36" stroke="#C9922E" stroke-width="3" opacity=".7"></path></g>
+  </g>
+</svg>

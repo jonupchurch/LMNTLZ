@@ -42,8 +42,50 @@ describe('the roster shows all 27, always', () => {
 
   it('names the zone a defender is committed to, not merely that she is busy', () => {
     render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
-    expect(screen.getAllByText(/Def · visible/).length).toBe(6);
-    expect(screen.getAllByText(/Def · hidden/).length).toBe(6);
+    expect(screen.getAllByText(/Defending · Zone I$/).length).toBe(6);
+    expect(screen.getAllByText(/Defending · Zone II$/).length).toBe(6);
+
+    /**
+     * **And the other two commitments, because an absent tag is not a state.**
+     * A player scanning 27 cards for somebody free has to be able to see
+     * *free* — a card that simply omits the line is indistinguishable from one
+     * whose line failed to render.
+     */
+    expect(screen.getAllByText(/Unassigned/).length).toBe(27 - 12);
+  });
+
+  /**
+   * **A Force filter matches a champion who carries that Force at all.**
+   *
+   * The first version matched `primary` only, so an Earth champion with a Fire
+   * secondary — who deals Fire, and whose Fire is half of what `coverage()`
+   * counts — was hidden from a player filtering for Fire. That is the picker
+   * lying about the roster to the one player who needs the answer.
+   *
+   * The fixture is not hand-picked: the champion is *found* by asking the
+   * content package for one whose secondary is Fire and whose primary is not.
+   * A hardcoded name would pass here and stop meaning anything the next time
+   * the roster is tuned.
+   */
+  it('filters on both authored forces, not only the House', async () => {
+    const payload = roster();
+    const crossover = payload.heroes.find((h) => h.secondary === 'fire' && h.primary !== 'fire');
+    expect(crossover, 'no champion has Fire as a secondary — the fixture changed').toBeDefined();
+
+    const { container } = render(
+      <RosterView roster={payload} selectedHeroId={null} onSelect={() => {}} />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /^fire$/i }));
+
+    const shown = [...container.querySelectorAll('[data-hero]')].map((el) =>
+      el.getAttribute('data-hero'),
+    );
+    expect(shown).toContain(crossover!.id);
+    for (const id of shown) {
+      const hero = payload.heroes.find((h) => h.id === id)!;
+      expect(hero.strengths).toContain('fire');
+    }
   });
 
   it('states the pool, which is why overlap keeps happening', () => {

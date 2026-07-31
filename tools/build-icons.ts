@@ -32,13 +32,28 @@ const root = (p: string): string => fileURLToPath(new URL(`../${p}`, import.meta
 
 const HERO_SRC = root('resources/designsystem/hero-icons');
 const STATUS_SRC = root('resources/designsystem/status-icons');
+/**
+ * **The third set, and it was sitting there unused** (019 US2).
+ *
+ * `resources/damage-types/` has held two variants of all nine forces since the
+ * icon pass, and nothing copied them — so the client had hero emblems, status
+ * pips, and no way at all to draw a Force. Every screen fell back to a coloured
+ * dot, which is the one channel a player who cannot separate the nine colours
+ * has no access to.
+ */
+const TYPE_SRC = root('resources/damage-types');
 const HERO_DEST = root('apps/client/src/assets/icons/hero');
 const STATUS_DEST = root('apps/client/src/assets/icons/status');
+const TYPE_DEST = root('apps/client/src/assets/icons/type');
 const OUT = root('apps/client/src/components/icons/icons.generated.ts');
 const ROSTER = root('packages/content/src/heroes.generated.ts');
+const TYPES = root('packages/content/src/types.ts');
 
 /** Not a hero. Named exactly, never pattern-matched — see the header. */
 const NOT_A_HERO = new Set(['00-overview-3x9.svg']);
+
+/** Not a force. Same rule, same reason: an exact name, never a pattern. */
+const NOT_A_TYPE = new Set(['00-overview.svg']);
 
 const problems: string[] = [];
 const note = (m: string): void => {
@@ -64,6 +79,28 @@ function roster(): { id: string; slug: string }[] {
     note(`parsed 0 heroes out of ${ROSTER} — the generated shape changed`);
   }
   return entries.map((m) => ({ id: m[1]!, slug: m[2]! }));
+}
+
+/**
+ * The nine forces, read out of `types.ts` rather than typed here.
+ *
+ * Same call as `roster()` above and for the same reason — the list is authored
+ * once in `@lmntlz/content`, and a copy in a build tool is a second source of
+ * truth for the one thing Constitution XV says must not have one.
+ */
+function forces(): string[] {
+  const text = readFileSync(TYPES, 'utf8');
+  const found: string[] = [];
+  for (const block of ['MAGIC_TYPES', 'MELEE_TYPES']) {
+    const match = text.match(new RegExp(`${block}[^=]*=\\s*Object\\.freeze\\(\\[([^\\]]*)\\]`));
+    if (!match) {
+      note(`could not parse ${block} out of ${TYPES} — the shape changed`);
+      continue;
+    }
+    for (const name of match[1]!.matchAll(/'([a-z]+)'/g)) found.push(name[1]!);
+  }
+  if (found.length !== 9) note(`parsed ${found.length} forces, expected 9`);
+  return found;
 }
 
 /** `01-earth-bramwen` → `earth-bramwen`. The ordinal is sort order, not identity. */
@@ -110,6 +147,34 @@ for (const orphan of heroFiles) {
 const statusFiles = svgsIn(STATUS_SRC);
 if (statusFiles.length === 0) note(`no status icons found in ${STATUS_SRC}`);
 
+/**
+ * Both variants of every force, checked against the authored list.
+ *
+ * `resources/damage-types/README.md` is explicit about which is which:
+ * `type-*` is the bare glyph with a keyline, `badge-*` is the same glyph in a
+ * dark disc ringed in the force colour — *"use this for damage callouts on a
+ * hero: it holds its shape against portrait art and reads down to ~20px"*.
+ * Both ship, because a screen with portraits needs one and a flat panel the
+ * other.
+ */
+const typeFiles = new Set(svgsIn(TYPE_SRC).filter((f) => !NOT_A_TYPE.has(f)));
+const typeRows: { force: string; variant: 'glyph' | 'badge'; ident: string; file: string }[] = [];
+for (const force of forces()) {
+  for (const [variant, prefix] of [
+    ['glyph', 'type'],
+    ['badge', 'badge'],
+  ] as const) {
+    const file = `${prefix}-${force}.svg`;
+    if (!typeFiles.has(file)) {
+      note(`force ${force} has no ${variant} icon — expected ${file}`);
+      continue;
+    }
+    typeFiles.delete(file);
+    typeRows.push({ force, variant, ident: `${variant}${pascal(force)}`, file });
+  }
+}
+for (const orphan of typeFiles) note(`orphan type icon with no matching force: ${orphan}`);
+
 const statusRows = statusFiles.map((file) => {
   const stem = file.replace(/\.svg$/, '');
   return { key: stem, ident: `status${pascal(stem)}`, file };
@@ -127,12 +192,13 @@ if (problems.length > 0) {
  * copy behind, the manifest stops referencing it, and the stale file ships
  * forever — invisible, because nothing points at it.
  */
-for (const dir of [HERO_DEST, STATUS_DEST]) {
+for (const dir of [HERO_DEST, STATUS_DEST, TYPE_DEST]) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
 }
 for (const row of heroRows) copyFileSync(join(HERO_SRC, row.file), join(HERO_DEST, row.file));
 for (const row of statusRows) copyFileSync(join(STATUS_SRC, row.file), join(STATUS_DEST, row.file));
+for (const row of typeRows) copyFileSync(join(TYPE_SRC, row.file), join(TYPE_DEST, row.file));
 
 // --- emit ------------------------------------------------------------------
 
@@ -149,22 +215,50 @@ const heroImports = heroRows
 const statusImports = statusRows
   .map((r) => `import ${r.ident} from '../../assets/icons/status/${r.file}';`)
   .join('\n');
+const typeImports = typeRows
+  .map((r) => `import ${r.ident} from '../../assets/icons/type/${r.file}';`)
+  .join('\n');
 
 const heroEntries = heroRows.map((r) => `  ${r.id}: ${r.ident},`).join('\n');
 const statusEntries = statusRows.map((r) => `  '${r.key}': ${r.ident},`).join('\n');
 const statusKeys = statusRows.map((r) => `  '${r.key}',`).join('\n');
+const glyphEntries = typeRows
+  .filter((r) => r.variant === 'glyph')
+  .map((r) => `  ${r.force}: ${r.ident},`)
+  .join('\n');
+const badgeEntries = typeRows
+  .filter((r) => r.variant === 'badge')
+  .map((r) => `  ${r.force}: ${r.ident},`)
+  .join('\n');
 
 writeFileSync(
   OUT,
   `${BANNER}
-import type { HeroId } from '@lmntlz/content';
+import type { DamageType, HeroId } from '@lmntlz/content';
 
 ${heroImports}
 
 ${statusImports}
 
+${typeImports}
+
 export const HERO_ICONS: Record<HeroId, string> = {
 ${heroEntries}
+};
+
+/**
+ * The bare glyph, keylined so it survives a coloured ground. Flat panels.
+ *
+ * \`Record<DamageType, string>\` over the nine-force union, so a force without
+ * an icon is a COMPILE ERROR — the same guarantee HERO_ICONS gives.
+ */
+export const TYPE_ICONS: Record<DamageType, string> = {
+${glyphEntries}
+};
+
+/** The glyph in a dark disc ringed in the force colour. Over portrait art. */
+export const TYPE_BADGES: Record<DamageType, string> = {
+${badgeEntries}
 };
 
 export const STATUS_ICON_KEYS = Object.freeze([
@@ -181,5 +275,6 @@ ${statusEntries}
 );
 
 console.log(
-  `icons:build wrote ${heroRows.length} hero icons and ${statusRows.length} status icons`,
+  `icons:build wrote ${heroRows.length} hero icons, ${statusRows.length} status icons ` +
+    `and ${typeRows.length} type icons`,
 );
