@@ -12,6 +12,7 @@ import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { CodexScreen } from './features/codex/CodexScreen.js';
 import { ForgeScreen } from './features/forge/ForgeScreen.js';
+import { StoreScreen } from './features/store/StoreScreen.js';
 import { RosterScreen } from './features/roster/RosterScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
 import { GuildScreen } from './features/guilds/GuildScreen.js';
@@ -95,7 +96,14 @@ type Screen =
    * destination rather than a section of anything. It arrives here the same
    * commit its screen does, which is FR-015 rather than bookkeeping.
    */
-  | { readonly kind: 'forge' };
+  | { readonly kind: 'forge' }
+  /**
+   * **The Store** (018 T032). One product, seven durations. It arrives with its
+   * screen and not before — and it could not arrive at all until 011 Phase 8
+   * made the pass actually pay, because a store selling a pass that does
+   * nothing fails silently and takes the money.
+   */
+  | { readonly kind: 'store' };
 
 /**
  * **The dev-only component gallery** (017 T032).
@@ -281,6 +289,11 @@ function GameApp(): JSX.Element {
                     <RosterScreen />
                   ) : screen.kind === 'codex' ? (
                     <CodexScreen />
+                  ) : screen.kind === 'store' ? (
+                    /* 018 T032 — the caller. 011 built the catalog, the
+                       checkout, the webhook, the entitlement fold, the receipt
+                       and the ceiling, and named no screen anywhere. */
+                    <StoreScreen onUnauthenticated={onUnauthenticated} />
                   ) : screen.kind === 'forge' ? (
                     /* 018 T020 — the caller. Feature 010 built runes end to
                        end and no task anywhere created a screen, so shards
@@ -375,7 +388,7 @@ function GameApp(): JSX.Element {
  * THE COURT is a plain entry today because Guild is the only social screen
  * built. It becomes a group when 014 lands Chat beside it.
  */
-type RailId = 'squads' | 'roster' | 'forge' | 'attack' | 'court' | 'codex';
+type RailId = 'squads' | 'roster' | 'forge' | 'attack' | 'court' | 'store' | 'codex';
 
 export function railEntries(): RailEntry[] {
   return [
@@ -387,6 +400,9 @@ export function railEntries(): RailEntry[] {
     { id: 'forge', label: 'Rune Forge' },
     { id: 'attack', label: 'Matchmaking' },
     { id: 'court', label: 'The Court' },
+    /* 018 T032. The store export's rail reads
+       `... MATCHMAKING · THE COURT · THE STORE · CODEX`. */
+    { id: 'store', label: 'The Store' },
     /* T065 — registered now that the screen exists, and not one commit
        earlier. That ordering is FR-015, not bookkeeping. */
     { id: 'codex', label: 'Codex' },
@@ -412,6 +428,8 @@ export function screenFor(id: string, accountId: string): Screen {
       return { kind: 'codex' };
     case 'forge':
       return { kind: 'forge' };
+    case 'store':
+      return { kind: 'store' };
     case 'profile':
       return { kind: 'profile', targetId: accountId };
     case 'squads':

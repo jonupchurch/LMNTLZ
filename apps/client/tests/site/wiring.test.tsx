@@ -168,6 +168,32 @@ describe('every rail destination is reachable from App', () => {
     });
   });
 
+  /**
+   * **018 T032's caller assertion.** 011 built the catalog, the checkout, the
+   * webhook, the entitlement fold, the receipt and the spend ceiling, and named
+   * no screen anywhere — its own T026 says to put the statement descriptor *on
+   * the store screen*, and no task creates one.
+   */
+  it('reaches the Store, and it asks for the three routes it needs', async () => {
+    signIn();
+    render(<App />);
+    await waitFor(() => expect(rail()).toBeInTheDocument());
+
+    within(rail()).getByRole('button', { name: /the store/i }).click();
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(/opening the store/i),
+    );
+
+    await waitFor(() => {
+      /* The catalog for prices, the entitlement for what is held, and shards
+         for the daily reset instant — none of the three is optional. */
+      expect(requestedPaths().some((p) => p.includes('/catalog'))).toBe(true);
+      expect(requestedPaths().some((p) => p.includes('/me/entitlements'))).toBe(true);
+      expect(requestedPaths().some((p) => p.includes('/me/shards'))).toBe(true);
+    });
+  });
+
   /** The profile is the one destination that is NOT in the rail (T020). */
   it('reaches the profile from the header username', async () => {
     signIn();

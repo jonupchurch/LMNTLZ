@@ -174,4 +174,17 @@ export interface CatalogResponse {
   readonly autoRenews: false;
   /** False when no rail is installed — the store is honest instead of erroring at checkout. */
   readonly available: boolean;
+  /**
+   * **What appears on the card statement** (018 T027 · 011 FR-007).
+   *
+   * Served rather than written into the client, for the same reason the guild
+   * founding cost is: it is an environment value (`STATEMENT_DESCRIPTOR`) that
+   * must match what the provider dashboard is configured with, and a second
+   * copy in a bundle would be correct until somebody changed one of them.
+   *
+   * It has to be **adjacent to the pay control**, not in a footer — an
+   * unrecognised line on a statement is what a chargeback is made of, and the
+   * moment to prevent one is while the player is looking at the button.
+   */
+  readonly statementDescriptor: string;
 }

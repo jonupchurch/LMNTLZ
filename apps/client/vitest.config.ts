@@ -131,6 +131,22 @@ export default defineConfig({
       },
       {
         /**
+         * **The Store (018).** Separate from `forge` for the reason every
+         * project here is separate: the assertions are about *requests*, and
+         * the one that matters most — that no rail means `/checkout` is never
+         * reached — cannot be made against a shared stub.
+         */
+        plugins: [react()],
+        test: {
+          name: 'store',
+          include: ['tests/store/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
+      {
+        /**
          * **The Forge (018).** Its own project because the claims here are
          * about *requests* — planning must send nothing, a refusal must happen
          * before any charge — and a suite sharing a fetch stub with another

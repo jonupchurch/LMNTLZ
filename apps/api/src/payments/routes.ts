@@ -31,6 +31,7 @@ import {
 } from './catalog.js';
 import { getRail, railInstalled, NoRailError } from './rail.js';
 import { entitlementFor } from './entitlements.js';
+import { STATEMENT_DESCRIPTOR } from './receipt.js';
 import { handleNotification } from './webhook.js';
 import { canAcceptPurchase } from '../progression/cap.js';
 
@@ -53,6 +54,7 @@ paymentRoutes.get('/catalog', (c) => {
     bestShardsPerDollar: bestShardsPerDollar(),
     autoRenews: false,
     available: railInstalled(),
+    statementDescriptor: STATEMENT_DESCRIPTOR,
   };
   return c.json(body, 200);
 });

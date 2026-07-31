@@ -98,21 +98,21 @@ entitlement appear.
 
 ### Tests first
 
-- [ ] T021 [P] [US2] Write `apps/client/tests/store/catalog.test.tsx` — all seven durations render **from `GET /v1/catalog`**, and no price is hardcoded
-- [ ] T022 [P] [US2] Write `apps/client/tests/store/noRail.test.tsx` — with **no rail installed** the store says purchasing is unavailable and **offers no control that would fail on click** (FR-009)
-- [ ] T023 [P] [US2] Write `apps/client/tests/store/ceiling.test.tsx` — a purchase breaching the spend ceiling is refused **before the rail is reached** (FR-010)
+- [X] T021 [P] [US2] Write `apps/client/tests/store/catalog.test.tsx` — all seven durations render **from `GET /v1/catalog`**, and no price is hardcoded
+- [X] T022 [P] [US2] Write `apps/client/tests/store/noRail.test.tsx` — with **no rail installed** the store says purchasing is unavailable and **offers no control that would fail on click** (FR-009)
+- [X] T023 [P] [US2] Write `apps/client/tests/store/ceiling.test.tsx` — a purchase breaching the spend ceiling is refused **before the rail is reached** (FR-010)
 
 ### The screens
 
-- [ ] T024 [US2] `features/store/StoreScreen.tsx` — one product, seven durations, per-day pricing, against `LMNTLZ Store.dc.html`
-- [ ] T025 [US2] Render the pass's own claims from served data, not prose: *double shards on the **first ten** attack victories and first ten defense holds each day* (`06-progression.md`)
-- [ ] T026 [US2] Render the daily reset from **`today.nextBoundaryAt`**, never the string `00:00 UTC` — `config.ts` serves an absolute instant precisely so a per-player boundary would not change the API shape (research R3)
-- [ ] T027 [US2] `features/store/Checkout.tsx` — **the statement descriptor adjacent to the pay control and not in a footer** (FR-007). This satisfies **011 T026**
-- [ ] T028 [US2] Show stacking honestly: buying while active **adds to the end date**; show *ends now* and *ends after purchase* as the export does
-- [ ] T029 [US2] `features/store/Entitlements.tsx` — what the player holds and when it ends, from `GET /v1/me/entitlements`
-- [ ] T030 [US2] Call `POST /v1/checkout` and handle every outcome, including `NoRailError` as an unavailability state rather than an error page
-- [ ] T031 [P] [US2] Write `apps/client/e2e/store.spec.ts` against a test rail — buy, see the entitlement, buy again, see the days add
-- [ ] T032 [US2] **WIRING** — render `StoreScreen` from `App.tsx`, add `THE STORE` to the rail, and link `Entitlements` from the profile. Assert the caller, then cut it and watch the test fail
+- [X] T024 [US2] `features/store/StoreScreen.tsx` — one product, seven durations, per-day pricing, against `LMNTLZ Store.dc.html`
+- [X] T025 [US2] Render the pass's own claims from served data, not prose: *double shards on the **first ten** attack victories and first ten defense holds each day* (`06-progression.md`)
+- [X] T026 [US2] Render the daily reset from **`today.nextBoundaryAt`**, never the string `00:00 UTC` — `config.ts` serves an absolute instant precisely so a per-player boundary would not change the API shape (research R3)
+- [X] T027 [US2] `features/store/Checkout.tsx` — **the statement descriptor adjacent to the pay control and not in a footer** (FR-007). This satisfies **011 T026**
+- [X] T028 [US2] Show stacking honestly: buying while active **adds to the end date**; show *ends now* and *ends after purchase* as the export does
+- [X] T029 [US2] `features/store/Entitlements.tsx` — what the player holds and when it ends, from `GET /v1/me/entitlements`
+- [X] T030 [US2] Call `POST /v1/checkout` and handle every outcome, including `NoRailError` as an unavailability state rather than an error page
+- [X] T031 [P] [US2] Write `apps/client/e2e/store.spec.ts` against a test rail — buy, see the entitlement, buy again, see the days add
+- [X] T032 [US2] **WIRING** — render `StoreScreen` from `App.tsx`, add `THE STORE` to the rail, and link `Entitlements` from the profile. Assert the caller, then cut it and watch the test fail
 
 **Checkpoint**: a pass can be bought **and it pays**. Do not tick this without T045–T049 of 011.
 
