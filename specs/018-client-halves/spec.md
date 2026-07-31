@@ -284,10 +284,28 @@ plays identically afterwards.
 | Depends on | For |
 |---|---|
 | **017 design port** | the component layer every screen is built from |
-| **011 T031** | the payment provider adapter — US2 cannot complete without it |
-| 010, 011, 008 backends | all complete, tested and deployed |
+| **011 Phase 8** | **the boost must actually pay** before the store sells it |
+| 011 T031 | the provider adapter — only the *live purchase*, and **deferred to last** |
+| 010, 008 backends | complete, tested and deployed |
 
 **Nothing depends on this feature.** 014, 015 and 016 are independent of it.
+
+> ### Paddle is deferred to near the end (decided 2026-07-30) — and two things must
+> ### not be deferred with it
+>
+> The **provider adapter, the descriptor string and the live purchase path** are
+> late by decision. That is sound: they are the only part of this that needs a
+> vendor, and none of the rest is blocked by them.
+>
+> **But `PaymentRail` is injected, so US2 is not blocked either.** The store and
+> checkout screens can be built and tested end to end against a test rail — that is
+> what the interface is for, and it is how every payments test in 011 already runs.
+> The only thing that waits is a real card.
+>
+> **And 011 Phase 8 is not a Paddle task.** The boost pass paying nothing is a bug
+> in our own income code with no vendor in it at all. It should land early, not
+> late: it is cheap, it is pure server logic, and *"we sold a pass that did
+> nothing"* is the one failure here that costs money and trust rather than time.
 
 ## Explicitly not in this feature
 

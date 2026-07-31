@@ -120,11 +120,15 @@ been bought**, so the code path was never exercised even by hand.
 
 ## 3 · Vendor and installer gaps
 
-- **⛔ There is no payment provider.** `apps/api/src/payments/vendor/` contains only
-  `mailer.ts`. `PaymentRail` is defined, `setRail()` exists and is called **by tests
-  only**; there is no `installRail()` and no adapter. `POST /checkout` in production
-  would raise `NoRailError`. Paddle is verified and the account is ready — the code
-  is what is missing (011 T031).
+- **⏸ There is no payment provider — and this is now deferred by decision.**
+  `apps/api/src/payments/vendor/` contains only `mailer.ts`. `PaymentRail` is
+  defined, `setRail()` exists and is called **by tests only**; there is no
+  `installRail()` and no adapter, so `POST /checkout` raises `NoRailError`.
+  **Deferred to near the end (2026-07-30)** — it is the only work here that needs a
+  vendor, and nothing else waits on it: `PaymentRail` is injected, so the store
+  screens build and test against a test rail exactly as 011's suite already does.
+  **§2b is explicitly *not* part of this deferral** — the boost paying nothing is
+  our own bug, needs no vendor, and should land early.
 - ✅ `installRuneSource()` and `installMailer()` **are** called at startup in
   `apps/api/src/index.ts`. Those two seams are correctly wired.
 - `setBroker` (014) and `setClassifier` (015) have no caller, which is **expected** —
