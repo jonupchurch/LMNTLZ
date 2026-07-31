@@ -23,8 +23,8 @@ money) refuse before they charge.
 
 ## Phase 1: Setup
 
-- [ ] T001 [P] Create `apps/client/src/features/{forge,store,replays}/` — **`store/` uses the exact path 011 T026 already names**, so that task is satisfied here rather than duplicated
-- [ ] T002 [P] Create `apps/client/tests/{forge,store,replays}/`
+- [X] T001 [P] Create `apps/client/src/features/{forge,store,replays}/` — **`store/` uses the exact path 011 T026 already names**, so that task is satisfied here rather than duplicated
+- [X] T002 [P] Create `apps/client/tests/{forge,store,replays}/`
 - [ ] T003 Add `{ kind: 'forge' }`, `{ kind: 'store' }` and `{ kind: 'replays' }` to the `Screen` union in `apps/client/src/App.tsx` — **entries appear in the rail only as their screens land** (FR-015), matching the store export's `SQUADS · ROSTER · RUNE FORGE · MATCHMAKING · THE COURT · THE STORE · CODEX`
 
 ---
@@ -33,11 +33,11 @@ money) refuse before they charge.
 
 **⚠️ US1 is unbuildable without T005–T008.** Nothing reads a rune back today.
 
-- [ ] T004 Write the UTC reset rule into `resources/mechanics/06-progression.md` — **the code implements it** (`dayStart()` uses `Date.UTC`) **and serves it** (`today.nextBoundaryAt`), and canon never states it. Constitution XX: a `.dc.html` is not canon, so the rule is written down **before a screen shows it** (research R3)
-- [ ] T005 [P] Write `apps/api/tests/progression/runesRead.test.ts` — all 27 heroes returned including bare ones, `stage: 0` for empty, `utility: null` below stage 4, and **`allocations` present for the owner**
-- [ ] T006 Implement the owner serialiser in `apps/api/src/progression/read.ts` — **a new file that shares no code with `apps/api/src/squads/scoutSerializer.ts`** (Constitution XVII; see [contracts/runes-read.md](contracts/runes-read.md))
-- [ ] T007 Register `GET /v1/me/runes` in `apps/api/src/progression/routes.ts`, session-guarded
-- [ ] T008 Write `apps/api/tests/squads/scoutBoundary.test.ts` — **after this route ships, the scout response still omits `allocations`.** The temptation is one shared function with an `includeAllocations` flag, and that flag would default wrong exactly once, publishing every player's build
+- [X] T004 Write the UTC reset rule into `resources/mechanics/06-progression.md` — **the code implements it** (`dayStart()` uses `Date.UTC`) **and serves it** (`today.nextBoundaryAt`), and canon never states it. Constitution XX: a `.dc.html` is not canon, so the rule is written down **before a screen shows it** (research R3)
+- [X] T005 [P] Write `apps/api/tests/progression/runesRead.test.ts` — all 27 heroes returned including bare ones, `stage: 0` for empty, `utility: null` below stage 4, and **`allocations` present for the owner**
+- [X] T006 Implement the owner serialiser in `apps/api/src/progression/read.ts` — **a new file that shares no code with `apps/api/src/squads/scoutSerializer.ts`** (Constitution XVII; see [contracts/runes-read.md](contracts/runes-read.md))
+- [X] T007 Register `GET /v1/me/runes` in `apps/api/src/progression/routes.ts`, session-guarded
+- [X] T008 Write `apps/api/tests/squads/scoutBoundary.test.ts` — **after this route ships, the scout response still omits `allocations`.** The temptation is one shared function with an `includeAllocations` flag, and that flag would default wrong exactly once, publishing every player's build
 
 **Checkpoint**: a player's own rune state is readable, and an opponent's still is not.
 

@@ -24,6 +24,7 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { SQUAD_ZONES, type SquadZone } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
+import { runes } from '../db/schema/runes.js';
 import { accounts } from '../db/schema/accounts.js';
 import { playerRatings } from '../db/schema/ratings.js';
 import { STARTER_GRANT_SCORE, leagueOf } from '../matchmaking/league.js';
@@ -441,12 +442,30 @@ squadRoutes.get('/players/:targetId/scout', async (c) => {
 
   const squads = await loadSquads(targetId);
 
+  /**
+   * **The stage counts, and only the stage counts** (018 T008).
+   *
+   * `select()` names three columns and `allocations` is not one of them, so the
+   * defender's build is not merely unserialised — it is **never loaded**. That
+   * is the difference between a disclosure rule enforced by a serialiser and one
+   * enforced by the query: a future edit to `scoutSerializer.ts` cannot leak a
+   * value this function does not hold.
+   *
+   * Until now this was not passed at all and the serialiser hardcoded `0`, so
+   * every opponent scouted as completely un-runed from the day runes shipped.
+   */
+  const stageRows = await db()
+    .select({ heroId: runes.heroId, slot: runes.slot, stage: runes.stage })
+    .from(runes)
+    .where(eq(runes.accountId, targetId));
+
   return c.json(
     serializeScoutView({
       targetId: target.id,
       username: target.username,
       league: leagueOf(Number(target.gearScore)),
       squads,
+      runeStages: new Map(stageRows.map((r) => [`${r.heroId}:${r.slot}`, r.stage])),
     }),
   );
 });

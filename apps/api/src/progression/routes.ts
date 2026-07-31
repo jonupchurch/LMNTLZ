@@ -32,6 +32,7 @@ import { RUNE_SLOTS, type RuneAllocations, type RuneSlot } from '../db/schema/ru
 import { balance, lifetimeEarned, victoriesToday } from './ledger.js';
 import { capDescription } from './cap.js';
 import { dailyMultiplier } from './income.js';
+import { ownedRunes } from './read.js';
 import { placeStage, rebuildRune, RuneError } from './runes.js';
 import { nextBoundaryAt, progressionConfig } from './config.js';
 import { ratingOf } from './rating.js';
@@ -39,6 +40,7 @@ import { ratingOf } from './rating.js';
 export const progressionRoutes = new Hono<AuthedEnv>();
 
 progressionRoutes.use('/me/shards', requireSession);
+progressionRoutes.use('/me/runes', requireSession);
 progressionRoutes.use('/heroes/:heroId/runes/:slot', requireSession);
 
 /**
@@ -98,6 +100,28 @@ function parseAllocations(value: unknown): RuneAllocations | null {
   }
   return out as RuneAllocations;
 }
+
+/**
+ * **What the player has actually built** (018 T007).
+ *
+ * Feature 010 shipped runes as a **write-only resource**: a stage could be
+ * committed, gear score summed them, the ledger recorded the spend, and no
+ * response anywhere returned a player their own rune state. Every gate was
+ * green, because every gate was about writing. This is the read.
+ *
+ * The whole roster, unpaged, for the same reason
+ * `GET /v1/matchmaking/candidates` takes no parameters: 27 heroes × 3 slots is
+ * small, and a paging contract is a thing to get wrong for no gain. It also
+ * makes the Forge's *ALL 27 · OPEN · BARE* filter a client-side view of one
+ * consistent list rather than three requests that can disagree.
+ *
+ * **There is no `404`.** A player always has 27 heroes; an empty slot is
+ * `stage: 0`.
+ */
+progressionRoutes.get('/me/runes', async (c) => {
+  const { accountId } = requireContext(c);
+  return c.json({ heroes: await ownedRunes(accountId) }, 200);
+});
 
 /**
  * Commit a rune stage, or rebuild a completed rune.

@@ -555,6 +555,33 @@ that still cannot rival attacking.
 **Holds are never tiered.** A hold is driven by how often other people attack
 you, which the defender does not control, so there is nothing there to pace.
 
+#### The day turns over at **00:00 UTC** — set 2026-07-30
+
+One boundary for everybody, not a rolling 24 hours and not the player's local
+midnight. Both daily counters reset on it: the victory tier above, and the ten
+boosted victories and ten boosted holds a pass grants.
+
+**Written down here because the code already implements it and canon did not
+say it.** `dayStart()` has used `Date.UTC` since feature 010 and
+`GET /v1/me/shards` has served the next boundary since the same commit; the rule
+existed only in TypeScript, which makes it an implementation detail that nobody
+agreed to. Constitution XX: a screen may not be the first place a rule is
+written, and the Store screen is about to display this one.
+
+**Why one global instant rather than per-player local midnight.** A per-player
+boundary would make *when* you play a lever on *how much* you earn — somebody in
+a timezone where midnight lands mid-session gets two 1.5× tiers in one sitting —
+and it makes every income question unanswerable without knowing where the player
+lives. A global reset is the same deal for everyone, and its cost is honest and
+small: for some players the reset lands at an inconvenient hour, which affects
+convenience and never rate.
+
+**The client never computes it.** `GET /v1/me/shards` serves
+`today.nextBoundaryAt` as an **absolute instant**, and every screen renders that
+rather than the string *00:00 UTC*. That is deliberate insulation: if this is
+ever changed to something per-player, the API shape does not have to change with
+it and no screen has to be found and edited.
+
 #### Why tier at all
 
 Before this, attack income was **perfectly linear in battles played** — 23 shards

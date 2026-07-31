@@ -38,13 +38,39 @@
 import { derive, getHero } from '@lmntlz/content';
 import type { StoredSquad } from './repository.js';
 
-/** Rune slots are feature 010's. The shape is disclosed now so the scout view
- *  does not change shape later; stages read 0 until runes exist. */
+/**
+ * Rune slots are feature 010's.
+ *
+ * > **This used to read `stages: 0` unconditionally**, with a comment saying
+ * > *"stages read 0 until runes exist"*. It was written in feature 006, runes
+ * > shipped in 010, and nothing came back to finish the sentence — so from the
+ * > day runes went live until 018, **every opponent scouted as completely
+ * > un-runed**. `scout.test.ts` passed throughout, because it asserts
+ * > `0 <= stages <= 4` and a hardcoded zero satisfies that: a range check
+ * > cannot tell a real value from a placeholder inside the range.
+ * >
+ * > It was not a cosmetic gap. *Commitment is public, power is private* is the
+ * > entire disclosure design here, and with commitment invisible the public half
+ * > did not exist — bluffing had nothing to bluff with, and a heavily invested
+ * > defence looked exactly like a bare one. Found by 018 T008, which placed a
+ * > real rune and then looked.
+ */
 export interface ScoutRuneSlot {
   readonly element: string;
   /** 0–4. **Never which stat it boosts, and never the utility effect.** */
   readonly stages: number;
 }
+
+/**
+ * One scouted player's placed stages, keyed `heroId:slot`.
+ *
+ * A plain map rather than a rune row, and that is the disclosure boundary in
+ * the type system: **there is no field here that could carry an allocation.**
+ * Handing this serialiser the rows themselves would put `allocations` one
+ * property access away from the response, and the caller assembles the map from
+ * a query that never selects that column.
+ */
+export type ScoutRuneStages = ReadonlyMap<string, number>;
 
 export interface ScoutSeat {
   readonly row: string;
@@ -93,7 +119,12 @@ export function serializeScoutView(input: {
   readonly username: string;
   readonly league: string;
   readonly squads: readonly StoredSquad[];
+  /** `heroId:slot` → stage. Absent entries are bare slots (018 T008). */
+  readonly runeStages?: ScoutRuneStages;
 }): ScoutView {
+  const stageOf = (heroId: string, slot: 'primary' | 'secondary' | 'common'): number =>
+    input.runeStages?.get(`${heroId}:${slot}`) ?? 0;
+
   const visible = input.squads.find((s) => s.kind === 'defense' && s.zone === 'visible');
   const hidden = input.squads.find((s) => s.kind === 'defense' && s.zone === 'hidden');
 
@@ -123,9 +154,9 @@ export function serializeScoutView(input: {
         // **Element and stages only.** Which stat a rune boosts is the thing
         // that would turn commitment into power.
         runes: [
-          { element: hero.primary, stages: 0 },
-          { element: hero.secondary, stages: 0 },
-          { element: 'common', stages: 0 },
+          { element: hero.primary, stages: stageOf(hero.id, 'primary') },
+          { element: hero.secondary, stages: stageOf(hero.id, 'secondary') },
+          { element: 'common', stages: stageOf(hero.id, 'common') },
         ],
       };
     });
