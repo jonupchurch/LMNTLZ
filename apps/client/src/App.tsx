@@ -7,7 +7,7 @@ import { BattleScreen } from './features/battle/BattleScreen.js';
 import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import type { StartedBattle } from './features/battle/types.js';
 import { ROSTER_SIZE } from '@lmntlz/content';
-import { AppShell, Header, Panel, Rail, type RailEntry } from './components/index.js';
+import { AppShell, Header, Rail, type RailEntry } from './components/index.js';
 import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { CodexScreen } from './features/codex/CodexScreen.js';
@@ -229,33 +229,51 @@ function GameApp(): JSX.Element {
                     />
                   }
                 >
-                  <Panel span={12}>
-                    {screen.kind === 'attack' ? (
-                      <AttackScreen
-                        onBattleStarted={(started) => setScreen({ kind: 'battle', started })}
-                        onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
-                        onUnauthenticated={onUnauthenticated}
-                      />
-                    ) : screen.kind === 'profile' ? (
-                      <ProfileScreen
-                        targetId={screen.targetId}
-                        isSelf={screen.targetId === phase.account.id}
-                        onUnauthenticated={onUnauthenticated}
-                      />
-                    ) : screen.kind === 'guild' ? (
-                      <GuildScreen
-                        accountId={phase.account.id}
-                        onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
-                        onUnauthenticated={onUnauthenticated}
-                      />
-                    ) : screen.kind === 'roster' ? (
-                      <RosterScreen />
-                    ) : screen.kind === 'codex' ? (
-                      <CodexScreen />
-                    ) : (
-                      <SquadsScreen onUnauthenticated={onUnauthenticated} />
-                    )}
-                  </Panel>
+                  {/**
+                   * **No wrapper `Panel` here, and that is the whole point of
+                   * the re-layout** (017 T048–T057).
+                   *
+                   * Every screen used to be handed a single `<Panel span={12}>`
+                   * and then declare a page container of its own —
+                   * `mx-auto max-w-[1600px] px-8 py-10`, nine times over. Two
+                   * consequences, and both were live: the shell's 12-column
+                   * grid had exactly one child so **no screen could ever place
+                   * a region on it**, and a second max-width fought the one in
+                   * `AppShell`. The Codex asked for `span={6}` twice and got
+                   * two stacked full-width blocks, because its `Panel`s were
+                   * grandchildren of the grid rather than children.
+                   *
+                   * A screen is now a **fragment of `Panel`s** dropped straight
+                   * into the grid, which is what the export draws: a 264px
+                   * filter rail beside the roster, a 2fr/1fr profile, an
+                   * inspector beside the squad board.
+                   * `tests/site/layout.test.tsx` holds both halves of this.
+                   */}
+                  {screen.kind === 'attack' ? (
+                    <AttackScreen
+                      onBattleStarted={(started) => setScreen({ kind: 'battle', started })}
+                      onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
+                      onUnauthenticated={onUnauthenticated}
+                    />
+                  ) : screen.kind === 'profile' ? (
+                    <ProfileScreen
+                      targetId={screen.targetId}
+                      isSelf={screen.targetId === phase.account.id}
+                      onUnauthenticated={onUnauthenticated}
+                    />
+                  ) : screen.kind === 'guild' ? (
+                    <GuildScreen
+                      accountId={phase.account.id}
+                      onViewProfile={(targetId) => setScreen({ kind: 'profile', targetId })}
+                      onUnauthenticated={onUnauthenticated}
+                    />
+                  ) : screen.kind === 'roster' ? (
+                    <RosterScreen />
+                  ) : screen.kind === 'codex' ? (
+                    <CodexScreen />
+                  ) : (
+                    <SquadsScreen onUnauthenticated={onUnauthenticated} />
+                  )}
                 </AppShell>
               )
             }

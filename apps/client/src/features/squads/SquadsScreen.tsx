@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Hero } from '@lmntlz/content';
 import type { PowerRanking, SquadRow } from '@lmntlz/sim/rules';
+import { Panel } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { DefenseConfig } from './DefenseConfig.js';
 import { RosterView } from './RosterView.js';
@@ -324,24 +325,36 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-[1600px] px-8 py-12">
+      <Panel span={12}>
         <p role="alert" className="text-slash-lit">
           {error}
         </p>
-      </div>
+      </Panel>
     );
   }
 
   if (!roster) {
     return (
-      <div className="mx-auto max-w-[1600px] px-8 py-12">
+      <Panel span={12}>
         <p className="text-faint">Loading your champions…</p>
-      </div>
+      </Panel>
     );
   }
 
+  /**
+   * **`SPAN 8 · squad board` beside `SPAN 4 · inspector`** (017 T049) — the
+   * Design System export's worked example, and until now the shell's grid had
+   * no way to express it: every screen was handed one `<Panel span={12}>` and
+   * this one drew a `2fr / 1fr` grid inside a `max-w-[1600px]` container of its
+   * own, a second layout authority competing with `AppShell`'s.
+   *
+   * The proportion is unchanged, because it was already right. What changed is
+   * that it is now the *shell's* proportion, so the gutter, the 1400 cap and
+   * the centring above ~2100 all apply to this screen for the first time.
+   */
   return (
-    <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
+    <>
+      <Panel span={12}>
       {/**
        * **Five tabs on one row, because there are five squads.** Two defense zones
        * and three attack slots, and exactly one is open at a time. A "Defense /
@@ -449,9 +462,13 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
           {problem}
         </p>
       )}
+      </Panel>
 
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-8">
+      <Panel span={8}>
         <RosterView roster={roster} selectedHeroId={selected} onSelect={setSelected} />
+      </Panel>
+
+      <Panel span={4}>
         <div className="flex flex-col gap-6">
           <SquadBuilder
             allocation={allocation}
@@ -565,18 +582,20 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
               </p>
             ))}
         </div>
-      </div>
+      </Panel>
 
       {/* Reachable from a defense tab only — nothing is evicted by an attack save. */}
       {pending && !isAttack(editing) && (
-        <EvictionWarning
-          heroName={heroName(pending.heroId)}
-          zoneLabel={ZONE_LABEL[editing]}
-          preview={pending.preview}
-          onConfirm={confirmMove}
-          onCancel={() => setPending(null)}
-        />
+        <Panel span={12}>
+          <EvictionWarning
+            heroName={heroName(pending.heroId)}
+            zoneLabel={ZONE_LABEL[editing]}
+            preview={pending.preview}
+            onConfirm={confirmMove}
+            onCancel={() => setPending(null)}
+          />
+        </Panel>
       )}
-    </div>
+    </>
   );
 }

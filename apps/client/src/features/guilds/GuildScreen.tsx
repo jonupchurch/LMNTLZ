@@ -24,6 +24,7 @@
  */
 
 import { useCallback, useEffect, useState, type JSX } from 'react';
+import { Button, Panel } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { EmblemDesigner } from './EmblemDesigner.js';
 import { GuildRoster } from './GuildRoster.js';
@@ -102,60 +103,92 @@ export function GuildScreen({
   }, [unauthenticated]);
 
   if (state.kind === 'loading') {
-    return <p className="mx-auto max-w-[1600px] px-8 py-10 text-stone-400">Loading…</p>;
+    return (
+      <Panel span={12}>
+        <p className="text-muted">Loading…</p>
+      </Panel>
+    );
   }
 
   if (state.kind === 'failed') {
-    return <p className="mx-auto max-w-[1600px] px-8 py-10 text-red-400">{state.message}</p>;
+    return (
+      <Panel span={12}>
+        <p role="alert" className="text-slash-lit">
+          {state.message}
+        </p>
+      </Panel>
+    );
   }
 
   const { guild, role, succession, invites, applications, applicationBudget } = state.value;
 
-  return (
-    <section className="mx-auto grid max-w-[1600px] gap-6 px-8 py-8">
-      {guild ? (
-        <>
-          <GuildRoster
-            guild={guild}
-            role={role}
-            accountId={accountId}
-            onViewProfile={onViewProfile}
-            onChanged={load}
-            onUnauthenticated={onUnauthenticated}
-          />
-          <SuccessionPanel
-            guildId={guild.id}
-            role={role}
-            succession={succession}
-            onChanged={load}
-            onUnauthenticated={onUnauthenticated}
-          />
-        </>
-      ) : (
-        <>
-          <InviteList invites={invites} onChanged={load} onUnauthenticated={onUnauthenticated} />
+  /**
+   * **Full-width cards stacked, which is what `LMNTLZ Guild Admin.dc.html`
+   * draws** (017 T056). Its regions are `flex:0 0 auto` in a column —
+   * identity, the event bar, the members table — and the only side-by-side
+   * split in the export (`1.6fr / 1fr`, tagline beside recruitment) is
+   * *inside* the identity card, not between cards.
+   *
+   * So the twelve columns buy this screen nothing, and saying so is the point:
+   * the private `max-w-[1600px]` container is gone either way, because a
+   * second max-width fighting `AppShell`'s is the defect, not the stacking.
+   *
+   * The succession panel is the exception the export supports — it is a
+   * sidebar concern beside the roster, so 8/4.
+   */
+  return guild ? (
+    <>
+      <Panel span={8}>
+        <GuildRoster
+          guild={guild}
+          role={role}
+          accountId={accountId}
+          onViewProfile={onViewProfile}
+          onChanged={load}
+          onUnauthenticated={onUnauthenticated}
+        />
+      </Panel>
+      <Panel span={4}>
+        <SuccessionPanel
+          guildId={guild.id}
+          role={role}
+          succession={succession}
+          onChanged={load}
+          onUnauthenticated={onUnauthenticated}
+        />
+      </Panel>
+    </>
+  ) : (
+    <>
+      <Panel span={12}>
+        <InviteList invites={invites} onChanged={load} onUnauthenticated={onUnauthenticated} />
+      </Panel>
 
-          {/**
-           * **Browse first, then the list of what you have already sent.** The
-           * decision is made against a guild's card — its pitch and its free
-           * seats — so that is where the Apply button lives. `ApplicationForm`
-           * is now only the withdraw-and-review half.
-           */}
-          <GuildBrowser
-            applications={applications}
-            budget={applicationBudget}
-            onChanged={load}
-            onUnauthenticated={onUnauthenticated}
-          />
+      {/**
+       * **Browse first, then the list of what you have already sent.** The
+       * decision is made against a guild's card — its pitch and its free
+       * seats — so that is where the Apply button lives. `ApplicationForm`
+       * is now only the withdraw-and-review half.
+       */}
+      <Panel span={8}>
+        <GuildBrowser
+          applications={applications}
+          budget={applicationBudget}
+          onChanged={load}
+          onUnauthenticated={onUnauthenticated}
+        />
+      </Panel>
 
+      <Panel span={4}>
+        <div className="grid gap-6">
           <ApplicationForm
             applications={applications}
             onChanged={load}
             onUnauthenticated={onUnauthenticated}
           />
 
-          <div className="rounded-lg border border-stone-800 p-5">
-            <h2 className="mb-2 text-h2 font-semibold">Found your own</h2>
+          <div className="rounded-lg border border-line p-5">
+            <h2 className="mb-2 text-h2 font-display font-semibold">Found your own</h2>
             {showFound && founding ? (
               <FoundingFlow
                 info={founding}
@@ -167,21 +200,17 @@ export function GuildScreen({
                 onUnauthenticated={onUnauthenticated}
               />
             ) : (
-              <button
-                type="button"
-                className="rounded bg-amber-700 px-4 py-2 text-body font-medium"
-                onClick={() => {
-                  setShowFound(true);
-                  void loadFounding();
-                }}
-              >
+              <Button onClick={() => {
+                setShowFound(true);
+                void loadFounding();
+              }}>
                 Found a guild
-              </button>
+              </Button>
             )}
           </div>
-        </>
-      )}
-    </section>
+        </div>
+      </Panel>
+    </>
   );
 }
 

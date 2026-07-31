@@ -23,6 +23,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Panel } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { ScoutPanel } from './ScoutPanel.js';
 import type { CandidateList, ScoutView, Standing } from './types.js';
@@ -150,25 +151,39 @@ export function AttackScreen({
 
   if (error) {
     return (
-      <div className="mx-auto max-w-[1600px] px-8 py-12">
+      <Panel span={12}>
         <p role="alert" className="text-slash-lit">
           {error}
         </p>
-      </div>
+      </Panel>
     );
   }
 
   if (!list || !standing) {
     return (
-      <div className="mx-auto max-w-[1600px] px-8 py-12">
+      <Panel span={12}>
         <p className="text-faint">Finding opponents…</p>
-      </div>
+      </Panel>
     );
   }
 
+  /**
+   * **Opponents beside the scout, on the shell's grid** (017 T052).
+   *
+   * `LMNTLZ Matchmaking and Results.dc.html` splits `minmax(0,1.5fr)
+   * minmax(0,1fr)` — 60/40, which is 7 and 5 of twelve. The screen already
+   * drew two columns; what it also drew was a `max-w-[1600px]` page container
+   * of its own, competing with `AppShell`'s, which is what this removes.
+   *
+   * **The scout disclosure boundary is untouched by any of it.** `ScoutPanel`
+   * renders what the scout serialiser sends and this file adds no field to it;
+   * moving a region cannot widen disclosure, and `tests/attack/` still holds
+   * that line (Constitution XVII).
+   */
   return (
-    <div className="mx-auto flex max-w-[1600px] flex-col gap-8 px-8 py-10">
-      <header className="flex flex-wrap items-baseline justify-between gap-6">
+    <>
+      <Panel span={12}>
+        <header className="flex flex-wrap items-baseline justify-between gap-6">
         <h2 className="font-display text-xl tracking-widest uppercase text-parchment">Attack</h2>
 
         <p className="font-mono text-caption text-faint">
@@ -187,42 +202,45 @@ export function AttackScreen({
           <span className="text-faint">Ambush </span>
           <span className="text-gold">{list.ambushChance}%</span>
           <span className="text-faint"> · {list.consecutiveWins} wins in a row</span>
-        </p>
-      </header>
+          </p>
+        </header>
 
-      {/**
-       * **A widened match is disclosed, because it breaks a stated promise.** The
-       * 1.67× gear guarantee holds inside a league and does not hold here — this is
-       * what a thin league looks like from the inside.
-       */}
-      {list.widened && (
-        <p role="status" className="font-mono text-body text-gold">
-          Your league is thin, so this list reaches a band either side. These opponents may be
-          better geared than the usual guarantee allows.
-        </p>
-      )}
+        <div className="mt-4 flex flex-col gap-3 empty:mt-0">
+          {/**
+           * **A widened match is disclosed, because it breaks a stated promise.** The
+           * 1.67× gear guarantee holds inside a league and does not hold here — this is
+           * what a thin league looks like from the inside.
+           */}
+          {list.widened && (
+            <p role="status" className="font-mono text-body text-gold">
+              Your league is thin, so this list reaches a band either side. These opponents may be
+              better geared than the usual guarantee allows.
+            </p>
+          )}
 
-      {standing.starter.active && (
-        <p role="status" className="font-mono text-body text-faint">
-          You are in the starter league. Every opponent here is an authored bot, and nobody can
-          attack your defense until it ends.
-        </p>
-      )}
+          {standing.starter.active && (
+            <p role="status" className="font-mono text-body text-faint">
+              You are in the starter league. Every opponent here is an authored bot, and nobody can
+              attack your defense until it ends.
+            </p>
+          )}
 
-      {problem && (
-        <p role="alert" className="font-mono text-body text-slash-lit">
-          {problem}
-        </p>
-      )}
+          {problem && (
+            <p role="alert" className="font-mono text-body text-slash-lit">
+              {problem}
+            </p>
+          )}
 
-      {ready.length === 0 && (
-        <p role="status" className="font-mono text-body text-slash-lit">
-          None of your attack squads is ready. A squad needs six champions, and one that lost a
-          champion to defense cannot attack until it is refilled.
-        </p>
-      )}
+          {ready.length === 0 && (
+            <p role="status" className="font-mono text-body text-slash-lit">
+              None of your attack squads is ready. A squad needs six champions, and one that lost a
+              champion to defense cannot attack until it is refilled.
+            </p>
+          )}
+        </div>
+      </Panel>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8">
+      <Panel span={7}>
         <section aria-label="Opponents">
           {list.candidates.length === 0 ? (
             <p className="font-mono text-body text-faint">
@@ -264,7 +282,9 @@ export function AttackScreen({
             </ul>
           )}
         </section>
+      </Panel>
 
+      <Panel span={5}>
         {scout ? (
           <ScoutPanel scout={scout}>
             <div className="flex flex-col gap-3 border-t border-line pt-4">
@@ -335,7 +355,7 @@ export function AttackScreen({
             {target ? 'Scouting…' : 'Choose somebody to scout their Visible squad.'}
           </p>
         )}
-      </div>
-    </div>
+      </Panel>
+    </>
   );
 }

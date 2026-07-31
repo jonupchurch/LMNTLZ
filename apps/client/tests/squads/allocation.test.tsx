@@ -146,7 +146,57 @@ describe('the formation grid is reachable without a mouse', () => {
     // Keyboard is a first-class input here — there is no touch fallback.
     await user.tab();
     await user.keyboard('{Enter}');
-    expect(activated).toEqual(['front:0']);
+    /**
+     * **Back first, and that is the re-layout, not a regression** (017 T049).
+     *
+     * The Design System's applied builder row draws the formation as three
+     * columns labelled `ROW 1 · BACK`, `ROW 2 · MID`, `ROW 3 · FRONT` with
+     * `ENEMY ROWS 4–6` immediately to their right — so left to right *is* the
+     * shared 1–6 reach axis. DOM order follows it, which means tab order does
+     * too, and the first seat a keyboard reaches is row 1.
+     *
+     * This assertion used to read `front:0`, from a vertical stack that drew
+     * front at the top and put the axis nowhere on screen.
+     */
+    expect(activated).toEqual(['back:0']);
+  });
+
+  /**
+   * The stronger claim, and the one worth keeping: **tabbing walks the axis in
+   * order**, 1 → 2 → 3. A future layout that reorders the columns for looks
+   * would still pass the assertion above and fail this one.
+   */
+  it('tabs through the seats along the shared 1-6 axis', async () => {
+    const user = userEvent.setup();
+    const activated: string[] = [];
+
+    function Harness() {
+      const allocation = useAllocation(roster(), 'visible');
+      return (
+        <SquadBuilder
+          allocation={allocation}
+          heroName={nameOf}
+          kind="defense"
+          selectedHeroId={null}
+          onSeatActivate={(row, index) => activated.push(`${row}:${index}`)}
+        />
+      );
+    }
+
+    render(<Harness />);
+    for (let i = 0; i < SQUAD_SIZE; i += 1) {
+      await user.tab();
+      await user.keyboard('{Enter}');
+    }
+
+    expect(activated).toEqual([
+      'back:0',
+      'middle:0',
+      'middle:1',
+      'middle:2',
+      'front:0',
+      'front:1',
+    ]);
   });
 });
 

@@ -38,6 +38,21 @@ export interface HeroCardProps {
   /** Current HP. Omitted means undamaged. */
   readonly hp?: number;
   readonly onSelect?: (hero: Hero) => void;
+  /**
+   * Take the width of the container instead of the scale's own (017 T048).
+   *
+   * `LMNTLZ Roster.dc.html` lays the champions out on
+   * `repeat(auto-fill, minmax(158px, 1fr))` — tracks that are *at least* the
+   * floor and then share what is left over. A fixed-width card in a track that
+   * grew leaves dead space on the right of every column, so the grid reads as
+   * ragged rather than as a grid.
+   *
+   * `scale` still chooses the padding, the gap and — through `compact` — how
+   * much is drawn. Only the width defers. **The floor still comes from the
+   * scale**: the caller's `minmax()` is what must not go below 160px, which is
+   * the same number `compact` would have set.
+   */
+  readonly fill?: boolean;
 }
 
 /** `CLAUDE.md`: `HP = Toughness × 50`. */
@@ -49,7 +64,20 @@ const SCALE: Record<HeroCardScale, string> = {
   full: 'w-75 p-4 gap-3',
 };
 
-export function HeroCard({ hero, scale = 'standard', hp, onSelect }: HeroCardProps): React.JSX.Element {
+/** The same padding and gap, with the width handed to the container. */
+const FILLED: Record<HeroCardScale, string> = {
+  compact: 'w-full p-2 gap-1',
+  standard: 'w-full p-3 gap-2',
+  full: 'w-full p-4 gap-3',
+};
+
+export function HeroCard({
+  hero,
+  scale = 'standard',
+  hp,
+  onSelect,
+  fill = false,
+}: HeroCardProps): React.JSX.Element {
   const max = maxHpOf(hero);
   const current = hp ?? max;
   const compact = scale === 'compact';
@@ -60,7 +88,9 @@ export function HeroCard({ hero, scale = 'standard', hp, onSelect }: HeroCardPro
       {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(hero) } : {})}
       data-scale={scale}
       data-hero={hero.id}
-      className={`flex flex-col rounded-lg bg-surface text-left shadow-(--shadow-glow-1) ${SCALE[scale]}`}
+      className={`flex flex-col rounded-lg bg-surface text-left shadow-(--shadow-glow-1) ${
+        fill ? FILLED[scale] : SCALE[scale]
+      }`}
     >
       <div className="flex items-start gap-2">
         {/*

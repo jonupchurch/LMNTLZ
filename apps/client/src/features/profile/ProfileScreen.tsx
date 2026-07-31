@@ -22,6 +22,7 @@
  */
 
 import { useCallback, useEffect, useState, type JSX } from 'react';
+import { Panel } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { PublicProfile } from './PublicProfile.js';
 import { AvatarPicker } from './AvatarPicker.js';
@@ -109,31 +110,45 @@ export function ProfileScreen({
 
   if (profile.kind === 'loading') {
     return (
-      <div className="mx-auto max-w-[1600px] px-8 py-10">
+      <Panel span={12}>
         <p className="text-body tracking-widest text-faint uppercase" role="status">
           Loading profile…
         </p>
-      </div>
+      </Panel>
     );
   }
 
   if (profile.kind === 'failed') {
     return (
-      <div className="mx-auto max-w-[1600px] px-8 py-10">
+      <Panel span={12}>
         <p className="text-body text-muted" role="alert">
           {profile.message}
         </p>
-      </div>
+      </Panel>
     );
   }
 
+  /**
+   * **Two regions on the shell's grid, not a private one** (017 T053).
+   *
+   * The export's body is `minmax(0,1.55fr) minmax(0,1fr)` — 61/39, which is
+   * 7 and 5 of twelve. It used to be a `2fr/1fr` grid inside a
+   * `max-w-[1600px]` container of this screen's own, a second layout authority
+   * competing with `AppShell`'s.
+   *
+   * When there is no account panel the record takes the whole width rather
+   * than leaving five dead columns: a stranger's profile is one region, and
+   * the export's right-hand column is entirely self-only controls.
+   */
   return (
-    <div className="mx-auto max-w-[1600px] px-8 py-10">
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+    <>
+      <Panel span={isSelf ? 7 : 12}>
         <PublicProfile profile={profile.value} />
+      </Panel>
 
-        {isSelf ? (
-          <aside className="space-y-10">
+      {isSelf ? (
+        <Panel span={5}>
+          <aside aria-label="Your account" className="space-y-10">
             <ShardBalance shards={shards} />
             <RenamePanel
               currentUsername={profile.value.username}
@@ -154,9 +169,9 @@ export function ProfileScreen({
             />
             <ExportPanel onUnauthenticated={onUnauthenticated} />
           </aside>
-        ) : null}
-      </div>
-    </div>
+        </Panel>
+      ) : null}
+    </>
   );
 }
 
