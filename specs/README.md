@@ -6,6 +6,15 @@ exists before the specs do. Its job is to make the shared models and the build
 order visible on paper, which is the whole point of planning the set rather than
 the feature.
 
+> **Two documents were added after the lock and are deliberately outside it.**
+> [`017-design-port`](017-design-port/spec.md) is a presentation layer over
+> features already specified, not new product scope. [`GAPS.md`](GAPS.md) is the
+> gap register — **every route that is built, deployed and unreachable**, with the
+> evidence and an owner for each. Regenerate its route numbers with
+> `py tools/gap-audit.py`. Read the register before picking up new work; it is the
+> answer to *"what is actually missing?"* and it is checkable rather than
+> remembered.
+
 ## What is in, and what is not
 
 | In 1.0 | Out, and why |
