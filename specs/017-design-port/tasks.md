@@ -150,19 +150,27 @@ green**.
 - [X] T044 [US3] Model `THE COURT` as a **rail section** grouping Profile · Battle Record · Guild — established from the active-state colour across the exports (`research.md` R6), and Chat joins it when 014 lands
 - [X] T045 [US3] Split `ROSTER` out of `SquadsScreen` into its own destination, as the rail draws it
 - [X] T046 [US3] Write `apps/client/tests/site/rail.test.tsx` — **every entry leads to a registered screen**, exactly one is active per screen, and the unbuilt entries are **absent rather than disabled** (FR-015)
-- [ ] T047 [P] [US3] Port `features/landing/LandingScreen.tsx` + `features/auth/SignInPanel.tsx` against `LMNTLZ Onboarding Flows.dc.html`
+- [X] T047 [P] [US3] Port `features/landing/LandingScreen.tsx` + `features/auth/SignInPanel.tsx` against `LMNTLZ Onboarding Flows.dc.html`
 - [ ] T048 [P] [US3] Port `features/squads/RosterView.tsx` against `LMNTLZ Roster.dc.html`
 - [ ] T049 [P] [US3] Port `features/squads/{SquadsScreen,SquadBuilder,DefenseConfig,EvictionWarning,FiringProfile}.tsx` against the Design System's *Applied — squad builder row*. **Keep the 2/3/1 formation grid fixed** — it wrapped 2+1 once and reads as a formation that does not exist
 - [ ] T050 [P] [US3] Port `features/battle/BattleScreen.tsx` against `LMNTLZ Battle.dc.html`, **keeping the exit control** added after a finished battle had no way out
 - [ ] T051 [P] [US3] Port `features/battle/TurnQueue.tsx` against `LMNTLZ Turn Sequence.dc.html` — the projected queue, never a tick counter (Constitution XIII)
 - [ ] T052 [P] [US3] Port `features/attack/{AttackScreen,ScoutPanel}.tsx` against `LMNTLZ Matchmaking and Results.dc.html`, **preserving the scout disclosure boundary** — the port must not surface a field the serialiser withholds (Constitution XVII)
 - [ ] T053 [P] [US3] Port `features/profile/{ProfileScreen,PublicProfile}.tsx` against `LMNTLZ Profile.dc.html`
-- [ ] T054 [P] [US3] Port `features/profile/BattleRecord.tsx` against `LMNTLZ Battle Record.dc.html` — a short list must still read as *"they have not fought many"*, never as *"entries were removed"*
+- [X] T054 [P] [US3] Port `features/profile/BattleRecord.tsx` against `LMNTLZ Battle Record.dc.html` — a short list must still read as *"they have not fought many"*, never as *"entries were removed"*
 - [ ] T055 [P] [US3] Port `features/guilds/GuildRoster.tsx` against `LMNTLZ Guild Roster.dc.html`
 - [ ] T056 [P] [US3] Port `features/guilds/GuildScreen.tsx` against `LMNTLZ Guild Admin.dc.html`
 - [ ] T057 [P] [US3] Port `features/guilds/{EmblemDesigner,ApplicationForm,GuildBrowser,InviteList,SuccessionPanel}.tsx` against `LMNTLZ Guild Creation.dc.html`. **The export prices founding at ◈ 2 500 and it costs 650** — read `FOUNDING_COST_SHARDS`, never the screen (FR-019; logged in `resources/README.md`)
-- [ ] T058 [US3] Re-run `pnpm --filter @lmntlz/client e2e` — **every pre-existing pass green, unchanged** (FR-012). A re-skin that breaks a journey is a regression, not a port
-- [ ] T059 [US3] **WIRING** — every ported screen is reachable from the rail and **leavable without a page reload** (FR-016). Assert each route renders from `App.tsx`; a screen that only a URL can reach is not wired
+- [X] T058 [US3] Re-run `pnpm --filter @lmntlz/client e2e` — **every pre-existing pass green, unchanged** (FR-012). A re-skin that breaks a journey is a regression, not a port
+- [X] T059 [US3] **WIRING** — every ported screen is reachable from the rail and **leavable without a page reload** (FR-016). Assert each route renders from `App.tsx`; a screen that only a URL can reach is not wired
+
+
+> **T048–T053, T055–T057 — partially done (2026-07-30).** Every one of these
+> screens now spends the design tokens and the shared components, and each
+> file's named trap was verified intact (2/3/1 grid, battle exit, no clock in
+> the turn queue, scout disclosure). **What is NOT done is the per-export
+> re-layout** — regions and hierarchy are unchanged. Left unticked so the
+> remaining work stays visible.
 
 **Checkpoint**: the eleven screens match, and every journey that worked still works.
 

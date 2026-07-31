@@ -36,7 +36,20 @@ export function Header({
   onProfile,
 }: HeaderProps): React.JSX.Element {
   return (
-    <header className="flex h-14 items-center justify-between gap-(--gutter) border-b border-line bg-bg px-(--gutter)">
+    <header
+      /*
+       * Labelled because the app currently renders **two** landmarks with the
+       * `banner` role — this one and the older `SessionBar`, which shows the
+       * same username and the sign-out. That duplication is a real smell and
+       * the two should merge: the export puts the username, the balance and
+       * the connection state in this bar, and the sign-out belongs with the
+       * name it signs out of. Left alone here because removing `SessionBar`
+       * would take the visible sign-out with it, which `landing.test.tsx`
+       * requires and a shared-computer game needs.
+       */
+      aria-label="Account"
+      className="flex h-14 items-center justify-between gap-(--gutter) border-b border-line bg-bg px-(--gutter)"
+    >
       <span className="text-h2 font-display font-bold tracking-widest uppercase">LMNTLZ</span>
 
       <div className="flex items-center gap-(--gutter)">
