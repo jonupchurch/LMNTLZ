@@ -110,7 +110,7 @@ export function ProfileScreen({
   if (profile.kind === 'loading') {
     return (
       <div className="mx-auto max-w-[1600px] px-8 py-10">
-        <p className="text-sm tracking-widest text-faint uppercase" role="status">
+        <p className="text-body tracking-widest text-faint uppercase" role="status">
           Loading profile…
         </p>
       </div>
@@ -120,7 +120,7 @@ export function ProfileScreen({
   if (profile.kind === 'failed') {
     return (
       <div className="mx-auto max-w-[1600px] px-8 py-10">
-        <p className="text-sm text-muted" role="alert">
+        <p className="text-body text-muted" role="alert">
           {profile.message}
         </p>
       </div>
@@ -170,20 +170,20 @@ export function ProfileScreen({
 function ShardBalance({ shards }: { shards: ShardState | null }): JSX.Element {
   return (
     <section aria-labelledby="shards-heading">
-      <h2 id="shards-heading" className="font-display text-sm tracking-widest text-faint uppercase">
+      <h2 id="shards-heading" className="text-h3 font-display tracking-widest text-faint uppercase">
         Shards
       </h2>
       {shards ? (
         <>
-          <p className="mt-2 font-display text-2xl text-gold tabular-nums">
+          <p className="mt-2 font-display text-h1 text-gold tabular-nums">
             {shards.balance.toLocaleString()}
           </p>
-          <p className="mt-1 text-xs text-faint">
+          <p className="mt-1 text-caption text-faint">
             Cap {shards.cap.shards.toLocaleString()} — {shards.cap.runes} full runes
           </p>
         </>
       ) : (
-        <p className="mt-2 text-sm text-faint">Balance unavailable.</p>
+        <p className="mt-2 text-body text-faint">Balance unavailable.</p>
       )}
     </section>
   );

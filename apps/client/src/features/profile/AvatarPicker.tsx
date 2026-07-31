@@ -66,18 +66,18 @@ export function AvatarPicker({
       <section aria-labelledby="avatar-heading">
         <h2
           id="avatar-heading"
-          className="font-display text-sm tracking-widest text-faint uppercase"
+          className="text-h3 font-display tracking-widest text-faint uppercase"
         >
           Avatar
         </h2>
-        <p className="mt-2 text-sm text-faint">Avatars unavailable.</p>
+        <p className="mt-2 text-body text-faint">Avatars unavailable.</p>
       </section>
     );
   }
 
   return (
     <section aria-labelledby="avatar-heading">
-      <h2 id="avatar-heading" className="font-display text-sm tracking-widest text-faint uppercase">
+      <h2 id="avatar-heading" className="text-h3 font-display tracking-widest text-faint uppercase">
         Avatar
       </h2>
 
@@ -93,7 +93,7 @@ export function AvatarPicker({
                 disabled={busy !== null}
                 onClick={() => void choose(key)}
                 className={[
-                  'w-full rounded border px-2 py-3 text-xs tracking-widest uppercase',
+                  'w-full rounded border px-2 py-3 text-caption tracking-widest uppercase',
                   selected ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
                 ].join(' ')}
               >
@@ -104,7 +104,7 @@ export function AvatarPicker({
         })}
       </ul>
 
-      <p className="mt-3 text-xs text-faint">
+      <p className="mt-3 text-caption text-faint">
         A custom image costs ${(state.customPrice.cents / 100).toFixed(2)} or{' '}
         {state.customPrice.shards.toLocaleString()} shards, charged per change, and is
         reviewed before anyone sees it.
@@ -112,7 +112,7 @@ export function AvatarPicker({
       <button
         type="button"
         disabled
-        className="mt-2 rounded border border-line px-4 py-2 font-display text-sm tracking-widest text-faint uppercase"
+        className="mt-2 rounded border border-line px-4 py-2 text-h3 font-display tracking-widest text-faint uppercase"
       >
         {state.customAvailable ? 'Upload an image' : 'Custom images — not yet open'}
       </button>

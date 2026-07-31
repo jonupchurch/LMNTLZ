@@ -28,11 +28,11 @@ export function BattleRecord({
       <section aria-labelledby="battle-record-heading">
         <h2
           id="battle-record-heading"
-          className="font-display text-sm tracking-widest text-faint uppercase"
+          className="text-h3 font-display tracking-widest text-faint uppercase"
         >
           Battle record
         </h2>
-        <p className="mt-3 text-sm text-muted">
+        <p className="text-body mt-3 text-muted">
           {/* "No battles yet" — a statement about them, not about this list. */}
           {username} has not fought a battle yet.
         </p>
@@ -44,14 +44,14 @@ export function BattleRecord({
     <section aria-labelledby="battle-record-heading">
       <h2
         id="battle-record-heading"
-        className="font-display text-sm tracking-widest text-faint uppercase"
+        className="text-h3 font-display tracking-widest text-faint uppercase"
       >
         Battle record
       </h2>
 
-      <table className="mt-3 w-full border-collapse text-sm">
+      <table className="text-body mt-3 w-full border-collapse">
         <thead>
-          <tr className="border-b border-line text-left text-xs tracking-widest text-faint uppercase">
+          <tr className="text-caption border-b border-line text-left font-display tracking-widest text-faint uppercase">
             <th scope="col" className="py-2 pr-4 font-normal">
               Day
             </th>
@@ -72,22 +72,22 @@ export function BattleRecord({
         <tbody>
           {battles.map((battle) => (
             <tr key={battle.battleId} className="border-b border-line/40">
-              <td className="py-2 pr-4 text-muted tabular-nums">{battle.concludedOn}</td>
+              <td className="py-2 pr-4 font-mono text-muted tabular-nums">{battle.concludedOn}</td>
               <td className="py-2 pr-4 text-muted capitalize">{battle.role}</td>
               <td className="py-2 pr-4 text-parchment">
                 {battle.opponent ?? <span className="text-faint">a departed player</span>}
                 {battle.opponentWasBot ? (
-                  <span className="ml-2 text-xs tracking-widest text-faint uppercase">bot</span>
+                  <span className="text-caption ml-2 tracking-widest text-faint uppercase">bot</span>
                 ) : null}
               </td>
               <td
                 className={`py-2 pr-4 uppercase ${
-                  battle.outcome === 'win' ? 'text-gold' : 'text-faint'
+                  battle.outcome === 'win' ? 'text-gold' : 'text-muted'
                 }`}
               >
                 {battle.outcome}
               </td>
-              <td className="py-2 text-muted tabular-nums">{battle.turnCount}</td>
+              <td className="py-2 font-mono text-muted tabular-nums">{battle.turnCount}</td>
             </tr>
           ))}
         </tbody>

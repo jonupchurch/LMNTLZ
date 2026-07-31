@@ -56,10 +56,10 @@ export function ExportPanel({
 
   return (
     <section aria-labelledby="export-heading">
-      <h2 id="export-heading" className="font-display text-sm tracking-widest text-faint uppercase">
+      <h2 id="export-heading" className="text-h3 font-display tracking-widest text-faint uppercase">
         Your data
       </h2>
-      <p className="mt-2 text-xs text-faint">
+      <p className="mt-2 text-caption text-faint">
         Every battle you have fought, as a spreadsheet file. No squad
         compositions — not yours, not anyone&rsquo;s.
       </p>
@@ -67,12 +67,12 @@ export function ExportPanel({
         type="button"
         onClick={() => void download()}
         disabled={busy}
-        className="mt-3 rounded border border-line px-4 py-2 font-display text-sm tracking-widest text-parchment uppercase disabled:text-faint"
+        className="mt-3 rounded border border-line px-4 py-2 text-h3 font-display tracking-widest text-parchment uppercase disabled:text-faint"
       >
         {busy ? 'Preparing…' : 'Export my data'}
       </button>
       {message ? (
-        <p role="status" className="mt-2 text-xs text-muted">
+        <p role="status" className="mt-2 text-caption text-muted">
           {message}
         </p>
       ) : null}

@@ -155,7 +155,7 @@ export function GuildScreen({
           />
 
           <div className="rounded-lg border border-stone-800 p-5">
-            <h2 className="mb-2 text-lg font-semibold">Found your own</h2>
+            <h2 className="mb-2 text-h2 font-semibold">Found your own</h2>
             {showFound && founding ? (
               <FoundingFlow
                 info={founding}
@@ -169,7 +169,7 @@ export function GuildScreen({
             ) : (
               <button
                 type="button"
-                className="rounded bg-amber-700 px-4 py-2 text-sm font-medium"
+                className="rounded bg-amber-700 px-4 py-2 text-body font-medium"
                 onClick={() => {
                   setShowFound(true);
                   void loadFounding();
@@ -236,13 +236,13 @@ function FoundingFlow({
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-stone-400">
+      <p className="text-body text-stone-400">
         {info.cost} shards — one full rune.{' '}
         {shards === null ? null : <span>You have {shards}.</span>}{' '}
         <strong className="text-stone-200">The name is permanent.</strong>
       </p>
 
-      <label className="grid gap-1 text-sm">
+      <label className="grid gap-1 text-body">
         <span className="text-stone-300">Name</span>
         <input
           className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
@@ -252,7 +252,7 @@ function FoundingFlow({
         />
       </label>
 
-      <label className="grid gap-1 text-sm">
+      <label className="grid gap-1 text-body">
         <span className="text-stone-300">Recruiting pitch</span>
         <textarea
           className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
@@ -273,12 +273,12 @@ function FoundingFlow({
         }
       />
 
-      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+      {error ? <p className="text-body text-red-400">{error}</p> : null}
 
       <button
         type="button"
         disabled={!ready || !affordable || busy}
-        className="justify-self-start rounded bg-amber-700 px-4 py-2 text-sm font-medium disabled:opacity-40"
+        className="justify-self-start rounded bg-amber-700 px-4 py-2 text-body font-medium disabled:opacity-40"
         onClick={() => void submit()}
       >
         Found for {info.cost} shards

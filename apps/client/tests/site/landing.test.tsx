@@ -176,10 +176,29 @@ describe('what the page claims', () => {
     expect(document.body.textContent).toContain('$160 a year at most');
   });
 
+  /**
+   * **Case-insensitive since 017 T047, and the reason is the point.**
+   *
+   * The page used to carry its own array of nine capitalised names beside nine
+   * Tailwind classes. It now renders `TypeBadge`, which takes the force from
+   * `@lmntlz/content` — where the canonical value is lowercase (`'earth'`) —
+   * and uppercases it in CSS. So the DOM text is `earth` and the pixels say
+   * EARTH.
+   *
+   * Asserting the exact capitalisation would be pinning a **presentational**
+   * detail that CSS owns, and it would break again the next time the badge's
+   * styling changed. What the test is actually for is that all nine are named,
+   * so that is what it checks.
+   */
   it('names all nine forces', () => {
     render(<LandingScreen />);
-    for (const force of ['Earth', 'Air', 'Fire', 'Water', 'Light', 'Dark', 'Slash', 'Pierce', 'Crush']) {
-      expect(screen.getByText(force)).toBeInTheDocument();
+    for (const force of ['earth', 'air', 'fire', 'water', 'light', 'dark', 'slash', 'pierce', 'crush']) {
+      expect(
+        screen.getByText((_, el) => el?.textContent?.trim().toLowerCase() === force, {
+          selector: 'span',
+        }),
+        `the landing page does not name ${force}`,
+      ).toBeInTheDocument();
     }
   });
 

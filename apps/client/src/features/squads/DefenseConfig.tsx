@@ -57,7 +57,7 @@ export function DefenseConfig({
 
   return (
     <div className="flex flex-col gap-3 rounded border border-line bg-surface p-4">
-      <h4 className="font-display text-sm tracking-wide text-parchment">{hero.name}</h4>
+      <h4 className="font-display text-body tracking-wide text-parchment">{hero.name}</h4>
 
       <label className="flex flex-col gap-1">
         <span className="font-display text-[11px] tracking-widest uppercase text-faint">
@@ -66,7 +66,7 @@ export function DefenseConfig({
         <select
           value={behaviour.targeting[0]}
           onChange={(e) => setTargeting(0, e.target.value)}
-          className="rounded border border-line bg-void px-2 py-1 text-sm text-parchment"
+          className="rounded border border-line bg-void px-2 py-1 text-body text-parchment"
         >
           {targetRules.map((rule) => (
             <option key={rule} value={rule}>
@@ -84,7 +84,7 @@ export function DefenseConfig({
         <select
           value={behaviour.targeting[1]}
           onChange={(e) => setTargeting(1, e.target.value)}
-          className="rounded border border-line bg-void px-2 py-1 text-sm text-parchment"
+          className="rounded border border-line bg-void px-2 py-1 text-body text-parchment"
         >
           {targetRules.map((rule) => (
             <option key={rule} value={rule}>
@@ -105,7 +105,7 @@ export function DefenseConfig({
           <select
             value={behaviour.allyRule ?? allyRules[0] ?? ''}
             onChange={(e) => onChange({ ...behaviour, allyRule: e.target.value })}
-            className="rounded border border-line bg-void px-2 py-1 text-sm text-parchment"
+            className="rounded border border-line bg-void px-2 py-1 text-body text-parchment"
           >
             {allyRules.map((rule) => (
               <option key={rule} value={rule}>

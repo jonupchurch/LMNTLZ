@@ -120,7 +120,7 @@ export function ResumeBattle({ onUnauthenticated, fallback }: ResumeBattleProps)
   if (lookup.kind === 'asking') {
     return (
       <main className="mx-auto max-w-[1600px] px-8 py-16">
-        <p role="status" className="text-sm tracking-widest text-faint uppercase">
+        <p role="status" className="text-body tracking-widest text-faint uppercase">
           Checking for a battle in progress…
         </p>
       </main>

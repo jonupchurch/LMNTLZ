@@ -189,7 +189,7 @@ export function BattleScreen({
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 p-8">
       <header className="flex items-baseline justify-between">
-        <h2 className="font-display text-2xl tracking-widest uppercase text-parchment">
+        <h2 className="font-display text-h1 tracking-widest uppercase text-parchment">
           {started.zone === 'hidden' ? 'Hidden Zone' : 'Visible Zone'}
         </h2>
         {started.ambushed && (
@@ -199,7 +199,7 @@ export function BattleScreen({
            * arriving unannounced would read as a bug in the one number the
            * design asks players to trust without being able to verify.
            */
-          <p className="font-mono text-xs text-gold">Ambushed — their Hidden squad</p>
+          <p className="font-mono text-caption text-gold">Ambushed — their Hidden squad</p>
         )}
       </header>
 
@@ -228,7 +228,7 @@ export function BattleScreen({
           )}
 
           {error && (
-            <p role="alert" className="font-mono text-sm text-slash-lit">
+            <p role="alert" className="font-mono text-body text-slash-lit">
               {error}
             </p>
           )}
@@ -267,7 +267,7 @@ function Resolving({ phase }: { readonly phase: IntentPhase }) {
       data-phase={phase.kind}
       className="rounded border border-gold/40 bg-surface p-4"
     >
-      <p className="font-mono text-xs text-gold">{label}</p>
+      <p className="font-mono text-caption text-gold">{label}</p>
 
       {phase.kind === 'playing' && (
         <p className="mt-2 font-mono text-[0.7rem] text-muted">{describe(phase.event)}</p>
@@ -322,7 +322,7 @@ function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps)
                 : 'border-line bg-surface'
         } ${selectable && !busy ? 'cursor-pointer' : 'cursor-default'}`}
       >
-        <span className="block truncate font-display text-xs tracking-wide text-parchment">
+        <span className="block truncate font-display text-caption tracking-wide text-parchment">
           {heroName(hero.heroId)}
         </span>
         <span className="mt-1 block font-mono text-[0.65rem] text-faint">
@@ -341,11 +341,11 @@ function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps)
   return (
     <section aria-label="Battle board" className="flex flex-col gap-6 rounded border border-line bg-surface p-6">
       <div>
-        <h3 className="mb-2 font-display text-xs tracking-widest uppercase text-faint">Defenders</h3>
+        <h3 className="mb-2 text-caption font-display tracking-widest uppercase text-faint">Defenders</h3>
         <div className="flex flex-wrap gap-2">{side('defender').map((h) => cell(h.instanceId))}</div>
       </div>
       <div>
-        <h3 className="mb-2 font-display text-xs tracking-widest uppercase text-faint">Your squad</h3>
+        <h3 className="mb-2 text-caption font-display tracking-widest uppercase text-faint">Your squad</h3>
         <div className="flex flex-wrap gap-2">{side('attacker').map((h) => cell(h.instanceId))}</div>
       </div>
     </section>
@@ -363,7 +363,7 @@ interface ChoiceProps {
 function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
   return (
     <section aria-label="Your move" className="rounded border border-line bg-surface p-4">
-      <p className="mb-3 font-mono text-xs text-faint">
+      <p className="mb-3 font-mono text-caption text-faint">
         {actorName ? `${actorName} is up — choose a power, then a target.` : 'Waiting…'}
       </p>
 
@@ -375,7 +375,7 @@ function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
             disabled={busy}
             onClick={() => onChoose(power.id)}
             aria-pressed={power.id === chosen}
-            className={`rounded border px-3 py-2 font-display text-xs tracking-wide uppercase transition-colors ${
+            className={`rounded border px-3 py-2 font-display text-caption tracking-wide uppercase transition-colors ${
               power.id === chosen
                 ? 'border-gold bg-raised text-gold'
                 : 'border-line bg-bg text-muted hover:bg-raised'
@@ -387,7 +387,7 @@ function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
       </div>
 
       {offered.length === 0 && (
-        <p className="font-mono text-xs text-faint">Nothing in reach — the turn will pass.</p>
+        <p className="font-mono text-caption text-faint">Nothing in reach — the turn will pass.</p>
       )}
     </section>
   );
@@ -410,13 +410,13 @@ function Outcome({
       <h3 className="font-display text-xl tracking-widest uppercase text-parchment">
         {won ? 'Victory' : 'Defeat'}
       </h3>
-      <p className="mt-1 font-mono text-xs text-faint">{conclusion.reason}</p>
+      <p className="mt-1 font-mono text-caption text-faint">{conclusion.reason}</p>
 
       {onLeave ? (
         <button
           type="button"
           onClick={onLeave}
-          className="mt-4 rounded border border-gold bg-raised px-4 py-2 font-display text-xs tracking-widest uppercase text-parchment hover:bg-surface"
+          className="mt-4 rounded border border-gold bg-raised px-4 py-2 text-caption font-display tracking-widest uppercase text-parchment hover:bg-surface"
         >
           Choose another target
         </button>
@@ -428,7 +428,7 @@ function Outcome({
 function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
   return (
     <section aria-label="What just happened" className="rounded border border-line bg-surface p-4">
-      <h3 className="mb-3 font-display text-xs tracking-widest uppercase text-parchment">
+      <h3 className="mb-3 text-caption font-display tracking-widest uppercase text-parchment">
         Last exchange
       </h3>
 
@@ -444,7 +444,7 @@ function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
         ))}
       </ol>
 
-      {events.length === 0 && <p className="font-mono text-xs text-faint">Nothing yet.</p>}
+      {events.length === 0 && <p className="font-mono text-caption text-faint">Nothing yet.</p>}
     </section>
   );
 }

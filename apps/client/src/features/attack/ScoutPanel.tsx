@@ -72,10 +72,10 @@ export function ScoutPanel({ scout, children }: ScoutPanelProps) {
       className="flex flex-col gap-4 rounded border border-line bg-surface p-6"
     >
       <header className="flex items-baseline justify-between gap-4">
-        <h3 className="font-display text-lg tracking-widest uppercase text-parchment">
+        <h3 className="font-display text-h2 tracking-widest uppercase text-parchment">
           {scout.username}
         </h3>
-        <p className="font-mono text-xs text-faint">
+        <p className="font-mono text-caption text-faint">
           {scout.league} · hold {scout.visible.holdStreak} visible ·{' '}
           {/**
            * **Both streaks are disclosed, and only the streaks for Hidden.** A
@@ -118,7 +118,7 @@ export function ScoutPanel({ scout, children }: ScoutPanelProps) {
         {seats.map((seat) => (
           <li
             key={`${seat.row}-${seat.index}`}
-            className="flex items-baseline justify-between gap-3 border-b border-line/40 pb-2 font-mono text-xs"
+            className="flex items-baseline justify-between gap-3 border-b border-line/40 pb-2 font-mono text-caption"
           >
             <span className="w-32 shrink-0 text-parchment">{seat.hero.name}</span>
             <span className="w-20 shrink-0 text-faint uppercase">{seat.row}</span>
@@ -133,7 +133,7 @@ export function ScoutPanel({ scout, children }: ScoutPanelProps) {
       </ul>
 
       {!scout.visible.canDefend && (
-        <p role="status" className="font-mono text-xs text-slash-lit">
+        <p role="status" className="font-mono text-caption text-slash-lit">
           This squad is not at full strength.
         </p>
       )}

@@ -80,10 +80,10 @@ export function RenamePanel({
 
   return (
     <section aria-labelledby="rename-heading">
-      <h2 id="rename-heading" className="font-display text-sm tracking-widest text-faint uppercase">
+      <h2 id="rename-heading" className="text-h3 font-display tracking-widest text-faint uppercase">
         Name
       </h2>
-      <p className="mt-2 text-sm text-muted">
+      <p className="mt-2 text-body text-muted">
         You are <span className="text-parchment">{currentUsername}</span>.
       </p>
 
@@ -96,11 +96,11 @@ export function RenamePanel({
             onChange={(e) => setValue(e.target.value)}
             placeholder="A new name"
             maxLength={24}
-            className="w-full rounded border border-line bg-raised px-3 py-2 text-sm text-parchment"
+            className="w-full rounded border border-line bg-raised px-3 py-2 text-body text-parchment"
           />
         </label>
 
-        <p className="text-xs text-faint">
+        <p className="text-caption text-faint">
           {RENAME_COST_SHARDS} shards. Your first change is free.
           {shards ? ` You have ${shards.balance.toLocaleString()}.` : null}
         </p>
@@ -108,19 +108,19 @@ export function RenamePanel({
         <button
           type="submit"
           disabled={busy || value.trim().length === 0 || !affordable}
-          className="rounded border border-gold px-4 py-2 font-display text-sm tracking-widest text-parchment uppercase disabled:border-line disabled:text-faint"
+          className="rounded border border-gold px-4 py-2 text-h3 font-display tracking-widest text-parchment uppercase disabled:border-line disabled:text-faint"
         >
           {busy ? 'Changing…' : 'Change name'}
         </button>
 
         {!affordable ? (
-          <p className="text-xs text-faint">Not enough shards for a paid change.</p>
+          <p className="text-caption text-faint">Not enough shards for a paid change.</p>
         ) : null}
 
         {message ? (
           <p
             role="status"
-            className={`text-xs ${message.tone === 'ok' ? 'text-gold' : 'text-muted'}`}
+            className={`text-caption ${message.tone === 'ok' ? 'text-gold' : 'text-muted'}`}
           >
             {message.text}
           </p>

@@ -48,7 +48,7 @@ export function EvictionWarning({
       aria-labelledby="eviction-title"
       className="rounded border border-gold/50 bg-surface p-6"
     >
-      <h2 id="eviction-title" className="font-display text-lg tracking-wide text-parchment">
+      <h2 id="eviction-title" className="font-display text-h2 tracking-wide text-parchment">
         Move {heroName} to {zoneLabel} defense?
       </h2>
 
@@ -72,7 +72,7 @@ export function EvictionWarning({
           </p>
 
           {/* Rule 2 — every squad, by name. */}
-          <ul className="mt-3 font-mono text-sm">
+          <ul className="mt-3 font-mono text-body">
             {evicts.map((squad) => (
               <li key={squad.slot} className="flex items-baseline gap-3 py-0.5">
                 <span className="w-40 text-parchment">{squad.name ?? `Attack ${squad.slot + 1}`}</span>
@@ -85,14 +85,14 @@ export function EvictionWarning({
       )}
 
       {/* Rule 3 — the sentence that explains the whole constraint. */}
-      <p className="mt-4 font-mono text-sm text-faint">
+      <p className="mt-4 font-mono text-body text-faint">
         You have {poolAfter.heroes} champions left for {poolAfter.squads} squads of{' '}
         {poolAfter.seatsNeeded / poolAfter.squads}.
       </p>
 
       {/* FR-014 — the streak cost is stated BEFORE the commit, not after. */}
       {streakAtRisk > 0 && (
-        <p className="mt-3 text-sm text-dark-lit">
+        <p className="mt-3 text-body text-dark-lit">
           Your {zoneLabel} hold streak of {streakAtRisk}{' '}
           {streakAtRisk === 1 ? 'day' : 'days'} resets, because the squad changes.
         </p>
@@ -102,14 +102,14 @@ export function EvictionWarning({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded border border-line px-4 py-2 font-display text-sm tracking-wide text-muted hover:border-faint"
+          className="rounded border border-line px-4 py-2 font-display text-body tracking-wide text-muted hover:border-faint"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className="rounded bg-gold px-4 py-2 font-display text-sm tracking-wide text-void hover:bg-gold/90"
+          className="rounded bg-gold px-4 py-2 font-display text-body tracking-wide text-void hover:bg-gold/90"
         >
           Move {heroName}
         </button>

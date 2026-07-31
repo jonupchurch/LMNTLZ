@@ -171,7 +171,7 @@ export function AttackScreen({
       <header className="flex flex-wrap items-baseline justify-between gap-6">
         <h2 className="font-display text-xl tracking-widest uppercase text-parchment">Attack</h2>
 
-        <p className="font-mono text-xs text-faint">
+        <p className="font-mono text-caption text-faint">
           <span className="text-parchment uppercase">{standing.league}</span> · rating{' '}
           <span className="text-parchment">{standing.rating}</span>
           {/* Named, not the K value: the constant moves and the name does not. */}
@@ -183,7 +183,7 @@ export function AttackScreen({
          * of being put into somebody's Hidden squad, they rise with every attack win
          * taken, and the client does no arithmetic on them.
          */}
-        <p className="font-mono text-xs">
+        <p className="font-mono text-caption">
           <span className="text-faint">Ambush </span>
           <span className="text-gold">{list.ambushChance}%</span>
           <span className="text-faint"> · {list.consecutiveWins} wins in a row</span>
@@ -196,27 +196,27 @@ export function AttackScreen({
        * what a thin league looks like from the inside.
        */}
       {list.widened && (
-        <p role="status" className="font-mono text-sm text-gold">
+        <p role="status" className="font-mono text-body text-gold">
           Your league is thin, so this list reaches a band either side. These opponents may be
           better geared than the usual guarantee allows.
         </p>
       )}
 
       {standing.starter.active && (
-        <p role="status" className="font-mono text-sm text-faint">
+        <p role="status" className="font-mono text-body text-faint">
           You are in the starter league. Every opponent here is an authored bot, and nobody can
           attack your defense until it ends.
         </p>
       )}
 
       {problem && (
-        <p role="alert" className="font-mono text-sm text-slash-lit">
+        <p role="alert" className="font-mono text-body text-slash-lit">
           {problem}
         </p>
       )}
 
       {ready.length === 0 && (
-        <p role="status" className="font-mono text-sm text-slash-lit">
+        <p role="status" className="font-mono text-body text-slash-lit">
           None of your attack squads is ready. A squad needs six champions, and one that lost a
           champion to defense cannot attack until it is refilled.
         </p>
@@ -225,7 +225,7 @@ export function AttackScreen({
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8">
         <section aria-label="Opponents">
           {list.candidates.length === 0 ? (
-            <p className="font-mono text-sm text-faint">
+            <p className="font-mono text-body text-faint">
               Nobody in your league has a full Visible squad to attack yet.
             </p>
           ) : (
@@ -244,7 +244,7 @@ export function AttackScreen({
                     ].join(' ')}
                   >
                     <span className="flex items-baseline justify-between gap-3">
-                      <span className="font-display text-sm tracking-wide text-parchment">
+                      <span className="font-display text-body tracking-wide text-parchment">
                         {candidate.username}
                       </span>
                       <span className="font-mono text-[11px] text-faint">
@@ -282,7 +282,7 @@ export function AttackScreen({
                       aria-checked={slot === squad.slot}
                       onClick={() => setSlot(squad.slot)}
                       className={[
-                        'rounded border px-3 py-1 font-mono text-xs',
+                        'rounded border px-3 py-1 font-mono text-caption',
                         slot === squad.slot
                           ? 'border-gold bg-raised text-parchment'
                           : 'border-line text-faint',
@@ -299,7 +299,7 @@ export function AttackScreen({
                 disabled={slot === null || starting}
                 onClick={() => void attack()}
                 className={[
-                  'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
+                  'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
                   slot !== null && !starting
                     ? 'border-gold bg-raised text-parchment hover:bg-gold/20'
                     : 'border-line text-faint',
@@ -331,7 +331,7 @@ export function AttackScreen({
             </div>
           </ScoutPanel>
         ) : (
-          <p className="font-mono text-sm text-faint">
+          <p className="font-mono text-body text-faint">
             {target ? 'Scouting…' : 'Choose somebody to scout their Visible squad.'}
           </p>
         )}

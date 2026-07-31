@@ -59,18 +59,18 @@ export function GuildRoster({
     <div className="grid gap-5">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold">{guild.name}</h2>
-          <p className="text-sm text-stone-400">
+          <h2 className="text-h1 font-semibold">{guild.name}</h2>
+          <p className="text-body text-stone-400">
             {guild.memberCount} of {guild.capacity} · founded{' '}
             {new Date(guild.foundedAt).toLocaleDateString()}
           </p>
-          {guild.pitch ? <p className="mt-2 max-w-2xl text-sm text-stone-300">{guild.pitch}</p> : null}
+          {guild.pitch ? <p className="mt-2 max-w-2xl text-body text-stone-300">{guild.pitch}</p> : null}
         </div>
 
         {isMaster ? (
           <button
             type="button"
-            className="rounded border border-stone-700 px-3 py-1 text-sm"
+            className="rounded border border-stone-700 px-3 py-1 text-body"
             onClick={() => setEditingEmblem((v) => !v)}
           >
             {editingEmblem ? 'Done' : 'Change emblem'}
@@ -79,7 +79,7 @@ export function GuildRoster({
       </header>
 
       {guild.motd ? (
-        <p className="rounded border border-stone-800 bg-stone-900/60 p-3 text-sm text-stone-200">
+        <p className="rounded border border-stone-800 bg-stone-900/60 p-3 text-body text-stone-200">
           {guild.motd}
         </p>
       ) : null}
@@ -89,7 +89,7 @@ export function GuildRoster({
           <EmblemDesigner emblem={emblem} onChange={setEmblem} />
           <button
             type="button"
-            className="justify-self-start rounded bg-amber-700 px-4 py-2 text-sm"
+            className="justify-self-start rounded bg-amber-700 px-4 py-2 text-body"
             onClick={() =>
               void call(
                 `/guilds/${guild.id}/emblem`,
@@ -103,8 +103,8 @@ export function GuildRoster({
         </div>
       ) : null}
 
-      <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase tracking-wide text-stone-500">
+      <table className="w-full text-body">
+        <thead className="text-left text-caption uppercase tracking-wide text-stone-500">
           <tr>
             <th className="py-1">Member</th>
             <th className="py-1">Role</th>
@@ -135,7 +135,7 @@ export function GuildRoster({
                       {isMaster ? (
                         <button
                           type="button"
-                          className="text-xs underline"
+                          className="text-caption underline"
                           onClick={() =>
                             void call(
                               `/guilds/${guild.id}/members/${m.playerId}/role`,
@@ -154,7 +154,7 @@ export function GuildRoster({
                       ) : null}
                       <button
                         type="button"
-                        className="text-xs text-red-400 underline"
+                        className="text-caption text-red-400 underline"
                         onClick={() =>
                           void call(
                             `/guilds/${guild.id}/members/${m.playerId}`,
@@ -177,7 +177,7 @@ export function GuildRoster({
       <footer className="flex gap-3">
         <button
           type="button"
-          className="rounded border border-stone-700 px-3 py-1 text-sm"
+          className="rounded border border-stone-700 px-3 py-1 text-body"
           onClick={() =>
             void call(`/guilds/${guild.id}/leave`, { method: 'POST' }, 'Could not leave.')
           }
@@ -187,7 +187,7 @@ export function GuildRoster({
         {isMaster ? (
           <button
             type="button"
-            className="rounded border border-red-900 px-3 py-1 text-sm text-red-400"
+            className="rounded border border-red-900 px-3 py-1 text-body text-red-400"
             onClick={() =>
               void call(`/guilds/${guild.id}`, { method: 'DELETE' }, 'Could not disband.')
             }
@@ -197,7 +197,7 @@ export function GuildRoster({
         ) : null}
       </footer>
 
-      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+      {error ? <p className="text-body text-red-400">{error}</p> : null}
     </div>
   );
 }

@@ -43,7 +43,7 @@ export function SuccessionPanel({
    */
   if (succession && role === 'master') {
     return (
-      <div className="rounded-lg border border-emerald-800/60 bg-emerald-950/20 p-4 text-sm">
+      <div className="rounded-lg border border-emerald-800/60 bg-emerald-950/20 p-4 text-body">
         <p className="font-medium text-emerald-300">Welcome back — your guild is yours.</p>
         <p className="mt-1 text-stone-300">
           While you were away an officer asked to take over.{' '}
@@ -58,7 +58,7 @@ export function SuccessionPanel({
   if (succession) {
     const completes = new Date(succession.completesAt);
     return (
-      <div className="rounded-lg border border-amber-800/60 bg-amber-950/20 p-4 text-sm">
+      <div className="rounded-lg border border-amber-800/60 bg-amber-950/20 p-4 text-body">
         <p className="font-medium text-amber-300">A succession is pending</p>
         <p className="mt-1 text-stone-300">
           An officer has asked to become master. It completes on{' '}
@@ -96,7 +96,7 @@ export function SuccessionPanel({
   };
 
   return (
-    <details className="rounded-lg border border-stone-800 p-4 text-sm">
+    <details className="rounded-lg border border-stone-800 p-4 text-body">
       <summary className="cursor-pointer text-stone-300">
         The master has stopped playing
       </summary>

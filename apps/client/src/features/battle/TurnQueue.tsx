@@ -44,8 +44,8 @@ export function TurnQueue({ state, lookahead = DEFAULT_LOOKAHEAD, heroName }: Tu
   return (
     <section aria-label="Turn order" className="rounded border border-line bg-surface p-4">
       <header className="mb-3 flex items-baseline justify-between">
-        <h3 className="font-display text-xs tracking-widest uppercase text-parchment">Turn order</h3>
-        <span className="font-mono text-xs text-faint">projected</span>
+        <h3 className="text-caption font-display tracking-widest uppercase text-parchment">Turn order</h3>
+        <span className="font-mono text-caption text-faint">projected</span>
       </header>
 
       <ol className="flex flex-col gap-1">
@@ -61,7 +61,7 @@ export function TurnQueue({ state, lookahead = DEFAULT_LOOKAHEAD, heroName }: Tu
                * Speed spread, so an instance id is not unique here.
                */
               key={`${i}-${instanceId}`}
-              className={`flex items-center justify-between gap-3 rounded px-2 py-1 font-mono text-xs ${
+              className={`flex items-center justify-between gap-3 rounded px-2 py-1 font-mono text-caption ${
                 i === 0 ? 'bg-raised text-parchment' : 'text-muted'
               }`}
             >
@@ -81,7 +81,7 @@ export function TurnQueue({ state, lookahead = DEFAULT_LOOKAHEAD, heroName }: Tu
       </ol>
 
       {queue.length === 0 && (
-        <p className="font-mono text-xs text-faint">No standing champions.</p>
+        <p className="font-mono text-caption text-faint">No standing champions.</p>
       )}
     </section>
   );

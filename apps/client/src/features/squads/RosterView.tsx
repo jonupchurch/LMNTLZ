@@ -67,7 +67,7 @@ export function RosterView({ roster, selectedHeroId, onSelect }: RosterViewProps
          * arithmetic on `perWin` or `cap` — they are shown as text so the rule
          * is legible, and SC-008 greps this app to prove neither is a literal.
          */}
-        <p className="font-mono text-xs">
+        <p className="font-mono text-caption">
           <span className="text-faint">Ambush </span>
           <span className="text-gold">{roster.ambush.chance}%</span>
           <span className="text-faint">
@@ -77,7 +77,7 @@ export function RosterView({ roster, selectedHeroId, onSelect }: RosterViewProps
           </span>
         </p>
 
-        <p className="font-mono text-xs text-faint">
+        <p className="font-mono text-caption text-faint">
           {/**
            * **The sentence that makes the constraint legible.** 15 heroes for 3
            * squads of 6 is why overlap keeps happening, and no per-squad message
@@ -108,7 +108,7 @@ export function RosterView({ roster, selectedHeroId, onSelect }: RosterViewProps
                 <span className="flex items-center gap-2">
                   <HeroIcon heroId={hero.id as HeroId} size="chip" />
                   <span className="min-w-0">
-                    <span className="block truncate font-display text-sm tracking-wide text-parchment">
+                    <span className="block truncate font-display text-body tracking-wide text-parchment">
                       {hero.name}
                     </span>
                     <span className="mt-1 block font-mono text-[11px] tracking-wider uppercase text-faint">

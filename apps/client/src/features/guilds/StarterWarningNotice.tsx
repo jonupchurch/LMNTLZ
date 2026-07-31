@@ -54,7 +54,7 @@ export function StarterWarningNotice({
   return (
     <div className="rounded-lg border border-amber-700/60 bg-amber-950/20 p-4">
       <h3 className="mb-1 font-semibold text-amber-300">This ends your beginner status</h3>
-      <p className="mb-3 text-sm text-stone-300">
+      <p className="mb-3 text-body text-stone-300">
         Joining or founding a guild takes you out of the starter league.{' '}
         <strong className="text-amber-200">There is no way back in.</strong>
       </p>
@@ -62,7 +62,7 @@ export function StarterWarningNotice({
       <ul className="grid gap-2">
         {rows.map((row) => (
           <li key={row.key}>
-            <label className="flex items-start gap-2 text-sm">
+            <label className="flex items-start gap-2 text-body">
               <input
                 type="checkbox"
                 className="mt-1"
@@ -71,7 +71,7 @@ export function StarterWarningNotice({
               />
               <span>
                 <span className="block font-medium text-stone-100">{row.label}</span>
-                <span className="block text-xs text-stone-400">{row.detail}</span>
+                <span className="block text-caption text-stone-400">{row.detail}</span>
               </span>
             </label>
           </li>

@@ -33,8 +33,8 @@ const FORCE_GLYPH: Record<string, string> = {
 function Stat({ label, value }: { label: string; value: string }): JSX.Element {
   return (
     <div>
-      <dt className="text-xs tracking-widest text-faint uppercase">{label}</dt>
-      <dd className="mt-1 font-display text-lg text-parchment tabular-nums">{value}</dd>
+      <dt className="text-caption tracking-widest text-faint uppercase">{label}</dt>
+      <dd className="mt-1 font-display text-h2 text-parchment tabular-nums">{value}</dd>
     </div>
   );
 }
@@ -51,7 +51,7 @@ export function PublicProfile({ profile }: { profile: PublicProfileData }): JSX.
     <article className="space-y-8">
       <header className="flex items-start gap-5">
         <div
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded border border-line bg-raised text-xs tracking-widest text-faint uppercase"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded border border-line bg-raised text-caption tracking-widest text-faint uppercase"
           aria-hidden="true"
         >
           {/* The artwork is part of the visual pass; the slot and its
@@ -59,10 +59,10 @@ export function PublicProfile({ profile }: { profile: PublicProfileData }): JSX.
           {avatarLabel.slice(0, 5)}
         </div>
         <div>
-          <h1 className="font-display text-2xl tracking-wide text-parchment">
+          <h1 className="font-display text-h1 tracking-wide text-parchment">
             {profile.username}
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-body text-muted">
             {profile.league ? (
               <span className="capitalize">{profile.league}</span>
             ) : (

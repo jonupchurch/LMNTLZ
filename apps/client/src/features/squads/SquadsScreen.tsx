@@ -368,7 +368,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
             aria-label={`${ZONE_LABEL[z]}, hold streak ${roster.assignments.defense[z].holdStreak}`}
             onClick={() => setEditing(z)}
             className={[
-              'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
+              'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
               editing === z ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
             ].join(' ')}
           >
@@ -406,7 +406,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
               aria-label={`Attack ${slot + 1}${squad?.name ? `, ${squad.name}` : ''}, ${state}`}
               onClick={() => setEditing(slot)}
               className={[
-                'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
+                'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
                 editing === slot ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
               ].join(' ')}
             >
@@ -426,7 +426,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
 
       {/* FR-011 — an incomplete zone says so rather than defending a man down. */}
       {!isAttack(editing) && !roster.assignments.defense[editing].canDefend && (
-        <p role="status" className="font-mono text-sm text-slash-lit">
+        <p role="status" className="font-mono text-body text-slash-lit">
           {roster.assignments.defense[editing].reason}
         </p>
       )}
@@ -438,14 +438,14 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
        */}
       {isAttack(editing) &&
         roster.assignments.offense.find((o) => o.slot === editing)?.valid === false && (
-          <p role="status" className="font-mono text-sm text-slash-lit">
+          <p role="status" className="font-mono text-body text-slash-lit">
             {labelOf(editing)} lost a champion to defense and cannot attack until it is back to
             six.
           </p>
         )}
 
       {problem && (
-        <p role="alert" className="font-mono text-sm text-slash-lit">
+        <p role="alert" className="font-mono text-body text-slash-lit">
           {problem}
         </p>
       )}
@@ -473,7 +473,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
                 maxLength={40}
                 placeholder={`Attack ${editing + 1}`}
                 onChange={(e) => setAttackName(e.target.value)}
-                className="rounded border border-line bg-void px-2 py-1 text-sm text-parchment"
+                className="rounded border border-line bg-void px-2 py-1 text-body text-parchment"
               />
             </label>
           )}
@@ -484,7 +484,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
               disabled={!allocation.isComplete || saving}
               onClick={() => void save()}
               className={[
-                'rounded border px-4 py-2 font-display text-sm tracking-widest uppercase',
+                'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
                 allocation.isComplete && !saving
                   ? 'border-gold bg-raised text-parchment hover:bg-gold/20'
                   : 'border-line text-faint',
@@ -494,7 +494,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
             </button>
 
             {savedAttack && (
-              <p role="status" className="font-mono text-xs text-earth-lit">
+              <p role="status" className="font-mono text-caption text-earth-lit">
                 Saved. {savedAttack.name ?? `Attack ${savedAttack.slot + 1}`} is{' '}
                 {savedAttack.complete ? 'ready to attack' : 'not yet six champions'}.
               </p>
@@ -507,7 +507,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
              * what a save did, which is what `streakAtRisk` warns about beforehand.
              */}
             {saved && (
-              <div role="status" className="flex flex-col gap-2 font-mono text-xs">
+              <div role="status" className="flex flex-col gap-2 font-mono text-caption">
                 <p className={saved.streakReset ? 'text-slash-lit' : 'text-earth-lit'}>
                   {saved.streakReset
                     ? `Saved. The hold streak reset to ${saved.holdStreak} — the squad changed.`
@@ -559,7 +559,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
                 }
               />
             ) : (
-              <p className="rounded border border-line bg-surface p-4 font-mono text-xs text-faint">
+              <p className="rounded border border-line bg-surface p-4 font-mono text-caption text-faint">
                 {configuring.hero.name} is playing her Role&rsquo;s defaults. Save this zone to
                 see them and change them.
               </p>

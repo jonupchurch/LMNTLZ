@@ -42,8 +42,8 @@ export function SquadBuilder({
   return (
     <section aria-label={`${kind} squad formation`} className="rounded border border-line bg-surface p-6">
       <header className="mb-4 flex items-baseline justify-between">
-        <h3 className="font-display text-lg tracking-widest uppercase text-parchment">Formation</h3>
-        <p className="font-mono text-xs text-faint">
+        <h3 className="font-display text-h2 tracking-widest uppercase text-parchment">Formation</h3>
+        <p className="font-mono text-caption text-faint">
           {allocation.seats.length} / 6 · 2 front · 3 middle · 1 back
         </p>
       </header>
@@ -51,7 +51,7 @@ export function SquadBuilder({
       <div className="flex flex-col gap-3">
         {SQUAD_ROWS.map((row) => (
           <div key={row} className="flex items-center gap-3">
-            <span className="w-16 shrink-0 font-display text-xs tracking-widest uppercase text-faint">
+            <span className="w-16 shrink-0 text-caption font-display tracking-widest uppercase text-faint">
               {ROW_LABEL[row]}
             </span>
             {/**
@@ -85,7 +85,7 @@ export function SquadBuilder({
                       // gets, even at the 1600px target. Flexible up to that same
                       // width instead, so every seat stays the same size as every
                       // other and the three-wide row fits at the 1280px floor.
-                      'h-20 min-w-0 flex-1 basis-0 max-w-32 rounded border px-3 text-left text-sm transition-colors',
+                      'h-20 min-w-0 flex-1 basis-0 max-w-32 rounded border px-3 text-left text-body transition-colors',
                       seat
                         ? 'border-gold/60 bg-raised text-parchment'
                         : 'border-dashed border-line bg-void/40 text-faint',
@@ -106,7 +106,7 @@ export function SquadBuilder({
        * construction is invalid almost all the time — that is the normal state
        * of the screen, not an error condition. Only the save is gated.
        */}
-      <p role="status" className="mt-4 min-h-6 font-mono text-xs">
+      <p role="status" className="mt-4 min-h-6 font-mono text-caption">
         {allocation.fault ? (
           <span className="text-slash-lit">{allocation.fault.detail}</span>
         ) : (

@@ -80,28 +80,44 @@ export function SignInPanel({ onSignedIn }: SignInPanelProps): JSX.Element {
   }, [exchange]);
 
   return (
-    <div className="rounded border border-line bg-surface p-6">
-      <h2 className="font-display text-sm tracking-widest text-gold uppercase">Sign in</h2>
+    /*
+     * 017 T047 — ported onto the design tokens.
+     *
+     * **The error colour changed from `fire` to `danger`, and that is not a
+     * repaint.** An error is a semantic state, not a Force; borrowing Fire's
+     * token made the colour mean two things, so a future change to the Fire
+     * House would have silently restyled every failure message in the app.
+     * `--color-danger` is aliased onto Slash in `base.css`, so it looks
+     * near-identical today and can diverge deliberately later.
+     *
+     * Every size below is a scale token rather than a Tailwind step, so the
+     * panel moves with the type ramp instead of drifting from it.
+     */
+    <div className="rounded-lg bg-surface p-6 shadow-(--shadow-glow-1)">
+      <h2 className="text-h3 font-display tracking-widest text-gold uppercase">Sign in</h2>
 
-      <p className="mt-3 text-sm leading-relaxed text-muted">
+      <p className="text-body mt-3 text-muted">
         All twenty-seven champions unlock immediately. Signing in reaches the squad builder;
         battles are still being written.
       </p>
 
+      {/* The 44px floor stays: it is the Google button's own rendered height,
+          not a touch target — this is a mouse-and-keyboard game. */}
       <div className="mt-5 flex min-h-[44px] items-center" ref={slot} aria-busy={busy} />
 
-      {busy ? <p className="mt-3 text-sm text-muted">Signing you in…</p> : null}
+      {busy ? <p className="text-body mt-3 text-muted">Signing you in…</p> : null}
 
       {error ? (
-        <p role="alert" className="mt-3 text-sm leading-relaxed text-fire">
+        <p role="alert" className="text-body mt-3 text-danger">
           {error}
         </p>
       ) : null}
 
       {GOOGLE_CLIENT_ID ? null : (
-        <p role="alert" className="mt-3 text-sm leading-relaxed text-fire">
+        <p role="alert" className="text-body mt-3 text-danger">
           This build has no Google client ID, so sign-in cannot start. Set{' '}
-          <code>VITE_GOOGLE_CLIENT_ID</code> on the client project and redeploy.
+          <code className="font-mono">VITE_GOOGLE_CLIENT_ID</code> on the client project and
+          redeploy.
         </p>
       )}
     </div>

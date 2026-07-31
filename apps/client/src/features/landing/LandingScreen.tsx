@@ -22,27 +22,29 @@
  */
 
 import type { JSX } from 'react';
+import { MAGIC_TYPES, MELEE_TYPES } from '@lmntlz/content';
+import { TypeBadge } from '../../components/index.js';
 
-const ARCANE = [
-  ['Earth', 'text-earth'],
-  ['Air', 'text-air'],
-  ['Fire', 'text-fire'],
-  ['Water', 'text-water'],
-  ['Light', 'text-light'],
-  ['Dark', 'text-dark'],
-] as const;
-
-const MARTIAL = [
-  ['Slash', 'text-slash-lit'],
-  ['Pierce', 'text-pierce-lit'],
-  ['Crush', 'text-crush-lit'],
-] as const;
+/*
+ * 017 T047 — the local force→colour table is gone.
+ *
+ * This file used to carry its own `ARCANE`/`MARTIAL` arrays pairing nine names
+ * with nine Tailwind classes. That is **a second source of truth for the
+ * brand** (Constitution XV): six of the nine were spelled with the base token
+ * and three with the `-lit` step, so the martial three already rendered
+ * brighter than the arcane six for no stated reason — the exact drift a
+ * duplicated table produces.
+ *
+ * The forces and their order now come from `@lmntlz/content`, and their colour
+ * from `TypeBadge`. Adding a tenth Force would reach this page automatically;
+ * before, it would have been silently missing.
+ */
 
 function Pillar({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
   return (
-    <section className="rounded border border-line bg-surface p-6">
-      <h3 className="mb-2 font-display text-sm tracking-widest text-gold uppercase">{title}</h3>
-      <p className="text-sm leading-relaxed text-muted">{children}</p>
+    <section className="rounded-lg bg-surface p-6 shadow-(--shadow-glow-1)">
+      <h3 className="text-h3 mb-2 font-display tracking-widest text-gold uppercase">{title}</h3>
+      <p className="text-body text-muted">{children}</p>
     </section>
   );
 }
@@ -51,11 +53,11 @@ export function LandingScreen(): JSX.Element {
   return (
     <main className="mx-auto max-w-[1600px] px-8 py-16">
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-display text-6xl tracking-[0.3em] text-gold">LMNTLZ</h1>
-        <p className="mt-6 text-2xl leading-snug text-parchment">
+        <h1 className="text-display font-display tracking-[0.3em] text-gold">LMNTLZ</h1>
+        <p className="text-h1 mt-6 text-parchment">
           A competitive squad battler where the roster is never the advantage.
         </p>
-        <p className="mt-4 text-lg leading-relaxed text-muted">
+        <p className="text-h2 mt-4 text-muted">
           All twenty-seven champions are unlocked the moment you sign in, identically, for
           everybody. There is nothing to pull for and nobody to out-collect. The only edge is
           reading what your opponent is weak to and building against it.
@@ -85,26 +87,24 @@ export function LandingScreen(): JSX.Element {
       </div>
 
       <div className="mx-auto mt-14 max-w-3xl">
-        <h2 className="font-display text-sm tracking-widest text-faint uppercase">The Nine Forces</h2>
-        <p className="mt-3 text-sm text-muted">
+        <h2 className="text-h3 font-display tracking-widest text-faint uppercase">The Nine Forces</h2>
+        <p className="text-body mt-3 text-muted">
           Six arcane, arranged in a ring, and three martial in a triangle. Every one of them counters
           exactly one other and is countered by exactly one other — so there is no safe type, only a
           matchup you have prepared for.
         </p>
+        {/* Arcane ring first, martial triangle second — the order the design
+            and the lore both use, taken from the content package rather than
+            re-listed here. */}
         <div className="mt-5 flex flex-wrap gap-2">
-          {[...ARCANE, ...MARTIAL].map(([name, tone]) => (
-            <span
-              key={name}
-              className={`rounded border border-line bg-raised px-3 py-1 font-display text-sm tracking-widest uppercase ${tone}`}
-            >
-              {name}
-            </span>
+          {[...MAGIC_TYPES, ...MELEE_TYPES].map((type) => (
+            <TypeBadge key={type} type={type} size="md" />
           ))}
         </div>
       </div>
 
-      <div className="mx-auto mt-14 max-w-3xl rounded border border-line bg-surface p-6">
-        <h2 className="font-display text-sm tracking-widest text-gold uppercase">
+      <div className="mx-auto mt-14 max-w-3xl rounded-lg bg-surface p-6 shadow-(--shadow-glow-1)">
+        <h2 className="text-h3 font-display tracking-widest text-gold uppercase">
           Where the game is
         </h2>
         {/**
@@ -116,7 +116,7 @@ export function LandingScreen(): JSX.Element {
          * So it now names what is *missing* rather than what is done — the shorter
          * list, and the one that shrinks.
          */}
-        <p className="mt-3 text-sm leading-relaxed text-muted">
+        <p className="text-body mt-3 text-muted">
           <strong className="text-parchment">LMNTLZ is playable and unfinished.</strong>{' '}
           Sign in and you can build both defense squads and three attack squads, scout an
           opponent and fight them out turn by turn. What is not built yet: runes and the shards
@@ -128,7 +128,7 @@ export function LandingScreen(): JSX.Element {
           describes what will be offered and what the ceiling is, so it can be judged before anyone
           is asked for money.
         </p>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
+        <p className="text-body mt-3 text-muted">
           Questions:{' '}
           <a href="/contact.html" className="text-gold underline underline-offset-2">
             get in touch
