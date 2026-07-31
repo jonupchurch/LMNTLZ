@@ -188,8 +188,38 @@ function GameApp(): JSX.Element {
 
   return (
     <div className="flex min-h-full flex-col">
+      {/**
+       * **`SessionBar` is gone, and it was drawing a second header** (019 US2).
+       *
+       * It rendered a `banner` landmark with an LMNTLZ wordmark and the
+       * username **directly above `AppShell`'s `Header`**, which draws an
+       * LMNTLZ wordmark and the username. A player saw the game's name twice
+       * and their own name twice, stacked, on every screen.
+       *
+       * `Header`'s own comment has named this as a real smell for two features
+       * and left it alone because deleting `SessionBar` would take the visible
+       * sign-out with it. So the sign-out moved into `Header` first — beside
+       * the name it signs out of, which is where that comment said it belonged
+       * — and then this came out.
+       *
+       * **One `Header`, here rather than in `AppShell`'s slot**, because a
+       * signed-in player must always have a visible sign-out and not every
+       * signed-in state renders the shell. The battle screen does not, and
+       * neither does `ResumeBattle`'s *"Checking for a battle in progress…"* —
+       * which is a dead end with no way out if `GET /battles/open` never
+       * answers. `SessionBar` was accidentally covering that; nothing would
+       * have been, so the header moved up instead of the bar coming back.
+       */}
       {phase.kind === 'signed-in' ? (
-        <SessionBar account={phase.account} onSignOut={onSignOut} />
+        <Header
+          /* No `shards` — the session payload carries no balance, and a
+             placeholder 0 would be a false claim about money. `onProfile` is
+             how the profile is reached (T020): one click on your own name,
+             never a rail slot. */
+          username={phase.account.username}
+          onProfile={() => setScreen(screenFor('profile', phase.account.id))}
+          onSignOut={onSignOut}
+        />
       ) : null}
 
       <div className="flex-1">
@@ -254,16 +284,8 @@ function GameApp(): JSX.Element {
                       onSelect={(id) => setScreen(screenFor(id, phase.account.id))}
                     />
                   }
-                  header={
-                    /* No `shards` — the session payload carries no balance, and
-                       a placeholder 0 would be a false claim about money.
-                       `onProfile` is how the profile is reached (T020): one
-                       click on your own name, never a rail slot. */
-                    <Header
-                      username={phase.account.username}
-                      onProfile={() => setScreen(screenFor('profile', phase.account.id))}
-                    />
-                  }
+                  /* No `header` — one is rendered above the shell, for every
+                     signed-in state rather than only the ones with a rail. */
                 >
                   {/**
                    * **No wrapper `Panel` here, and that is the whole point of
@@ -539,40 +561,20 @@ function Restoring(): JSX.Element {
 }
 
 /**
- * Who is signed in, and the way out.
+ * `SessionBar` lived here and was deleted (019 US2).
  *
- * **A visible sign-out is not optional.** This is a shared-computer game with a
- * thirty-day renewal token in browser storage; without a way to end a session
- * deliberately, the only way off a machine is to clear site data.
+ * **A visible sign-out is not optional** — this is a shared-computer game with
+ * a thirty-day renewal token in browser storage, and without a deliberate way
+ * to end a session the only way off a machine is to clear site data. That
+ * requirement is unchanged; it is now met by `Header`, which already carried
+ * the username this duplicated.
+ *
+ * What went with it: a second `banner` landmark, a second LMNTLZ wordmark and
+ * a second copy of the username, stacked above the real header on every
+ * screen. `Header`'s comment had flagged the duplication for two features and
+ * named the exact blocker — removing this would take the sign-out with it — so
+ * the button moved first.
  */
-function SessionBar({
-  account,
-  onSignOut,
-}: {
-  account: Account;
-  onSignOut: () => void;
-}): JSX.Element {
-  return (
-    <header className="border-b border-line bg-surface">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-8 py-3">
-        <span className="font-display text-sm tracking-[0.3em] text-gold">LMNTLZ</span>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted">{account.username}</span>
-          {/* No focus classes anywhere in this file: `base.css` gives every
-              focusable element a mandatory gold ring, and a local override is
-              how one control ends up looking different from all the rest. */}
-          <button
-            type="button"
-            onClick={onSignOut}
-            className="rounded border border-line px-3 py-1 text-sm text-muted hover:text-parchment"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 /** Re-exported so a screen can name the signed-in account without importing two modules. */
 export { currentAccount };

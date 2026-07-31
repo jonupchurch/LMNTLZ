@@ -323,8 +323,8 @@ function PickerCard({
         heroId={hero.id as HeroId}
         force={hero.primary}
         scrim
+        fill
         sizes="(min-width: 1600px) 200px, 150px"
-        className="absolute inset-0 h-full w-full"
       />
 
       <span

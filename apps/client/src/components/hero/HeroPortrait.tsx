@@ -51,7 +51,33 @@ export interface HeroPortraitProps {
   readonly sizes?: string;
   /** A bottom-up ramp to `void`, so a label can sit over the art. */
   readonly scrim?: boolean;
-  /** Layout classes for the frame — the art always fills it. */
+  /**
+   * Fill the positioned ancestor, so a label can be laid over the art.
+   *
+   * ### ⚠️ This exists because passing `absolute` in `className` DOES NOT WORK
+   *
+   * The root needs a `position` of its own — the wash and the scrim are
+   * `absolute inset-0` against it — so it used to hardcode `relative` and let
+   * callers "override" it with `absolute inset-0`. **They cannot.** Tailwind
+   * emits `.absolute` *before* `.relative`, and CSS resolves a tie by
+   * stylesheet order rather than by the order of names in a `class` attribute,
+   * so `relative` won every time.
+   *
+   * The failure is silent and total: the portrait lands in normal flow at full
+   * card height and everything after it — name, reach, Force, Bane — is pushed
+   * below the card and clipped away by `overflow-hidden`. The cards rendered as
+   * bare illustrations for a day, with every label present in the DOM and none
+   * of it on screen, which is why no test saw it.
+   *
+   * So the choice is a **prop**, resolved here, and there is exactly one
+   * `position` class on the element either way.
+   */
+  readonly fill?: boolean;
+  /**
+   * Extra classes for the frame.
+   *
+   * **Never a `position` utility** — use `fill`. See above for what happens.
+   */
   readonly className?: string;
 }
 
@@ -61,12 +87,18 @@ export function HeroPortrait({
   force,
   sizes = '176px',
   scrim = false,
+  fill = false,
   className = '',
 }: HeroPortraitProps): React.JSX.Element {
   const art = HERO_PORTRAITS[heroId];
 
   return (
-    <span className={`relative block overflow-hidden ${className}`} data-hero-portrait={heroId}>
+    <span
+      /* Exactly one `position` class, chosen here. Two would be a coin flip
+         decided by Tailwind's emit order — see `fill`. */
+      className={`${fill ? 'absolute inset-0' : 'relative'} block overflow-hidden ${className}`}
+      data-hero-portrait={heroId}
+    >
       <img
         src={art.w480}
         srcSet={`${art.w240} 240w, ${art.w480} 480w`}

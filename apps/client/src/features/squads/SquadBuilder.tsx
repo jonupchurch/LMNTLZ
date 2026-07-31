@@ -313,8 +313,8 @@ function SeatCard({
               heroId={hero.id as HeroId}
               force={hero.primary}
               scrim
+              fill
               sizes="(min-width: 1600px) 220px, 160px"
-              className="absolute inset-0 h-full w-full"
             />
           ) : null}
 

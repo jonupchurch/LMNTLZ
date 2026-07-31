@@ -12,6 +12,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { BUILD_SHA } from '../../lib/build.js';
 
 export interface HeaderProps {
   /**
@@ -24,9 +25,24 @@ export interface HeaderProps {
    */
   readonly shards?: number;
   readonly username: string;
-  /** The `ConnectionState` element, passed in rather than constructed here. */
+  /**
+   * The `ConnectionState` element, passed in rather than constructed here.
+   *
+   * ⚠️ **`App` passes nothing**, so the game has no connection readout at all
+   * while every export draws one. It needs a real status source — 014's
+   * socket — and inventing one here would be a green dot that means nothing.
+   */
   readonly connection?: ReactNode;
   readonly onProfile?: () => void;
+  /**
+   * Ends the session. **Absent means no control is drawn**, which is right for
+   * any shell that is not the signed-in app.
+   *
+   * A shared-computer game needs a deliberate way off a machine: the renewal
+   * token lives in browser storage for thirty days, and without this the only
+   * exit is clearing site data.
+   */
+  readonly onSignOut?: () => void;
 }
 
 export function Header({
@@ -34,6 +50,7 @@ export function Header({
   username,
   connection,
   onProfile,
+  onSignOut,
 }: HeaderProps): React.JSX.Element {
   return (
     <header
@@ -76,6 +93,37 @@ export function Header({
         ) : (
           <span className="text-h3 font-display tracking-wide text-muted">{username}</span>
         )}
+
+        {onSignOut ? (
+          /**
+           * **Beside the name it signs out of**, which is where this component's
+           * own header comment said it belonged. It used to live in `SessionBar`
+           * — a second `banner` landmark with a second LMNTLZ wordmark and a
+           * second copy of the username, stacked directly above this one. Two
+           * headers is what a player actually saw.
+           */
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="text-caption rounded border border-line px-2 py-1 font-display tracking-wide text-muted uppercase hover:text-parchment"
+          >
+            Sign out
+          </button>
+        ) : null}
+
+        {/**
+         * **Which build is on screen.** See `lib/build.ts` for why seven
+         * characters of the commit hash are worth permanent space: *"is it
+         * deployed?"* has been answered wrongly here three times, and nothing
+         * on the screen could settle it.
+         */}
+        <span
+          className="text-caption text-decor font-mono tabular-nums"
+          title={`Client build ${BUILD_SHA}. If this does not match the latest commit, the page is cached.`}
+          data-build={BUILD_SHA}
+        >
+          {BUILD_SHA}
+        </span>
       </div>
     </header>
   );

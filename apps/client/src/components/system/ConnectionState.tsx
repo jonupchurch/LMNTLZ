@@ -58,6 +58,18 @@ export function ConnectionState({
       {status === 'connected' && latencyMs !== undefined && (
         <span className="text-muted font-mono tabular-nums">{latencyMs}ms</span>
       )}
+
+      {/**
+       * ⚠️ **Nothing renders this component.** `App` builds a `Header` without
+       * the `connection` prop, so `ConnectionState` has no caller outside its
+       * own tests — the ninth seam-with-no-caller in this repo, and the reason
+       * the running game has no `CONNECTED · 38ms` where every export draws
+       * one. It needs a real status source, which is 014's socket.
+       *
+       * The build stamp deliberately does **not** live here for that reason.
+       * It is in `Header`, which is always on screen. A diagnostic mounted
+       * inside dead code is worse than no diagnostic: it reads as present.
+       */}
     </span>
   );
 }

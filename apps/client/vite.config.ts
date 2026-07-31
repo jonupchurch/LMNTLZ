@@ -11,8 +11,27 @@ import tailwindcss from '@tailwindcss/vite';
  * that says nothing useful. `strictPort` turns that into "port in use", which is
  * the actual problem.
  */
+/**
+ * The commit this bundle was built from, stamped in at build time.
+ *
+ * **Because "is it deployed?" has cost this project real time three times now.**
+ * Twice a deploy was reported green that had never happened, and once the code
+ * was verifiably live at the CDN while the browser in front of us showed the
+ * previous build — and there was no way to tell those two apart from the
+ * screen. A seven-character hash in the corner ends the argument in a glance:
+ * if it does not match `git log -1`, the page is stale, full stop.
+ *
+ * `VERCEL_GIT_COMMIT_SHA` is injected by Vercel on every build. Locally there
+ * is no commit to name — the bundle is whatever is on disk — so it says `dev`,
+ * which is the honest answer rather than a stale hash pretending to be current.
+ */
+const BUILD_SHA = (process.env['VERCEL_GIT_COMMIT_SHA'] ?? '').slice(0, 7) || 'dev';
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    __BUILD_SHA__: JSON.stringify(BUILD_SHA),
+  },
   server: {
     port: 5173,
     strictPort: true,

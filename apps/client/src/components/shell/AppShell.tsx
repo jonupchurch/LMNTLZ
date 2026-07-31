@@ -26,7 +26,20 @@ import type { ReactNode } from 'react';
 
 export interface AppShellProps {
   readonly rail: ReactNode;
-  readonly header: ReactNode;
+  /**
+   * **Optional, because the app renders its header above the shell** (019 US2).
+   *
+   * A signed-in player must always have a visible sign-out — this is a
+   * shared-computer game with a thirty-day renewal token in storage. If the
+   * header lives *inside* the shell, then every state that renders without the
+   * shell has no way out: the battle screen, and `ResumeBattle`'s
+   * *"Checking for a battle in progress…"*, which is a dead end if
+   * `GET /battles/open` never answers.
+   *
+   * So `App` renders one `Header` above all of them. The slot stays for any
+   * shell that wants its own.
+   */
+  readonly header?: ReactNode;
   readonly children: ReactNode;
   /**
    * Electron's custom title bar and drag region. **Left empty by the browser

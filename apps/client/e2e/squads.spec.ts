@@ -18,11 +18,55 @@ test.describe('the screen loads and shows the whole roster', () => {
     await mockApi(page);
     await page.goto('/');
 
-    const cards = page.getByRole('button', { name: /reach \d/ });
+    /* By `data-hero`, not by the old `reach N` copy: 019 US2 replaced the card
+       body with art plus name / Force / R / Bane / commitment. */
+    const cards = page.locator('[data-hero]');
     await expect(cards).toHaveCount(27);
 
     // Nothing to collect is the competitive premise.
     await expect(page.getByText(/locked|recruit|unlock/i)).toHaveCount(0);
+  });
+
+  /**
+   * **The card's label is ON the card**, which is a claim about layout and
+   * therefore the one thing only this suite can make.
+   *
+   * `HeroPortrait` owns its `position`, and both call sites used to try to
+   * override it from `className`. Tailwind emits `.absolute` before
+   * `.relative`, and a CSS tie breaks on stylesheet order rather than on the
+   * order of names in a `class` attribute — so the override lost, the portrait
+   * took the whole card in normal flow, and the name, reach, Force and Bane
+   * were pushed underneath it and clipped by `overflow-hidden`.
+   *
+   * Every one of those labels was in the DOM, in the right order, with the
+   * right text. jsdom does no layout, so **every unit test passed** and the
+   * cards shipped as bare illustrations. Bounding boxes are the only thing
+   * that can tell the difference.
+   */
+  test('shows the name, reach and Force ON the card rather than under it', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/');
+
+    const card = page.locator('[data-hero]').first();
+    await expect(card).toBeVisible();
+    const box = await card.boundingBox();
+    expect(box, 'the first champion card has no layout box at all').not.toBeNull();
+
+    for (const label of [nameOf(IDS[0]!), 'R1', 'BANE']) {
+      const inside = card.getByText(new RegExp(label, 'i')).first();
+      await expect(inside).toBeVisible();
+
+      const at = await inside.boundingBox();
+      expect(at, `"${label}" renders with no box`).not.toBeNull();
+      /* Inside the card's own rectangle. A label pushed below a clipped parent
+         still reports as "visible" to Playwright, so the comparison is what
+         carries the signal — not the visibility check above it. */
+      expect(
+        at!.y + at!.height <= box!.y + box!.height + 1,
+        `"${label}" is drawn below the card and clipped away`,
+      ).toBe(true);
+      expect(at!.y).toBeGreaterThanOrEqual(box!.y - 1);
+    }
   });
 
   test('states the pool and the ambush chance', async ({ page }) => {
@@ -254,7 +298,7 @@ test.describe('the squad actually saves', () => {
     await expect(page.getByRole('alert')).toContainText(/already defending your hidden zone/);
     // Not a blank page with a sentence on it: the work is still there.
     await expect(page.getByLabel('defense squad formation')).toBeVisible();
-    await expect(page.getByRole('button', { name: /reach \d/ })).toHaveCount(27);
+    await expect(page.locator('[data-hero]')).toHaveCount(27);
   });
 });
 
@@ -284,7 +328,13 @@ test.describe('the three attack squads are reachable and savable', () => {
      * separately in `offense.test.tsx`.
      */
     await page.getByRole('tab', { name: /The Striking Six/i }).click();
-    await expect(page.getByRole('tablist', { name: 'Squad' }).getByRole('tab')).toHaveCount(3);
+    /* `exact` is load-bearing: Playwright matches an accessible name by
+       SUBSTRING by default, so plain `'Squad'` also picks up the `Squad kind`
+       tablist and counts 2 + 3 = 5. Testing Library's `getByRole` matches the
+       full string, which is why `offense.test.tsx` agreed and this did not. */
+    await expect(
+      page.getByRole('tablist', { name: 'Squad', exact: true }).getByRole('tab'),
+    ).toHaveCount(3);
 
     await page.getByRole('tab', { name: /Attack 2/ }).click();
     await page.getByRole('button', { name: /Save Attack 2/ }).click();
