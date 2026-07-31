@@ -61,7 +61,24 @@
     "POSTGRES_PRISMA_URL",
     "NEON_PROJECT_ID",
     "NEON_AUTH_BASE_URL",
-    "VITE_NEON_AUTH_URL"
+    "VITE_NEON_AUTH_URL",
+
+    // The two Paddle keys are here for a DIFFERENT reason from the Neon rows
+    // above, and the distinction is the whole point of this list. Those are set
+    // on Vercel and read by nothing; these are set on a DEVELOPER'S MACHINE and
+    // read by nothing either — `PADDLE_SANDBOX_API_KEY` is consumed by
+    // `.mcp.json` at the repo root, which is Claude Code tooling, not a build
+    // input. Neither is on any Vercel project today.
+    //
+    // They belong in passThrough rather than `globalEnv` precisely BECAUSE they
+    // are credentials: a key rotation must not invalidate every cached build,
+    // and Paddle expires keys every 90 days, so `globalEnv` would throw the
+    // whole cache away four times a year for a value no build ever reads.
+    //
+    // `PADDLE_LIVE_API_KEY` moves UP to `globalEnv` the day real payment code
+    // reads it on the server — see `.env.example`.
+    "PADDLE_SANDBOX_API_KEY",
+    "PADDLE_LIVE_API_KEY"
   ],
 
   "tasks": {
