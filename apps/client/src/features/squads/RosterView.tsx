@@ -45,13 +45,19 @@ import type { RosterResponse, Zone } from './types.js';
 import { ATTACK_SQUADS, DEFENSE_TOTAL } from './hooks/useAllocation.js';
 
 /**
- * The two zones and the three slots, in the header's own numbering.
+ * The two zones and the three attack slots, as the badge numbers them.
  *
- * **Roman, because the rest of the screen is.** The header's squad chips read
- * `I · II · III`, so a card saying `In squad 2` would be the same screen
- * counting two different ways about the same six champions.
+ * **The zones are Arabic and the attack squads are Roman**, which looks like an
+ * inconsistency and is Jon's call, made twice. It also happens to carry a real
+ * distinction: `In defense 2` names one of two *zones* a champion is standing
+ * in and cannot attack from, while `Striking I,II` names attack squads, which
+ * overlap and which she can be on several of at once. Two different kinds of
+ * thing, told apart before either is read.
+ *
+ * The header's chips stay Roman for both. If that ever reads as a mistake, the
+ * fix is one edit here rather than a convention to re-derive.
  */
-const ZONE_LABEL: Readonly<Record<Zone, string>> = { visible: 'I', hidden: 'II' };
+const ZONE_LABEL: Readonly<Record<Zone, string>> = { visible: '1', hidden: '2' };
 const ROMAN = ['I', 'II', 'III'] as const;
 
 export interface RosterViewProps {
@@ -68,8 +74,6 @@ export interface RosterViewProps {
    * the screen misbehaving.
    */
   readonly awaitingSeat?: boolean;
-  /** Which of the Nine the squad on the board can already strike. */
-  readonly covers?: ReadonlySet<DamageType>;
 }
 
 interface Commitment {
@@ -83,10 +87,10 @@ export function RosterView({
   onSelect,
   seatedIds,
   awaitingSeat = false,
-  covers,
 }: RosterViewProps) {
   const [search, setSearch] = useState('');
   const [forces, setForces] = useState<ReadonlySet<DamageType>>(new Set());
+  const [banes, setBanes] = useState<ReadonlySet<DamageType>>(new Set());
 
   /**
    * Rune stages by champion, so a card is a lookup rather than a scan of 27.
@@ -116,21 +120,65 @@ export function RosterView({
     return map;
   }, [roster]);
 
+  /**
+   * The picker's two filters, and the order they leave behind.
+   *
+   * ### Both rows match two fields, and rank them
+   *
+   * A champion has two Forces she *deals* (`primary`, `secondary`) and two she
+   * *bleeds to* (`bane` from the primary, `fault` from the secondary). Each row
+   * of chips matches both of its pair, because a filter that matched only the
+   * first would hide exactly the champion a player is hunting for — an Earth
+   * champion with a Fire secondary still deals Fire.
+   *
+   * But the two are not equal, so a flat match would bury the obvious answers
+   * among the incidental ones. **The stronger match sorts first**: pick Fire and
+   * the Fire House leads, with the Fire-secondaries behind them; pick a Bane and
+   * the champions who take ×1.50 from it lead, with the ×1.25 Faults behind.
+   *
+   * ### Ranked, not split into two lists
+   *
+   * One grid that reorders keeps the count honest (`n / 27 champions` means one
+   * thing) and keeps a champion in view when a player toggles a second chip.
+   * Two headed sections would make "how many match?" ambiguous and would move
+   * cards further than the eye can follow.
+   *
+   * An inactive row contributes rank `0` to everybody, so it neither reorders
+   * nor fights the row that is active. With both on, the Force rank decides and
+   * the Bane rank breaks ties — the order the chips are read in.
+   */
   const shown = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    return roster.heroes.filter((hero: Hero) => {
-      if (needle !== '' && !hero.name.toLowerCase().includes(needle)) return false;
-      /**
-       * **`strengths`, not `primary`.** `strengths` is `{primary, secondary}`,
-       * and a champion deals both — so a Fire filter that skipped an Earth
-       * champion with a Fire secondary would hide her from precisely the player
-       * looking for Fire. Coverage is the union of the two everywhere else in
-       * this feature, and the filter has to agree with it.
-       */
-      if (forces.size > 0 && !hero.strengths.some((force) => forces.has(force))) return false;
-      return true;
-    });
-  }, [roster.heroes, search, forces]);
+
+    /** `0` strong match, `1` weak match, `0` when the row is switched off. */
+    const rank = (
+      selected: ReadonlySet<DamageType>,
+      strong: DamageType,
+      weak: DamageType,
+    ): number => {
+      if (selected.size === 0) return 0;
+      if (selected.has(strong)) return 0;
+      if (selected.has(weak)) return 1;
+      return 2;
+    };
+
+    return roster.heroes
+      .map((hero: Hero, order: number) => ({
+        hero,
+        order,
+        force: rank(forces, hero.primary, hero.secondary),
+        bane: rank(banes, hero.bane, hero.fault),
+      }))
+      .filter(
+        ({ hero, force, bane }) =>
+          (needle === '' || hero.name.toLowerCase().includes(needle)) && force < 2 && bane < 2,
+      )
+      /* `order` last, so the roster's own sequence survives every tie — a stable
+         sort here would still be at the mercy of the engine's, and 27 cards
+         re-shuffling on a toggle is the kind of motion that reads as a bug. */
+      .sort((a, b) => a.force - b.force || a.bane - b.bane || a.order - b.order)
+      .map(({ hero }) => hero);
+  }, [roster.heroes, search, forces, banes]);
 
   const committed =
     roster.assignments.defense.visible.seats.length +
@@ -199,38 +247,35 @@ export function RosterView({
         </ul>
 
         {/**
-         * **A readout, not a filter** — see the header. Nine squares saying
-         * which enemy Banes this squad can already open, lit from the board
-         * rather than from anything clicked here. `role="img"` with a sentence
-         * for a label, because a screen reader offered nine unlabelled squares
-         * gets nothing at all from them.
+         * **The weakness row, and it filters now.**
+         *
+         * It was a readout — nine swatches saying which enemy Banes the squad on
+         * the board could already strike. That answer still exists, in the
+         * rail's `Damage coverage`, which is where a *squad*-level fact belongs;
+         * this row sits beside the picker, where every other control acts on the
+         * list beneath it.
+         *
+         * As a filter it is the counterpart of the Force row rather than a
+         * second copy of it. The Forces ask *what does she deal*; these ask
+         * *what does she bleed to* — the question that decides whether a sixth
+         * champion completes a squad or hands it a shared door. Neither is
+         * authored: `bane` is `counter(primary)` and `fault` is
+         * `counter(secondary)`, both derived in `@lmntlz/content`.
          */}
-        {covers ? (
-          <div className="flex items-center gap-1.5">
-            <span className="text-caption font-mono tracking-widest text-faint uppercase">
-              Covers bane
-            </span>
-            <span
-              role="img"
-              aria-label={
-                covers.size === 0
-                  ? 'This squad covers no Banes yet'
-                  : `This squad can strike ${[...covers].join(', ')}`
-              }
-              className="flex gap-1"
-            >
-              {DAMAGE_TYPES.map((type) => (
-                <span
-                  key={type}
-                  data-covers={covers.has(type)}
-                  className={covers.has(type) ? 'opacity-100' : 'opacity-25 grayscale'}
-                >
-                  <TypeIcon type={type} size="pip" />
-                </span>
-              ))}
-            </span>
-          </div>
-        ) : null}
+        <div className="flex items-center gap-2 border-l border-line pl-4">
+          <span className="text-caption font-mono tracking-widest text-faint uppercase">Bane</span>
+          <ul className="flex flex-wrap gap-1" aria-label="Filter by weakness">
+            {DAMAGE_TYPES.map((type) => (
+              <li key={type}>
+                <BaneChip
+                  type={type}
+                  on={banes.has(type)}
+                  onToggle={() => setBanes(toggled(banes, type))}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <p className="text-caption font-mono text-faint">
           {/**
@@ -246,6 +291,13 @@ export function RosterView({
       {shown.length === 0 ? (
         <p className="lz-empty text-body p-6 text-center text-muted">
           No champion matches those filters.
+          {/* Neither row can empty the list alone — every Force has three
+              Houses and every Bane has bearers — so an empty grid with both on
+              is always the intersection, and saying so beats leaving a player
+              to work out which chip to give up. */}
+          {forces.size > 0 && banes.size > 0
+            ? ' The Force and Bane rows narrow together.'
+            : ''}
         </p>
       ) : (
         /* Back down to 140 from 168. The Force words and the Bane line left the
@@ -301,6 +353,44 @@ function FilterChip({
           colour-blind player cannot read — on the game's central mechanic. */}
       <TypeIcon type={type} size="pip" />
       {label}
+    </button>
+  );
+}
+
+/**
+ * One of the nine weaknesses, as a chip.
+ *
+ * **Icon only, and that is the design's own call** — the export draws this row
+ * as nine small squares rather than nine named chips, because it sits beside a
+ * row that already spells all nine out. Two labelled rows would read as one
+ * long list of eighteen things rather than as two questions.
+ *
+ * Which means the accessible name is doing all the work, so it says what the
+ * chip *does* rather than naming the Force again: nine buttons called `fire`,
+ * `water`… beside nine more called `fire`, `water`… would be unusable.
+ */
+function BaneChip({
+  type,
+  on,
+  onToggle,
+}: {
+  readonly type: DamageType;
+  readonly on: boolean;
+  readonly onToggle: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label={`Weak to ${type}`}
+      data-bane-filter={type}
+      onClick={onToggle}
+      className={[
+        'flex items-center rounded-sm border p-0.5 transition-colors duration-(--duration-fast)',
+        on ? 'border-parchment bg-raised' : 'border-transparent opacity-45 hover:opacity-100',
+      ].join(' ')}
+    >
+      <TypeIcon type={type} size="pip" />
     </button>
   );
 }
@@ -388,12 +478,20 @@ function PickerCard({
          * otherwise — so *this one is already placed in what I am editing* and
          * *this one is spoken for elsewhere* are different states rather than the
          * same tag on two different cards.
+         *
+         * **Bottom-right, not top-right.** `Striking I,II` is a wide label and
+         * the card is 140px, so at the top it ran back across the corner marks
+         * and buried the emblem and both Forces — the three things that identify
+         * the champion, hidden by a tag about where she happens to be. The two
+         * live in opposite corners now and `squads.spec.ts` measures the gap,
+         * because overlap is a claim about rectangles and nothing but a browser
+         * can see it.
          */}
         {badge ? (
           <span
             data-commitment={badge.kind}
             className={[
-              'text-caption absolute top-1.5 right-1.5 rounded-sm px-1 py-px font-mono tracking-wider uppercase',
+              'text-caption absolute right-1.5 bottom-1.5 rounded-sm px-1 py-px font-mono tracking-wider uppercase',
               seated
                 ? 'bg-gold text-void'
                 : 'bg-void/85 text-gold ring-1 ring-gold/40 ring-inset',
@@ -447,7 +545,7 @@ function PickerCard({
 function commitmentBadge(
   state: Commitment | undefined,
 ): { readonly kind: string; readonly label: string } | null {
-  if (state?.zone) return { kind: 'defense', label: `In squad ${ZONE_LABEL[state.zone]}` };
+  if (state?.zone) return { kind: 'defense', label: `In defense ${ZONE_LABEL[state.zone]}` };
   if (state?.squads.length) {
     return { kind: 'offense', label: `Striking ${state.squads.map(roman).join(',')}` };
   }

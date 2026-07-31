@@ -44,8 +44,8 @@ describe('the roster shows all 27, always', () => {
     const { container } = render(
       <RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />,
     );
-    expect(screen.getAllByText('In squad I').length).toBe(6);
-    expect(screen.getAllByText('In squad II').length).toBe(6);
+    expect(screen.getAllByText('In defense 1').length).toBe(6);
+    expect(screen.getAllByText('In defense 2').length).toBe(6);
 
     /**
      * **And the fifteen free ones carry no badge at all.**

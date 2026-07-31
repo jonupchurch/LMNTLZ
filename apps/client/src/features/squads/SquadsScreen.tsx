@@ -22,7 +22,7 @@ import { RosterView } from './RosterView.js';
 import { SquadBuilder } from './SquadBuilder.js';
 import { SquadHeader, isAttack, labelOf, type Editing } from './SquadHeader.js';
 import { SquadReadout } from './SquadReadout.js';
-import { coverage } from './analysis.js';
+
 import { EvictionWarning } from './EvictionWarning.js';
 import { useAllocation } from './hooks/useAllocation.js';
 import type {
@@ -566,9 +566,6 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
             onSelect={heroActivate}
             seatedIds={seatedIds}
             awaitingSeat={armed !== null}
-            /* Same derivation the readout's DAMAGE COVERAGE spends, so the two
-               can never disagree about what this six can strike. */
-            covers={coverage(squadHeroes).covered}
           />
         </div>
       </Panel>

@@ -17,6 +17,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { getAllHeroes } from '@lmntlz/content';
 import { RosterView } from '../../src/features/squads/RosterView.js';
 import { SquadBuilder } from '../../src/features/squads/SquadBuilder.js';
@@ -82,8 +83,8 @@ describe('the commitment badge names the squad', () => {
     const labels = [...container.querySelectorAll('[data-commitment="defense"]')].map(
       (n) => n.textContent,
     );
-    expect(labels.filter((l) => l === 'In squad I').length).toBe(6);
-    expect(labels.filter((l) => l === 'In squad II').length).toBe(6);
+    expect(labels.filter((l) => l === 'In defense 1').length).toBe(6);
+    expect(labels.filter((l) => l === 'In defense 2').length).toBe(6);
   });
 
   /**
@@ -173,6 +174,119 @@ describe('the rune pips read the served stages', () => {
     const shapes = new Set(runeStages().map((r) => r.stages.join(',')));
     expect(shapes.size).toBeGreaterThan(3);
     expect([...shapes]).toContain('0,0,4');
+  });
+});
+
+/**
+ * The two chip rows.
+ *
+ * **Every expectation is computed from `@lmntlz/content`.** A hand-picked
+ * champion name would pass today and stop meaning anything the next time the
+ * roster is tuned — and `bane`/`fault` are derived from `primary`/`secondary`
+ * by a bijection, so writing one out by hand is transcribing a table the
+ * project forbids transcribing.
+ */
+describe('the Force row matches both Forces and ranks the House first', () => {
+  const ids = (container: HTMLElement) =>
+    [...container.querySelectorAll('[data-hero]')].map((el) => el.getAttribute('data-hero')!);
+
+  it('keeps a champion whose Fire is only a secondary', async () => {
+    const { container } = pick();
+    await userEvent.click(screen.getByRole('button', { name: /^fire$/i }));
+
+    const shown = ids(container);
+    const expected = HEROES.filter((h) => h.strengths.includes('fire')).map((h) => h.id);
+    expect(new Set(shown)).toEqual(new Set(expected));
+    expect(shown.length).toBeGreaterThan(3);
+  });
+
+  /**
+   * **The ordering is the new part.** The filter already matched both fields;
+   * a flat match buried the three Fire Houses among the Fire-secondaries, so
+   * the obvious answers were not the first ones on screen.
+   */
+  it('puts every primary ahead of every secondary', async () => {
+    const { container } = pick();
+    await userEvent.click(screen.getByRole('button', { name: /^fire$/i }));
+
+    const shown = ids(container);
+    const isPrimary = (id: string) => HEROES.find((h) => h.id === id)!.primary === 'fire';
+    const flags = shown.map(isPrimary);
+    const primaries = flags.filter(Boolean).length;
+
+    /* Every `true` is contiguous at the front — which is the claim, and is
+       stronger than "the first card is a primary". */
+    expect(flags.lastIndexOf(true)).toBe(primaries - 1);
+    /* And the roster actually contains both kinds, or the assertion above is
+       vacuously true: three Houses per Force, plus whoever took Fire second. */
+    expect(primaries).toBe(3);
+    expect(flags.length).toBeGreaterThan(primaries);
+  });
+});
+
+describe('the Bane row filters on the weaknesses, ranking Bane above Fault', () => {
+  const ids = (container: HTMLElement) =>
+    [...container.querySelectorAll('[data-hero]')].map((el) => el.getAttribute('data-hero')!);
+
+  /** The chips are icon-only, so the accessible name is the only handle. */
+  const clickBane = (type: string) =>
+    userEvent.click(screen.getByRole('button', { name: `Weak to ${type}` }));
+
+  it('shows the champions who bleed to it, by Bane or by Fault', async () => {
+    const { container } = pick();
+    await clickBane('fire');
+
+    const expected = HEROES.filter((h) => h.bane === 'fire' || h.fault === 'fire').map((h) => h.id);
+    expect(new Set(ids(container))).toEqual(new Set(expected));
+    expect(expected.length).toBeGreaterThan(3);
+  });
+
+  /**
+   * ×1.50 before ×1.25. A Bane is the difference between a champion who should
+   * not be in this squad and one who would rather not be.
+   */
+  it('puts every Bane ahead of every Fault', async () => {
+    const { container } = pick();
+    await clickBane('fire');
+
+    const shown = ids(container);
+    const flags = shown.map((id) => HEROES.find((h) => h.id === id)!.bane === 'fire');
+    const banes = flags.filter(Boolean).length;
+
+    expect(flags.lastIndexOf(true)).toBe(banes - 1);
+    expect(banes).toBeGreaterThan(0);
+    expect(flags.length).toBeGreaterThan(banes);
+  });
+
+  /**
+   * **The two rows narrow together.** They are different questions about the
+   * same champion — what she deals, what she bleeds to — so a player using both
+   * is asking for the intersection, not the union.
+   */
+  it('intersects with the Force row rather than widening it', async () => {
+    const { container } = pick();
+    await userEvent.click(screen.getByRole('button', { name: /^fire$/i }));
+    await clickBane('air');
+
+    const shown = ids(container);
+    for (const id of shown) {
+      const hero = HEROES.find((h) => h.id === id)!;
+      expect(hero.strengths, `${hero.name} deals no fire`).toContain('fire');
+      expect([hero.bane, hero.fault], `${hero.name} does not bleed to air`).toContain('air');
+    }
+
+    const expected = HEROES.filter(
+      (h) => h.strengths.includes('fire') && (h.bane === 'air' || h.fault === 'air'),
+    );
+    expect(shown.length).toBe(expected.length);
+  });
+
+  it('is a toggle, and clearing it restores all 27', async () => {
+    const { container } = pick();
+    await clickBane('fire');
+    expect(ids(container).length).toBeLessThan(27);
+    await clickBane('fire');
+    expect(ids(container).length).toBe(27);
   });
 });
 

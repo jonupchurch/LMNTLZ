@@ -106,6 +106,25 @@ test.describe('the screen loads and shows the whole roster', () => {
     expect(name.y).toBeGreaterThan(marks.y + marks.height);
     expect(name.y + name.height).toBeLessThanOrEqual(box.y + box.height + 1);
 
+    /**
+     * **The commitment badge does not cover the marks.**
+     *
+     * It sat in the top-right corner, and `Striking I,II` on a 140px card is
+     * wide enough to run all the way back across the emblem and both Force
+     * badges — so a champion on two attack squads lost the three things that
+     * identify her, to a tag about where she happens to be. It reads perfectly
+     * in the DOM either way; two rectangles are the only evidence.
+     */
+    const badged = page.locator('[data-hero]:has([data-commitment])').first();
+    const badge = (await badged.locator('[data-commitment]').boundingBox())!;
+    const theirMarks = (await badged.locator('[data-hero-marks]').boundingBox())!;
+    const overlaps =
+      badge.x < theirMarks.x + theirMarks.width &&
+      badge.x + badge.width > theirMarks.x &&
+      badge.y < theirMarks.y + theirMarks.height &&
+      badge.y + badge.height > theirMarks.y;
+    expect(overlaps, 'the commitment badge is drawn over the corner marks').toBe(false);
+
     /* Three rune tracks, drawn, in the title card beside the reach. */
     const pips = card.locator('[data-rune-slot]');
     await expect(pips).toHaveCount(3);
