@@ -333,6 +333,33 @@ authoring job in the project.**
 
 ---
 
+## Phase 9: Two controls that were never built — added 2026-07-30 by the gap audit
+
+> ### A player cannot leave the starter league
+>
+> `POST /v1/me/starter/exit` is implemented, session-guarded, and requires an
+> explicit `acknowledged` in the body precisely because **leaving is permanent**.
+> `py tools/gap-audit.py` finds **no client caller**. The one-way door has no
+> handle on it.
+>
+> `GET /v1/matchmaking/config` is likewise uncalled, so the ambush percentage —
+> *"+2% per consecutive attack win, capped at 90%, **always displayed**"* — is not
+> displayed anywhere. Canon requires it to be visible; it never has been.
+>
+> Both are specified already. Neither was decomposed. See [`../GAPS.md`](../GAPS.md).
+
+- [ ] T058 [US3] **WIRING** — a **Leave the starter league** control calling `POST /v1/me/starter/exit` with `acknowledged`, from the matchmaking screen in `apps/client/src/features/attack/`
+- [ ] T059 [US3] Make the consequence explicit **before** the call, not after: permanent, no return, real opponents, and the ×1.5 income ends. The confirmation must not be the default action — this is the same shape as destroying a rune
+- [ ] T060 [US3] State the benefit honestly alongside the cost — **only ~11% of the ×1.5 is actual help**, the rest replaces dormant hold income. A player talked out of leaving by an inflated number was misled by us
+- [ ] T061 [US1] **WIRING** — call `GET /v1/matchmaking/config` and **display the ambush percentage**, which canon requires to be always visible, plus the exit threshold while the player is in the starter league
+- [ ] T062 Add the caller assertion in `apps/client/tests/attack/` for T058 and T061 — **assert the caller, then cut the wire and watch it fail**
+- [ ] T063 Confirm `GET /v1/me` has no caller and either wire it or **delete it** in `apps/api/src/auth/routes.ts`. Session bootstrap does not use it; a route nothing calls is a false signal in the audit
+
+**Checkpoint**: `py tools/gap-audit.py` reports no 009 route without a caller, and
+the ambush percentage is visible in the interface.
+
+---
+
 ## Notes
 
 - **The absolute bot count is a launch-tuning number with a derived floor.**

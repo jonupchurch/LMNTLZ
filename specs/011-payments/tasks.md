@@ -6,6 +6,24 @@
 [contracts/payments-api.md](contracts/payments-api.md) · [quickstart.md](quickstart.md) ·
 shared [specs/data-model.md](../data-model.md) § 5 · **features 005 and 010 complete**
 
+> ### ⚠️ T026 edits a screen no task creates — the store is feature 018
+>
+> This list has exactly one client task. **T026 says *"show the statement descriptor
+> at checkout, in `apps/client/src/features/store/Checkout…`"*, and nothing anywhere
+> creates `features/store/`.** `GET /v1/catalog`, `POST /v1/checkout` and
+> `GET /v1/me/entitlements` are all implemented and all had **no client caller** in
+> the 2026-07-30 gap audit. Nothing can be bought.
+>
+> Two things stay here because they are genuinely this feature's:
+> **T031** — the provider adapter. `apps/api/src/payments/vendor/` holds only a
+> mailer, `setRail()` is called by *tests only*, and `POST /checkout` raises
+> `NoRailError` in production. **This is the true blocker on revenue, not the
+> screen.**
+> **T042** — the exact descriptor string, read from the live dashboard, never guessed.
+>
+> The store and checkout screens are [018 US2](../018-client-halves/spec.md), and
+> T026 is satisfied there. See [`../GAPS.md`](../GAPS.md).
+
 **Tests**: **Included.** Retries are the **normal case**, so exactly-once is not an
 edge case here — and granting twice is a revenue defect and a support case at once.
 

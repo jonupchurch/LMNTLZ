@@ -6,14 +6,23 @@ exists before the specs do. Its job is to make the shared models and the build
 order visible on paper, which is the whole point of planning the set rather than
 the feature.
 
-> **Two documents were added after the lock and are deliberately outside it.**
-> [`017-design-port`](017-design-port/spec.md) is a presentation layer over
-> features already specified, not new product scope. [`GAPS.md`](GAPS.md) is the
-> gap register — **every route that is built, deployed and unreachable**, with the
-> evidence and an owner for each. Regenerate its route numbers with
-> `py tools/gap-audit.py`. Read the register before picking up new work; it is the
-> answer to *"what is actually missing?"* and it is checkable rather than
-> remembered.
+> **Three documents were added after the lock and are deliberately outside it.**
+> Neither feature adds product scope; both supply layers the locked set assumed and
+> never decomposed.
+>
+> - [`017-design-port`](017-design-port/spec.md) — the twenty finished screen
+>   designs, the type that was declared and never loaded, and the component layer
+>   every later screen should be built on.
+> - [`018-client-halves`](018-client-halves/spec.md) — the Rune Forge, the store and
+>   the replay viewer. Three screens over backends that are already shipped, tested
+>   and deployed, whose own features specified the player action and decomposed only
+>   the server.
+> - [`GAPS.md`](GAPS.md) — the gap register: **every route that is built, deployed
+>   and unreachable**, with evidence and an owner for each. Regenerate its numbers
+>   with `py tools/gap-audit.py`.
+>
+> **Read the register before picking up new work.** It is the answer to *"what is
+> actually missing?"* and it is checkable rather than remembered.
 
 ## What is in, and what is not
 

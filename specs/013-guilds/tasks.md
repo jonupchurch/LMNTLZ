@@ -370,6 +370,49 @@ is deferred.
 
 ---
 
+## Phase 8: The officer half — added 2026-07-30 by the gap audit
+
+> ### Recruitment is one-directional and has been since 013 shipped
+>
+> `py tools/gap-audit.py` diffs every API route against every path the client can
+> request. Six of 013's routes have **no caller at all**:
+>
+> ```
+> GET  /guilds/:id/applications     an officer cannot see who applied
+> POST /applications/:id/accept     AN APPLICATION CAN NEVER BE ACCEPTED
+> POST /applications/:id/dismiss    nor declined
+> POST /guilds/:id/invites          an invitation cannot be sent
+> PUT  /guilds/:id/pitch            the recruiting pitch cannot be edited
+> GET  /guilds/:id                  a guild has no page of its own
+> ```
+>
+> Every one is implemented, authorised (`Officers and above only.`) and tested. The
+> client built the **applicant's** side completely — browse, apply, view, withdraw —
+> and none of the **officer's**. So today a player applies, no one can see it, and
+> the application is swept after seven days.
+>
+> **The path-only audit missed this.** `GET /guilds/:id/applications` looked called,
+> because the client POSTs to that same path to *apply*. Only matching on
+> (verb, path) separates applying from reading your applicants — which is why the
+> tool is verb-aware and why that is documented in its header.
+>
+> This is FR-008 and FR-011 — already specified, never decomposed. See
+> [`../GAPS.md`](../GAPS.md).
+
+- [ ] T071 [US2] **WIRING** — an **Applicants** panel in `apps/client/src/features/guilds/` calling `GET /v1/guilds/:id/applications`, rendered from `GuildScreen.tsx` for master and officer only. Members must not see it
+- [ ] T072 [US2] **WIRING** — Accept and Decline controls on each applicant calling `POST /v1/applications/:id/accept` and `/dismiss`, refetching the roster afterwards rather than patching it from the response
+- [ ] T073 [US2] Show **first-acceptance-wins** in the interface: an applicant accepted elsewhere disappears on the next load, and the copy must read as *"they joined another guild"* rather than as an error
+- [ ] T074 [US2] Refuse Accept at 24 members **before** the request, with the seat count visible, so a full guild never sends a call it knows will fail
+- [ ] T075 [US3] **WIRING** — an **Invite** control calling `POST /v1/guilds/:id/invites`, master and officer only
+- [ ] T076 [US3] **WIRING** — a pitch editor calling `PUT /v1/guilds/:id/pitch` from `GuildRoster.tsx`, beside the emblem editor that already exists
+- [ ] T077 [US1] **WIRING** — a guild page over `GET /v1/guilds/:id`, linked from `GuildBrowser.tsx`, so a guild can be read before applying to it
+- [ ] T078 Add the caller assertion to `apps/client/tests/guilds/` for T071–T077 — **assert the caller, then cut the wire and watch it fail.** A rendering test cannot tell a wired control from an unwired one
+- [ ] T079 **Delete `GET /v1/invites`** in `apps/api/src/guilds/routes.ts` — invitations arrive inside `/me/guild` and always have. A second route nothing calls is a maintenance cost and a false signal in the audit
+
+**Checkpoint**: `py tools/gap-audit.py` reports no 013 route without a caller.
+
+---
+
 ## Notes
 
 - **The succession fee is not revenue.** It prices a manual support ticket, makes

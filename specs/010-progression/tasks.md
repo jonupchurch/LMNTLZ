@@ -6,6 +6,21 @@
 [contracts/progression-api.md](contracts/progression-api.md) · [quickstart.md](quickstart.md) ·
 shared [specs/data-model.md](../data-model.md) §§ 5–6 · **features 005, 007, 008 and 009 complete**
 
+> ### ⚠️ This list has ZERO client tasks — the Forge is feature 018
+>
+> US1 is *"a player wins battles, accumulates shards, and **commits them to
+> runes**"* and US2 is *"a player replacing a rune **is told plainly** that the
+> existing one is destroyed"*. Both describe a screen. **Not one task below touches
+> `apps/client`.**
+>
+> `POST /v1/heroes/:id/runes/:slot` is implemented and tested; the 2026-07-30 gap
+> audit found **no client caller**, and `LMNTLZ Rune Forge.dc.html` is a finished
+> design no task ever referenced. Runes — the game's whole permanent-progression
+> system — are unreachable, which also means **gear score never moves and every
+> player stays in Bronze**.
+>
+> The Forge is [018 US1](../018-client-halves/spec.md). See [`../GAPS.md`](../GAPS.md).
+
 **Tests**: **Included.** The cap's three behaviours are written as **three separate
 tests** — they differ, and a single "at the cap" test would pass while implementing
 only one of them.

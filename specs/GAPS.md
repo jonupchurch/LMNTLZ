@@ -146,22 +146,39 @@ From 017's inventory. Five exports have no client surface:
 
 ---
 
-## What is unowned
+## What was unowned — closed 2026-07-30
 
-Everything above has an owner except these. **They are the only genuinely unspecified
-work**, and they cluster:
+Every gap above now has a home. The decomposition was added the same day the audit
+ran, before any further development, so nothing here is waiting on a decision.
 
-1. **The client half of 008, 010 and 011** — a replay viewer, the Rune Forge, and a
-   store with a checkout. Three screens over three shipped, tested backends. Two of
-   the three have finished designs.
-2. **The officer half of 013** — inbound applications, invitations, the guild page
-   and the pitch editor. Pure wiring: every route exists.
-3. **The starter-league exit and the matchmaking config readout** (009). Two
-   controls; both routes exist.
-4. **THE COURT** — named in the rail of nearly every design, with no design of its
-   own. Needs designing before it can be specified.
+| Gap | Now owned by |
+|---|---|
+| Replay viewer · Rune Forge · store + checkout | **[018 US3 · US1 · US2](018-client-halves/spec.md)** — three screens over shipped backends |
+| Officer half of 013 — applicants, accept, dismiss, invites, pitch, guild page | **[013 Phase 8](013-guilds/tasks.md)** (T071–T079) |
+| Starter-league exit · matchmaking config readout | **[009 Phase 9](009-matchmaking/tasks.md)** (T058–T063) |
+| Dead routes `/invites`, `/me` | 013 T079 · 009 T063 — **delete, don't wire** |
+| Dead route `/me/battles` | 018 US3 decides: the viewer either uses it or it goes |
+| Payment provider adapter | **011 T031** — unchanged, and the real blocker on revenue |
+| Cron for all three jobs | **016 T034 / T037** — unchanged |
+| Codex | **017 US5** |
+
+**008, 010 and 011 now carry a warning at the top of their task lists** saying which
+of their user stories their own tasks cannot deliver, and where the work went. A
+fully-checked list should not read as a delivered feature.
+
+## Still genuinely open — these need a decision, not a task
+
+1. **`THE COURT` has no design.** Named in the rail of nearly every export; no export
+   of its own. *Court-Champion* is a league name, not a place.
+2. **⛔ The store has no design either** — and it is the only screen that takes
+   money. Twenty exports and not one is a store, shop, checkout or pricing screen.
+   018 US2 specifies its **behaviour** completely; its appearance comes from 017's
+   component layer because there is nothing to port.
+
+Both are design work, so neither can be closed by specifying harder.
 
 ## Reading order
 
 `specs/README.md` for the feature index · `specs/017-design-port/spec.md` for the
-component layer these screens would be built on · this file for what is missing.
+component layer these screens are built on · `specs/018-client-halves/spec.md` for
+the three screens · this file for what is missing and why.

@@ -6,6 +6,17 @@
 [contracts/replays-api.md](contracts/replays-api.md) · [quickstart.md](quickstart.md) ·
 shared [specs/data-model.md](../data-model.md) § 4 · **features 006 and 007 complete**
 
+> ### ⚠️ US2's client half is not in this list — it is feature 018
+>
+> **US2 is *"a player watches a recent battle"* and every task below it is
+> server-side.** `GET /v1/replays/:id` is implemented, access-controlled and tested,
+> and the 2026-07-30 gap audit found **no client caller**: there is no viewer, and
+> no task here ever asked for one. The story could never have been delivered by
+> this list.
+>
+> The viewer is [018 US3](../018-client-halves/spec.md). This note stays so nobody
+> reads a fully-checked list as a delivered user story. See [`../GAPS.md`](../GAPS.md).
+
 **Tests**: **Included.** The metadata-row test is written as a **schema
 assertion**, not field-by-field — a field-by-field test grows a hole the moment
 someone adds a column and forgets it.
