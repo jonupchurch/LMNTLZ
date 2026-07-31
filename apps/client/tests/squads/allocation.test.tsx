@@ -41,17 +41,28 @@ describe('the roster shows all 27, always', () => {
   });
 
   it('names the zone a defender is committed to, not merely that she is busy', () => {
-    render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
-    expect(screen.getAllByText(/Defending · Zone I$/).length).toBe(6);
-    expect(screen.getAllByText(/Defending · Zone II$/).length).toBe(6);
+    const { container } = render(
+      <RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />,
+    );
+    expect(screen.getAllByText('In squad I').length).toBe(6);
+    expect(screen.getAllByText('In squad II').length).toBe(6);
 
     /**
-     * **And the other two commitments, because an absent tag is not a state.**
-     * A player scanning 27 cards for somebody free has to be able to see
-     * *free* — a card that simply omits the line is indistinguishable from one
-     * whose line failed to render.
+     * **And the fifteen free ones carry no badge at all.**
+     *
+     * This replaced an `UNASSIGNED` label on every free card. The reasoning for
+     * that label was that an absent tag is indistinguishable from a tag that
+     * failed to render — true while the badge was the only thing in that
+     * corner, and no longer true now the card also draws marks, a name, rune
+     * pips and a reach.
+     *
+     * Counting the badges rather than searching for absent text is what keeps
+     * this honest: it proves fifteen cards *have no badge*, where
+     * `queryByText('Unassigned')` returning null would also be satisfied by a
+     * picker that rendered nothing whatsoever.
      */
-    expect(screen.getAllByText(/Unassigned/).length).toBe(27 - 12);
+    expect(container.querySelectorAll('[data-commitment]').length).toBe(12);
+    expect(container.querySelectorAll('[data-hero]').length).toBe(27);
   });
 
   /**

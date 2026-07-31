@@ -43,7 +43,7 @@ test.describe('the screen loads and shows the whole roster', () => {
    * cards shipped as bare illustrations. Bounding boxes are the only thing
    * that can tell the difference.
    */
-  test('shows the name, reach and Force ON the card rather than under it', async ({ page }) => {
+  test('shows the name and reach ON the card rather than under it', async ({ page }) => {
     await mockApi(page);
     await page.goto('/');
 
@@ -52,7 +52,7 @@ test.describe('the screen loads and shows the whole roster', () => {
     const box = await card.boundingBox();
     expect(box, 'the first champion card has no layout box at all').not.toBeNull();
 
-    for (const label of [nameOf(IDS[0]!), 'R1', 'BANE']) {
+    for (const label of [nameOf(IDS[0]!), 'R1']) {
       const inside = card.getByText(new RegExp(label, 'i')).first();
       await expect(inside).toBeVisible();
 
@@ -67,6 +67,52 @@ test.describe('the screen loads and shows the whole roster', () => {
       ).toBe(true);
       expect(at!.y).toBeGreaterThanOrEqual(box!.y - 1);
     }
+  });
+
+  /**
+   * **The corner marks are in the corner, and the title card is below the art.**
+   *
+   * These are the two placement claims 019 makes about this card, and a browser
+   * is the only thing that can check either. Every arrangement of these elements
+   * produces the same DOM in the same order — the marks overlay the art by
+   * absolute positioning and the strip is in normal flow, and a single wrong
+   * `position` collapses them into one column that still passes every unit test
+   * and every `toBeVisible()`.
+   */
+  test('puts the marks in the upper-left corner and the title card under the art', async ({
+    page,
+  }) => {
+    await mockApi(page);
+    await page.goto('/');
+
+    const card = page.locator('[data-hero]').first();
+    const box = (await card.boundingBox())!;
+
+    const marks = (await card.locator('[data-hero-marks]').boundingBox())!;
+    expect(marks, 'the mark cluster has no box').not.toBeNull();
+
+    /* Upper-left quadrant of the card, with a pixel of slack for rounding. */
+    expect(marks.y).toBeLessThan(box.y + box.height / 2);
+    expect(marks.x).toBeLessThan(box.x + box.width / 2);
+    expect(marks.x).toBeGreaterThanOrEqual(box.x - 1);
+    expect(marks.y).toBeGreaterThanOrEqual(box.y - 1);
+
+    /**
+     * The name sits **below** the marks rather than beside them — that is the
+     * difference between a title card under the art and a single stacked
+     * column, and it is invisible to everything but a layout engine.
+     */
+    const name = (await card.getByText(nameOf(IDS[0]!)).first().boundingBox())!;
+    expect(name.y).toBeGreaterThan(marks.y + marks.height);
+    expect(name.y + name.height).toBeLessThanOrEqual(box.y + box.height + 1);
+
+    /* Three rune tracks, drawn, in the title card beside the reach. */
+    const pips = card.locator('[data-rune-slot]');
+    await expect(pips).toHaveCount(3);
+    const pip = (await pips.first().boundingBox())!;
+    expect(pip.height, 'a rune pip with no height is not a pip').toBeGreaterThan(0);
+    expect(pip.y).toBeGreaterThan(name.y);
+    expect(pip.y + pip.height).toBeLessThanOrEqual(box.y + box.height + 1);
   });
 
   test('states the pool and the ambush chance', async ({ page }) => {
@@ -161,13 +207,24 @@ test.describe('moving a champion who is in all three attack squads', () => {
 
 test.describe('an incomplete zone says so (FR-011)', () => {
   test('reports that it cannot defend rather than defending short', async ({ page }) => {
-    const payload = rosterPayload();
-    payload.assignments.defense.visible = {
-      ...payload.assignments.defense.visible,
-      seats: payload.assignments.defense.visible.seats.slice(0, 5),
-      canDefend: false,
-      reason: 'Your visible zone has 5 of 6 champions and cannot defend.',
-    } as typeof payload.assignments.defense.visible;
+    /* Rebuilt rather than mutated: the wire shape is `readonly` all the way
+       down, which is the point of typing the fixture at all. */
+    const base = rosterPayload();
+    const payload: typeof base = {
+      ...base,
+      assignments: {
+        ...base.assignments,
+        defense: {
+          ...base.assignments.defense,
+          visible: {
+            ...base.assignments.defense.visible,
+            seats: base.assignments.defense.visible.seats.slice(0, 5),
+            canDefend: false,
+            reason: 'Your visible zone has 5 of 6 champions and cannot defend.',
+          },
+        },
+      },
+    };
 
     await mockApi(page, { roster: payload });
     await page.goto('/');

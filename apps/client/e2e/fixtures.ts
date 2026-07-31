@@ -9,7 +9,12 @@
 import type { Page } from '@playwright/test';
 import { getAllHeroes } from '@lmntlz/content';
 import { HP_PER_TOUGHNESS } from '@lmntlz/sim/rules';
-import type { HeroState } from '@lmntlz/sim/rules';
+import type { HeroState, Seat } from '@lmntlz/sim/rules';
+import type {
+  ConfiguredSeat,
+  RosterResponse,
+  SeatConfigWire,
+} from '../src/features/squads/types.js';
 
 export const HEROES = getAllHeroes();
 export const IDS = HEROES.map((h) => h.id);
@@ -70,33 +75,50 @@ export function board() {
  * `'whatever'` would render perfectly and be rejected by the only request that
  * matters.
  */
-const CONFIG = {
+const CONFIG: SeatConfigWire = {
   targeting: ['lowest-current-hp', 'nearest'],
   ranking: [5, 4, 3, 2, 1, 0],
   allyRule: 'lowest-hp-percentage',
 };
 
 /** Offense seats carry no config — the player commands offense. */
-const seats = (ids: readonly string[]) => [
-  { row: 'front', index: 0, heroId: ids[0] },
-  { row: 'front', index: 1, heroId: ids[1] },
-  { row: 'middle', index: 0, heroId: ids[2] },
-  { row: 'middle', index: 1, heroId: ids[3] },
-  { row: 'middle', index: 2, heroId: ids[4] },
-  { row: 'back', index: 0, heroId: ids[5] },
+const seats = (ids: readonly string[]): Seat[] => [
+  { row: 'front', index: 0, heroId: ids[0]! },
+  { row: 'front', index: 1, heroId: ids[1]! },
+  { row: 'middle', index: 0, heroId: ids[2]! },
+  { row: 'middle', index: 1, heroId: ids[3]! },
+  { row: 'middle', index: 2, heroId: ids[4]! },
+  { row: 'back', index: 0, heroId: ids[5]! },
 ];
 
 /** Defense seats do, and the editor is unusable without them. */
-const defenseSeats = (ids: readonly string[]) =>
+const defenseSeats = (ids: readonly string[]): ConfiguredSeat[] =>
   seats(ids).map((seat) => ({ ...seat, config: CONFIG }));
 
-/** Both zones full, three overlapping attack squads — the ordinary end state. */
-export function rosterPayload(over: { visibleSeats?: unknown[] } = {}) {
+/**
+ * Both zones full, three overlapping attack squads — the ordinary end state.
+ *
+ * **Typed as the wire shape, and `e2e/` is in the typecheck now so that means
+ * something.** It was an untyped literal, and this directory was in no
+ * `tsconfig` at all — so a field added to `RosterResponse` and forgotten here
+ * would reach the browser as `undefined` with every Playwright assertion still
+ * green, because none of them look at the field nobody remembered to add.
+ */
+export function rosterPayload(over: { visibleSeats?: ConfiguredSeat[] } = {}): RosterResponse {
   const free = IDS.slice(12);
   const shared = free[0]!;
 
   return {
     heroes: HEROES,
+    /**
+     * Rune stages for all 27, varied so both an invested champion and an
+     * untouched one are on screen at once. A uniform fixture would be satisfied
+     * by a pip that never lights *and* by one that always does.
+     */
+    runes: HEROES.map((hero, i) => ({
+      heroId: hero.id,
+      stages: [i % 5, (i * 2) % 5, i % 3 === 0 ? 4 : 0],
+    })),
     assignments: {
       defense: {
         visible: {

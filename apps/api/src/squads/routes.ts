@@ -32,6 +32,7 @@ import { serializeScoutView } from './scoutSerializer.js';
 import { ambushChance, ambushConfig } from './ambush.js';
 import { warningsFor } from './warnings.js';
 import { needsAllyRule } from '@lmntlz/sim/ai';
+import { ownedRunes } from '../progression/read.js';
 import {
   HeroUnavailableError,
   InvalidSquadError,
@@ -242,8 +243,29 @@ squadRoutes.get('/roster', async (c) => {
     .limit(1);
   const attackStreak = streakRow?.attackStreak ?? 0;
 
+  /**
+   * **Three stages per champion, and deliberately nothing else** (019).
+   *
+   * The squad screen draws three pips on each card so a player choosing between
+   * two champions can see which one they have actually invested in — the single
+   * fact that separates two otherwise identical entries on a roster where
+   * everybody owns all 27. It needs *filled or empty*, so that is all that
+   * crosses: no allocations, no utility effect, no shard spend.
+   *
+   * **Read through `ownedRunes`, not off the table.** `stage` is one field, and
+   * a second query here would be a second read path for it — the Forge and this
+   * screen would disagree the first time an absent row stopped meaning zero.
+   * `slots` arrives in `RUNE_SLOTS` order, so index 0/1/2 is
+   * primary · secondary · common and the client needs no key.
+   */
+  const runeStages = (await ownedRunes(accountId)).map((hero) => ({
+    heroId: hero.heroId,
+    stages: hero.slots.map((slot) => slot.stage),
+  }));
+
   return c.json({
     heroes: roster,
+    runes: runeStages,
     assignments: { defense, offense },
     /**
      * **Three streaks, and they are named apart in the payload too** (FR-012).

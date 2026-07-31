@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes sb-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:760px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:56px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 22px">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.18em;color:#F4EFE4">LMNTLZ</div>
+      <div style="width:1px;height:20px;background:#3A3357"></div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;letter-spacing:0.1em;color:#B4AECB">SQUADS</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#F2C744">◈ 2 480</div>
+      <div style="display:flex;align-items:center;gap:9px;padding-left:16px;border-left:1px solid #241F38"><div style="width:26px;height:26px;border-radius:7px;background:#241F38;border:1px solid #3A3357"></div><span style="font-size:12.5px;color:#B4AECB">jonupchurch</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="width:212px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;padding:16px 12px;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;background:#241F38;border-left:2px solid #F2C744;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#F2C744"><div style="width:14px;height:14px;border-radius:4px;background:#F2C744"></div>SQUADS</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>ROSTER<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">27</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>MATCHMAKING</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.08em;color:#B4AECB" style-hover="background:#1C1930;color:#F4EFE4"><div style="width:14px;height:14px;border-radius:4px;background:#3A3357"></div>THE COURT</div>
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid #241F38">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690;margin-bottom:9px">SAVED LOADOUTS</div>
+        <sc-for list="{{ loadouts }}" as="l" hint-placeholder-count="3">
+          <div onClick="{{ l.load }}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;background:{{ l.bg }};border:1px solid {{ l.border }};cursor:pointer;margin-bottom:5px" style-hover="border-color:#57507A">
+            <div style="width:6px;height:6px;border-radius:50%;background:{{ l.dot }}"></div>
+            <span style="font-size:12px;color:#EDEAF6;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.name }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690">{{ l.mode }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #241F38;padding-top:14px">
+        <div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#4E7C3A"><div style="width:7px;height:7px;border-radius:50%;background:#4E7C3A"></div>CONNECTED · 38ms</div>
+      </div>
+    </div>
+
+    <div style="flex:1 1 auto;min-width:748px;display:flex;flex-direction:column;min-height:0">
+
+      <div style="flex:0 0 auto;padding:18px 24px 16px;border-bottom:1px solid #241F38">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-width:0">
+            <div style="display:inline-flex;background:#1C1930;border:1px solid #3A3357;border-radius:8px;padding:3px;gap:3px">
+              <div onClick="{{ setAttack }}" style="padding:8px 16px;border-radius:6px;background:{{ atkBg }};color:{{ atkColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.1em;white-space:nowrap">THE STRIKING SIX</div>
+              <div onClick="{{ setDefense }}" style="padding:8px 16px;border-radius:6px;background:{{ defBg }};color:{{ defColor }};cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.1em;white-space:nowrap">THE STANDING SIX</div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <sc-for list="{{ squadTabs }}" as="t" hint-placeholder-count="3">
+                <div onClick="{{ t.pick }}" style="display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;border:1px solid {{ t.border }};background:{{ t.bg }};cursor:pointer" style-hover="border-color:#57507A">
+                  <span style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.08em;color:{{ t.color }}">{{ t.label }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ t.countColor }}">{{ t.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <input type="text" value="{{ squadName }}" onInput="{{ onName }}" style="background:transparent;border:none;border-bottom:1px solid #3A3357;outline:none;color:#F4EFE4;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.04em;padding:5px 2px;width:190px;max-width:100%;flex:0 1 190px;min-width:120px" />
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-width:0">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8;white-space:nowrap"><span style="font-weight:700;font-size:16px;color:{{ countColor }}">{{ filledCount }}</span> / 6 PLACED</div>
+            <div onClick="{{ autoFill }}" style="height:36px;padding:0 14px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#57507A;color:#F4EFE4">AUTO-FILL</div>
+            <div onClick="{{ clearSquad }}" style="height:36px;padding:0 14px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.1em;color:#B4AECB;white-space:nowrap" style-hover="border-color:#C0313A;color:#F06A72">CLEAR</div>
+            <div style="height:36px;padding:0 20px;border-radius:7px;background:{{ ctaBg }};border:1px solid {{ ctaBorder }};display:flex;align-items:center;cursor:pointer;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.1em;color:{{ ctaColor }};white-space:nowrap" style-hover="filter:brightness(1.08)">{{ ctaText }}</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#8E87A8;margin-top:10px">{{ modeNote }}</div>
+      </div>
+
+      <div style="flex:0 0 auto;padding:18px 24px 20px;border-bottom:1px solid #241F38;background:radial-gradient(120% 140% at 22% 0%,rgba(122,63,160,0.1),transparent 60%)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">FORMATION · 1 BACK / 3 MIDDLE / 2 FRONT · ROWS 1–6 ON ONE AXIS</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ reachNoteColor }}">{{ reachNote }}</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap">
+
+          <div style="flex:0 0 138px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:7px">ROW 1 · BACK</div>
+            <sc-for list="{{ row1 }}" as="s" hint-placeholder-count="1">
+              <div onClick="{{ s.click }}" onDragOver="{{ s.dragOver }}" onDrop="{{ s.drop }}" onMouseEnter="{{ s.enter }}" onMouseLeave="{{ s.leave }}" style="height:210px;border-radius:10px;border:2px {{ s.borderStyle }} {{ s.border }};background:{{ s.bg }};background-image:{{ s.image }};background-size:cover;background-position:50% 6%;position:relative;cursor:pointer;overflow:hidden;box-shadow:{{ s.shadow }}" style-hover="border-color:#F2C744">
+                <div style="position:absolute;inset:0;background:{{ s.scrim }}"></div>
+                <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ true }}">
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:12px">
+                    <div style="width:30px;height:30px;border-radius:8px;border:1px dashed #57507A"></div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;line-height:1.6;color:#6E6690">AN OPEN PLACE<br />AT THE WALL</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ s.filled }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:7px;left:7px;width:26px;height:26px;background-image:{{ s.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 6px rgba(14,12,23,.85))"></div>
+                  <div style="position:absolute;top:7px;right:7px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:{{ s.reachColor }};background:rgba(14,12,23,.8);border:1px solid {{ s.reachColor }};border-radius:4px;padding:2px 5px">R{{ s.reach }}</div>
+                  <div style="position:absolute;left:0;right:0;bottom:0;padding:8px 9px">
+                    <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.15">{{ s.name }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:{{ s.targetColor }};margin-top:4px">{{ s.targets }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="flex:0 0 138px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:7px">ROW 2 · MIDDLE</div>
+            <div style="display:grid;gap:6px">
+              <sc-for list="{{ row2 }}" as="s" hint-placeholder-count="3">
+                <div onClick="{{ s.click }}" onDragOver="{{ s.dragOver }}" onDrop="{{ s.drop }}" onMouseEnter="{{ s.enter }}" onMouseLeave="{{ s.leave }}" style="height:66px;border-radius:9px;border:2px {{ s.borderStyle }} {{ s.border }};background:{{ s.bg }};background-image:{{ s.image }};background-size:cover;background-position:50% 8%;position:relative;cursor:pointer;overflow:hidden;box-shadow:{{ s.shadow }}" style-hover="border-color:#F2C744">
+                  <div style="position:absolute;inset:0;background:{{ s.scrim }}"></div>
+                  <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ true }}">
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#6E6690">EMPTY SEAT</div>
+                  </sc-if>
+                  <sc-if value="{{ s.filled }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:5px;left:5px;width:20px;height:20px;background-image:{{ s.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 5px rgba(14,12,23,.85))"></div>
+                    <div style="position:absolute;top:5px;right:5px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:{{ s.reachColor }};background:rgba(14,12,23,.8);border-radius:3px;padding:1px 4px">R{{ s.reach }}</div>
+                    <div style="position:absolute;left:0;right:0;bottom:0;padding:5px 7px">
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;color:#F4EFE4;line-height:1.1">{{ s.name }}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:{{ s.targetColor }};margin-top:2px">{{ s.targets }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex:0 0 138px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#4FC3D6;margin-bottom:7px">ROW 3 · FRONT</div>
+            <div style="display:grid;gap:6px">
+              <sc-for list="{{ row3 }}" as="s" hint-placeholder-count="2">
+                <div onClick="{{ s.click }}" onDragOver="{{ s.dragOver }}" onDrop="{{ s.drop }}" onMouseEnter="{{ s.enter }}" onMouseLeave="{{ s.leave }}" style="height:102px;border-radius:9px;border:2px {{ s.borderStyle }} {{ s.border }};background:{{ s.bg }};background-image:{{ s.image }};background-size:cover;background-position:50% 6%;position:relative;cursor:pointer;overflow:hidden;box-shadow:{{ s.shadow }}" style-hover="border-color:#F2C744">
+                  <div style="position:absolute;inset:0;background:{{ s.scrim }}"></div>
+                  <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ true }}">
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#6E6690">EMPTY SEAT</div>
+                  </sc-if>
+                  <sc-if value="{{ s.filled }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:6px;left:6px;width:22px;height:22px;background-image:{{ s.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 5px rgba(14,12,23,.85))"></div>
+                    <div style="position:absolute;top:6px;right:6px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:{{ s.reachColor }};background:rgba(14,12,23,.8);border-radius:3px;padding:1px 4px">R{{ s.reach }}</div>
+                    <div style="position:absolute;left:0;right:0;bottom:0;padding:6px 8px">
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;color:#F4EFE4;line-height:1.1">{{ s.name }}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:{{ s.targetColor }};margin-top:3px">{{ s.targets }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px">
+            <div style="width:2px;flex:1;background:linear-gradient(180deg,transparent,#F2C744,transparent)"></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.16em;color:#F2C744;writing-mode:vertical-rl;padding:10px 0">CONTACT LINE</div>
+            <div style="width:2px;flex:1;background:linear-gradient(180deg,transparent,#F2C744,transparent)"></div>
+          </div>
+
+          <div style="flex:1 1 220px;min-width:0">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690;margin-bottom:7px">ENEMY ROWS 4–6 · REACHABILITY PREVIEW</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;height:210px">
+              <sc-for list="{{ enemyRows }}" as="e" hint-placeholder-count="3">
+                <div style="border-radius:9px;border:2px {{ e.borderStyle }} {{ e.border }};background:{{ e.bg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;text-align:center">
+                  <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:{{ e.color }}">{{ e.row }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:{{ e.color }};line-height:1.5">{{ e.label }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#57507A">{{ e.slots }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column">
+        <div style="flex:0 0 auto;padding:14px 24px 12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690">PICKER</div>
+          <div style="display:flex;align-items:center;gap:9px;height:32px;border-radius:7px;background:#1C1930;border:1px solid #3A3357;padding:0 11px;flex:0 1 220px">
+            <div style="width:11px;height:11px;border:2px solid #8E87A8;border-radius:50%;flex:0 0 auto"></div>
+            <input type="text" placeholder="Search champions" value="{{ query }}" onInput="{{ onQuery }}" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#F4EFE4;font-family:Barlow,sans-serif;font-size:13px" />
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <sc-for list="{{ typeChips }}" as="t" hint-placeholder-count="9">
+              <div onClick="{{ t.toggle }}" style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:99px;border:1px solid {{ t.border }};background:{{ t.bg }};cursor:pointer" style-hover="border-color:{{ t.core }}">
+                <div style="width:8px;height:8px;border-radius:50%;background:{{ t.core }}"></div>
+                <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:9.5px;letter-spacing:0.06em;color:{{ t.label }}">{{ t.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;padding-left:12px;border-left:1px solid #241F38">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690">COVERS BANE</span>
+            <div style="display:flex;gap:4px">
+              <sc-for list="{{ counterChips }}" as="c" hint-placeholder-count="9">
+                <div onClick="{{ c.pick }}" style="width:20px;height:20px;border-radius:5px;background:{{ c.bg }};border:1px solid {{ c.border }};cursor:pointer" style-hover="border-color:#F4EFE4"></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6E6690">{{ pickerCount }}</div>
+        </div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:0 24px 26px;min-height:120px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px">
+            <sc-for list="{{ picker }}" as="p" hint-placeholder-count="14">
+              <div draggable="true" onDragStart="{{ p.dragStart }}" onClick="{{ p.click }}" onMouseEnter="{{ p.enter }}" onMouseLeave="{{ p.leave }}" style="border:1px solid {{ p.border }};border-radius:9px;background:#1C1930;overflow:hidden;cursor:grab;opacity:{{ p.opacity }};position:relative" style-hover="transform:translateY(-2px);border-color:{{ p.core }}">
+                <div style="position:relative;height:112px;background-image:url('{{ p.img }}');background-size:cover;background-position:50% 5%;background-color:#241F38">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,23,.2) 0%,rgba(14,12,23,0) 45%,rgba(28,25,48,.95) 100%)"></div>
+                  <div style="position:absolute;top:5px;left:5px;width:20px;height:20px;background-image:{{ p.typeBadgeUrl }};background-size:contain;background-repeat:no-repeat"></div>
+                  <sc-if value="{{ p.placed }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:5px;right:5px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:#141221;background:#F2C744;border-radius:3px;padding:2px 4px">IN SQUAD</div>
+                  </sc-if>
+                </div>
+                <div style="padding:7px 8px">
+                  <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;color:#F4EFE4;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#8E87A8">{{ p.typeName }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:{{ p.reachColor }}">R{{ p.reach }}</span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:330px;flex:0 0 auto;background:#141221;border-left:1px solid #241F38;overflow-y:auto;padding:18px 18px 28px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.06em;color:#F4EFE4;margin-bottom:4px">SQUAD READOUT</div>
+      <div style="font-size:12.5px;color:#8E87A8;margin-bottom:18px">{{ verdict }}</div>
+
+      <div style="padding:12px 14px;border-radius:8px;border-left:3px solid {{ warnColor }};background:#1C1930;margin-bottom:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:{{ warnColor }};margin-bottom:6px">{{ warnLabel }}</div>
+        <div style="font-size:13px;line-height:1.55;color:#B4AECB">{{ warnText }}</div>
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">COLLECTIVE VULNERABILITY</div>
+      <div style="display:grid;gap:6px;margin-bottom:22px">
+        <sc-for list="{{ vulnRows }}" as="v" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="width:34px;font-family:'JetBrains Mono',monospace;font-size:9px;color:{{ v.labelColor }}">{{ v.abbr }}</div>
+            <div style="flex:1;height:14px;background:#241F38;border-radius:3px;overflow:hidden;display:flex">
+              <div style="width:{{ v.w }};height:14px;background:{{ v.fill }}"></div>
+            </div>
+            <div style="width:52px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#8E87A8;text-align:right">{{ v.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">DAMAGE COVERAGE</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+        <sc-for list="{{ coverChips }}" as="c" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:99px;border:1px solid {{ c.border }};background:{{ c.bg }}">
+            <div style="width:8px;height:8px;border-radius:50%;background:{{ c.core }};opacity:{{ c.dotOpacity }}"></div>
+            <span style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:9.5px;letter-spacing:0.06em;color:{{ c.label }}">{{ c.name }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:12.5px;color:#8E87A8;margin-bottom:22px">{{ coverNote }}</div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">TEMPO</div>
+      <div style="background:#1C1930;border:1px solid #241F38;border-radius:8px;padding:14px;margin-bottom:22px">
+        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-bottom:7px"><span>BURST</span><span>SUSTAIN</span></div>
+        <div style="height:8px;border-radius:99px;background:#241F38;position:relative">
+          <div style="position:absolute;left:{{ tempoPos }};top:-4px;width:16px;height:16px;border-radius:50%;background:#F2C744;border:3px solid #141221;margin-left:-8px"></div>
+        </div>
+        <div style="font-size:12.5px;line-height:1.55;color:#B4AECB;margin-top:12px">{{ tempoNote }}</div>
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">REACH DISTRIBUTION</div>
+      <div style="display:grid;gap:7px">
+        <sc-for list="{{ reachRows }}" as="r" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:#B4AECB">
+            <div style="width:9px;height:9px;border-radius:50%;background:{{ r.dot }}"></div>
+            <span style="flex:1">{{ r.text }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:{{ r.dot }}">{{ r.n }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+const TYPES = {
+  earth:{name:"EARTH",abbr:"EARTH",core:"#4E7C3A",accent:"#C9922E"},
+  air:{name:"AIR",abbr:"AIR",core:"#8FCFE0",accent:"#DCE6EA"},
+  fire:{name:"FIRE",abbr:"FIRE",core:"#E8552B",accent:"#FFB347"},
+  water:{name:"WATER",abbr:"WATER",core:"#2A7FB8",accent:"#4FC3D6"},
+  light:{name:"LIGHT",abbr:"LIGHT",core:"#F2C744",accent:"#FFF6D6"},
+  dark:{name:"DARK",abbr:"DARK",core:"#7A3FA0",accent:"#C64BB0"},
+  slash:{name:"SLASH",abbr:"SLASH",core:"#C0313A",accent:"#F06A72"},
+  pierce:{name:"PIERCE",abbr:"PIERCE",core:"#3B5BD1",accent:"#7B93F0"},
+  crush:{name:"CRUSH",abbr:"CRUSH",core:"#B5732E",accent:"#E0A15A"}
+};
+const COUNTER = {earth:"air",air:"earth",fire:"water",water:"fire",light:"dark",dark:"light",slash:"crush",pierce:"slash",crush:"pierce"};
+const ROSTER = [
+  ["01-earth-bramwen","Bramwen","earth","fire",1,[0,3,0,5]],
+  ["02-earth-ossic","Ossic","earth","dark",2,[0,2,4]],
+  ["03-earth-terragosa","Terragosa","earth","light",2,[0,0,3,4,6]],
+  ["04-air-zephyrine","Zephyrine","air","light",2,[0,1,0,3]],
+  ["05-air-cirrolan","Cirrolan","air","water",2,[0,2,3]],
+  ["06-air-vael","Vael","air","dark",1,[0,0,4]],
+  ["07-fire-ember-saelith","Ember Saelith","fire","air",1,[0,2,0,4]],
+  ["08-fire-pyrrhic","Pyrrhic","fire","light",1,[0,3,5]],
+  ["09-fire-cindara","Cindara","fire","earth",2,[0,0,2,4]],
+  ["10-water-marisel","Marisel","water","dark",2,[0,2,3,5]],
+  ["11-water-tidewarden-coll","Tidewarden Coll","water","earth",1,[0,4,0]],
+  ["12-water-nix","Nix","water","air",2,[0,1,3,4,6]],
+  ["13-light-seraphel","Seraphel","light","fire",1,[0,3,0,5]],
+  ["14-light-lucen","Lucen","light","air",2,[0,2,4]],
+  ["15-light-auriel-dawnkeep","Auriel Dawnkeep","light","water",2,[0,0,3,6]],
+  ["16-dark-nyxara","Nyxara","dark","water",2,[0,2,0,4]],
+  ["17-dark-umbriel","Umbriel","dark","fire",1,[0,3,5]],
+  ["18-dark-corvane","Corvane","dark","earth",2,[0,1,2,4]],
+  ["19-slash-kaellis","Kaellis","slash","light",1,[0,0,2,4]],
+  ["20-slash-reyna","Reyna Two-Rivers","slash","water",1,[0,2,3]],
+  ["21-slash-grieve","Grieve","slash","dark",2,[0,3,5]],
+  ["22-pierce-vantric","Vantric","pierce","air",2,[0,1,0,3]],
+  ["23-pierce-silka","Silka Pinquick","pierce","dark",1,[0,0,2,3,5]],
+  ["24-pierce-aiguille","Lord Aiguille","pierce","light",2,[0,2,4]],
+  ["25-crush-boldrek","Boldrek","crush","light",1,[0,4,0]],
+  ["26-crush-hettamar","Hettamar Ironfall","crush","dark",1,[0,3,5]],
+  ["27-crush-mauless","Mauless","crush","earth",2,[0,2,4,6]]
+];
+const HEROES = {};
+ROSTER.forEach(r => {
+  const [slug,name,type,second,reach,powers] = r;
+  HEROES[slug] = {slug,name,type,second,reach,powers,bane:COUNTER[type],fault:COUNTER[second],
+    emblem:"hero-icons/" + slug.replace(/^\d+-/, "") + ".svg",
+    typeBadge:"damage-types/badge-" + type + ".svg",
+    img:"portraits/" + slug + ".png",
+    avgCd: powers.reduce((a,b)=>a+b,0) / powers.length};
+});
+// slot index → row: 0 = row1 back, 1..3 = row2 middle, 4..5 = row3 front
+const SLOT_ROW = [1,2,2,2,3,3];
+
+class Component extends DCLogic {
+  state = {
+    active: "a1",
+    lastByMode: { attack: "a1", defense: "d1" },
+    names: {
+      a1: "Read the Doors", a2: "Anti-Light Trial", a3: "Third Strike",
+      d1: "The Closed Wall", d2: "The Long Vigil"
+    },
+    squads: {
+      a1: ["16-dark-nyxara","04-air-zephyrine","22-pierce-vantric","08-fire-pyrrhic","19-slash-kaellis","02-earth-ossic"],
+      a2: ["18-dark-corvane","06-air-vael","23-pierce-silka","09-fire-cindara","20-slash-reyna",null],
+      a3: [null,null,null,null,null,null],
+      d1: ["03-earth-terragosa","10-water-marisel","14-light-lucen",null,"11-water-tidewarden-coll","26-crush-hettamar"],
+      d2: ["15-light-auriel-dawnkeep","12-water-nix","01-earth-bramwen","17-dark-umbriel","25-crush-boldrek","21-slash-grieve"]
+    },
+    selectedSlot: null, hoverSlot: null, hoverHero: null, dragging: null,
+    types: [], counter: null, query: ""
+  };
+
+  mode() { return this.state.active.charAt(0) === "d" ? "defense" : "attack"; }
+  squad() { return this.state.squads[this.state.active]; }
+  setSquad(next) {
+    this.setState(s => {
+      const squads = Object.assign({}, s.squads);
+      squads[s.active] = next;
+      return { squads: squads };
+    });
+  }
+  pickSquad(id) {
+    this.setState(s => {
+      const last = Object.assign({}, s.lastByMode);
+      last[id.charAt(0) === "d" ? "defense" : "attack"] = id;
+      return { active: id, lastByMode: last, selectedSlot: null };
+    });
+  }
+  place(slug, idx) {
+    const cur = this.squad().slice();
+    const existing = cur.indexOf(slug);
+    if (existing >= 0) cur[existing] = null;
+    cur[idx] = slug;
+    this.setSquad(cur);
+    this.setState({ selectedSlot: null, dragging: null });
+  }
+  slotClick(idx) {
+    const cur = this.squad();
+    if (cur[idx]) { const next = cur.slice(); next[idx] = null; this.setSquad(next); return; }
+    this.setState(s => ({ selectedSlot: s.selectedSlot === idx ? null : idx }));
+  }
+  heroClick(slug) {
+    const cur = this.squad();
+    if (cur.indexOf(slug) >= 0) { const next = cur.slice(); next[cur.indexOf(slug)] = null; this.setSquad(next); return; }
+    const idx = this.state.selectedSlot != null ? this.state.selectedSlot : cur.indexOf(null);
+    if (idx >= 0 && idx != null) this.place(slug, idx);
+  }
+  // occupied rows on the shared 1..6 axis; enemy rows always occupied in preview
+  occupied() {
+    const cur = this.squad();
+    const own = { 1: !!cur[0], 2: !!(cur[1] || cur[2] || cur[3]), 3: !!(cur[4] || cur[5]) };
+    return { 1: own[1], 2: own[2], 3: own[3], 4: true, 5: true, 6: true };
+  }
+  reachable(fromRow, reach) {
+    const occ = this.occupied(), out = [];
+    let d = 0;
+    for (let r = fromRow + 1; r <= 6; r++) {
+      if (!occ[r]) continue;
+      d += 1;
+      if (d <= reach) out.push(r); else break;
+    }
+    return out;
+  }
+  targetText(fromRow, reach) {
+    const rows = this.reachable(fromRow, reach);
+    const enemy = rows.filter(r => r >= 4);
+    if (!rows.length) return "REACHES NOTHING";
+    if (!enemy.length) return "OWN ROWS " + rows.join(",") + " ONLY";
+    return "HITS ROW " + enemy.join(",");
+  }
+  renderVals() {
+    const s = this.state, cur = this.squad(), self = this;
+    const filled = cur.filter(Boolean);
+    const heroes = filled.map(slug => HEROES[slug]);
+    const mode = this.mode(), isDef = mode === "defense";
+    const SQUAD_IDS = { attack: ["a1","a2","a3"], defense: ["d1","d2"] };
+    const LABELS = { a1: "I", a2: "II", a3: "III", d1: "A", d2: "B" };
+
+    // vulnerability: Bane = 2, Fault = 1
+    const vuln = {}; Object.keys(TYPES).forEach(k => vuln[k] = { bane: 0, fault: 0 });
+    heroes.forEach(h => { vuln[h.bane].bane += 1; vuln[h.fault].fault += 1; });
+    const worst = Object.keys(TYPES).reduce((a,k) => vuln[k].bane > vuln[a].bane ? k : a, "earth");
+    const covered = {}; heroes.forEach(h => covered[h.type] = true);
+    const coverCount = Object.keys(covered).length;
+    const avgCd = heroes.length ? heroes.reduce((a,h) => a + h.avgCd, 0) / heroes.length : 0;
+    const reach2 = heroes.filter(h => h.reach === 2).length;
+
+    const backHero = cur[0] ? HEROES[cur[0]] : null;
+    const trap = backHero && backHero.reach === 1;
+
+    let warnLabel = "CLOSED FORMATION", warnColor = "#4E7C3A",
+        warnText = "No shared door. Every Bane in this six is unique — nothing here bleeds twice to the same Force.";
+    if (filled.length < 6) { warnLabel = "INCOMPLETE"; warnColor = "#B5732E"; warnText = (6 - filled.length) + " open " + (6 - filled.length === 1 ? "place" : "places") + " at the wall. An unfilled seat is a row that empties early."; }
+    if (trap) { warnLabel = "REACH TRAP · ROW 1"; warnColor = "#B5732E"; warnText = backHero.name + " has reach 1 in the back seat — cannot attack, cannot reach the front line to help it. Allowed, but it is a sixth of your squad doing almost nothing."; }
+    if (vuln[worst].bane >= 3) { warnLabel = "SHARED BANE"; warnColor = "#C0313A"; warnText = vuln[worst].bane + " of yours bleed to the same Bane — " + TYPES[worst].name + ". A scout will read that in one glance."; }
+    else if (vuln[worst].bane === 2 && filled.length === 6 && !trap) { warnLabel = "MINOR OVERLAP"; warnColor = "#B5732E"; warnText = "Two of yours share a Bane in " + TYPES[worst].name + ". Survivable, but do not add a third."; }
+
+    const mkSlot = idx => {
+      const slug = cur[idx], row = SLOT_ROW[idx], h = slug ? HEROES[slug] : null;
+      const isSel = s.selectedSlot === idx;
+      const dragHero = s.dragging ? HEROES[s.dragging] : null;
+      const ghost = (s.hoverSlot === idx && (dragHero || (s.hoverHero && !h)));
+      return {
+        empty: !h, filled: !!h,
+        name: h ? h.name.toUpperCase() : "",
+        emblemUrl: h ? "url('" + h.emblem + "')" : "none",
+        reach: h ? h.reach : "",
+        reachColor: h && h.reach === 2 ? "#4FC3D6" : "#8E87A8",
+        targets: h ? self.targetText(row, h.reach) : "",
+        targetColor: h ? (self.reachable(row, h.reach).some(r => r >= 4) ? "#B4AECB" : "#E0A15A") : "#8E87A8",
+        image: h ? "url('" + h.img + "')" : "none",
+        bg: h ? "#241F38" : (isSel ? "rgba(242,199,68,.1)" : "rgba(28,25,48,.5)"),
+        scrim: h ? "linear-gradient(180deg,rgba(14,12,23,.2) 0%,rgba(14,12,23,0) 40%,rgba(20,18,33,.95) 100%)" : "none",
+        border: h ? TYPES[h.type].core : (isSel || ghost ? "#F2C744" : "#3A3357"),
+        borderStyle: h ? "solid" : "dashed",
+        shadow: h ? "0 0 14px " + TYPES[h.type].core + "44" : (isSel ? "0 0 16px rgba(242,199,68,.28)" : "none"),
+        click: () => self.slotClick(idx),
+        enter: () => self.setState({ hoverSlot: idx }),
+        leave: () => self.setState({ hoverSlot: null }),
+        dragOver: e => { e.preventDefault(); },
+        drop: e => { e.preventDefault(); if (s.dragging) self.place(s.dragging, idx); }
+      };
+    };
+
+    // reach preview for the hero being hovered/dragged into the hovered or selected slot
+    const previewHero = s.dragging ? HEROES[s.dragging] : (s.hoverHero ? HEROES[s.hoverHero] : null);
+    const previewSlot = s.hoverSlot != null ? s.hoverSlot : s.selectedSlot;
+    let previewRows = [], reachNote = "Click a seat, then a champion — or drag a champion onto a seat.", reachNoteColor = "#6E6690";
+    if (previewHero && previewSlot != null) {
+      const row = SLOT_ROW[previewSlot];
+      previewRows = this.reachable(row, previewHero.reach);
+      const enemy = previewRows.filter(r => r >= 4);
+      reachNote = previewHero.name.toUpperCase() + " · REACH " + previewHero.reach + " FROM ROW " + row + " → " + (enemy.length ? "ENEMY ROW " + enemy.join(",") : "NO ENEMY IN RANGE");
+      reachNoteColor = enemy.length ? "#4FC3D6" : "#E0A15A";
+    } else if (previewSlot != null) {
+      reachNote = "SEAT SELECTED · ROW " + SLOT_ROW[previewSlot] + " — pick a champion";
+      reachNoteColor = "#F2C744";
+    }
+
+    const litRows = previewRows.length ? previewRows : (function(){
+      const out = {}; cur.forEach((slug, i) => { if (slug) self.reachable(SLOT_ROW[i], HEROES[slug].reach).forEach(r => out[r] = true); });
+      return Object.keys(out).map(Number);
+    })();
+
+    const q = s.query.trim().toLowerCase();
+    const pickerList = Object.keys(HEROES).map(k => HEROES[k]).filter(h => {
+      if (s.types.length && s.types.indexOf(h.type) < 0) return false;
+      if (s.counter && h.type !== s.counter) return false;
+      if (q && h.name.toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    return {
+      row1: [mkSlot(0)], row2: [mkSlot(1), mkSlot(2), mkSlot(3)], row3: [mkSlot(4), mkSlot(5)],
+      enemyRows: [4,5,6].map(r => {
+        const lit = litRows.indexOf(r) >= 0;
+        return { row: r, label: lit ? "IN RANGE" : "OUT OF REACH",
+          slots: r === 4 ? "FRONT · 2 SEATS" : (r === 5 ? "MIDDLE · 3 SEATS" : "BACK · 1 SEAT"),
+          color: lit ? "#F2C744" : "#57507A",
+          border: lit ? "#F2C744" : "#2A2640", borderStyle: lit ? "solid" : "dashed",
+          bg: lit ? "rgba(242,199,68,.12)" : "#161327" };
+      }),
+      reachNote: reachNote, reachNoteColor: reachNoteColor,
+      picker: pickerList.map(h => ({
+        img: h.img, typeBadgeUrl: "url('" + h.typeBadge + "')", name: h.name.toUpperCase(),
+        typeName: TYPES[h.type].name, core: TYPES[h.type].core,
+        reach: h.reach, reachColor: h.reach === 2 ? "#4FC3D6" : "#8E87A8",
+        placed: cur.indexOf(h.slug) >= 0,
+        border: cur.indexOf(h.slug) >= 0 ? "#F2C744" : "#241F38",
+        opacity: cur.indexOf(h.slug) >= 0 ? 0.55 : 1,
+        click: () => self.heroClick(h.slug),
+        enter: () => self.setState({ hoverHero: h.slug }),
+        leave: () => self.setState({ hoverHero: null }),
+        dragStart: e => { self.setState({ dragging: h.slug }); if (e.dataTransfer) e.dataTransfer.effectAllowed = "move"; }
+      })),
+      pickerCount: pickerList.length + " / 27 CHAMPIONS",
+      typeChips: Object.keys(TYPES).map(k => {
+        const on = s.types.indexOf(k) >= 0;
+        return { name: TYPES[k].name, core: TYPES[k].core,
+          bg: on ? "rgba(255,255,255,.07)" : "transparent", border: on ? TYPES[k].core : "#3A3357",
+          label: on ? "#F4EFE4" : "#8E87A8",
+          toggle: () => self.setState(st => ({ types: st.types.indexOf(k) >= 0 ? st.types.filter(x => x !== k) : st.types.concat([k]) })) };
+      }),
+      counterChips: Object.keys(TYPES).map(k => ({
+        bg: s.counter === k ? TYPES[k].core : "rgba(255,255,255,.05)",
+        border: s.counter === k ? "#F4EFE4" : TYPES[k].core,
+        pick: () => self.setState({ counter: s.counter === k ? null : k })
+      })),
+      vulnRows: Object.keys(TYPES).map(k => {
+        const v = vuln[k], score = v.bane * 2 + v.fault;
+        return { abbr: TYPES[k].abbr, w: Math.min(100, score / 8 * 100) + "%",
+          fill: v.bane >= 2 ? "#C0313A" : TYPES[k].core,
+          labelColor: v.bane >= 2 ? "#F06A72" : "#8E87A8",
+          note: v.bane ? v.bane + " BANE" : (v.fault ? v.fault + " fault" : "—") };
+      }),
+      coverChips: Object.keys(TYPES).map(k => ({
+        name: TYPES[k].name, core: TYPES[k].core, dotOpacity: covered[k] ? 1 : 0.25,
+        bg: covered[k] ? "rgba(255,255,255,.06)" : "transparent",
+        border: covered[k] ? TYPES[k].core : "#2A2640",
+        label: covered[k] ? "#F4EFE4" : "#57507A"
+      })),
+      coverNote: coverCount + " of 9 forces covered" + (coverCount >= 6 ? " — broad enough to open most doors." : coverCount >= 4 ? " — workable; a scouted defense may still hold." : " — narrow. Whole Houses resist you."),
+      tempoPos: Math.max(4, Math.min(96, avgCd / 4 * 100)) + "%",
+      tempoNote: avgCd < 1.3 ? "Burst-heavy. Most powers land in the first two turns, then you are trading basics." : avgCd > 2.4 ? "Sustain build. Slow opener, but it keeps answering after turn four." : "Balanced tempo — an opening punch with something held back.",
+      reachRows: [
+        { text: "Reach 2 — can strike from the middle row", n: reach2, dot: "#4FC3D6" },
+        { text: "Reach 1 — must sit front to connect", n: heroes.length - reach2, dot: "#8E87A8" },
+        { text: backHero ? "Back seat: " + backHero.name + " (reach " + backHero.reach + ")" : "Back seat empty", n: backHero ? backHero.reach : "—", dot: trap ? "#C0313A" : "#4E7C3A" }
+      ],
+      verdict: filled.length < 6 ? "Six seats, fixed shape. Fill them, then read the doors." : (vuln[worst].bane >= 3 ? "Strong on paper, brittle in practice." : "A closed formation with room to punch."),
+      warnLabel: warnLabel, warnColor: warnColor, warnText: warnText,
+      filledCount: filled.length, countColor: filled.length === 6 ? "#4E7C3A" : "#F2C744",
+      squadName: s.names[s.active], onName: e => this.setState(st => { const names = Object.assign({}, st.names); names[st.active] = e.target.value; return { names: names }; }),
+      setAttack: () => this.pickSquad(s.lastByMode.attack),
+      setDefense: () => this.pickSquad(s.lastByMode.defense),
+      squadTabs: SQUAD_IDS[mode].map(id => {
+        const on = s.active === id, n = s.squads[id].filter(Boolean).length;
+        return { label: LABELS[id], name: s.names[id], count: n + "/6",
+          bg: on ? "#241F38" : "transparent", border: on ? "#F2C744" : "#3A3357",
+          color: on ? "#F2C744" : "#8E87A8",
+          countColor: n === 6 ? "#4E7C3A" : "#B5732E",
+          pick: () => self.pickSquad(id) };
+      }),
+      slotsNote: isDef ? "TWO STANDING SIX · BOTH DEFEND" : "THREE SAVED STRIKING SIX",
+      atkBg: isDef ? "transparent" : "#F2C744", atkColor: isDef ? "#B4AECB" : "#141221",
+      defBg: isDef ? "#F2C744" : "transparent", defColor: isDef ? "#141221" : "#B4AECB",
+      modeNote: isDef
+        ? "You keep two Standing Six — the engine runs whichever an attacker draws. Spread the Banes across both walls; a scout who breaks one should learn nothing about the other."
+        : "Up to three Striking Six, saved and swapped per matchup. You command these on offense; reach decides who can act on turn one, and the back seat cannot attack while your lines hold.",
+      ctaText: isDef ? "SET AS DEFENSE" : "FIND BATTLE",
+      ctaBg: filled.length === 6 ? "#F2C744" : "#1C1930",
+      ctaBorder: filled.length === 6 ? "#F2C744" : "#2A2640",
+      ctaColor: filled.length === 6 ? "#141221" : "#57507A",
+      autoFill: () => {
+        const next = cur.slice(); const used = next.filter(Boolean);
+        const pool = Object.keys(HEROES).filter(k => used.indexOf(k) < 0);
+        for (let i = 0; i < 6; i++) if (!next[i] && pool.length) next[i] = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        this.setSquad(next);
+      },
+      clearSquad: () => this.setSquad([null,null,null,null,null,null]),
+      query: s.query, onQuery: e => this.setState({ query: e.target.value }),
+      loadouts: ["a1","a2","a3","d1","d2"].map(id => {
+        const on = s.active === id, n = s.squads[id].filter(Boolean).length;
+        return { name: s.names[id] || ("Squad " + LABELS[id]),
+          mode: (id.charAt(0) === "d" ? "DEF " : "ATK ") + LABELS[id],
+          dot: n === 6 ? (id.charAt(0) === "d" ? "#4E7C3A" : "#F2C744") : "#57507A",
+          bg: on ? "#241F38" : "transparent", border: on ? "#3A3357" : "#241F38",
+          load: () => self.pickSquad(id) };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

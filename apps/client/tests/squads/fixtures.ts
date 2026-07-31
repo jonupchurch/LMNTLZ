@@ -39,8 +39,24 @@ export const seatsFrom = (ids: readonly string[]): ConfiguredSeat[] => [
   { row: 'back', index: 0, heroId: ids[5]!, config: CONFIG },
 ];
 
+/**
+ * Rune stages for all 27, **varied on purpose**.
+ *
+ * A fixture where every champion carried the same three stages would let two
+ * opposite bugs through together: a pip that never lights and a pip that always
+ * lights would each satisfy every assertion written against it. The pattern is
+ * deterministic so a test can compute the expected answer rather than transcribe
+ * it, and it deliberately produces empty slots, partial slots and full ones.
+ */
+export const runeStages = (): RosterResponse['runes'] =>
+  HEROES.map((hero, i) => ({
+    heroId: hero.id,
+    stages: [i % 5, (i * 2) % 5, i % 3 === 0 ? 4 : 0],
+  }));
+
 export const roster = (over: Partial<RosterResponse['assignments']> = {}): RosterResponse => ({
   heroes: HEROES,
+  runes: runeStages(),
   assignments: {
     defense: {
       visible: {

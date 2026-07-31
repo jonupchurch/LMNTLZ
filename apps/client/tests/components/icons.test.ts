@@ -84,12 +84,33 @@ describe('the status registry', () => {
 describe('the icons have callers', () => {
   const SRC = join(import.meta.dirname, '../../src');
 
+  /* `RosterView` used to be on this list and is not any more: the emblem moved
+     into `HeroMarks`, which both the picker and the board seats render. The
+     guard follows the caller rather than the screen — the thing it protects
+     against is an emblem nobody draws, and a component one hop away is still
+     drawn. */
   it.each([
     ['components/hero/HeroCard.tsx', 'HeroCard'],
-    ['features/squads/RosterView.tsx', 'RosterView'],
+    ['components/hero/HeroMarks.tsx', 'HeroMarks'],
   ])('%s renders HeroIcon', (file, name) => {
     const source = readFileSync(join(SRC, file), 'utf8');
     expect(source, `${name} imports HeroIcon but never renders one`).toMatch(/<HeroIcon\b/);
+  });
+
+  /**
+   * **And the hop itself, or the guard above just moved the hole.**
+   *
+   * Pointing the emblem assertion at `HeroMarks` proves an emblem is drawn
+   * *somewhere in that component* and nothing more. If no screen renders
+   * `HeroMarks`, the manifest is unreachable again and every test still passes —
+   * which is the exact defect this whole block exists to catch, one level down.
+   */
+  it.each([
+    ['features/squads/RosterView.tsx', 'the picker'],
+    ['features/squads/SquadBuilder.tsx', 'the formation board'],
+  ])('%s renders HeroMarks', (file, where) => {
+    const source = readFileSync(join(SRC, file), 'utf8');
+    expect(source, `${where} imports HeroMarks but never renders one`).toMatch(/<HeroMarks\b/);
   });
 
   /**

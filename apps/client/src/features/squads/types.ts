@@ -131,8 +131,27 @@ export interface AmbushState {
   readonly capAt: number;
 }
 
+/**
+ * What a champion has been invested in, as the squad screen needs it.
+ *
+ * **Stage only.** The Forge owns allocations, utility effects and spend; this
+ * screen draws three pips and asks one question of each — *is there a rune in
+ * it*. Carrying the rest here would put the Forge's model in a second place and
+ * invite a second opinion about what stage 4 means.
+ *
+ * `stages` is positional: index 0 is the primary slot, 1 the secondary, 2 the
+ * common one, matching `RUNE_SLOTS` on the server. `0` is **empty**, not a
+ * stage zero.
+ */
+export interface HeroRuneStages {
+  readonly heroId: string;
+  readonly stages: readonly number[];
+}
+
 export interface RosterResponse {
   readonly heroes: readonly Hero[];
+  /** One entry per champion, always all 27 — an empty slot is `0`, never absent. */
+  readonly runes: readonly HeroRuneStages[];
   readonly assignments: {
     readonly defense: Readonly<Record<Zone, DefenseZoneState>>;
     readonly offense: readonly OffenseSquadState[];

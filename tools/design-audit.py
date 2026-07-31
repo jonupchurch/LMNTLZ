@@ -51,12 +51,12 @@ CLIENT = ROOT / "apps" / "client" / "src"
 SCREENS: dict[str, tuple[str, list[str]]] = {
     "landing":   ("LMNTLZ Onboarding Flows.dc.html", ["features/landing", "features/auth"]),
     "roster":    ("LMNTLZ Roster.dc.html",           ["features/roster"]),
-    # ⚠️ **There is no squad-builder export.** The design for this screen is a
-    # wireframe Jon holds outside the repo, so this row is measured against the
-    # Design System's component gallery as a stand-in. Its 19 `clip-path`s are
-    # that gallery's shape catalogue, NOT a requirement of the squad screen —
-    # which the wireframe draws with rounded rectangles. Do not chase them.
-    "squads":    ("LMNTLZ Design System.dc.html",    ["features/squads"]),
+    # This row was measured against the Design System's component gallery as a
+    # stand-in, because the squad builder had no export — the design was a
+    # wireframe Jon held outside the repo. **It has one now**, so the row points
+    # at the real thing and the gallery's 19 `clip-path`s stop being counted as
+    # a debt this screen owes. The wireframe draws rounded rectangles.
+    "squads":    ("LMNTLZ Squad Builder.dc.html",    ["features/squads"]),
     "battle":    ("LMNTLZ Battle.dc.html",           ["features/battle"]),
     "turnqueue": ("LMNTLZ Turn Sequence.dc.html",    ["features/battle"]),
     "attack":    ("LMNTLZ Matchmaking and Results.dc.html", ["features/attack"]),

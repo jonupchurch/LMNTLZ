@@ -26,7 +26,7 @@
 
 import type { Hero, HeroId } from '@lmntlz/content';
 import { ROW_CAPACITY, type Seat, type SquadRow } from '@lmntlz/sim/rules';
-import { FORCE_RING, HeroIcon, HeroPortrait, TypeIcon } from '../../components/index.js';
+import { FORCE_RING, HeroMarks, HeroPortrait } from '../../components/index.js';
 import type { AllocationView } from './hooks/useAllocation.js';
 import { enemyReach, ROW_NUMBER, seatReach } from './reachPreview.js';
 
@@ -328,24 +328,37 @@ function SeatCard({
 
           <span className="relative flex h-full flex-col justify-between p-1.5">
             <span className="flex items-start justify-between gap-1">
-              {/* The Force as a SHAPE. `badge` because this sits on art — the
-                  variant `resources/damage-types/README.md` draws for exactly
-                  this case, and the only one that holds at 20px over a
-                  painting. */}
-              {hero ? <TypeIcon type={hero.primary} variant="badge" size="pip" /> : <span />}
+              {/**
+               * **The same three marks the picker draws** — emblem, primary,
+               * secondary. A champion has to be recognisable as the *same* card
+               * in the corner she was picked from; two different corner
+               * treatments for one champion is the screen contradicting itself
+               * between the half where you choose and the half where you look.
+               */}
               {hero ? (
-                <span className="text-caption rounded-sm bg-void/70 px-1 font-mono text-parchment">
+                <HeroMarks
+                  heroId={hero.id as HeroId}
+                  primary={hero.primary}
+                  secondary={hero.secondary}
+                />
+              ) : (
+                <span />
+              )}
+              {hero ? (
+                <span
+                  className={[
+                    'text-caption rounded-sm bg-void/80 px-1 font-mono',
+                    hero.reach === 2 ? 'text-air' : 'text-parchment',
+                  ].join(' ')}
+                >
                   R{hero.reach}
                 </span>
               ) : null}
             </span>
 
             <span className="min-w-0">
-              <span className="flex items-center gap-1">
-                {hero ? <HeroIcon heroId={hero.id as HeroId} size="chip" /> : null}
-                <span className="text-body min-w-0 flex-1 truncate font-display tracking-wide text-parchment uppercase">
-                  {heroName(seat.heroId)}
-                </span>
+              <span className="text-body block truncate font-display tracking-wide text-parchment uppercase">
+                {heroName(seat.heroId)}
               </span>
               {hero ? <ReachCaption seats={seats} seat={seat} /> : null}
             </span>
