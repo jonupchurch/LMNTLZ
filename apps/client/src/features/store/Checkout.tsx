@@ -27,6 +27,7 @@
  */
 
 import type { JSX } from 'react';
+import { Button } from '../../components/index.js';
 import { money, type CatalogResponse, type Sku } from './types.js';
 
 export interface CheckoutProps {
@@ -84,17 +85,19 @@ export function Checkout({
             </p>
           )}
 
-          <button
-            type="button"
-            disabled={busy}
+          {/**
+           * 017's `Button` (T043). **`pending`, not `disabled`** — the design's
+           * own distinction, and this is the control it was written for: grey
+           * says *you cannot*, and by the time a pay button is waiting on a
+           * checkout session the player already has.
+           */}
+          <Button
+            variant="primary"
+            state={busy ? 'pending' : 'rest'}
             onClick={() => onBuy(sku)}
-            className={[
-              'text-caption self-start rounded border px-4 py-2 font-display tracking-widest uppercase',
-              busy ? 'border-line text-faint' : 'border-gold bg-raised text-parchment hover:bg-gold/20',
-            ].join(' ')}
           >
             {busy ? 'Opening checkout…' : `Pay ${money(sku.price, catalog.currency)}`}
-          </button>
+          </Button>
 
           {/* Adjacent to the control, deliberately — see the note above. */}
           <p className="text-caption font-mono text-faint">

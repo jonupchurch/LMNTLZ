@@ -25,7 +25,7 @@
 
 import { getAllHeroes, type Hero, type HeroId, type StatKey } from '@lmntlz/content';
 import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
-import { HeroIcon, Panel, TypeBadge } from '../../components/index.js';
+import { Button, HeroIcon, Panel, TypeBadge } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { DestroyConfirm } from './DestroyConfirm.js';
 import { SlotPlanner, placedPoints } from './SlotPlanner.js';
@@ -350,13 +350,11 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
           )}
 
           {current.stage >= 4 && !confirming && (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="text-caption self-start rounded border border-slash px-3 py-1 font-display tracking-widest uppercase text-slash-lit"
-            >
+            /* 017's `Button` (T043). `danger` because it opens the one
+               irreversible spend in the game. */
+            <Button variant="danger" size="sm" onClick={() => setConfirming(true)}>
               Rebuild this rune
-            </button>
+            </Button>
           )}
 
           {error && (

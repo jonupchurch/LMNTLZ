@@ -1,9 +1,15 @@
 # The gap register
 
-**Compiled 2026-07-30.** Every gap between what is built and what a player can
-reach, with the evidence for each. Reproduce it with
-`py tools/gap-audit.py` — the script diffs API routes against client call sites,
-verb-aware, and is the source of the route numbers below.
+**Compiled 2026-07-30. Revised 2026-07-31 after feature 018.** Every gap between
+what is built and what a player can reach, with the evidence for each. Reproduce
+it with `py tools/gap-audit.py` — the script diffs API routes against client call
+sites, verb-aware, and is the source of the route numbers below.
+
+> **018 closed six of the sixteen.** The store, the checkout, the entitlement
+> readout, rune placement, the battle list and the replay viewer all have callers
+> now. The audit reports **10 gaps**, down from 16, and every one still open
+> belongs to 013 guilds or 009 matchmaking. The five routes 018 SC-008 names are
+> confirmed reached (T041).
 
 ---
 
@@ -15,26 +21,48 @@ is literally *"a player watches a recent battle"* and not one of its tasks build
 viewer. 010 has **zero** client tasks. 011 has exactly one, and it edits a screen no
 task creates.
 
-The result is **16 routes that are built, tested, deployed and unreachable**. Among
-them: nobody can accept a guild application, nobody can place a rune, nobody can buy
-anything, and nobody can leave the starter league. Every one of those features is
-marked complete, and every one of those task lists was closed honestly.
+The result was **16 routes that were built, tested, deployed and unreachable**.
+Among them: nobody could accept a guild application, place a rune, buy anything, or
+leave the starter league. Every one of those features was marked complete, and
+every one of those task lists was closed honestly.
+
+**Feature 018 closed the 010, 011 and 008 halves** — the Rune Forge, the Store and
+the battle record with its replay viewer. **Ten remain**, and the shape of what is
+left is now much narrower: seven are 013 guilds, two are 009 matchmaking, and one
+is a redundant auth route that wants deleting.
 
 ---
 
 ## 1 · Routes with no caller — a player cannot reach these
 
-57 routes are defined; the client can request 37 (verb, path) pairs. **23 routes
-have no client caller.** Seven are correct — a webhook, a health probe, two cron
-targets, three Steam seams built unused by design. The other **16 are gaps**.
+**As of 2026-07-31**: 58 routes are defined; the client can request 44 (verb, path)
+pairs. **17 routes have no client caller.** Seven are correct — a webhook, a health
+probe, two cron targets, three Steam seams built unused by design. The other **10
+are gaps**.
+
+*(At compile time on 2026-07-30 it read 57 defined, 37 reachable, 16 gaps.)*
+
+**Closed by 018**, in the order they landed:
+
+| Verb | Route | Closed by | Caller |
+|---|---|---|---|
+| POST | `/heroes/:id/runes/:slot` | 018 US1 | `features/forge/ForgeScreen.tsx` |
+| GET | `/me/runes` | 018 Phase 2 | same — the route did not exist before |
+| GET | `/catalog` | 018 US2 | `features/store/StoreScreen.tsx` |
+| POST | `/checkout` | 018 US2 | same |
+| GET | `/me/entitlements` | 018 US2 | same |
+| GET | `/me/battles` | 018 US3 | `features/replays/BattleListScreen.tsx` |
+| GET | `/replays/:id` | 018 US3 | `features/replays/ReplayViewer.tsx` |
+
+`/me/battles` was filed above as *redundant — the profile payload carries it*. That
+was wrong in one direction: the profile's battle record is **012's public view of
+somebody**, which carries no `watchable` flag and no way to open a replay. Your own
+record is a different question and needed the route after all.
+
+**Still open**, all of them 013 or 009:
 
 | Verb | Route | Owner | What is unreachable |
 |---|---|---|---|
-| GET | `/catalog` | 011 | **the store does not exist** |
-| POST | `/checkout` | 011 | **nothing can be bought** |
-| GET | `/me/entitlements` | 011 | a purchase is invisible to the player |
-| POST | `/heroes/:id/runes/:slot` | 010 | **runes cannot be placed** |
-| GET | `/replays/:id` | 008 | **no replay can be watched** |
 | GET | `/guilds/:id/applications` | 013 | an officer cannot see who applied |
 | POST | `/applications/:id/accept` | 013 | **an application can never be accepted** |
 | POST | `/applications/:id/dismiss` | 013 | nor declined |
@@ -43,11 +71,10 @@ targets, three Steam seams built unused by design. The other **16 are gaps**.
 | GET | `/guilds/:id` | 013 | a guild has no page of its own |
 | POST | `/me/starter/exit` | 009 | **the starter league cannot be left** |
 | GET | `/matchmaking/config` | 009 | ambush odds and thresholds are never shown |
-| GET | `/me/battles` | 008/012 | *redundant — the profile payload carries it* |
 | GET | `/me` | 005 | *redundant — session bootstrap does not need it* |
 | GET | `/invites` | 013 | *redundant — `/me/guild` carries invites* |
 
-The last three are **dead routes, not player-facing gaps** — the data reaches the
+The last two are **dead routes, not player-facing gaps** — the data reaches the
 screen another way. They are listed so the count reconciles, and they want deleting
 rather than wiring.
 

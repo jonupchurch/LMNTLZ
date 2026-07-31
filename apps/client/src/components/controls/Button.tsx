@@ -31,7 +31,7 @@
  * through `:hover` / `:active` / `:focus-visible` for a button left at `rest`.
  */
 
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'icon';
 export type ButtonState =
@@ -50,6 +50,19 @@ export interface ButtonProps
   readonly state?: ButtonState;
   readonly size?: ButtonSize;
   readonly children?: ReactNode;
+  /**
+   * **Widened for 018 T043**, which is the remedy `components/index.ts` names:
+   * *"if something here does not fit, widen it here."*
+   *
+   * `DestroyConfirm` puts focus on Cancel when its `alertdialog` opens — the
+   * destructive control must never be the one under a stray Enter — and that
+   * needs a handle on the element. Without this the confirm dialog had to keep
+   * a private `<button>`, which is the debt this layer exists to retire.
+   *
+   * React 19 passes `ref` as an ordinary prop, so it rides `...rest` onto the
+   * element below; `ButtonHTMLAttributes` does not declare it, hence this line.
+   */
+  readonly ref?: Ref<HTMLButtonElement>;
 }
 
 /** Base, then the forced-hover and forced-pressed appearances for the gallery. */

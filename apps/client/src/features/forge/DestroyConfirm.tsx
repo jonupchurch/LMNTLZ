@@ -21,6 +21,7 @@
  */
 
 import { useEffect, useRef, type JSX } from 'react';
+import { Button } from '../../components/index.js';
 
 export interface DestroyConfirmProps {
   readonly heroName: string;
@@ -85,21 +86,14 @@ export function DestroyConfirm({
 
       <div className="mt-4 flex flex-wrap gap-3">
         {/* Cancel first in the DOM as well as focused: it is also the first tab stop. */}
-        <button
-          ref={cancel}
-          type="button"
-          onClick={onCancel}
-          className="text-caption rounded border border-gold bg-raised px-4 py-2 font-display tracking-widest uppercase text-parchment"
-        >
+        <Button ref={cancel} variant="secondary" onClick={onCancel}>
           Keep the rune
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="text-caption rounded border border-slash px-4 py-2 font-display tracking-widest uppercase text-slash-lit"
-        >
+        </Button>
+        {/* `danger` is the design's own vocabulary for this, and it is the one
+            place in the Forge that earns it — the spend is irreversible. */}
+        <Button variant="danger" onClick={onConfirm}>
           Destroy and rebuild
-        </button>
+        </Button>
       </div>
     </div>
   );

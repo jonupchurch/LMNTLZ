@@ -32,6 +32,18 @@
  */
 
 import type { JSX } from 'react';
+/**
+ * **`STAT_CAP`, because the sentence below used to say `75`** (T042).
+ *
+ * It was rendered as literal copy in a paragraph explaining why the fourth
+ * stage is worth buying — the same shape as the guild founding cost that said
+ * `650` in four places (017 T057), and the same reason it is wrong: a content
+ * rule with a second home is a rule that can disagree with itself. Every other
+ * number on this screen already comes from `config.*`; this one hid inside
+ * prose, which is precisely where a numbers scan does not look.
+ */
+import { STAT_CAP } from '@lmntlz/content';
+import { Button } from '../../components/index.js';
 
 export interface StageLadderProps {
   /** `[150, 150, 150, 200]` — from `config.stageCosts`, never written down. */
@@ -123,25 +135,23 @@ export function StageLadder({
           {boosts[nextIndex] === 0 && (
             <p className="text-caption text-muted">
               The fourth stage buys no stat points. It unlocks this rune&rsquo;s utility
-              effect, which is why it is worth more once the 75 cap has absorbed what the
-              boosts can give.
+              effect, which is why it is worth more once the {STAT_CAP} cap has absorbed
+              what the boosts can give.
             </p>
           )}
 
           {onCommit ? (
-            <button
-              type="button"
-              disabled={!affordable}
+            /* 017's `Button`, not a private one (T043). `state` carries the
+               refusal, so an unaffordable stage is disabled by the component
+               rather than by a class this file chose. */
+            <Button
+              variant="primary"
+              size="sm"
+              state={affordable ? 'rest' : 'disabled'}
               onClick={onCommit}
-              className={[
-                'text-caption rounded border px-4 py-2 font-display tracking-widest uppercase',
-                affordable
-                  ? 'border-gold bg-raised text-parchment hover:bg-gold/20'
-                  : 'border-line text-faint',
-              ].join(' ')}
             >
               Commit stage {nextIndex + 1}
-            </button>
+            </Button>
           ) : null}
         </>
       )}

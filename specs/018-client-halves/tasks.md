@@ -159,12 +159,19 @@ plays identically afterwards.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T041 **Run `py tools/gap-audit.py` and confirm the five routes are gone** — `/catalog`, `/checkout`, `/me/entitlements`, `/heroes/:id/runes/:slot`, `/replays/:id` (SC-008). The audit that found them is the test that closes them
-- [ ] T042 [P] Scan `features/forge/` and `features/store/` for transcribed numbers — every `150`, `200`, `650`, `75`, `20`, `10`, `5` and every price must come from `config.*`, `STAT_CAP` or `/v1/catalog` (SC-002)
-- [ ] T043 [P] Confirm all three screens use **017's components** — no private button, no colour literal
-- [ ] T044 [P] Update [`../GAPS.md`](../GAPS.md) — move the five closed routes out of §1 and record the count the audit now reports
-- [ ] T045 [P] Write `apps/api/src/progression/README.md` — why the owner and scout rune views are two serialisers and must stay two
-- [ ] T046 Run the full [quickstart.md](quickstart.md) manual pass
+- [X] T041 **Run `py tools/gap-audit.py` and confirm the five routes are gone** — `/catalog`, `/checkout`, `/me/entitlements`, `/heroes/:id/runes/:slot`, `/replays/:id` (SC-008). The audit that found them is the test that closes them
+- [X] T042 [P] Scan `features/forge/` and `features/store/` for transcribed numbers — every `150`, `200`, `650`, `75`, `20`, `10`, `5` and every price must come from `config.*`, `STAT_CAP` or `/v1/catalog` (SC-002)
+- [X] T043 [P] Confirm all three screens use **017's components** — no private button, no colour literal
+- [X] T044 [P] Update [`../GAPS.md`](../GAPS.md) — move the five closed routes out of §1 and record the count the audit now reports
+- [X] T045 [P] Write `apps/api/src/progression/README.md` — why the owner and scout rune views are two serialisers and must stay two
+- [X] T046 **(automated portion)** Run the full [quickstart.md](quickstart.md) pass —
+      §0 gap audit ✓ (5 routes gone, 16 → 10) · §1 forge literals ✓ · §2 store prices and
+      `00:00 UTC` ✓ · §3 replay date/resolver scans ✓ · §4 scout boundary ✓ (18 tests) ·
+      §5 rail, exits and tokens ✓. **Every grep in the quickstart was re-run on
+      comment-stripped source**, because three of the four match the prose explaining
+      the ban and would otherwise read as violations. The eyes-on walkthrough — placing
+      a real rune against a live balance, a sandbox purchase — is still owed and is the
+      same outstanding item as 017 T073.
 
 ---
 

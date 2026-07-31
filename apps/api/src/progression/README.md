@@ -55,6 +55,71 @@ Income **truncates** rather than refusing: FR-013 says the balance caps *at*
 Progression imports matchmaking, never the reverse. The `RuneSource` injection
 seam is what keeps that acyclic.
 
+## Two rune views, and why they must never become one
+
+**Added by 018 T045**, after the scout view was found to have been lying since
+runes shipped.
+
+There are two pieces of code that turn a player's runes into JSON. They look
+almost identical and merging them is the obvious refactor. **Don't.**
+
+| | `progression/read.ts` | `squads/scoutSerializer.ts` |
+|---|---|---|
+| answers | *what do **I** have?* | *what does **that squad** show?* |
+| reached by | `GET /v1/me/runes` | the scout view |
+| per slot | element, stage, **allocations**, **utility**, **spent** | element, **stage only** |
+| covers | all 27 heroes × 3 slots, including empty | the six on the squad |
+| audience | one account, its own | anybody who can scout that squad |
+
+The rule they encode is **commitment is public, power is private**. A scout can
+see *that* a rune is on a champion and how far it has been taken — four stages of
+investment is a public fact about a squad, and reading it is a legitimate part of
+choosing a target. A scout cannot see **which stat those stages went into**, or
+the utility effect the fourth unlocked. That is the difference between knowing
+somebody is well-equipped and knowing exactly how they will fight.
+`allocations` and `utility` have no representation at all in the scout shape.
+
+### Why sharing the code is the specific danger
+
+A merged serialiser needs a flag — `serialise(runes, { asOwner })` — and three
+things follow. All three have happened in this repo:
+
+1. **A new field defaults to visible.** Somebody adds a field to the shape.
+   Nothing tells them the same function feeds a scouting surface, and the default
+   for a new field is *present*. The leak arrives as a one-line addition that
+   reviews cleanly.
+2. **The flag is forgotten at one call site.** One `serialise(runes)` without the
+   options object and the scout view starts answering the owner's question. It
+   would look right in every test that renders it, because the extra fields are
+   extra rather than wrong.
+3. **The test cannot tell.** `scout.test.ts` asserted `0 <= stages <= 4` and
+   passed for two whole features against a **hardcoded `stages: 0`** — the
+   serialiser had never read a rune at all. A range check cannot distinguish a
+   real value from a placeholder inside the range, and it certainly cannot notice
+   a field that should not be there.
+
+Two functions with two shapes make each of those a compile error or a visibly
+different file rather than a silent widening.
+
+### What each must keep doing
+
+**`read.ts`** returns every hero and every slot, including untouched ones —
+`stage: 0` means empty. The Forge draws 27 × 3 and a sparse response would make
+the client invent the gaps, which is the client re-deriving a content rule.
+`utility` is gated on `stage >= 4` because that gate *is* the fourth stage's
+whole product. `spent` is summed from `STAGE_COSTS`, never stored, so it cannot
+drift from what the player was charged.
+
+**`scoutSerializer.ts`** takes stages as a `ReadonlyMap` keyed `heroId:slot`,
+assembled by the route from a query that **selects three columns** — `heroId`,
+`slot`, `stage` — and not `select()`. The allocations are never loaded into the
+request that serves a scout, so they cannot be spread into a response by
+accident. The narrow select is the second lock, behind the separate shape.
+
+Constitution XVII: *storing is not exposing*. The rows carry the whole
+allocation; what leaves the system is decided at these two boundaries and
+nowhere else.
+
 ## Two things to know before changing anything here
 
 **`ratingDeltas` returns one decimal, and that fraction is load-bearing.** Integer
