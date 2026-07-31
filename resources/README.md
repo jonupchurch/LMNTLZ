@@ -173,12 +173,21 @@ defect, and it is **systematic rather than a typo**.
   transcribed (017 FR-019). That makes this class of drift impossible to repeat —
   the screen cannot disagree with the engine, because it has no number of its own.
 
-- **`THE COURT` is a rail destination with no screen.** It is named in the shell of
-  almost every export, but no `Court.dc.html` exists, and *Court-Champion* turns out
-  to be a **league name** — `Matchmaking and Results` shows it beside the rating,
-  and *"three courts will hear you"* describes match offerings. **Not a defect in
-  the exports**; noted because porting the rail verbatim would ship a navigation
-  entry that leads nowhere.
+- **`Guild Creation` prices founding at ◈ 2 500; it costs 650.** The button reads
+  *"FOUND THE COURT · ◈ 2 500"* and `apps/api/src/guilds/config.ts` has
+  `FOUNDING_COST_SHARDS = 650` — one full rune, which is the reasoning canon
+  actually gives. A **data error**, so flagged properly rather than noted as
+  flavour. Nothing was rewritten.
+
+- **`THE COURT` is a rail *section*, not a missing screen** — worth recording
+  because the opposite was briefly believed. No `Court.dc.html` exists and
+  *Court-Champion* reads like a league name, which suggested a standings screen that
+  had never been drawn. **The active-state colour disproves it**: each export marks
+  one rail entry with a gold icon (`#F2C744`) against grey, and `THE COURT` is the
+  active entry on **Profile, Battle Record, Guild Roster and Guild Admin**. The Chat
+  export is titled *"THE COURT · CHAT"*; Guild Creation's button says *"FOUND THE
+  COURT"*. **The Court is the social half of the game and a guild is a court** —
+  one word used at two levels, which is a lore choice and not a defect.
 
 **Nothing was rewritten here either.** The exports stay as generated and are left to
 be regenerated; canon is unchanged and unchallenged.

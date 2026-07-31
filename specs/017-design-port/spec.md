@@ -112,10 +112,13 @@ built      Squads · Attack · Profile · Guild          (top tabs)
 Four differences, and each is a decision rather than a transcription:
 
 1. **`ROSTER` is its own destination.** Today it is a panel inside `SquadsScreen`.
-2. **`THE COURT` and `CODEX` have no feature.** *Court-Champion* appears elsewhere
-   as a league name, so the Court is the standings surface over 009's rating.
-3. **`DISPATCHES` is 016's news**, unbuilt.
-4. **`Profile` is not in the rail at all** — it hangs off the username in the header.
+2. **`THE COURT` is a section, not a screen** — it holds profile, battle record,
+   guild and chat. Established from the active-state colour; see below.
+3. **`CODEX` has no feature.** It is a read-only view over content that already
+   ships, and it joins this feature as US5.
+4. **`DISPATCHES` is 016's news**, unbuilt — the only rail entry with no home.
+5. **`Profile` is not a top-level entry** — it lives under `THE COURT`, and the
+   username in the header is its shortcut.
 
 **Porting the rail verbatim would ship navigation that goes nowhere**, which is
 the project's most-repeated defect wearing its opposite face: not a seam with no
@@ -131,10 +134,12 @@ caller, but a caller with no seam.
 > The standing instruction is *"things should look and feel like the mockups,
 > whatever needs to happen for that"* — so the resolution is not to shrink the
 > rail permanently but to **fill it wherever a mockup exists to fill it from**.
-> Of the three missing entries exactly one qualifies: **`CODEX` has a finished
-> export and its data already ships**, so it joins this feature as US5.
-> `THE COURT` has **no export at all** and `DISPATCHES` needs 016 — neither can be
-> ported, because there is nothing to port.
+>
+> **After the 2026-07-30 correction below, the rail is almost complete.** `CODEX`
+> has a finished export and its data already ships, so it joins as US5.
+> **`THE COURT` turns out to be a section over screens that already exist**, not a
+> missing destination. Only `DISPATCHES` is genuinely absent, and 016 owns it —
+> so the shipped rail is the designed rail minus one entry.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -268,17 +273,30 @@ nine forces from real content, matching its export.
 4. **Given** the rail, **When** it renders, **Then** every entry leads to a screen
    that exists.
 
-> #### Two rail entries are deliberately not here, for different reasons
+> #### `THE COURT` is not a missing screen — corrected 2026-07-30
 >
-> **`THE COURT` has no design.** It is named in every shell, and *Court-Champion*
-> turns out to be a **league name** rather than a place — the Matchmaking export
-> shows it beside the rating, and *"three courts will hear you"* describes match
-> offerings. There is no Court export. Building one is **design work, not a port**,
-> so it cannot be in a feature whose entire premise is that the designs already
-> exist. It belongs with 009 or a later feature.
+> **It is a rail *section*, and every screen under it already exists.** Each export
+> marks exactly one rail entry active with a gold icon (`#F2C744`) against grey
+> (`#3A3357`), and reading that state across the library settles it:
+>
+> | Export | Active entry |
+> |---|---|
+> | Roster | `ROSTER` |
+> | Codex | `CODEX` |
+> | News | `DISPATCHES` |
+> | **Profile · Battle Record · Guild Roster · Guild Admin** | **`THE COURT`** |
+>
+> So the Court holds **profile, battle record, guild and chat** — the Chat export is
+> titled *"THE COURT · CHAT"*, and Guild Creation's founding button reads *"FOUND
+> THE COURT"*. It is the game's word for the social half, and a guild is a court.
+> *Court-Champion* is a rank inside that vocabulary, not a place.
+>
+> **There is nothing to design and nothing to build.** The rail gains a `THE COURT`
+> group whose children are three screens 017 already ports plus chat when 014 lands.
+> This replaces the earlier reading that the Court was an undesigned destination.
 >
 > **`DISPATCHES` is 016's news**, needing authoring, publishing and an operator
-> surface. That is a feature.
+> surface. That is a feature, and it is the only rail entry still without a home.
 
 > #### ⚠️ The design library has the effectiveness ladder wrong, in four places
 >
@@ -481,7 +499,8 @@ Named here so they are not lost, and **not folded in**:
 
 | Item | Why it is not 017 | Owner |
 |---|---|---|
-| **The Rune Forge screen** | 010's whole progression backend has no UI; runes are unreachable | needs a decision |
-| **THE COURT** | no export exists — designing it is design work | 009 or later |
+| **The Rune Forge screen** | a new surface over 010's backend, not a re-skin | **[018 US1](../018-client-halves/spec.md)** |
+| **Store · replay viewer** | same — new surfaces, not ports | **018 US2 · US3** |
 | **DISPATCHES** | news needs authoring and an operator surface | 016 |
-| **Two Codex discrepancies** | recorded, never fixed in the export (Constitution XX) | `resources/README.md` |
+| **The effectiveness-ladder discrepancy** | recorded, never fixed in the exports (Constitution XX) | `resources/README.md` |
+| ~~THE COURT~~ | **resolved — it is a section over existing screens, not a missing one** | 017 itself |

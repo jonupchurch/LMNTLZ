@@ -166,16 +166,32 @@ ran, before any further development, so nothing here is waiting on a decision.
 of their user stories their own tasks cannot deliver, and where the work went. A
 fully-checked list should not read as a delivered feature.
 
-## Still genuinely open — these need a decision, not a task
+## Still genuinely open
 
-1. **`THE COURT` has no design.** Named in the rail of nearly every export; no export
-   of its own. *Court-Champion* is a league name, not a place.
-2. **⛔ The store has no design either** — and it is the only screen that takes
-   money. Twenty exports and not one is a store, shop, checkout or pricing screen.
-   018 US2 specifies its **behaviour** completely; its appearance comes from 017's
-   component layer because there is nothing to port.
+**⛔ The store has no design, and it is the only screen that takes money.** Twenty
+exports and not one is a store, shop, checkout or pricing screen. 018 US2 specifies
+its **behaviour** completely; its appearance has nothing to port from. *Being
+designed as of 2026-07-30.*
 
-Both are design work, so neither can be closed by specifying harder.
+`DISPATCHES` is the one rail entry with no home — 016's news, unbuilt but specified.
+
+> ### ~~THE COURT has no design~~ — withdrawn 2026-07-30
+>
+> **It is a rail section, not a missing screen, and everything under it exists.**
+> Each export marks exactly one rail entry active with a gold icon (`#F2C744`);
+> reading that state across the library settles it — `THE COURT` is active on
+> **Profile, Battle Record, Guild Roster and Guild Admin**, the Chat export is
+> titled *"THE COURT · CHAT"*, and Guild Creation's button reads *"FOUND THE
+> COURT"*.
+>
+> **The Court is the game's word for the social half, and a guild is a court.**
+> *Court-Champion* is a rank inside that vocabulary. Nothing needs designing and
+> nothing needs building — the rail gains a group over screens 017 already ports.
+>
+> Recorded rather than quietly deleted: the first reading took *Court-Champion*
+> beside a rating as evidence the Court was a **standings** screen. It was a rank,
+> the same word used two ways. **The active-state colour was the evidence that
+> settled it, and it was in every export the whole time.**
 
 ## Reading order
 
