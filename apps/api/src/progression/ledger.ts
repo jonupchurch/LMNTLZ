@@ -24,6 +24,9 @@ import { dayStart } from './config.js';
 /** Reasons that represent battle income, for the daily victory count. */
 const VICTORY_REASONS: readonly LedgerReason[] = ['attack-victory'];
 
+/** The defense half, for the boost pass's separate ten-a-day cap. */
+const HOLD_REASONS: readonly LedgerReason[] = ['defense-hold'];
+
 /**
  * A player's current spendable balance.
  *
@@ -83,6 +86,32 @@ export async function victoriesToday(accountId: string, now: Date): Promise<numb
         eq(shardLedger.accountId, accountId),
         gte(shardLedger.createdAt, dayStart(now)),
         sql`${shardLedger.reason} in ${VICTORY_REASONS}`,
+      ),
+    );
+
+  return row?.n ?? 0;
+}
+
+/**
+ * How many defense holds this account has been paid for **since the day
+ * boundary** (011 T046).
+ *
+ * A separate counter from `victoriesToday` rather than one function with a
+ * `reason` parameter, because the two answer questions with different rules:
+ * victories drive the daily *tier*, and holds are never tiered. This one exists
+ * only for the boost pass's ten-a-day cap, which the storefront table states
+ * separately for attacking and defending — *first 10 victories* and *first 10
+ * holds*, so ten attack wins do not consume the defense allowance.
+ */
+export async function holdsToday(accountId: string, now: Date): Promise<number> {
+  const [row] = await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(shardLedger)
+    .where(
+      and(
+        eq(shardLedger.accountId, accountId),
+        gte(shardLedger.createdAt, dayStart(now)),
+        sql`${shardLedger.reason} in ${HOLD_REASONS}`,
       ),
     );
 

@@ -89,6 +89,38 @@ export const DAILY_TIERS = [
 export const HOLDS_ARE_TIERED = false;
 
 // ---------------------------------------------------------------------------
+// The boost pass (011 T046-T048)
+// ---------------------------------------------------------------------------
+
+/**
+ * **What a held boost pass multiplies income by.**
+ *
+ * `06-progression.md`: *2× shards from attacking* and *2× shards from
+ * defending*. It is a plain term in the same product as every other multiplier,
+ * which is what makes the documented composition **emerge** rather than be
+ * special-cased — chosen ×1, chosen boosted ×2, ambush ×2, ambush boosted ×4.
+ */
+export const BOOST_MULTIPLIER = 2;
+
+/**
+ * **How many of each day's events the pass doubles: 10, and not 5 or 20.**
+ *
+ * `06-progression.md`'s storefront table: *first 10 victories that day* and
+ * *first 10 holds that day*.
+ *
+ * It is deliberately **not** aligned to the 5-victory bonus tier, and the
+ * misalignment is the design rather than an oversight. Aligning them would make
+ * the pass exactly "extend the return bonus", so its value would collapse for
+ * anybody who plays past five wins and the two mechanisms would be impossible to
+ * tune apart. At 10 the pass covers roughly a session, spans the 1.5× tier and
+ * the 1.0× tier, and stays worth something to both a short player and a long one.
+ *
+ * **A reader who "fixes" the misalignment fails a test** — `boost.test.ts` pins
+ * the number and says this out loud.
+ */
+export const BOOSTED_EVENTS_PER_DAY = 10;
+
+// ---------------------------------------------------------------------------
 // Runes
 // ---------------------------------------------------------------------------
 

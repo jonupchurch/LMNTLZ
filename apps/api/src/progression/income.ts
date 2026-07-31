@@ -41,11 +41,14 @@
  */
 import { starterIncomeMultiplier } from '../matchmaking/starterLeague.js';
 import { headroom } from './cap.js';
-import { append, victoriesToday } from './ledger.js';
+import { append, holdsToday, victoriesToday } from './ledger.js';
+import { entitlementFor } from '../payments/entitlements.js';
 import type { LedgerReason } from '../db/schema/ledger.js';
 import { db } from '../db/client.js';
 import {
   ATTACK_VICTORY,
+  BOOST_MULTIPLIER,
+  BOOSTED_EVENTS_PER_DAY,
   DAILY_TIERS,
   DEFENSE_HOLD,
   HIDDEN_MULTIPLIER,
@@ -94,6 +97,15 @@ export function payoutFor(
   event: IncomeEvent,
   victoryNumber: number,
   starterMultiplier = 1,
+  /**
+   * **Whether a held boost pass applies to *this* event** (011 T046).
+   *
+   * A boolean rather than the entitlement, and rather than a count, because the
+   * ten-a-day cap is a question about the day and this function is pure. The
+   * caller — `awardShards` — knows how many of this kind have already been paid
+   * today; this one knows what a boosted event is worth.
+   */
+  boosted = false,
 ): number {
   const base = baseFor(event.kind);
   if (base === 0) return 0;
@@ -105,7 +117,22 @@ export function payoutFor(
 
   const starter = event.kind === 'attack-victory' ? starterMultiplier : 1;
 
-  return Math.floor(base * zone * tiered * starter);
+  /**
+   * **A term in the same product as everything else, deliberately.**
+   *
+   * `06-progression.md` documents the composition as *chosen ×1 · chosen boosted
+   * ×2 · ambush ×2 · ambush boosted ×4*, and the ×4 is not written anywhere in
+   * this file — it **emerges** from `zone × boost`. Special-casing "ambush with a
+   * pass" would produce the same four numbers today and be a second place the
+   * rule lives the moment either half moves.
+   *
+   * It multiplies the starter bonus too, and that is correct: both are
+   * multipliers on the same base, and a player who bought a pass during their
+   * starter window gets what both say they give.
+   */
+  const boost = boosted ? BOOST_MULTIPLIER : 1;
+
+  return Math.floor(base * zone * tiered * starter * boost);
 }
 
 /** What `awardShards` actually did, so a caller can report it without a re-read. */
@@ -136,13 +163,39 @@ export async function awardShards(
 ): Promise<Award> {
   if (event.kind === 'loss') return { credited: 0, earned: 0, cappedAt: null };
 
-  const [priorVictories, starter, room] = await Promise.all([
+  /**
+   * **The entitlement, read here, in the income path** (011 T046, T049).
+   *
+   * This call is the whole of Phase 8. `entitlementFor` existed, was correct and
+   * was tested, and **nothing outside `payments/` had ever called it** — so a
+   * purchased pass granted a row, sent a receipt, and paid exactly normal
+   * income. The store took the money and appeared to work, which is the worst
+   * shape of the seam-with-no-caller defect this project keeps shipping: the
+   * other instances were loud.
+   *
+   * `boostedSoFar` counts the same kind of event, so ten attack wins do not
+   * consume the defense allowance — the storefront table states the two caps
+   * separately.
+   */
+  const [priorVictories, boostedSoFar, held, starter, room] = await Promise.all([
     event.kind === 'attack-victory' ? victoriesToday(accountId, now) : Promise.resolve(0),
+    event.kind === 'attack-victory'
+      ? victoriesToday(accountId, now)
+      : holdsToday(accountId, now),
+    entitlementFor(accountId, 'boost-pass', now),
     starterIncomeMultiplier(accountId),
     headroom(accountId),
   ]);
 
-  const earned = payoutFor(event, priorVictories + 1, starter);
+  /**
+   * **The first ten of each kind, and the pass must be live at this instant.**
+   *
+   * `boostedSoFar` is how many have already been paid today, so the event being
+   * paid is number `boostedSoFar + 1` — boosted while that is within the cap.
+   */
+  const boosted = held.active && boostedSoFar < BOOSTED_EVENTS_PER_DAY;
+
+  const earned = payoutFor(event, priorVictories + 1, starter, boosted);
 
   /**
    * **The cap truncates rather than refuses.** A player 30 shards from the cap

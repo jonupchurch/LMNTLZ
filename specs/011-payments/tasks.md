@@ -15,10 +15,19 @@ shared [specs/data-model.md](../data-model.md) § 5 · **features 005 and 010 co
 > the 2026-07-30 gap audit. Nothing can be bought.
 >
 > Three things stay here because they are genuinely this feature's:
-> **⛔ Phase 8 (T045–T049)** — **the boost pass currently does nothing.** The income
-> path never reads the entitlement, so a purchased pass pays exactly normal income.
-> Worse than the missing screen and worse than the missing adapter, because those
-> two fail loudly and this one takes the money and works.
+> **✅ Phase 8 (T045–T049) — CLOSED 2026-07-30.** The boost pass now pays.
+> `awardShards()` reads `entitlementFor()` and doubles the first **10** attack
+> victories and the first **10** defense holds of the day, counted separately so
+> attacking does not consume the defense allowance. The multiplier is an
+> ordinary term in the same product as every other, so the documented
+> composition **emerges** — chosen ×1 · chosen boosted ×2 · ambush ×2 · ambush
+> boosted ×4 — with nothing special-cased.
+>
+> It was the worst shape of the seam-with-no-caller defect this project keeps
+> shipping: the missing screen and the missing adapter both fail loudly, and
+> this one **took the money and appeared to work**. Held by
+> `tests/progression/boost.test.ts`, which asserts the positive case first
+> because a test that only checks a non-holder passes against the broken code.
 > **T031** — the provider adapter. `apps/api/src/payments/vendor/` holds only a
 > mailer, `setRail()` is called by *tests only*, and `POST /checkout` raises
 > `NoRailError` in production.
@@ -288,11 +297,11 @@ can audit* only holds if the storefront cannot quietly breach it.
 > **This must land before the store screen (018 US2).** Selling a pass that pays
 > nothing is worse than selling nothing.
 
-- [ ] T045 [US1] Write `apps/api/tests/progression/boost.test.ts` **first, and assert the positive case** — a holder's victories 1–10 pay double, victory 11 pays the unboosted tiered rate, and a non-holder is unchanged. A test that only checks the non-holder passes today and proves nothing
-- [ ] T046 [US1] Thread the held entitlement into `payoutFor` in `apps/api/src/progression/income.ts` — **doubling the first 10 victories of the day only** (`06-progression.md`), applied so the documented composition still emerges: chosen ×1 · chosen boosted ×2 · ambush ×2 · **ambush boosted ×4**, with nothing special-cased
-- [ ] T047 [US1] Confirm the boost interacts with the **cap** and the **starter multiplier** exactly as the unboosted path does — the cap truncates rather than refuses, and a boosted victory at the cap credits the headroom, not zero
-- [ ] T048 [US1] Assert the boost cap is **10**, not 5 or 20 — it is deliberately *not* aligned to the 5-victory bonus tier (`06-progression.md`), so a reader who "fixes" the misalignment must fail a test
-- [ ] T049 Add a **caller assertion** for `entitlementFor` in the income path — `rg` it and require a hit outside `payments/`. This is the seam that was missing; nothing else would have caught it
+- [X] T045 [US1] Write `apps/api/tests/progression/boost.test.ts` **first, and assert the positive case** — a holder's victories 1–10 pay double, victory 11 pays the unboosted tiered rate, and a non-holder is unchanged. A test that only checks the non-holder passes today and proves nothing
+- [X] T046 [US1] Thread the held entitlement into `payoutFor` in `apps/api/src/progression/income.ts` — **doubling the first 10 victories of the day only** (`06-progression.md`), applied so the documented composition still emerges: chosen ×1 · chosen boosted ×2 · ambush ×2 · **ambush boosted ×4**, with nothing special-cased
+- [X] T047 [US1] Confirm the boost interacts with the **cap** and the **starter multiplier** exactly as the unboosted path does — the cap truncates rather than refuses, and a boosted victory at the cap credits the headroom, not zero
+- [X] T048 [US1] Assert the boost cap is **10**, not 5 or 20 — it is deliberately *not* aligned to the 5-victory bonus tier (`06-progression.md`), so a reader who "fixes" the misalignment must fail a test
+- [X] T049 Add a **caller assertion** for `entitlementFor` in the income path — `rg` it and require a hit outside `payments/`. This is the seam that was missing; nothing else would have caught it
 
 **Checkpoint**: a boost pass changes what a player earns, and the 4× ambush
 composition is asserted rather than assumed.
