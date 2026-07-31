@@ -6,6 +6,7 @@ import { AttackScreen } from './features/attack/AttackScreen.js';
 import { BattleScreen } from './features/battle/BattleScreen.js';
 import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import type { StartedBattle } from './features/battle/types.js';
+import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
 import { GuildScreen } from './features/guilds/GuildScreen.js';
@@ -73,7 +74,33 @@ type Screen =
    */
   | { readonly kind: 'guild' };
 
+/**
+ * **The dev-only component gallery** (017 T032).
+ *
+ * `import.meta.env.DEV` is replaced by Vite with a literal `false` in a
+ * production build, so the import and the whole branch are dead code the
+ * bundler drops — the gallery never ships.
+ *
+ * It is checked here, in a wrapper, so the early return happens **before any
+ * hook runs**. Putting it inside `GameApp` would make every hook below it
+ * conditional, which is the bug that produces "rendered fewer hooks than
+ * expected" on the next navigation.
+ *
+ * The registration matters as much as the component: a library nothing renders
+ * is the defect this project has shipped five times, so the gallery is mounted
+ * by the real app and `gallery.test.tsx` asserts it renders.
+ */
+const galleryRequested = (): boolean =>
+  typeof window !== 'undefined' && window.location.hash === '#gallery';
+
 export function App(): JSX.Element {
+  if (import.meta.env.DEV && galleryRequested()) {
+    return <GalleryScreen />;
+  }
+  return <GameApp />;
+}
+
+function GameApp(): JSX.Element {
   const [phase, setPhase] = useState<Phase>(() =>
     hasStoredSession() ? { kind: 'restoring' } : { kind: 'anonymous' },
   );

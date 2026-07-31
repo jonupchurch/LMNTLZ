@@ -84,27 +84,27 @@ and 018.
 
 ### Tests first
 
-- [ ] T015 [P] [US2] Write `apps/client/tests/components/gallery.test.tsx` — render every component in every state; **the test fails if a state named in the export has no case**
-- [ ] T016 [P] [US2] Write `apps/client/tests/components/noColourProp.test.ts` — scan `components/` and **fail on any prop named `color`, `colour`, `tint` or `hex`** (FR-007, Constitution XV). Comment-stripped and anti-vacuity guarded like T006
-- [ ] T017 [P] [US2] Write `apps/client/tests/components/focus.test.tsx` — every interactive component shows a visible ring on `:focus-visible` and **no component sets `outline: none`**
+- [X] T015 [P] [US2] Write `apps/client/tests/components/gallery.test.tsx` — render every component in every state; **the test fails if a state named in the export has no case**
+- [X] T016 [P] [US2] Write `apps/client/tests/components/noColourProp.test.ts` — scan `components/` and **fail on any prop named `color`, `colour`, `tint` or `hex`** (FR-007, Constitution XV). Comment-stripped and anti-vacuity guarded like T006
+- [X] T017 [P] [US2] Write `apps/client/tests/components/focus.test.tsx` — every interactive component shows a visible ring on `:focus-visible` and **no component sets `outline: none`**
 
 ### The layer
 
-- [ ] T018 [US2] `components/shell/AppShell.tsx` — the 12-column grid, gutter 24, content capped 1400 and centred above ~2100, rail pinned left. **Reserve the Electron title-bar/drag region as a slot it does not fill** — there is no Electron at 1.0
-- [ ] T019 [US2] `components/shell/Rail.tsx` + `RailGroup.tsx` — fixed-width left rail, exactly one active entry, groups expandable from the keyboard. **`RailEntry` carries no destination that does not exist** (FR-015)
-- [ ] T020 [US2] `components/shell/Header.tsx` — shard balance, username, connection state; profile hangs off the username rather than taking a rail slot
-- [ ] T021 [P] [US2] `components/controls/Button.tsx` — **all seven states**, every one rendered in the gallery. A state that exists in the export and not here is the defect T015 catches
-- [ ] T022 [P] [US2] `components/controls/` inputs and form fields — rest, focus, error, disabled
-- [ ] T023 [P] [US2] `components/type/TypeBadge.tsx` — takes a `DamageType` and **derives its colour**; nine forces
-- [ ] T024 [US2] `components/type/RelationshipStrip.tsx` — **five tiers**, read from `@lmntlz/content`: Bane ×1.50 · Fault ×1.25 · neutral ×1.00 · secondary ×0.80 · primary ×0.50. **The export draws four and is wrong**; canon wins, and the discrepancy is already logged in `resources/README.md`
-- [ ] T025 [US2] Type the strip and the grid on `Effectiveness`, never `number` — this is what makes the design's `×1.2` a **compile error rather than a review catch** (FR-019)
-- [ ] T026 [P] [US2] `components/hero/HeroCard.tsx` — three scales carrying **the same data**, differing only in density, so a caller never loses information by choosing a smaller one
-- [ ] T027 [P] [US2] `components/hero/PowerSlot.tsx` + `CooldownRing.tsx` — the ring is a fraction of **`turnsRemaining / turnsTotal`**. No `Date`, no `setInterval`, no milliseconds (FR-008, Constitution XIII)
-- [ ] T028 [P] [US2] `components/readouts/Meter.tsx` and `Pill.tsx`
-- [ ] T029 [US2] `components/readouts/EffectivenessGrid.tsx` — the nine-type heat readout, **every cell from the generated matrix** and none transcribed
-- [ ] T030 [P] [US2] `components/system/ConnectionState.tsx` and the maintenance state (*"the courts are in recess"*)
-- [ ] T031 [US2] `apps/client/src/components/index.ts` — the single public entry point 014/015/016/018 import from
-- [ ] T032 [US2] **WIRING** — build the gallery route and **register it in `apps/client/src/App.tsx`**, dev-only. Assert in `gallery.test.tsx` that it renders, then remove the registration and confirm the test fails. A component library nothing renders is exactly the defect this project has hit five times
+- [X] T018 [US2] `components/shell/AppShell.tsx` — the 12-column grid, gutter 24, content capped 1400 and centred above ~2100, rail pinned left. **Reserve the Electron title-bar/drag region as a slot it does not fill** — there is no Electron at 1.0
+- [X] T019 [US2] `components/shell/Rail.tsx` + `RailGroup.tsx` — fixed-width left rail, exactly one active entry, groups expandable from the keyboard. **`RailEntry` carries no destination that does not exist** (FR-015)
+- [X] T020 [US2] `components/shell/Header.tsx` — shard balance, username, connection state; profile hangs off the username rather than taking a rail slot
+- [X] T021 [P] [US2] `components/controls/Button.tsx` — **all seven states**, every one rendered in the gallery. A state that exists in the export and not here is the defect T015 catches
+- [X] T022 [P] [US2] `components/controls/` inputs and form fields — rest, focus, error, disabled
+- [X] T023 [P] [US2] `components/type/TypeBadge.tsx` — takes a `DamageType` and **derives its colour**; nine forces
+- [X] T024 [US2] `components/type/RelationshipStrip.tsx` — **five tiers**, read from `@lmntlz/content`: Bane ×1.50 · Fault ×1.25 · neutral ×1.00 · secondary ×0.80 · primary ×0.50. **The export draws four and is wrong**; canon wins, and the discrepancy is already logged in `resources/README.md`
+- [X] T025 [US2] Type the strip and the grid on `Effectiveness`, never `number` — this is what makes the design's `×1.2` a **compile error rather than a review catch** (FR-019)
+- [X] T026 [P] [US2] `components/hero/HeroCard.tsx` — three scales carrying **the same data**, differing only in density, so a caller never loses information by choosing a smaller one
+- [X] T027 [P] [US2] `components/hero/PowerSlot.tsx` + `CooldownRing.tsx` — the ring is a fraction of **`turnsRemaining / turnsTotal`**. No `Date`, no `setInterval`, no milliseconds (FR-008, Constitution XIII)
+- [X] T028 [P] [US2] `components/readouts/Meter.tsx` and `Pill.tsx`
+- [X] T029 [US2] `components/readouts/EffectivenessGrid.tsx` — the nine-type heat readout, **every cell from the generated matrix** and none transcribed
+- [X] T030 [P] [US2] `components/system/ConnectionState.tsx` and the maintenance state (*"the courts are in recess"*)
+- [X] T031 [US2] `apps/client/src/components/index.ts` — the single public entry point 014/015/016/018 import from
+- [X] T032 [US2] **WIRING** — build the gallery route and **register it in `apps/client/src/App.tsx`**, dev-only. Assert in `gallery.test.tsx` that it renders, then remove the registration and confirm the test fails. A component library nothing renders is exactly the defect this project has hit five times
 
 **Checkpoint**: the layer exists, every state is visible, and nothing accepts a colour.
 
