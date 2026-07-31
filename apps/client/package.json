@@ -17,6 +17,9 @@
   },
   "//dependencies": "@vercel/analytics lists vue, next, nuxt, svelte and remix as peers; every one is optional and only the react entry point is imported here. Expect pnpm to say nothing about them, and do not add any of them to satisfy a warning.",
   "dependencies": {
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/chakra-petch": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@lmntlz/content": "workspace:*",
     "@lmntlz/sim": "workspace:*",
     "@vercel/analytics": "^2.0.1",

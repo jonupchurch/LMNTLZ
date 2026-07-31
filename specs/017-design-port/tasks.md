@@ -24,7 +24,7 @@ visual suite becomes a rubber stamp.
 
 ## Phase 1: Setup
 
-- [ ] T001 Add `@fontsource/chakra-petch`, `@fontsource/barlow` and `@fontsource/jetbrains-mono` to `apps/client/package.json` — **exact weights only**: Chakra Petch 500/600/700, Barlow 400/500/600/700, JetBrains Mono 400/500/700
+- [x] T001 Add `@fontsource/chakra-petch`, `@fontsource/barlow` and `@fontsource/jetbrains-mono` to `apps/client/package.json` — **exact weights only**: Chakra Petch 500/600/700, Barlow 400/500/600/700, JetBrains Mono 400/500/700
 - [ ] T002 Add `"icons:build": "tsx tools/build-icons.ts"` to the root `package.json`, beside the existing `content:build`
 - [ ] T003 [P] Create `apps/client/src/components/{shell,controls,type,hero,readouts,system,icons}/` — grouped by the Design System export's own sections, **not by feature**, because a component under `features/` is one no other feature will find
 - [ ] T004 [P] Create `apps/client/tests/components/` for the gallery and per-component suites
@@ -59,12 +59,12 @@ intended family. Then disable the network entirely and reload — they still ren
 declared in `base.css` and never loaded since feature 006, so every screen ever
 shipped has rendered in `system-ui`.
 
-- [ ] T009 [US1] Import the nine faces in `apps/client/src/main.tsx` (`@fontsource/…/{weight}.css`), **latin subset, no italics** — nine faces, not the full families
-- [ ] T010 [US1] Set `font-display: swap` — the fallback stack in `base.css` is deliberate, and a flash of fallback beats a flash of nothing on a screen a player is mid-decision on
-- [ ] T011 [US1] Replace the deferral comment in `apps/client/index.html` with what actually happened — it currently says fonts arrive *"with the first screen that needs them"*, and every screen needed them
-- [ ] T012 [P] [US1] Write `apps/client/tests/site/fonts.test.ts` — assert each of the three CSS variables resolves to its intended family and **not** to `system-ui`
-- [ ] T013 [US1] Write `apps/client/e2e/fonts.spec.ts` — **block all requests to `fonts.googleapis.com` and `fonts.gstatic.com`, then assert the fonts still render.** This is the Steam-from-disk case and the reason they are self-hosted (Constitution XIX)
-- [ ] T014 [US1] **WIRING** — confirm the imports are reached: `main.tsx` is the app entry, so assert in `fonts.test.ts` that a rendered heading computes to Chakra Petch. **A stylesheet imported by nothing is the same defect as a component rendered by nothing**
+- [x] T009 [US1] Import the nine faces in `apps/client/src/main.tsx` (`@fontsource/…/{weight}.css`), **latin subset, no italics** — nine faces, not the full families
+- [x] T010 [US1] ~~Set `font-display: swap`~~ — **already the @fontsource default**, verified in `latin-500.css`. Nothing to override, and an override would be a second copy to keep in sync. Original intent — the fallback stack in `base.css` is deliberate, and a flash of fallback beats a flash of nothing on a screen a player is mid-decision on
+- [x] T011 [US1] Replace the deferral comment in `apps/client/index.html` with what actually happened — it currently says fonts arrive *"with the first screen that needs them"*, and every screen needed them
+- [x] T012 [P] [US1] Write `apps/client/tests/site/fonts.test.ts` — assert each of the three CSS variables resolves to its intended family and **not** to `system-ui`
+- [x] T013 [US1] Write `apps/client/e2e/fonts.spec.ts` — **block all requests to `fonts.googleapis.com` and `fonts.gstatic.com`, then assert the fonts still render.** This is the Steam-from-disk case and the reason they are self-hosted (Constitution XIX)
+- [x] T014 [US1] **WIRING** — confirm the imports are reached: `main.tsx` is the app entry, so assert in `fonts.test.ts` that a rendered heading computes to Chakra Petch. **A stylesheet imported by nothing is the same defect as a component rendered by nothing**
 
 **Checkpoint**: the game reads in its own typeface, offline. Report two claims
 separately — *tasks closed and gates green*, and *a player sees the change*.

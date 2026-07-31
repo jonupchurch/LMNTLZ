@@ -16,10 +16,23 @@
     -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <!--
-      Fonts are self-hosted rather than fetched from Google Fonts: the Steam
-      build runs from disk and may have no network at all, and a webfont that
-      silently fails there would reflow the whole interface. Added with the
-      first screen that needs them; the stacks below fall back cleanly until.
+      **Fonts are imported by `src/main.tsx`, not linked here** (017 T009).
+
+      Self-hosted rather than fetched from Google Fonts, for the reason this
+      comment has always given: the Steam build runs from disk and may have no
+      network at all, and a webfont that silently fails there would reflow the
+      whole interface.
+
+      What this comment used to say was *"added with the first screen that needs
+      them"*. **Every screen needed them, and none of them triggered it** — the
+      three families sat declared in `base.css` for six features while every
+      screen rendered in `system-ui`. A deferral whose condition is always true
+      is not a deferral; it is a defect with an excuse attached, and it was
+      invisible because the fallback chain is clean.
+
+      They are imports rather than a `<link>` so Vite fingerprints the `woff2`
+      into `assets/` and emits a RELATIVE url — `base: './'` in `vite.config.ts`
+      is the same decision as the favicon below, for the same disk-loaded build.
     -->
   </head>
   <body>
