@@ -103,6 +103,26 @@ describe('every rail destination is reachable from App', () => {
     expect(id).toBeTruthy();
   });
 
+  /**
+   * T065's caller assertion. The Codex is content-only, so reaching it renders
+   * real rules rather than a spinner — cut its branch out of `App` and this
+   * goes red.
+   */
+  it('reaches the Codex, and it renders generated rules', async () => {
+    signIn();
+    render(<App />);
+    await waitFor(() => expect(rail()).toBeInTheDocument());
+
+    within(rail()).getByRole('button', { name: /codex/i }).click();
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', { level: 1, name: /laws of aethrym/i }),
+      ).toBeInTheDocument(),
+    );
+    expect(document.body.textContent).toContain('×0.80');
+  });
+
   /** The profile is the one destination that is NOT in the rail (T020). */
   it('reaches the profile from the header username', async () => {
     signIn();

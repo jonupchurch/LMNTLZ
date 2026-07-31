@@ -10,6 +10,7 @@ import { ROSTER_SIZE } from '@lmntlz/content';
 import { AppShell, Header, Panel, Rail, type RailEntry } from './components/index.js';
 import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
+import { CodexScreen } from './features/codex/CodexScreen.js';
 import { RosterScreen } from './features/roster/RosterScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
 import { GuildScreen } from './features/guilds/GuildScreen.js';
@@ -82,7 +83,9 @@ type Screen =
    * everybody — and it is *not* the squad builder's hero list, which is an
    * allocation control that has to stay where the allocation happens.
    */
-  | { readonly kind: 'roster' };
+  | { readonly kind: 'roster' }
+  /** The Codex (T065). Content only — the roster is already in the bundle. */
+  | { readonly kind: 'codex' };
 
 /**
  * **The dev-only component gallery** (017 T032).
@@ -247,6 +250,8 @@ function GameApp(): JSX.Element {
                       />
                     ) : screen.kind === 'roster' ? (
                       <RosterScreen />
+                    ) : screen.kind === 'codex' ? (
+                      <CodexScreen />
                     ) : (
                       <SquadsScreen onUnauthenticated={onUnauthenticated} />
                     )}
@@ -336,7 +341,7 @@ function GameApp(): JSX.Element {
  * THE COURT is a plain entry today because Guild is the only social screen
  * built. It becomes a group when 014 lands Chat beside it.
  */
-type RailId = 'squads' | 'roster' | 'attack' | 'court';
+type RailId = 'squads' | 'roster' | 'attack' | 'court' | 'codex';
 
 export function railEntries(): RailEntry[] {
   return [
@@ -344,6 +349,9 @@ export function railEntries(): RailEntry[] {
     { id: 'roster', label: 'Roster', badge: ROSTER_SIZE },
     { id: 'attack', label: 'Matchmaking' },
     { id: 'court', label: 'The Court' },
+    /* T065 — registered now that the screen exists, and not one commit
+       earlier. That ordering is FR-015, not bookkeeping. */
+    { id: 'codex', label: 'Codex' },
   ];
 }
 
@@ -362,6 +370,8 @@ export function screenFor(id: string, accountId: string): Screen {
       return { kind: 'attack' };
     case 'court':
       return { kind: 'guild' };
+    case 'codex':
+      return { kind: 'codex' };
     case 'profile':
       return { kind: 'profile', targetId: accountId };
     case 'squads':

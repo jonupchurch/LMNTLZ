@@ -63,7 +63,8 @@ describe('every rail entry leads somewhere real', () => {
  */
 describe('unbuilt destinations are absent, not disabled', () => {
   const UNBUILT = [
-    ['Codex', '017 Phase 7'],
+    /* `Codex` graduated off this list in T065, which is the list working as
+       intended: an entry appears the commit its screen does, not before. */
     ['Rune Forge', '018'],
     ['Store', '018'],
     ['Dispatches', '016'],

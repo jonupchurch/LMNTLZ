@@ -183,12 +183,12 @@ green**.
 **Independent Test**: Reachable from the rail, rendering all 27 heroes and all nine
 forces from real content, matching `LMNTLZ Codex.dc.html`.
 
-- [ ] T060 [P] [US5] Write `apps/client/tests/codex/codex.test.tsx` — all 27 champions render; **Bane and Fault are shown as derived**, never as authored fields (Constitution XV)
-- [ ] T061 [US5] Build `features/codex/CodexScreen.tsx` — *THE LAWS* and *THE CHAMPIONS*, over `@lmntlz/content`. **No new route**: the client already loads the roster
-- [ ] T062 [US5] Render the counter ring from the **generated bijection**, so it cannot disagree with the engine
-- [ ] T063 [US5] Render the effectiveness table from the **generated matrix**. ⚠️ **The export prints `FAULT ×1.2` and omits ×0.80 entirely** — read all five tiers from `@lmntlz/content` so the screen is correct by construction and cannot drift again (FR-019, SC-010)
-- [ ] T064 [US5] Add a test that **changing the generated source changes the screen** — the proof that no number was transcribed
-- [ ] T065 [US5] **WIRING** — add `{ kind: 'codex' }` to the `Screen` union in `App.tsx`, render it, and activate its rail entry. Assert the caller, then cut it and watch the test fail
+- [X] T060 [P] [US5] Write `apps/client/tests/codex/codex.test.tsx` — all 27 champions render; **Bane and Fault are shown as derived**, never as authored fields (Constitution XV)
+- [X] T061 [US5] Build `features/codex/CodexScreen.tsx` — *THE LAWS* and *THE CHAMPIONS*, over `@lmntlz/content`. **No new route**: the client already loads the roster
+- [X] T062 [US5] Render the counter ring from the **generated bijection**, so it cannot disagree with the engine
+- [X] T063 [US5] Render the effectiveness table from the **generated matrix**. ⚠️ **The export prints `FAULT ×1.2` and omits ×0.80 entirely** — read all five tiers from `@lmntlz/content` so the screen is correct by construction and cannot drift again (FR-019, SC-010)
+- [X] T064 [US5] Add a test that **changing the generated source changes the screen** — the proof that no number was transcribed
+- [X] T065 [US5] **WIRING** — add `{ kind: 'codex' }` to the `Screen` union in `App.tsx`, render it, and activate its rail entry. Assert the caller, then cut it and watch the test fail
 
 **Checkpoint**: the Codex is reachable and every number in it is generated.
 
