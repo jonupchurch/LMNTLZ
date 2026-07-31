@@ -26,7 +26,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '../../src/index.js';
 import { closeDb } from '../../src/db/client.js';
 import { GUILD_PERMISSIONS, roleCan, setRole } from '../../src/guilds/membership.js';
-import { MAX_OFFICERS } from '../../src/guilds/config.js';
+import { FOUNDING_COST_SHARDS, MAX_OFFICERS } from '../../src/guilds/config.js';
 import { signIn, type Signed } from '../profiles/session.js';
 import { Fixtures } from './helpers.js';
 
@@ -187,5 +187,48 @@ describe('at most three officers (FR-017)', () => {
     );
 
     expect(res.status, 'the only routes to master are founding and succession').toBe(400);
+  });
+});
+
+/**
+ * **`GET /v1/me/guild` carries the shard price** (017 T057 · Constitution XV).
+ *
+ * ### TL;DR
+ *
+ * Founding a guild costs shards, and so does inheriting one. The screens that
+ * mention that price now read it from the server instead of having the number
+ * typed into their sentences.
+ *
+ * ### Why the field exists at all
+ *
+ * `GET /v1/guilds/new` has always returned `cost`, and it is fetched only when
+ * somebody clicks *Found a guild*. Every screen for a player who is **already in
+ * a guild** therefore had no source for the number — so four sentences in the
+ * client wrote `650` out by hand: the disband warning, and three in the
+ * succession panel. Each was correct and none was connected to
+ * `FOUNDING_COST_SHARDS`, so the first change to that constant would have left
+ * the game quoting a price it does not charge, with nothing to catch it.
+ *
+ * Asserted against the constant rather than against `650`, so this test cannot
+ * become the fifth transcription.
+ */
+describe('the price of a guild travels with the payload', () => {
+  it('sends foundingCostShards, and it is the constant the charge uses', async () => {
+    const res = await app.request('/v1/me/guild', { headers: master.headers() });
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as { foundingCostShards?: number };
+    expect(
+      body.foundingCostShards,
+      'without this the disband and succession copy has no source for the price',
+    ).toBe(FOUNDING_COST_SHARDS);
+  });
+
+  it('sends it to a player with no guild too — that is who founds one', async () => {
+    const res = await app.request('/v1/me/guild', { headers: outsider.headers() });
+    const body = (await res.json()) as { guild: unknown; foundingCostShards?: number };
+
+    expect(body.guild).toBeNull();
+    expect(body.foundingCostShards).toBe(FOUNDING_COST_SHARDS);
   });
 });

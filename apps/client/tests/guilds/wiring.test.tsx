@@ -36,6 +36,18 @@ const EMPTY = {
   applications: [],
   invites: [],
   applicationBudget: { used: 0, max: 5 },
+  /**
+   * **Present because the screen quotes it, and absent it renders `undefined`**
+   * (017 T057).
+   *
+   * These fixtures are plain object literals handed to a `fetch` stub as a JSON
+   * body, so TypeScript never checks them against `MyGuildState` — adding a
+   * required field to the payload type does not break this file, it just makes
+   * the screen render a hole. Which is what happened: the disband control read
+   * "Disband — the undefined is not returned" and every one of the assertions
+   * below still passed.
+   */
+  foundingCostShards: 650,
 };
 
 const IN_A_GUILD = {
@@ -69,6 +81,18 @@ const IN_A_GUILD = {
   applications: [],
   invites: [],
   applicationBudget: { used: 0, max: 5 },
+  /**
+   * **Present because the screen quotes it, and absent it renders `undefined`**
+   * (017 T057).
+   *
+   * These fixtures are plain object literals handed to a `fetch` stub as a JSON
+   * body, so TypeScript never checks them against `MyGuildState` — adding a
+   * required field to the payload type does not break this file, it just makes
+   * the screen render a hole. Which is what happened: the disband control read
+   * "Disband — the undefined is not returned" and every one of the assertions
+   * below still passed.
+   */
+  foundingCostShards: 650,
 };
 
 function stubFetch(bodies: Record<string, unknown>): void {
@@ -259,6 +283,35 @@ describe('the guild screen requests its data', () => {
       viewed,
       'a roster that does not reach a profile makes the guild badge a dead end',
     ).toEqual(['other']);
+  });
+
+  /**
+   * **Every shard price on this screen comes off the payload** (017 T057 ·
+   * FR-019).
+   *
+   * Four sentences used to write `650` out by hand — the disband warning, and
+   * three in the succession panel. All four were correct on the day they were
+   * typed and none of them was connected to `FOUNDING_COST_SHARDS`, so a change
+   * to the constant would have left the game telling players a price it does
+   * not charge. No test could have caught that, because a wrong number in a
+   * sentence compiles.
+   *
+   * The fixture deliberately sends a value that is **not** the real 650, so a
+   * transcription that happens to match production cannot pass this.
+   */
+  it('quotes the price the server sent, not one typed into the sentence', async () => {
+    stubFetch({ '/me/guild': { ...IN_A_GUILD, foundingCostShards: 12345 } });
+
+    render(
+      <GuildScreen accountId="me" onViewProfile={() => {}} onUnauthenticated={() => {}} />,
+    );
+
+    const disband = await screen.findByRole('button', { name: /disband/i });
+    expect(disband.textContent).toContain('12345');
+    expect(
+      disband.textContent,
+      'the disband warning still has a hardcoded price in it',
+    ).not.toContain('650');
   });
 });
 

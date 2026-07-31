@@ -49,22 +49,22 @@ export function ApplicationForm({
   };
 
   return (
-    <div className="rounded-lg border border-stone-800 p-5">
+    <div className="rounded-lg border border-line p-5">
       <h2 className="mb-3 text-h2 font-semibold">Your applications</h2>
 
       {open.length > 0 ? (
         <ul className="grid gap-2">
           {open.map((a) => (
             <li key={a.id} className="flex items-center justify-between gap-3 text-body">
-              <span className="text-stone-200">
+              <span className="text-parchment">
                 Waiting ·{' '}
-                <span className="text-stone-400">
+                <span className="text-faint">
                   expires {new Date(a.expiresAt).toLocaleDateString()}
                 </span>
               </span>
               <button
                 type="button"
-                className="text-caption text-stone-400 underline"
+                className="text-caption text-faint underline"
                 onClick={() => void withdraw(a.id)}
               >
                 Withdraw
@@ -81,7 +81,7 @@ export function ApplicationForm({
        * mysterious.
        */}
       {dismissed.length > 0 ? (
-        <ul className="mt-3 grid gap-1 text-body text-stone-400">
+        <ul className="mt-3 grid gap-1 text-body text-faint">
           {dismissed.map((a) => (
             <li key={a.id}>
               Dismissed — you can apply to that guild again a day later.
@@ -90,7 +90,7 @@ export function ApplicationForm({
         </ul>
       ) : null}
 
-      {error ? <p className="mt-2 text-body text-red-400">{error}</p> : null}
+      {error ? <p className="mt-2 text-body text-slash-lit">{error}</p> : null}
     </div>
   );
 }

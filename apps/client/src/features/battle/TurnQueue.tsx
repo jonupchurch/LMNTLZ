@@ -18,6 +18,20 @@
  * Every standing hero gains `50 + Speed` per tick and acts at 100. Nobody should
  * ever have to know that. The accumulator is not shown, the tick is not shown,
  * and what is rendered is the ordered list the arithmetic produces.
+ *
+ * ### The export draws a rail; its node numbers are ticks, and those do not come
+ *
+ * `LMNTLZ Turn Sequence.dc.html` renders the order as connected nodes down a
+ * rail — a numbered disc per entry, a 2px line joining them — and that reads
+ * far better than a flat list, so it is what this draws now (017 T051).
+ *
+ * **The number inside the disc is `{{ f.tick }}` in the export, and it is not
+ * here.** Constitution XIII and `CLAUDE.md` both settle it in the same words:
+ * *a tick is internal — the player sees a projected turn queue*. Putting the
+ * tick on screen would make the accumulator part of the interface, and then
+ * every future change to `50 + Speed` becomes a visible change to a number
+ * players have learned to read. The disc carries the **position in the queue**:
+ * 1 is next, 2 is after that, and nothing about how the engine got there.
  */
 
 import { turnQueue, type BattleState } from '@lmntlz/sim/rules';
@@ -48,10 +62,11 @@ export function TurnQueue({ state, lookahead = DEFAULT_LOOKAHEAD, heroName }: Tu
         <span className="font-mono text-caption text-faint">projected</span>
       </header>
 
-      <ol className="flex flex-col gap-1">
+      <ol className="flex flex-col">
         {queue.map((instanceId, i) => {
           const hero = heroOf(instanceId);
           const mine = hero?.side === 'attacker';
+          const last = i === queue.length - 1;
 
           return (
             <li
@@ -61,19 +76,34 @@ export function TurnQueue({ state, lookahead = DEFAULT_LOOKAHEAD, heroName }: Tu
                * Speed spread, so an instance id is not unique here.
                */
               key={`${i}-${instanceId}`}
-              className={`flex items-center justify-between gap-3 rounded px-2 py-1 font-mono text-caption ${
-                i === 0 ? 'bg-raised text-parchment' : 'text-muted'
-              }`}
+              className="grid grid-cols-[26px_1fr] gap-3"
             >
-              <span className="flex items-center gap-2">
-                <span aria-hidden className="w-4 text-right text-faint">
+              {/* The rail: a numbered disc, and a line down to the next one. */}
+              <span aria-hidden className="flex flex-col items-center">
+                <span
+                  className={[
+                    'text-caption flex size-6.5 shrink-0 items-center justify-center rounded-full border-2 font-mono',
+                    i === 0
+                      ? 'border-gold bg-gold text-void'
+                      : 'border-line bg-surface text-faint',
+                  ].join(' ')}
+                >
+                  {/* Position in the queue. Never the tick — see the note above. */}
                   {i + 1}
                 </span>
-                <span>{hero ? heroName(hero.heroId) : instanceId}</span>
+                {!last && <span className="w-0.5 flex-1 bg-line" />}
               </span>
 
-              <span className={mine ? 'text-gold' : 'text-faint'}>
-                {mine ? 'yours' : 'enemy'}
+              <span
+                className={[
+                  'text-caption flex items-baseline justify-between gap-3 pb-2 font-mono',
+                  i === 0 ? 'text-parchment' : 'text-muted',
+                ].join(' ')}
+              >
+                <span className="truncate">{hero ? heroName(hero.heroId) : instanceId}</span>
+                <span className={mine ? 'shrink-0 text-gold' : 'shrink-0 text-faint'}>
+                  {mine ? 'yours' : 'enemy'}
+                </span>
               </span>
             </li>
           );

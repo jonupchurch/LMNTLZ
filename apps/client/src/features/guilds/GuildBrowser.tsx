@@ -105,17 +105,17 @@ export function GuildBrowser({
   };
 
   return (
-    <div className="rounded-lg border border-stone-800 p-5">
+    <div className="rounded-lg border border-line p-5">
       <div className="mb-2 flex items-baseline justify-between gap-4">
         <h2 className="text-h2 font-semibold">Find a guild</h2>
-        <span className="text-body text-stone-400" data-testid="application-budget">
+        <span className="text-body text-faint" data-testid="application-budget">
           {budget.used} of {budget.max} open
         </span>
       </div>
 
-      <p className="mb-3 text-body text-stone-400">
+      <p className="mb-3 text-body text-faint">
         Applications are free and you can hold {budget.max} at once.{' '}
-        <strong className="text-stone-200">
+        <strong className="text-parchment">
           The first guild to accept you takes you, and the rest are withdrawn
           automatically.
         </strong>{' '}
@@ -125,7 +125,7 @@ export function GuildBrowser({
       <input
         aria-label="Search guilds"
         placeholder="Search by name"
-        className="mb-4 w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-body"
+        className="mb-4 w-full rounded border border-line bg-void px-3 py-2 text-body"
         value={query}
         onChange={(e) => {
           setQuery(e.currentTarget.value);
@@ -149,7 +149,7 @@ export function GuildBrowser({
           return (
             <li
               key={guild.id}
-              className="flex items-start justify-between gap-4 rounded border border-stone-800 p-3"
+              className="flex items-start justify-between gap-4 rounded border border-line p-3"
             >
               <span className="flex items-start gap-3">
                 <span
@@ -163,13 +163,13 @@ export function GuildBrowser({
                   <span className="text-xl leading-none">{ICONS[guild.emblem.icon]}</span>
                 </span>
                 <span>
-                  <span className="block font-medium text-stone-100">{guild.name}</span>
-                  <span className="block text-caption text-stone-400">
+                  <span className="block font-medium text-parchment">{guild.name}</span>
+                  <span className="block text-caption text-faint">
                     {guild.memberCount} of {guild.capacity}
                     {guild.hasRoom ? '' : ' · full'}
                   </span>
                   {guild.pitch ? (
-                    <span className="mt-1 block max-w-xl text-body text-stone-300">
+                    <span className="mt-1 block max-w-xl text-body text-muted">
                       {guild.pitch}
                     </span>
                   ) : null}
@@ -179,7 +179,7 @@ export function GuildBrowser({
               <button
                 type="button"
                 disabled={applied || full || !guild.hasRoom || blocked}
-                className="shrink-0 rounded bg-amber-700 px-3 py-1 text-body disabled:opacity-40"
+                className="shrink-0 rounded bg-gold text-void px-3 py-1 text-body disabled:opacity-40"
                 onClick={() => void applyTo(guild.id)}
               >
                 {applied ? 'Applied' : 'Apply'}
@@ -190,17 +190,17 @@ export function GuildBrowser({
       </ul>
 
       {results.length === 0 ? (
-        <p className="mt-3 text-body text-stone-400">
+        <p className="mt-3 text-body text-faint">
           {query === '' ? 'No guilds yet — found the first one.' : 'Nothing by that name.'}
         </p>
       ) : null}
 
       {full ? (
-        <p className="mt-2 text-body text-amber-400">
+        <p className="mt-2 text-body text-crush-lit">
           All {budget.max} are open. Withdraw one to apply somewhere else.
         </p>
       ) : null}
-      {error ? <p className="mt-2 text-body text-red-400">{error}</p> : null}
+      {error ? <p className="mt-2 text-body text-slash-lit">{error}</p> : null}
     </div>
   );
 }

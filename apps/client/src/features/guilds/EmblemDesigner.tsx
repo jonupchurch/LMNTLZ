@@ -130,7 +130,7 @@ export function EmblemDesigner({
       <div className="flex flex-col items-center gap-3">
         <div
           data-testid="emblem-preview"
-          className="flex h-32 w-32 items-center justify-center rounded-lg border border-stone-700"
+          className="flex h-32 w-32 items-center justify-center rounded-lg border border-line"
           style={{ background: GROUNDS[emblem.ground], color: INKS[emblem.ink] }}
         >
           <span className="text-display leading-none">{ICONS[emblem.icon]}</span>
@@ -141,7 +141,7 @@ export function EmblemDesigner({
          * player who wants a solid block of colour is allowed one.
          */}
         {low ? (
-          <p role="status" className="max-w-[16rem] text-center text-caption text-amber-400">
+          <p role="status" className="max-w-[16rem] text-center text-caption text-crush-lit">
             These two are close in tone, so the icon will be hard to make out. You can
             keep it — this is a note, not a rule.
           </p>
@@ -196,7 +196,7 @@ function Palette({
 }): JSX.Element {
   return (
     <fieldset>
-      <legend className="mb-1 text-caption uppercase tracking-wide text-stone-400">
+      <legend className="mb-1 text-caption uppercase tracking-wide text-faint">
         {label}
       </legend>
       <div className="flex flex-wrap gap-1">
@@ -208,7 +208,7 @@ function Palette({
             aria-pressed={selected === i}
             onClick={() => onSelect(i)}
             className={`flex h-8 w-8 items-center justify-center rounded border ${
-              selected === i ? 'border-amber-400' : 'border-stone-700'
+              selected === i ? 'border-gold' : 'border-line'
             }`}
           >
             {render(i)}

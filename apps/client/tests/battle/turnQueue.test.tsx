@@ -88,3 +88,54 @@ describe('the projected queue', () => {
     expect(screen.getByText(/no standing champions/i)).toBeTruthy();
   });
 });
+
+/**
+ * **No accumulator reaches the screen** (017 T051 · Constitution XIII).
+ *
+ * The Turn Sequence export draws the order as connected nodes down a rail and
+ * numbers each node `{{ f.tick }}`. The rail was worth porting; the tick was
+ * not. `CLAUDE.md` settles it — *"a tick is internal — the player sees a
+ * projected turn queue"* — and the risk is not that somebody argues with that,
+ * it is that somebody ports the export faithfully and the accumulator arrives
+ * as a side effect of good intentions.
+ *
+ * So the discs are asserted to carry **1..n**, which is the position, and the
+ * fixture is built so the two cannot be confused: its first attacker starts at
+ * accumulator 99 while everyone else is at 0, so any tick-derived number would
+ * be a large one and none of them would be a clean `1, 2, 3`.
+ */
+describe('the queue never surfaces the accumulator', () => {
+  it('numbers the rail by position, starting at 1', () => {
+    const state = board();
+    const projected = turnQueue(state, 8);
+
+    render(<TurnQueue state={state} heroName={name} />);
+    const items = screen.getAllByRole('listitem');
+
+    const discs = items.map((li) => li.querySelector('span')?.textContent?.trim() ?? '');
+    expect(discs).toEqual(projected.map((_, i) => String(i + 1)));
+  });
+
+  it('shows no accumulator value anywhere in the region', () => {
+    const state = board();
+    render(<TurnQueue state={state} heroName={name} />);
+
+    const text = screen.getByRole('region', { name: 'Turn order' }).textContent ?? '';
+
+    /**
+     * The fixture's one non-zero accumulator. Asserting on *this* number rather
+     * than on the word "tick" is what makes the test bite: a port that printed
+     * `{{ f.tick }}` would render the value, not the label.
+     */
+    const accumulators = state.heroes.map((h) => h.accumulator).filter((a) => a > 0);
+    expect(accumulators.length, 'the fixture has no accumulator to leak').toBeGreaterThan(0);
+
+    for (const value of accumulators) {
+      expect(text, `the accumulator ${value} is on screen`).not.toContain(String(value));
+    }
+
+    // And the words themselves, for the version that labels it.
+    expect(text.toLowerCase()).not.toContain('tick');
+    expect(text.toLowerCase()).not.toContain('accumulator');
+  });
+});

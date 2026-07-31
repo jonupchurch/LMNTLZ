@@ -81,6 +81,16 @@ export interface MyGuildState {
   readonly applications: readonly ApplicationView[];
   readonly invites: readonly InviteView[];
   readonly applicationBudget: { readonly used: number; readonly max: number };
+  /**
+   * What founding costs, in shards — **and what inheriting costs, which is the
+   * same number** (017 T057).
+   *
+   * It is here rather than only on `GET /guilds/new` because the screens that
+   * need to *quote* it are the ones for a player already in a guild: the
+   * disband warning and the succession panel. Both used to write `650` into
+   * their sentences, which is a rule living in prose.
+   */
+  readonly foundingCostShards: number;
 }
 
 export interface FoundingInfo {

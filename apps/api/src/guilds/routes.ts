@@ -240,6 +240,24 @@ guildRoutes.get('/me/guild', async (c) => {
         used: await openApplicationCount(accountId),
         max: MAX_CONCURRENT_APPLICATIONS,
       },
+      /**
+       * **The shard price, sent because the client kept transcribing it**
+       * (017 T057).
+       *
+       * `GET /guilds/new` already carries `cost`, and that route is only
+       * fetched when somebody clicks *Found a guild* — so every screen for a
+       * player who is **already in a guild** had no source for the number and
+       * four places wrote `650` into English prose instead: the disband
+       * warning, and three sentences in the succession panel. All four were
+       * correct, and all four would have gone silently wrong the day
+       * `FOUNDING_COST_SHARDS` moved, because nothing links them to it.
+       *
+       * A port cannot fix that — the value is not in the payload the screen
+       * receives, so this field is what makes the fix possible. It is the
+       * same constant `POST /guilds` charges and `POST /guilds/:id/succession`
+       * quotes, read from one place (Constitution XV).
+       */
+      foundingCostShards: FOUNDING_COST_SHARDS,
     },
     200,
   );

@@ -234,7 +234,8 @@ export function BattleScreen({
           )}
         </div>
 
-        <aside className="flex w-72 shrink-0 flex-col gap-4">
+        {/* 300px, the width the Battle export gives its right rail. */}
+        <aside className="flex w-75 shrink-0 flex-col gap-4">
           <TurnQueue state={state} heroName={heroName} />
           <EventLog events={events} />
         </aside>
@@ -291,11 +292,23 @@ interface BoardProps {
   readonly busy: boolean;
 }
 
-/** Rows 1–3 are the player's, 4–6 the enemy's, on one shared axis. */
+/**
+ * Rows 1–3 are the player's, 4–6 the enemy's, on one shared axis (017 T050).
+ *
+ * **The axis is now on the screen instead of only in this comment.** The board
+ * used to draw two `flex-wrap` heaps labelled *Defenders* and *Your squad*,
+ * sorted by row and then allowed to wrap — so the one fact that decides every
+ * targeting question, *which row is this champion standing in*, was the one
+ * thing you could not see. `LMNTLZ Battle.dc.html` prints `ROW {{ u.row }}` on
+ * every card for exactly that reason.
+ *
+ * Six labelled rows, 6 down to 1, top to bottom: the enemy's back row is
+ * furthest away and the player's front row sits against the enemy's. A row
+ * that empties keeps its heading, because an empty row is load-bearing —
+ * distance counts *occupied* rows crossed, so a cleared row is what opens the
+ * back seat's range, and hiding it would hide the mechanic.
+ */
 function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps) {
-  const side = (which: 'attacker' | 'defender') =>
-    state.heroes.filter((h) => h.side === which).sort((a, b) => a.row - b.row);
-
   const legal = new Set(targets);
 
   const cell = (instanceId: string) => {
@@ -338,16 +351,48 @@ function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps)
     );
   };
 
+  /** Row 6 at the top, row 1 at the bottom — the far end of the axis first. */
+  const ROWS = [6, 5, 4, 3, 2, 1] as const;
+
   return (
-    <section aria-label="Battle board" className="flex flex-col gap-6 rounded border border-line bg-surface p-6">
-      <div>
-        <h3 className="mb-2 text-caption font-display tracking-widest uppercase text-faint">Defenders</h3>
-        <div className="flex flex-wrap gap-2">{side('defender').map((h) => cell(h.instanceId))}</div>
-      </div>
-      <div>
-        <h3 className="mb-2 text-caption font-display tracking-widest uppercase text-faint">Your squad</h3>
-        <div className="flex flex-wrap gap-2">{side('attacker').map((h) => cell(h.instanceId))}</div>
-      </div>
+    <section
+      aria-label="Battle board"
+      className="flex flex-col gap-2 rounded border border-line bg-surface p-6"
+    >
+      {ROWS.map((row) => {
+        const here = state.heroes.filter((h) => h.row === row);
+        const theirs = row >= 4;
+
+        return (
+          <div
+            key={row}
+            data-row={row}
+            className={[
+              'flex items-center gap-3 rounded px-2 py-1',
+              /* The two halves are separated, and the seam sits between 3 and
+                 4 — which is where the axis actually crosses. */
+              theirs ? 'bg-void/40' : '',
+              row === 4 ? 'mb-4' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <h3 className="text-caption w-28 shrink-0 font-mono tracking-widest uppercase text-faint">
+              Row {row} · {theirs ? 'theirs' : 'yours'}
+            </h3>
+            <div className="flex min-w-0 flex-wrap gap-2">
+              {here.length === 0 ? (
+                <p className="text-caption font-mono text-faint">
+                  {/* Not hidden: an empty row shortens every distance across it. */}
+                  empty — nothing to cross
+                </p>
+              ) : (
+                here.map((h) => cell(h.instanceId))
+              )}
+            </div>
+          </div>
+        );
+      })}
     </section>
   );
 }

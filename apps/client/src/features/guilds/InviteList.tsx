@@ -62,11 +62,11 @@ export function InviteList({
   };
 
   return (
-    <div className="rounded-lg border border-stone-800 p-5">
+    <div className="rounded-lg border border-line p-5">
       <h2 className="mb-2 text-h2 font-semibold">You have been invited</h2>
-      <p className="mb-3 text-body text-stone-400">
+      <p className="mb-3 text-body text-faint">
         Accepting joins you straight away.{' '}
-        <strong className="text-stone-200">Accepting one withdraws the others.</strong>
+        <strong className="text-parchment">Accepting one withdraws the others.</strong>
       </p>
 
       <StarterWarningNotice
@@ -80,19 +80,19 @@ export function InviteList({
       <ul className="mt-3 grid gap-2">
         {invites.map((invitation) => (
           <li key={invitation.id} className="flex items-center justify-between gap-3">
-            <span className="text-body text-stone-200">{invitation.guildName}</span>
+            <span className="text-body text-parchment">{invitation.guildName}</span>
             <span className="flex gap-2">
               <button
                 type="button"
                 disabled={warning !== null && !bothAcknowledged(acknowledged)}
-                className="rounded bg-amber-700 px-3 py-1 text-body disabled:opacity-40"
+                className="rounded bg-gold text-void px-3 py-1 text-body disabled:opacity-40"
                 onClick={() => void accept(invitation.id)}
               >
                 Accept
               </button>
               <button
                 type="button"
-                className="rounded border border-stone-700 px-3 py-1 text-body"
+                className="rounded border border-line px-3 py-1 text-body"
                 onClick={() => {
                   void api(`/invites/${invitation.id}/decline`, { method: 'POST' })
                     .then(onChanged)
@@ -106,7 +106,7 @@ export function InviteList({
         ))}
       </ul>
 
-      {error ? <p className="mt-2 text-body text-red-400">{error}</p> : null}
+      {error ? <p className="mt-2 text-body text-slash-lit">{error}</p> : null}
     </div>
   );
 }

@@ -120,7 +120,8 @@ export function GuildScreen({
     );
   }
 
-  const { guild, role, succession, invites, applications, applicationBudget } = state.value;
+  const { guild, role, succession, invites, applications, applicationBudget, foundingCostShards } =
+    state.value;
 
   /**
    * **Full-width cards stacked, which is what `LMNTLZ Guild Admin.dc.html`
@@ -143,6 +144,7 @@ export function GuildScreen({
           guild={guild}
           role={role}
           accountId={accountId}
+          foundingCostShards={foundingCostShards}
           onViewProfile={onViewProfile}
           onChanged={load}
           onUnauthenticated={onUnauthenticated}
@@ -153,6 +155,7 @@ export function GuildScreen({
           guildId={guild.id}
           role={role}
           succession={succession}
+          costShards={foundingCostShards}
           onChanged={load}
           onUnauthenticated={onUnauthenticated}
         />
@@ -265,16 +268,16 @@ function FoundingFlow({
 
   return (
     <div className="grid gap-4">
-      <p className="text-body text-stone-400">
+      <p className="text-body text-faint">
         {info.cost} shards — one full rune.{' '}
         {shards === null ? null : <span>You have {shards}.</span>}{' '}
-        <strong className="text-stone-200">The name is permanent.</strong>
+        <strong className="text-parchment">The name is permanent.</strong>
       </p>
 
       <label className="grid gap-1 text-body">
-        <span className="text-stone-300">Name</span>
+        <span className="text-muted">Name</span>
         <input
-          className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
+          className="rounded border border-line bg-void px-3 py-2"
           value={name}
           maxLength={32}
           onChange={(e) => setName(e.currentTarget.value)}
@@ -282,9 +285,9 @@ function FoundingFlow({
       </label>
 
       <label className="grid gap-1 text-body">
-        <span className="text-stone-300">Recruiting pitch</span>
+        <span className="text-muted">Recruiting pitch</span>
         <textarea
-          className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
+          className="rounded border border-line bg-void px-3 py-2"
           value={pitch}
           maxLength={500}
           rows={3}
@@ -302,12 +305,12 @@ function FoundingFlow({
         }
       />
 
-      {error ? <p className="text-body text-red-400">{error}</p> : null}
+      {error ? <p className="text-body text-slash-lit">{error}</p> : null}
 
       <button
         type="button"
         disabled={!ready || !affordable || busy}
-        className="justify-self-start rounded bg-amber-700 px-4 py-2 text-body font-medium disabled:opacity-40"
+        className="justify-self-start rounded bg-gold text-void px-4 py-2 text-body font-medium disabled:opacity-40"
         onClick={() => void submit()}
       >
         Found for {info.cost} shards

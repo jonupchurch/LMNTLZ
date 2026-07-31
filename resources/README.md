@@ -192,6 +192,46 @@ defect, and it is **systematic rather than a typo**.
 **Nothing was rewritten here either.** The exports stay as generated and are left to
 be regenerated; canon is unchanged and unchallenged.
 
+### Discrepancies found *porting* the design (017 T048–T057) — **2026-07-30**
+
+Three more, all found by building the screens rather than by reading the exports.
+Each one is a place a faithful port would have shipped something canon forbids.
+
+- **`Roster` draws a collection system, and there is no collection.** Its filter
+  rail carries a `COLLECTION` group — *All champions / Recruited only /
+  Unrecruited* — its header reads `COLLECTED {{ ownedCount }} / 27`, and its
+  tiles can render a `LOCKED` badge. **All 27 champions are unlocked from the
+  start and identical for every player**, which is the competitive premise and
+  not a feature that has not shipped yet. A greyed-out card would be its first
+  pixel. **Not ported**; the nine Force meters took the header's place, counting
+  how many champions carry each Force across both slots.
+
+- **`Turn Sequence` numbers its rail nodes `{{ f.tick }}`.** The rail itself is
+  a real improvement on a flat list and was ported. The number in the disc was
+  not: *"a tick is internal — the player sees a projected turn queue"*
+  (Constitution XIII), and putting the accumulator on screen would make
+  `50 + Speed` a number players learn to read and every future change to it a
+  visible one. The disc carries **position in the queue**. Held by
+  `apps/client/tests/battle/turnQueue.test.tsx`, which asserts on the fixture's
+  actual accumulator value rather than on the word "tick" — a faithful port
+  would render the value, not the label.
+
+- **`Guild Creation`'s ◈ 2 500 had a second life in our own client.** The export's
+  wrong price was already logged above; what the port found is that *four
+  sentences in `apps/client` had transcribed the correct 650 by hand* — the
+  disband warning and three lines in the succession panel. Correct, unconnected
+  to `FOUNDING_COST_SHARDS`, and one edit away from the game quoting a price it
+  does not charge. `GET /v1/me/guild` now sends `foundingCostShards` and all
+  four read it. **The starter income multiplier (×1.5) is the same shape and is
+  still transcribed**, in `StarterWarningNotice`; it needs the same server field.
+
+Also worth recording, because it is the opposite of a discrepancy: the exports'
+column proportions are consistent and were adopted verbatim. `Matchmaking`
+splits `1.5fr / 1fr`, `Profile` and `Guild Admin` `1.55fr` and `1.6fr` to `1fr`,
+and the Design System's worked example is `SPAN 8 · squad board` beside
+`SPAN 4 · inspector` — 7/5 and 8/5 of twelve. **The design knew what it wanted;
+the client had no grid to say it on until T048.**
+
 ## Lore & roster
 
 - `LORE-and-flavor.md` — world (Aethrym), the Nine Forces, the **weakness-derivation rule**, House voices, drop-in flavor text, and the **Design Canon** single-source-of-truth block.
