@@ -34,21 +34,36 @@ needs **a surface that does not exist at all**.
 | | Backend | Design | Task before now |
 |---|---|---|---|
 | **Rune Forge** | ✅ 010, complete | ✅ `LMNTLZ Rune Forge.dc.html` | **none, anywhere** |
-| **Store & checkout** | ✅ 011 routes; ⛔ **no provider adapter** | ⛔ **none — never designed** | 011 T026 edits a screen no task creates |
+| **Store & checkout** | ⚠️ routes exist; **no provider adapter, and the boost does nothing** | ✅ `LMNTLZ Store.dc.html` | 011 T026 edits a screen no task creates |
 | **Replay viewer** | ✅ 008, complete | ⚠️ partial — reuses Battle + Turn Sequence | **none** |
 
-> ### ⚠️ The store has no design, and it is the only screen that takes money
+> ### ⛔ And the pass this store sells currently has no effect
 >
-> Twenty design exports exist. **None of them is a store, a shop, a checkout or a
-> pricing screen.** Every other surface in this feature can be ported; this one has
-> to be designed first. It is the same category as `THE COURT` in 017 — a thing the
-> product needs that was never drawn — except this one stands between the game and
-> its revenue.
+> Found while reading the store design against canon. `awardShards()` computes
+> `base × zone × dailyTier × starter` — **no boost term** — and `entitlementFor()`
+> is never read in the income path. A purchased pass grants a row, sends a receipt,
+> and pays **normal income**.
 >
-> **This does not block the feature.** US2 below specifies the store's *behaviour*
-> completely, and behaviour is what a spec owes. What it cannot do is specify a look
-> that does not exist, so US2's visual treatment is built from 017's component layer
-> and the Brand Book rather than from an export.
+> **That is 011 Phase 8 (T045–T049), and it must land before US2 ships.** A store
+> selling a pass that pays nothing is worse than no store: the other two failures
+> here are loud, and this one takes the money and appears to work.
+
+> ### ✅ The store now has a design — `LMNTLZ Store.dc.html`, 2026-07-30
+>
+> Added the day this spec was written, closing the one hole in it. All three screens
+> in this feature now have exports, so all three are ports rather than inventions.
+>
+> **It also settles the rail.** The store export's navigation reads
+> `SQUADS · ROSTER 27 · RUNE FORGE · MATCHMAKING · THE COURT · THE STORE · CODEX` —
+> so **the Forge and the Store are top-level destinations**, which 017's rail must
+> make room for and which this feature fills.
+>
+> **Read against canon, it holds up.** *"Every price is a multiple of $5"*, the
+> stacking rule (*"adds to the end date — nothing is lost"*), the ×1.5 beginner
+> multiplier applying first and both ending on joining a guild, and the boost being
+> *"double shards from your first ten"* all match `06-progression.md` and
+> `catalog.ts`. The one number it states that canon leaves implicit is
+> **the cap resetting at 00:00 UTC** — see the open note below.
 
 > ### ⚠️ And there is still no payment provider
 >
@@ -251,9 +266,13 @@ plays identically afterwards.
 - **011 T031 stays in 011.** US2 depends on the provider adapter and does not contain
   it. The store can be built and demonstrated against a test rail before the real one
   exists.
-- **The store's visual design does not exist and will not block it.** Behaviour is
-  fully specified here; appearance comes from the component layer and the Brand Book.
-  If a store screen is designed later, adopting it is a port, not a rebuild.
+- **The store design landed 2026-07-30**, so all three screens are ports.
+- **The daily cap resets at 00:00 UTC.** The store export states this to the player;
+  canon leaves it implicit, and it has been an unstated assumption in this codebase.
+  Treated per Constitution XX as a **proposal to confirm** — the screen is not canon,
+  so before US2 shows a reset time, the rule is written into
+  `resources/mechanics/06-progression.md` and the screen reads from there. It is
+  almost certainly right; it is simply not yet written down anywhere that counts.
 - **The replay viewer reuses the battle presentation** rather than inventing a second
   one. A replay is the same board and the same turn queue driven from a stored log
   instead of a live one.

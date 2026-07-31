@@ -14,11 +14,14 @@ shared [specs/data-model.md](../data-model.md) § 5 · **features 005 and 010 co
 > `GET /v1/me/entitlements` are all implemented and all had **no client caller** in
 > the 2026-07-30 gap audit. Nothing can be bought.
 >
-> Two things stay here because they are genuinely this feature's:
+> Three things stay here because they are genuinely this feature's:
+> **⛔ Phase 8 (T045–T049)** — **the boost pass currently does nothing.** The income
+> path never reads the entitlement, so a purchased pass pays exactly normal income.
+> Worse than the missing screen and worse than the missing adapter, because those
+> two fail loudly and this one takes the money and works.
 > **T031** — the provider adapter. `apps/api/src/payments/vendor/` holds only a
 > mailer, `setRail()` is called by *tests only*, and `POST /checkout` raises
-> `NoRailError` in production. **This is the true blocker on revenue, not the
-> screen.**
+> `NoRailError` in production.
 > **T042** — the exact descriptor string, read from the live dashboard, never guessed.
 >
 > The store and checkout screens are [018 US2](../018-client-halves/spec.md), and
@@ -261,6 +264,38 @@ seconds apart grant twice, and 28 + 7 is 35.
 US2 costs almost nothing now and would mean migrating **real money records** later.
 US4 is P2 by urgency but is the design's distinctive promise — *a ceiling players
 can audit* only holds if the storefront cannot quietly breach it.
+
+---
+
+## Phase 8: ⛔ The boost does nothing — added 2026-07-30
+
+> ### The product this feature sells has no effect on the game
+>
+> `awardShards()` is the only writer of battle income and computes
+> `base × zone × dailyTier × starter`. **There is no boost term.**
+> `entitlementFor()` is read in exactly three places — its own module, the receipt
+> email, and `GET /me/entitlements` — and **none of them is the income path**.
+>
+> A player who bought a pass gets an entitlement row, a receipt, a readout, and
+> **exactly normal income**. US1's own goal says *"the boost is active"*; canon is
+> specific — `06-progression.md`: *"a boost doubles your first 10."*
+>
+> **011 specified the purchase, 010 specified the income, and neither owned the
+> join.** 010's list has a task for the daily tier, the ambush ×2, the day boundary
+> and the cap — every income rule but this one. Nothing caught it because there is
+> no provider, so no pass has ever been bought and the path has never run.
+>
+> **This must land before the store screen (018 US2).** Selling a pass that pays
+> nothing is worse than selling nothing.
+
+- [ ] T045 [US1] Write `apps/api/tests/progression/boost.test.ts` **first, and assert the positive case** — a holder's victories 1–10 pay double, victory 11 pays the unboosted tiered rate, and a non-holder is unchanged. A test that only checks the non-holder passes today and proves nothing
+- [ ] T046 [US1] Thread the held entitlement into `payoutFor` in `apps/api/src/progression/income.ts` — **doubling the first 10 victories of the day only** (`06-progression.md`), applied so the documented composition still emerges: chosen ×1 · chosen boosted ×2 · ambush ×2 · **ambush boosted ×4**, with nothing special-cased
+- [ ] T047 [US1] Confirm the boost interacts with the **cap** and the **starter multiplier** exactly as the unboosted path does — the cap truncates rather than refuses, and a boosted victory at the cap credits the headroom, not zero
+- [ ] T048 [US1] Assert the boost cap is **10**, not 5 or 20 — it is deliberately *not* aligned to the 5-victory bonus tier (`06-progression.md`), so a reader who "fixes" the misalignment must fail a test
+- [ ] T049 Add a **caller assertion** for `entitlementFor` in the income path — `rg` it and require a hit outside `payments/`. This is the seam that was missing; nothing else would have caught it
+
+**Checkpoint**: a boost pass changes what a player earns, and the 4× ambush
+composition is asserted rather than assumed.
 
 ---
 

@@ -81,6 +81,43 @@ new one is: **a user story whose own tasks cannot deliver it.** The wiring rule 
 `.specify/templates/tasks-template.md` catches the first three. It does not catch
 this, because there is nothing to wire *to* — the caller was never specified.
 
+## 2b · ⛔ The boost pass does nothing — found 2026-07-30
+
+**The product LMNTLZ sells has no effect on the game.** This is the most serious
+finding in the register and it is not a route gap, so the audit tool cannot see it.
+
+`awardShards()` is the only writer of battle income. It computes:
+
+```ts
+payoutFor(event, victoryNumber, starterMultiplier)
+  => base × zone × dailyTier × starter      // there is no boost term
+```
+
+`entitlementFor()` — the function that answers *"does this account hold a boost
+pass?"* — is read in exactly **three** places: its own module, the receipt email,
+and `GET /me/entitlements`. **Nothing in the income path reads it.** A player who
+bought a pass would be granted an entitlement row, emailed a receipt, shown the
+pass in a readout, and paid **exactly normal income**.
+
+Canon is explicit about what it should do — `06-progression.md`: *"6–20 pay normal,
+wins past 20 pay half, and **a boost doubles your first 10**."* 011's own US1 says
+*"the entitlement is granted and **the boost becomes active**."*
+
+### Why it was invisible
+
+The same seam-between-features shape as the rest of this register, in its most
+expensive form. **011 specified the purchase. 010 specified the income. Neither
+owned the join.** 010's task list covers the daily tier, the ambush ×2, the daily
+boundary and the cap — every income rule except this one. 011's covers the catalog,
+the rail, entitlements, idempotency and receipts — every purchase rule except what
+the purchase *does*.
+
+And nothing could catch it: there is no payment provider, so **no pass has ever
+been bought**, so the code path was never exercised even by hand.
+
+> **Now owned by 011 T045–T047.** It must land before the store screen does — a
+> store that sells a pass which pays nothing is worse than no store at all.
+
 ## 3 · Vendor and installer gaps
 
 - **⛔ There is no payment provider.** `apps/api/src/payments/vendor/` contains only
