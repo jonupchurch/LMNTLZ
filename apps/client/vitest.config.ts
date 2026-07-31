@@ -167,6 +167,27 @@ export default defineConfig({
         },
       },
       {
+        /**
+         * **Replays (018 US3).** Its own project because the claim that matters
+         * here is an *absence* — playback reads the stored log and never
+         * derives one — and because `watchable.test.tsx` asserts which requests
+         * happen, which a shared fetch stub cannot say.
+         *
+         * **Adding this entry is not bookkeeping.** `include` is an explicit
+         * per-project list, so a suite in a directory no project names is not
+         * "unmatched", it is silently never run — which reads almost exactly
+         * like a pass. Check the collected count went up.
+         */
+        plugins: [react()],
+        test: {
+          name: 'replays',
+          include: ['tests/replays/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
+      {
         plugins: [react()],
         test: {
           name: 'guilds',

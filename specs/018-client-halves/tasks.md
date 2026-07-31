@@ -127,17 +127,31 @@ plays identically afterwards.
 
 ### Tests first
 
-- [ ] T033 [P] [US3] Write `apps/client/tests/replays/watchable.test.tsx` — the list uses **the server's `watchable` flag** and never computes expiry from a date (FR-011)
-- [ ] T034 [P] [US3] Write `apps/client/tests/replays/expired.test.tsx` — an expired replay reads as **"no longer watchable"**, with the outcome and record intact. It must never look deleted (FR-012)
+- [X] T033 [P] [US3] Write `apps/client/tests/replays/watchable.test.tsx` — the list uses **the server's `watchable` flag** and never computes expiry from a date (FR-011)
+- [X] T034 [P] [US3] Write `apps/client/tests/replays/expired.test.tsx` — an expired replay reads as **"no longer watchable"**, with the outcome and record intact. It must never look deleted (FR-012)
 
 ### The screens
 
-- [ ] T035 [US3] `features/replays/BattleListScreen.tsx` over `GET /v1/me/battles` — both sides' outcomes, a **WATCH** control only where `watchable`
-- [ ] T036 [US3] `features/replays/ReplayViewer.tsx` — **drive the existing `BattleScreen` and `TurnQueue` from the stored log** (research R4). No second board, no second turn queue
-- [ ] T037 [US3] ⛔ **Build no re-simulation path** (FR-014, Constitution XVI, 008 T023). Playback reads events; it never derives one. The client cannot import `@lmntlz/sim/resolver` at all — the ESLint ban and `purity.test.ts` already enforce it, and this task is to **not** work around them
-- [ ] T038 [US3] Handle `expired` and `unavailable` distinctly from `not-found`, and surface a **non-participant's `404` as "not found"** — never as "forbidden", which would confirm the battle exists (FR-013, Constitution XVII)
-- [ ] T039 [P] [US3] Write `apps/client/e2e/replays.spec.ts` — watch a battle, then assert playback is byte-identical after a simulated balance change (SC-007)
-- [ ] T040 [US3] **WIRING** — reach the battle list from **The Court** (it sits beside Battle Record), render `ReplayViewer` from it, and give a finished replay a way out. Assert the caller, then cut it and watch the test fail
+- [X] T035 [US3] `features/replays/BattleListScreen.tsx` over `GET /v1/me/battles` — both sides' outcomes, a **WATCH** control only where `watchable`
+- [X] T036 [US3] `features/replays/ReplayViewer.tsx` — **drive the existing `BattleScreen` and `TurnQueue` from the stored log** (research R4). No second board, no second turn queue
+- [X] T037 [US3] ⛔ **Build no re-simulation path** (FR-014, Constitution XVI, 008 T023). Playback reads events; it never derives one. The client cannot import `@lmntlz/sim/resolver` at all — the ESLint ban and `purity.test.ts` already enforce it, and this task is to **not** work around them
+- [X] T038 [US3] Handle `expired` and `unavailable` distinctly from `not-found`, and surface a **non-participant's `404` as "not found"** — never as "forbidden", which would confirm the battle exists (FR-013, Constitution XVII)
+- [X] T039 [P] [US3] Write `apps/client/e2e/replays.spec.ts` — watch a battle, then assert playback is byte-identical after a simulated balance change (SC-007)
+- [X] T040 [US3] **WIRING** — reach the battle list from **The Court** (it sits beside Battle Record), render `ReplayViewer` from it, and give a finished replay a way out. Assert the caller, then cut it and watch the test fail
+
+> **T036 deviates from research R4, deliberately and with the reason recorded.**
+> R4 says to drive `BattleScreen` and `TurnQueue` from the stored log. **The log
+> has no `BattleState` in it** — `record.ts` writes `{ events, conclusion }`, and
+> both components take a state (`TurnQueue` projects from `accumulator`; the
+> board needs `maxHp` and a `heroId` per seat). An event names its actor by
+> *seat*, because `instanceIdOf()` mints ids from side and seat.
+>
+> So the viewer plays the log by turn and builds **neither** a second board nor a
+> second turn queue. Restoring the board means putting the opening state into the
+> log, which is a one-field server change **with a disclosure consequence**: it
+> would show a defender the attacker's six champions, which nothing else in the
+> game reveals. `apps/client/src/features/replays/README.md` states it in full.
+> **Open for Jon; it blocks nothing.**
 
 **Checkpoint**: a player can watch a battle back, and a past battle cannot change.
 

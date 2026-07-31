@@ -174,6 +174,22 @@ describe('saving an attack squad', () => {
     }
   });
 
+  /**
+   * **Twenty seconds, declared per test rather than in the config.**
+   *
+   * This is the longest test in the client suite by some way: it fills six
+   * empty seats, which is twelve `userEvent` clicks, each re-rendering a
+   * 27-champion roster. It finishes in about two seconds on its own and blows
+   * the 5s default under the **root** runner, where 169 files across two
+   * packages compete for workers — so it passed `pnpm test` and failed
+   * `vitest run` from the repo root, which is the worst possible split.
+   *
+   * A `testTimeout` in `vitest.config.ts` would not fix it: the root config
+   * declares `projects: ['apps/*']`, so **this package's nested `projects`
+   * array is dropped entirely** and every option inside it goes with it. That
+   * has now cost `fileParallelism` and `testTimeout` in `apps/api` for the same
+   * reason. A per-test timeout is honoured by both runners.
+   */
   it('saves the slot the tab is on, not always the first', async () => {
     await onAttack(3);
     // Slot 2 is empty in the fixture, so fill it before the save is enabled.
@@ -196,7 +212,7 @@ describe('saving an attack squad', () => {
 
     await waitFor(() => expect(puts()).toHaveLength(1));
     expect(puts()[0]!.path).toMatch(/\/v1\/squads\/offense\/2$/);
-  });
+  }, 20_000);
 
   it('sends null rather than an empty name', async () => {
     // The server stores `null` for "unnamed"; an empty string would be a name

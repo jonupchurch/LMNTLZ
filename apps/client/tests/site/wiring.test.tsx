@@ -194,6 +194,40 @@ describe('every rail destination is reachable from App', () => {
     });
   });
 
+  /**
+   * **018 T040's caller assertion.** Feature 008 built the battle record, the
+   * replay blob, the seven-day window, the cleanup sweep, the holds and both
+   * read routes — and **neither route has ever had a caller**.
+   * `tools/gap-audit.py` has listed `/me/battles` and `/replays/:id` as gaps
+   * since the audit existed, so every replay this game has written expired
+   * without anybody being able to open one.
+   *
+   * Cut the `screen.kind === 'battles'` branch out of `App.tsx` and this goes
+   * red.
+   */
+  it('reaches the battle record, and it asks for the list', async () => {
+    signIn();
+    render(<App />);
+    await waitFor(() => expect(rail()).toBeInTheDocument());
+
+    within(rail()).getByRole('button', { name: /battle record/i }).click();
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(/loading your battles/i),
+    );
+
+    /**
+     * **And that it does not probe for replays.** FR-011: watchability is a
+     * field on the list, so a screen that discovered it by asking would put a
+     * request per row on a list of fifty — and would learn the answer only
+     * after a click it had already promised a video for.
+     */
+    await waitFor(() => {
+      expect(requestedPaths().some((p) => p.includes('/me/battles'))).toBe(true);
+    });
+    expect(requestedPaths().some((p) => p.includes('/replays/'))).toBe(false);
+  });
+
   /** The profile is the one destination that is NOT in the rail (T020). */
   it('reaches the profile from the header username', async () => {
     signIn();

@@ -63,15 +63,19 @@ describe('every rail entry leads somewhere real', () => {
  */
 describe('unbuilt destinations are absent, not disabled', () => {
   const UNBUILT = [
-    /* `Codex` graduated off this list in 017 T065 `Rune Forge` in 018 T020 and `Store` in T032,
-       which is the list working as intended: an entry appears the commit its
-       screen does, not before — and adding the entry first *fails this file*,
-       which is how both graduations were noticed rather than remembered. */
+    /* `Codex` graduated off this list in 017 T065, `Rune Forge` in 018 T020,
+       `Store` in T032 and `Battle Record` in T040 — which is the list working
+       as intended: an entry appears the commit its screen does, not before,
+       and adding the entry first *fails this file*. All four graduations were
+       noticed here rather than remembered.
+
+       `Battle Record` is the interesting one. It sat here as "a section of the
+       profile, not a screen", which was true and stayed true —
+       `PublicProfile` still renders `BattleRecord` for whoever you are looking
+       at. It is now *also* a destination, because your own record is the only
+       place a replay can be opened from. A thing can be both. */
     ['Dispatches', '016'],
     ['Chat', '014'],
-    /* Drawn inside THE COURT by the export, but it is a section of the
-       profile rather than a destination — see App.tsx. */
-    ['Battle Record', 'a section of the profile, not a screen'],
   ] as const;
 
   it.each(UNBUILT)('%s is not in the rail (%s)', (label) => {

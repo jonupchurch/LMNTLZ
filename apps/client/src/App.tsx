@@ -15,6 +15,9 @@ import { ForgeScreen } from './features/forge/ForgeScreen.js';
 import { StoreScreen } from './features/store/StoreScreen.js';
 import { RosterScreen } from './features/roster/RosterScreen.js';
 import { ProfileScreen } from './features/profile/ProfileScreen.js';
+import { BattleListScreen } from './features/replays/BattleListScreen.js';
+import { ReplayViewer } from './features/replays/ReplayViewer.js';
+import type { BattleRole } from './features/replays/types.js';
 import { GuildScreen } from './features/guilds/GuildScreen.js';
 import { SquadsScreen } from './features/squads/SquadsScreen.js';
 import { analyticsEnabled, scrubEvent } from './lib/analytics.js';
@@ -103,7 +106,22 @@ type Screen =
    * made the pass actually pay, because a store selling a pass that does
    * nothing fails silently and takes the money.
    */
-  | { readonly kind: 'store' };
+  | { readonly kind: 'store' }
+  /**
+   * **The battle record** (018 T040) — your last fifty battles, and the seven
+   * days of them you can still watch. Feature 008 built the record, the replay
+   * blob, the window, the sweep and both read routes, and neither route has
+   * ever had a caller.
+   */
+  | { readonly kind: 'battles' }
+  /**
+   * **One replay, played from its stored log.** It carries the role rather
+   * than looking it up, because the list already knows which side the player
+   * fought on and the log does not say — an event names a *seat*, and "yours"
+   * versus "theirs" is the one thing a viewer needs that the log cannot tell
+   * it.
+   */
+  | { readonly kind: 'replay'; readonly battleId: string; readonly viewerRole: BattleRole };
 
 /**
  * **The dev-only component gallery** (017 T032).
@@ -300,6 +318,30 @@ function GameApp(): JSX.Element {
                        were earned with nothing to spend them on and gear
                        score never moved. */
                     <ForgeScreen onUnauthenticated={onUnauthenticated} />
+                  ) : screen.kind === 'battles' ? (
+                    /* 018 T040 — the caller. `GET /v1/me/battles` and
+                       `GET /v1/replays/:id` have been in the gap audit since
+                       it existed: every replay this game has written expired
+                       without anybody being able to open one. */
+                    <BattleListScreen
+                      onWatch={(battle) =>
+                        setScreen({
+                          kind: 'replay',
+                          battleId: battle.battleId,
+                          viewerRole: battle.role,
+                        })
+                      }
+                      onUnauthenticated={onUnauthenticated}
+                    />
+                  ) : screen.kind === 'replay' ? (
+                    <ReplayViewer
+                      battleId={screen.battleId}
+                      viewerRole={screen.viewerRole}
+                      /* T040's "give a finished replay a way out" — back to the
+                         list it was opened from, not to the rail's default. */
+                      onLeave={() => setScreen({ kind: 'battles' })}
+                      onUnauthenticated={onUnauthenticated}
+                    />
                   ) : (
                     <SquadsScreen onUnauthenticated={onUnauthenticated} />
                   )}
@@ -388,7 +430,7 @@ function GameApp(): JSX.Element {
  * THE COURT is a plain entry today because Guild is the only social screen
  * built. It becomes a group when 014 lands Chat beside it.
  */
-type RailId = 'squads' | 'roster' | 'forge' | 'attack' | 'court' | 'store' | 'codex';
+type RailId = 'squads' | 'roster' | 'forge' | 'attack' | 'court' | 'battles' | 'store' | 'codex';
 
 export function railEntries(): RailEntry[] {
   return [
@@ -400,6 +442,22 @@ export function railEntries(): RailEntry[] {
     { id: 'forge', label: 'Rune Forge' },
     { id: 'attack', label: 'Matchmaking' },
     { id: 'court', label: 'The Court' },
+    /**
+     * **018 T040 — and it graduates off `rail.test.tsx`'s UNBUILT list**, which
+     * is that list working as designed for the third time this feature.
+     *
+     * It sat there as *"a section of the profile, not a screen"*, and that was
+     * true: `PublicProfile` renders `BattleRecord` for whoever you are looking
+     * at. It is now also a destination, because **your own** record is the only
+     * place a replay can be opened from.
+     *
+     * The export draws it *inside* the THE COURT group. THE COURT is still a
+     * plain entry here — it becomes a group when 014 lands Chat beside it — so
+     * this sits immediately after it, which keeps the adjacency without
+     * restructuring the rail for one entry. It becomes a child of the group on
+     * the day that group exists.
+     */
+    { id: 'battles', label: 'Battle Record' },
     /* 018 T032. The store export's rail reads
        `... MATCHMAKING · THE COURT · THE STORE · CODEX`. */
     { id: 'store', label: 'The Store' },
@@ -428,6 +486,8 @@ export function screenFor(id: string, accountId: string): Screen {
       return { kind: 'codex' };
     case 'forge':
       return { kind: 'forge' };
+    case 'battles':
+      return { kind: 'battles' };
     case 'store':
       return { kind: 'store' };
     case 'profile':
@@ -451,6 +511,10 @@ export function activeRailId(kind: Screen['kind']): string {
     case 'guild':
     case 'profile':
       return 'court';
+    /* Watching a replay lights the record it was opened from — the viewer is
+       not a destination of its own and has no rail entry. */
+    case 'replay':
+      return 'battles';
     case 'battle':
       return 'squads';
     default:
