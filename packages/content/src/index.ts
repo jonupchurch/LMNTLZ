@@ -18,6 +18,23 @@ export type { DerivedProfile } from './derive.js';
 
 export { effectiveness, powerEffectiveness } from './effectiveness.js';
 export type { Effectiveness } from './effectiveness.js';
+/**
+ * The five tiers by name, alongside the functions that return them.
+ *
+ * Added for 017 T024: `RelationshipStrip` must render all five and the task
+ * requires them **read from here**, not transcribed — four design exports print
+ * `FAULT ×1.2` and none prints `×0.80`, so any component that types its own
+ * ladder is one copy-paste from shipping the wrong one. Exporting the values
+ * makes the correct ladder the path of least resistance, and the `Effectiveness`
+ * union above makes the wrong one a compile error.
+ */
+export {
+  BANE,
+  FAULT,
+  NEUTRAL,
+  RESISTED_SECONDARY,
+  RESISTED_PRIMARY,
+} from './effectiveness.js';
 
 export { contentVersion } from './version.js';
 

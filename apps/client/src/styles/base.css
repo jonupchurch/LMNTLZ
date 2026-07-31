@@ -69,6 +69,135 @@
   --font-display: 'Chakra Petch', system-ui, sans-serif;
   --font-sans: 'Barlow', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /*
+   * -------------------------------------------------------------------------
+   * 017 T005 · T007 — the rest of the Design System export's token block
+   *
+   * Transcribed from `resources/designsystem/LMNTLZ Design System.dc.html`,
+   * which declares its own `--lz-*` block as a code sample. That block is the
+   * authority; these are the same values under this project's Tailwind v4
+   * namespaces, so a component can spend a token instead of inlining a value.
+   *
+   * T007 asks that every hex in an export either match a token or become one.
+   * Four did not match, and each is resolved below rather than inlined.
+   * -------------------------------------------------------------------------
+   */
+
+  /*
+   * T007 · 1 — a NAMING COLLISION that would have silently mis-shaded text.
+   *
+   * The export has FOUR text steps; the nine-force block above transcribed
+   * three, and it took `--color-faint` for the export's `--lz-text-lo`. So the
+   * export's actual `--lz-text-faint` (#6E6690) had no token at all, and a
+   * reader reaching for "faint" would land one step too bright.
+   *
+   * Both are kept, because the export separates them on contrast and permitted
+   * use: `text-lo` is 5.1:1 and may carry text; this one is 3.2:1 and the
+   * export marks it **non-text only** — decoration, rules, or a >=12px bold
+   * label. Named for what it is allowed to do rather than how it looks.
+   */
+  --color-decor: #6e6690;
+
+  /* T007 · 2 — the parchment/light variant's ink. Text-heavy panels (lore
+     codex, patch notes, EULA) invert; the export notes gold must never sit on
+     parchment as text, so those panels reach for `--color-light-deep`. */
+  --color-ink-hi: #141221;
+  --color-ink-mid: #3a3357;
+
+  /*
+   * T007 · 3 — the semantic layer, which is an ALIAS layer and must stay one.
+   *
+   * The export is explicit that these share hues with element forces —
+   * `--lz-danger` with Slash, `--lz-info` with Pierce, `--lz-warning` with
+   * Crush, `--lz-strong` with Light. They are declared as their own tokens so
+   * a destructive button asks for `danger` rather than borrowing `slash`, and
+   * so the two can diverge later without a rename touching every call site.
+   *
+   * Written as `var()` references, not copied hexes, so the aliasing is
+   * enforced by the file rather than asserted in a comment.
+   */
+  --color-strong: var(--color-gold);
+  --color-danger: var(--color-slash);
+  --color-success: var(--color-earth);
+  --color-warning: var(--color-crush);
+  --color-info: var(--color-pierce);
+
+  /* T007 · 4 — `--lz-border` is #241F38, the same value as `--lz-surface-raised`
+     (already `--color-raised`). Aliased rather than duplicated: one is a fill,
+     one is a hairline, and a future change to either should be deliberate.
+     `--color-line` above is the export's `--lz-border-strong`. */
+  --color-border: var(--color-raised);
+
+  /*
+   * Type scale — size / line-height, sized for desktop viewing at 1600x900.
+   * Tailwind v4 pairs `--text-{n}` with `--text-{n}--line-height`.
+   *
+   * `h3` and `body` are BOTH 15px and differ only in leading (1.25 vs 1.55).
+   * That is deliberate in the export — a label and a paragraph at one size —
+   * so they are two tokens, and collapsing them would lose the distinction.
+   */
+  --text-display: 56px;
+  --text-display--line-height: 0.95;
+  --text-h1: 32px;
+  --text-h1--line-height: 1.1;
+  --text-h2: 22px;
+  --text-h2--line-height: 1.2;
+  --text-h3: 15px;
+  --text-h3--line-height: 1.25;
+  --text-body: 15px;
+  --text-body--line-height: 1.55;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.45;
+  /* Every number a player reads under pressure, in JetBrains Mono. */
+  --text-stat: 20px;
+  --text-stat--line-height: 1;
+
+  /* Spacing base 4, stated rather than inherited. Tailwind v4 already defaults
+     to 0.25rem and the export independently specifies "base 4", so this is a
+     coincidence worth pinning: the export's named values are exactly the
+     multiples that fall out of it — panel 24 (6), card 16 (4), control gap 8
+     (2), section gap 48 (12). */
+  --spacing: 4px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+
+  /* "Elevation = glow, not drop shadow", in the export's own words. glow-1 is
+     a hairline rather than a shadow, which is why it reads flat. */
+  --shadow-glow-1: 0 0 0 1px #241f38;
+  --shadow-glow-2: 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-glow-accent: 0 0 20px rgb(242 199 68 / 0.28);
+
+  /*
+   * Motion. Durations are UI transitions and have nothing to do with combat —
+   * a cooldown is counted in TURNS (Constitution XIII), and `--duration-slow`
+   * is only how long the ring takes to animate between two discrete turn
+   * states. It is never a clock the rules read.
+   */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 90ms; /* hover / focus */
+  --duration-base: 160ms; /* press, tab change */
+  --duration-slow: 320ms; /* cooldown fill, meters */
+  --duration-reveal: 520ms; /* reveal, drawer, modal */
+  /* The pending pulse never spins. A spinner reads as "loading data"; a pulse
+     reads as "the server is deciding", which is what is actually true. */
+  --duration-pending-cycle: 1100ms;
+
+  /* Shell metrics. The rail is fixed and the content column caps and centres;
+     below 1280 the layout scrolls rather than reflows (see `body` below). */
+  --rail-width: 220px;
+  --content-max: 1400px;
+  --gutter: 24px;
+
+  /* Control heights. 28px is a legitimate control here — pointer precision,
+     no touch minimums apply. */
+  --control-sm: 28px;
+  --control-md: 38px;
+  --control-lg: 48px;
 }
 
 /*
@@ -111,10 +240,52 @@ body {
  * does not leave a ring behind, which is the reason people reach for
  * `outline: none` in the first place.
  */
+/*
+ * ---------------------------------------------------------------------------
+ * 017 T005 — the ring is AIR CYAN, and the colour is the load-bearing part.
+ *
+ * This replaces a gold ring written before the design port existed. **Gold is
+ * `--color-light`** — the identical hex serves the Light force and the accent
+ * — so a gold focus ring landed on a Light hero card, a gold CTA, or any
+ * `--color-strong` surface was invisible exactly where focus matters most.
+ * The export calls this out and fixes it by spending one colour, always:
+ *
+ *   "One ring for the whole app, always Air cyan — never the element accent,
+ *    or focus would be unreadable on an Air hero card."
+ *
+ * The double shadow is the technique that makes one ring work on every
+ * surface: an inner 2px in the app's darkest ground separates the ring from
+ * whatever is underneath, then the ring itself. `box-shadow` also follows
+ * `border-radius`, which `outline` only does in newer engines.
+ *
+ * ### The export writes this as `outline: none` plus a double box-shadow. We
+ * ### keep the outline, and get the same two rings.
+ *
+ * `bootstrap.test.tsx` forbids `outline: none` anywhere in this file, and that
+ * guard is right even though this particular use would have been safe — it
+ * cannot tell "removed the ring" from "replaced the ring in the next
+ * declaration", and the failure it protects against is common and silent.
+ * Weakening it to admit one careful case would spend a real guard on a
+ * cosmetic preference.
+ *
+ * So the structure is built the other way round, and comes out identical:
+ *
+ *   border box │ box-shadow 2px void │ outline 2px air  (offset 2px)
+ *
+ * `outline-offset` opens the 2px gap; the `box-shadow` fills that gap with the
+ * app's darkest ground, which is what lets one ring stay legible on parchment
+ * and on an Air hero card alike. That separation is the export's actual
+ * insight, and it survives the translation.
+ *
+ * Keeping `outline` also means a forced-colours user agent still draws focus
+ * in a system colour — it discards `box-shadow` but honours `outline`, so the
+ * indicator degrades rather than disappearing.
+ * ---------------------------------------------------------------------------
+ */
 :focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-air);
   outline-offset: 2px;
-  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--color-void);
 }
 
 /* Pointer devices only: no 44px touch targets, no hover-is-tap workarounds. */

@@ -25,9 +25,9 @@ visual suite becomes a rubber stamp.
 ## Phase 1: Setup
 
 - [x] T001 Add `@fontsource/chakra-petch`, `@fontsource/barlow` and `@fontsource/jetbrains-mono` to `apps/client/package.json` — **exact weights only**: Chakra Petch 500/600/700, Barlow 400/500/600/700, JetBrains Mono 400/500/700
-- [ ] T002 Add `"icons:build": "tsx tools/build-icons.ts"` to the root `package.json`, beside the existing `content:build`
-- [ ] T003 [P] Create `apps/client/src/components/{shell,controls,type,hero,readouts,system,icons}/` — grouped by the Design System export's own sections, **not by feature**, because a component under `features/` is one no other feature will find
-- [ ] T004 [P] Create `apps/client/tests/components/` for the gallery and per-component suites
+- [X] T002 Add `"icons:build": "tsx tools/build-icons.ts"` to the root `package.json`, beside the existing `content:build`
+- [X] T003 [P] Create `apps/client/src/components/{shell,controls,type,hero,readouts,system,icons}/` — grouped by the Design System export's own sections, **not by feature**, because a component under `features/` is one no other feature will find
+- [X] T004 [P] Create `apps/client/tests/components/` for the gallery and per-component suites
 
 ---
 
@@ -36,10 +36,10 @@ visual suite becomes a rubber stamp.
 **⚠️ Blocks every component.** A component built before its tokens exist inlines a
 hex, which is the one regression this feature exists to prevent.
 
-- [ ] T005 Extract the **type scale, spacing scale, radius and motion** values from `resources/designsystem/LMNTLZ Design System.dc.html` § *Typography, spacing, radius, motion* into `@theme` in `apps/client/src/styles/base.css`, beside the nine-force colours already there
-- [ ] T006 Write `apps/client/tests/components/tokens.test.ts` — the token scan. **Strip comments before scanning** (a rule forbidding `#rrggbb` matches the comment explaining the ban) and **assert files were found before asserting their content** (a glob that matches nothing passes forever). Both have bitten this repo
-- [ ] T007 Reconcile any hex in an export with no matching token: it is **either a token that was missed or a one-off that must become one** (FR-003). Record each decision in a comment in `base.css`; do not inline
-- [ ] T008 [P] Add the `Effectiveness` re-export path in `apps/client/src/components/type/` so no component imports a bare `number` for a multiplier
+- [X] T005 Extract the **type scale, spacing scale, radius and motion** values from `resources/designsystem/LMNTLZ Design System.dc.html` § *Typography, spacing, radius, motion* into `@theme` in `apps/client/src/styles/base.css`, beside the nine-force colours already there
+- [X] T006 Write `apps/client/tests/components/tokens.test.ts` — the token scan. **Strip comments before scanning** (a rule forbidding `#rrggbb` matches the comment explaining the ban) and **assert files were found before asserting their content** (a glob that matches nothing passes forever). Both have bitten this repo
+- [X] T007 Reconcile any hex in an export with no matching token: it is **either a token that was missed or a one-off that must become one** (FR-003). Record each decision in a comment in `base.css`; do not inline
+- [X] T008 [P] Add the `Effectiveness` re-export path in `apps/client/src/components/type/` so no component imports a bare `number` for a multiplier
 
 **Checkpoint**: tokens complete; component work can begin.
 

@@ -14,6 +14,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "content:build": "tsx tools/build-content.ts",
+    "//icons:build": "017 T002. Sibling of content:build — reads resources/designsystem/{hero-icons,status-icons}/ and emits a GENERATED manifest keyed on HeroId, so a misspelled icon is a compile error. NOT in CI as a build step; CI re-runs it and diffs, exactly as heroes.generated.ts is diffed. The tool itself is T033, so this script points at a file that does not exist yet.",
+    "icons:build": "tsx tools/build-icons.ts",
     "//sweep": "Feature 004's characterisation. NOT in CI — 19,440 pairs at two horizons is an offline measurement; CI runs the 324 fast cases in packages/sim/tests/ai/. Re-run before the hero-numbers pass locks.",
     "sweep:orderings": "tsx tools/characterize-orderings.ts"
   },

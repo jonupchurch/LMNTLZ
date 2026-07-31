@@ -139,6 +139,28 @@ export default defineConfig({
           setupFiles: ['./tests/setup.ts'],
         },
       },
+      {
+        /**
+         * **The component layer (017).** Every project above is named after a
+         * screen; this one is named after the furniture they are all built
+         * from, so it runs on a change to any of them.
+         *
+         * **Adding this entry was not optional bookkeeping.** `include` here is
+         * an explicit per-project list, so a suite in a directory no project
+         * names is not "unmatched", it is **silently never run** — `vitest run
+         * tests/components/…` printed the project globs and collected nothing,
+         * which reads almost exactly like a pass. A test that cannot be
+         * collected is worse than a missing one: it looks like coverage.
+         */
+        plugins: [react()],
+        test: {
+          name: 'components',
+          include: ['tests/components/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
     ],
     // Repeated inside the project above on purpose: an `exclude` here does NOT
     // reach nested projects, and one `pnpm build` otherwise doubles the suite
