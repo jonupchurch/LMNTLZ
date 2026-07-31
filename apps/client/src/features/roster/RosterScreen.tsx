@@ -149,7 +149,7 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
     <>
       {/* --- the filter rail, 264px in the export ≈ 3 of twelve ------------ */}
       <Panel span={3}>
-        <div className="flex flex-col gap-6 rounded-lg border border-line bg-surface p-4">
+        <div className="flex flex-col gap-6 lz-surface p-4">
           <TextField
             label="Search champions"
             value={query}
@@ -219,7 +219,7 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
                   className={[
                     'text-caption flex-1 rounded border py-1 font-mono uppercase',
                     reach === value
-                      ? 'border-gold bg-raised text-parchment'
+                      ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
                       : 'border-line text-faint',
                   ].join(' ')}
                 >
@@ -345,7 +345,7 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
         <Panel span={3}>
           <aside
             aria-label={`${selected.name}, champion detail`}
-            className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-4"
+            className="flex flex-col gap-4 lz-surface p-4"
           >
             <div className="flex items-start gap-3">
               <HeroIcon heroId={selected.id as HeroId} name={selected.name} size="detail" />
@@ -450,7 +450,7 @@ function ForceGroup({
             onClick={() => onToggle(type)}
             className={[
               'flex items-center gap-2 rounded border px-2 py-1 transition-colors',
-              selected.includes(type) ? 'border-gold bg-raised' : 'border-line hover:border-faint',
+              selected.includes(type) ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line hover:border-faint',
             ].join(' ')}
           >
             <TypeBadge type={type} size="sm" />

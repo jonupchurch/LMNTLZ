@@ -257,7 +257,7 @@ export function AttackScreen({
                     className={[
                       'w-full rounded border px-3 py-2 text-left transition-colors',
                       target === candidate.playerId
-                        ? 'border-gold bg-raised'
+                        ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
                         : 'border-line bg-surface hover:border-faint',
                     ].join(' ')}
                   >
@@ -304,7 +304,7 @@ export function AttackScreen({
                       className={[
                         'rounded border px-3 py-1 font-mono text-caption',
                         slot === squad.slot
-                          ? 'border-gold bg-raised text-parchment'
+                          ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
                           : 'border-line text-faint',
                       ].join(' ')}
                     >
@@ -321,7 +321,7 @@ export function AttackScreen({
                 className={[
                   'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
                   slot !== null && !starting
-                    ? 'border-gold bg-raised text-parchment hover:bg-gold/20'
+                    ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment hover:bg-gold/20'
                     : 'border-line text-faint',
                 ].join(' ')}
               >

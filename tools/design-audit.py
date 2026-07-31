@@ -110,25 +110,81 @@ def export_vocabulary(html: str) -> Counter:
     return v
 
 
-def client_vocabulary(sources: list[Path]) -> Counter:
+BASE_CSS = CLIENT / "styles" / "base.css"
+
+
+def project_classes() -> dict[str, set[str]]:
+    """`.lz-plate` -> {"clip-path"}, `.lz-surface` -> {"box-shadow", ...}.
+
+    ### The tool was wrong before this existed, and it mattered immediately
+
+    The first version scanned `.tsx` for `shadow-[` and `clip-path` literally.
+    Then 019 US1 moved those treatments into named classes in `base.css` —
+    which is the *correct* thing to do, and is what the audit is supposed to
+    encourage — and the audit went on reporting them as absent because it was
+    matching a spelling rather than a meaning.
+
+    **A scan that only recognises one way of writing something punishes the fix
+    it exists to demand.** So the client's own stylesheet is parsed, and a class
+    that declares `clip-path` counts as `clip-path` wherever it is used.
+    """
+    if not BASE_CSS.exists():
+        return {}
+
+    css = re.sub(r"/\*[\s\S]*?\*/", "", BASE_CSS.read_text(encoding="utf-8"))
+    classes: dict[str, set[str]] = {}
+    for match in re.finditer(r"\.([a-zA-Z0-9_-]+)\s*\{([^}]*)\}", css):
+        name, body = match.group(1), match.group(2)
+        props: set[str] = set()
+        if "clip-path" in body:
+            props.add("clip-path")
+        if "box-shadow" in body:
+            props.add("box-shadow")
+            if "inset" in body:
+                props.add("inset-shadow")
+            if re.search(r"0 0 \d+px", body):
+                props.add("glow")
+        if re.search(r"border[^;]*dashed", body):
+            props.add("dashed")
+        if "gradient" in body:
+            props.add("gradient")
+        if "backdrop-filter" in body:
+            props.add("backdrop-filter")
+        if props:
+            classes[name] = props
+    return classes
+
+
+def client_vocabulary(sources: list[Path], classes: dict[str, set[str]]) -> Counter:
     v: Counter = Counter()
     for path in sources:
         code = strip_comments(path.read_text(encoding="utf-8"))
-        # Tailwind arbitrary values and utilities both count — the question is
-        # whether the treatment reaches the screen, not how it was spelled.
+
+        # Written inline: Tailwind arbitrary values, and v4's `shadow-(--token)`
+        # shorthand, which the first version of this tool did not know about.
         v["clip-path"] += len(re.findall(r"clip-path|\[clip-path", code))
-        v["box-shadow"] += len(re.findall(r"\bshadow-\[|\bshadow-(?:sm|md|lg|xl|2xl)\b", code))
+        v["box-shadow"] += len(
+            re.findall(r"\bshadow-\[|\bshadow-\(|\bshadow-(?:sm|md|lg|xl|2xl)\b", code)
+        )
         v["inset-shadow"] += len(re.findall(r"inset_0|shadow-inner|inset-shadow", code))
-        v["glow"] += len(re.findall(r"shadow-\[0_0_", code))
-        v["gradient"] += len(re.findall(r"bg-gradient|bg-\[(?:linear|radial)|(?:linear|radial)-gradient", code))
+        v["glow"] += len(re.findall(r"shadow-\[0_0_|shadow-\(--shadow-glow", code))
+        v["gradient"] += len(
+            re.findall(r"bg-gradient|bg-\[(?:linear|radial)|(?:linear|radial)-gradient", code)
+        )
         v["dashed"] += len(re.findall(r"border-dashed", code))
         v["backdrop-filter"] += len(re.findall(r"backdrop-(?:blur|filter|saturate)", code))
-        v["keyframes"] += len(re.findall(r"@keyframes|animate-\[", code))
+        v["keyframes"] += len(re.findall(r"@keyframes|animate-\[|animate-(?:pulse|spin|ping)", code))
         v["transition"] += len(re.findall(r"\btransition\b", code))
         v["uppercase"] += len(re.findall(r"\buppercase\b", code))
         v["tracking"] += len(re.findall(r"tracking-", code))
         v["tabular"] += len(re.findall(r"tabular-nums", code))
         v["portrait"] += len(re.findall(r"<img\b|backgroundImage", code))
+
+        # Spent through a named class in `base.css`.
+        for name, props in classes.items():
+            uses = len(re.findall(rf"\b{re.escape(name)}\b", code))
+            for prop in props:
+                v[prop] += uses
     return v
 
 
@@ -151,6 +207,14 @@ def main() -> int:
     print("Design audit — each built screen against the export it was drawn from")
     print("Counts are VOCABULARY, not pixels. A zero against a non-zero is the finding.\n")
 
+    classes = project_classes()
+    if not classes:
+        print("!! no project classes parsed from base.css — every class-based")
+        print("   treatment below will read as absent. Check the stylesheet path.")
+    else:
+        print(f"Resolved {len(classes)} treatment classes from base.css: "
+              f"{', '.join(sorted(classes))}\n")
+
     rows: list[tuple[str, str, Counter, Counter, list[str]]] = []
     for name, (export_name, dirs) in SCREENS.items():
         if only and name != only:
@@ -164,7 +228,7 @@ def main() -> int:
         if not srcs:
             print(f"!! no sources for {name}: {dirs}")
             continue
-        have = client_vocabulary(srcs)
+        have = client_vocabulary(srcs, classes)
         missing = [k for k in want if want[k] > 0 and have[k] == 0]
         rows.append((name, export_name, want, have, missing))
 

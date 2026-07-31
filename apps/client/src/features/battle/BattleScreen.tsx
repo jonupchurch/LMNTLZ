@@ -329,7 +329,7 @@ function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps)
           down
             ? 'border-line bg-bg opacity-40'
             : instanceId === activeInstanceId
-              ? 'border-gold bg-raised'
+              ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
               : selectable
                 ? 'border-gold/60 bg-surface hover:bg-raised'
                 : 'border-line bg-surface'
@@ -357,7 +357,7 @@ function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps)
   return (
     <section
       aria-label="Battle board"
-      className="flex flex-col gap-2 rounded border border-line bg-surface p-6"
+      className="flex flex-col gap-2 lz-surface p-6"
     >
       {ROWS.map((row) => {
         const here = state.heroes.filter((h) => h.row === row);
@@ -382,7 +382,7 @@ function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps)
             </h3>
             <div className="flex min-w-0 flex-wrap gap-2">
               {here.length === 0 ? (
-                <p className="text-caption font-mono text-faint">
+                <p className="lz-empty text-caption px-3 py-1 font-mono text-faint">
                   {/* Not hidden: an empty row shortens every distance across it. */}
                   empty — nothing to cross
                 </p>
@@ -407,7 +407,7 @@ interface ChoiceProps {
 
 function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
   return (
-    <section aria-label="Your move" className="rounded border border-line bg-surface p-4">
+    <section aria-label="Your move" className="lz-surface p-4">
       <p className="mb-3 font-mono text-caption text-faint">
         {actorName ? `${actorName} is up — choose a power, then a target.` : 'Waiting…'}
       </p>
@@ -422,7 +422,7 @@ function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
             aria-pressed={power.id === chosen}
             className={`rounded border px-3 py-2 font-display text-caption tracking-wide uppercase transition-colors ${
               power.id === chosen
-                ? 'border-gold bg-raised text-gold'
+                ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-gold'
                 : 'border-line bg-bg text-muted hover:bg-raised'
             }`}
           >
@@ -432,7 +432,9 @@ function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
       </div>
 
       {offered.length === 0 && (
-        <p className="font-mono text-caption text-faint">Nothing in reach — the turn will pass.</p>
+        <p className="lz-empty p-3 font-mono text-caption text-faint">
+          Nothing in reach — the turn will pass.
+        </p>
       )}
     </section>
   );
@@ -450,7 +452,7 @@ function Outcome({
   return (
     <section
       aria-label="Result"
-      className={`rounded border p-6 ${won ? 'border-gold bg-raised' : 'border-line bg-surface'}`}
+      className={`rounded border p-6 ${won ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line bg-surface'}`}
     >
       <h3 className="font-display text-xl tracking-widest uppercase text-parchment">
         {won ? 'Victory' : 'Defeat'}
@@ -461,7 +463,7 @@ function Outcome({
         <button
           type="button"
           onClick={onLeave}
-          className="mt-4 rounded border border-gold bg-raised px-4 py-2 text-caption font-display tracking-widest uppercase text-parchment hover:bg-surface"
+          className="mt-4 rounded border border-gold bg-raised shadow-(--shadow-glow-gold) px-4 py-2 text-caption font-display tracking-widest uppercase text-parchment hover:bg-surface"
         >
           Choose another target
         </button>
@@ -472,7 +474,7 @@ function Outcome({
 
 function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
   return (
-    <section aria-label="What just happened" className="rounded border border-line bg-surface p-4">
+    <section aria-label="What just happened" className="lz-surface p-4">
       <h3 className="mb-3 text-caption font-display tracking-widest uppercase text-parchment">
         Last exchange
       </h3>
@@ -489,7 +491,9 @@ function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
         ))}
       </ol>
 
-      {events.length === 0 && <p className="font-mono text-caption text-faint">Nothing yet.</p>}
+      {events.length === 0 && (
+        <p className="lz-empty p-3 font-mono text-caption text-faint">Nothing yet.</p>
+      )}
     </section>
   );
 }

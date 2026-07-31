@@ -118,7 +118,7 @@ export function SlotPlanner({
                 data-stage={state.stage}
                 className={[
                   'flex flex-col gap-2 rounded-lg border-2 p-3 text-left transition-colors',
-                  isSelected ? 'border-gold bg-raised' : 'border-line bg-surface hover:border-faint',
+                  isSelected ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line bg-surface hover:border-faint',
                 ].join(' ')}
               >
                 <span className="flex items-baseline justify-between gap-2">
@@ -208,7 +208,7 @@ export function SlotPlanner({
                     className={[
                       'text-caption grid w-full grid-cols-[7rem_1fr_auto] items-center gap-3 rounded border px-3 py-1 text-left font-mono transition-colors',
                       drafting
-                        ? 'border-gold bg-raised'
+                        ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
                         : blocked
                           ? 'border-line text-faint'
                           : 'border-line hover:border-faint',

@@ -58,7 +58,7 @@ export function SquadBuilder({
     allocation.seats.find((s) => s.row === row && s.index === index);
 
   return (
-    <section aria-label={`${kind} squad formation`} className="rounded border border-line bg-surface p-6">
+    <section aria-label={`${kind} squad formation`} className="lz-surface p-6">
       <header className="mb-4 flex items-baseline justify-between">
         <h3 className="font-display text-h2 tracking-widest uppercase text-parchment">Formation</h3>
         <p className="font-mono text-caption text-faint">

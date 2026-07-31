@@ -198,6 +198,191 @@
   --control-sm: 28px;
   --control-md: 38px;
   --control-lg: 48px;
+
+  /*
+   * -------------------------------------------------------------------------
+   * 019 US1 — DEPTH. Transcribed from the exports, not invented.
+   *
+   * 017 gave the client the design's colours and type and left it flat: the
+   * exports carry **111 box-shadows and the client carried one**
+   * (`py tools/design-audit.py`). Every panel was a 1px outline on a solid
+   * fill, which is why the interface read as generic while every token was
+   * correct.
+   *
+   * Three jobs, three names, because collapsing them is how a glow ends up on
+   * something that is merely present rather than live:
+   *
+   *   elev-*     the surface is ABOVE the one behind it
+   *   hairline   an inner edge, drawn INSIDE the shape so a clip cannot eat it
+   *   glow-*     this element is LIVE — selected, active, or about to cost you
+   *
+   * Tailwind v4 turns `--shadow-x` into `shadow-x`, so a component spends a
+   * token rather than inlining an rgba.
+   * -------------------------------------------------------------------------
+   */
+  --shadow-elev-1: 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-elev-2: 0 8px 24px rgb(0 0 0 / 0.5);
+  /* The export's modal/drawer lift — 40px of blur, used sparingly. */
+  --shadow-elev-3: 0 16px 40px rgb(0 0 0 / 0.6);
+
+  /* `inset` deliberately: an outer ring is clipped away by `clip-path`, and
+     every chamfered surface below is clipped. */
+  --shadow-hairline: inset 0 0 0 1px var(--color-line);
+
+  /* Gold reads "chosen / affordable / your turn". The 1px ring is part of it —
+     the export always pairs the bloom with a hard edge so the shape stays
+     readable against a light-ish ground. */
+  --shadow-glow-gold: 0 0 20px rgb(242 199 68 / 0.28), 0 0 0 1px var(--color-gold);
+  --shadow-glow-gold-strong: 0 0 18px rgb(242 199 68 / 0.35);
+  /* Danger reads "this is irreversible" — the destroy dialog, a losing wall. */
+  --shadow-glow-danger: 0 0 18px rgb(192 49 58 / 0.4);
+  /* Air is the *system* accent — focus, hover, "the engine is thinking". It is
+     the one colour never spent on a Force's meaning, which is what makes it
+     safe to use for state. See the focus ring below. */
+  --shadow-glow-air: 0 0 12px rgb(79 195 214 / 0.2);
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * 019 US1 — SHAPE, and it is not decoration (FR-001)
+ *
+ * The exports use `clip-path` 45 times and the client used it zero. The shapes
+ * carry meaning: in `LMNTLZ Hero Card.dc.html` a **magic** Force is drawn as a
+ * shield and a **martial** one as a chamfered plate, so the 6-magic / 3-melee
+ * split the whole game rests on is legible in the silhouette **before a word is
+ * read**. A player who cannot distinguish colours can still read the family.
+ *
+ * ### ⚠️ `clip-path` clips the focus ring, and that is an invisible a11y bug
+ *
+ * `outline` and `box-shadow` are both clipped away by `clip-path`. So a
+ * chamfered button silently loses the mandatory focus indicator that
+ * `base.css` promises every focusable element — and it looks perfect while
+ * doing it, which is the worst kind of regression.
+ *
+ * **The rule: never put a shape and a focus ring on the same element.** Put
+ * `.lz-shaped` on an inner presentational span and leave the focusable
+ * ancestor unclipped. `tests/components/shape.test.tsx` enforces it.
+ * ---------------------------------------------------------------------------
+ */
+:root {
+  /* The arcane crest — 6 magic Forces. Point down, shoulders at 62%. */
+  --shape-shield: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+  /* The martial plate — 3 melee Forces. Bottom-right corner cut away. */
+  --shape-plate: polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%);
+  /* The same cut at small sizes, where 78% reads as too shallow. */
+  --shape-plate-sm: polygon(0 0, 100% 0, 100% 76%, 76% 100%, 0 100%);
+  /* Direction markers — the export's rising/falling indicators. */
+  --shape-pennant-up: polygon(50% 0%, 100% 100%, 0% 100%);
+  --shape-pennant-down: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * 019 US1 — the raised surface, in one place (FR-002)
+ *
+ * Eighteen hand-rolled variations of `rounded-lg border border-line bg-surface`
+ * were scattered across twelve files, every one of them a flat outline where
+ * the export draws a lifted card. Written as a class rather than a component
+ * because it is applied to `section`, `div`, `li`, `aside` and `article`
+ * already — a wrapper would have meant eighteen structural edits and eighteen
+ * chances to change the DOM a test depends on.
+ *
+ * **`shadow` carries the hairline, and `border` does not.** The export's inner
+ * edge is `inset 0 0 0 1px`, which survives a `clip-path` where a real border
+ * does not — so a chamfered card and a square one get the same edge from the
+ * same declaration.
+ * ---------------------------------------------------------------------------
+ */
+.lz-surface {
+  /*
+   * **The wash is what stops a card reading as a grey box.** The exports lay a
+   * faint diagonal over every panel — `linear-gradient(135deg,
+   * rgba(58,51,87,.28), transparent)` in Matchmaking, six times on that screen
+   * alone. It is barely visible in isolation and it is most of the difference
+   * between "a surface" and "a rectangle" once four of them are on screen.
+   */
+  background-color: var(--color-surface);
+  background-image: linear-gradient(135deg, rgb(58 51 87 / 0.28), transparent 62%);
+  border-radius: 8px;
+  box-shadow: var(--shadow-hairline), var(--shadow-elev-1);
+}
+
+/* One step up: the thing the eye should land on first in a region. */
+.lz-surface-raised {
+  background-color: var(--color-raised);
+  background-image: linear-gradient(135deg, rgb(58 51 87 / 0.35), transparent 62%);
+  border-radius: 8px;
+  box-shadow: var(--shadow-hairline), var(--shadow-elev-2);
+}
+
+/*
+ * The ambient bloom at the top of a hero region — `radial-gradient(90% 70% at
+ * 50% 0%, rgba(242,199,68,.12), transparent)`. The exports use it to say *this
+ * is the important panel on the screen* without spending a border on it.
+ * Applied on top of a surface, never instead of one.
+ */
+.lz-bloom-gold {
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgb(242 199 68 / 0.12), transparent 70%),
+    linear-gradient(135deg, rgb(58 51 87 / 0.28), transparent 62%);
+}
+
+.lz-bloom-danger {
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgb(192 49 58 / 0.14), transparent 70%),
+    linear-gradient(135deg, rgb(58 51 87 / 0.28), transparent 62%);
+}
+
+/*
+ * An empty seat, an unfilled slot, a list with nothing in it.
+ *
+ * **Dashed is the export's own signal for "this could hold something"**, used
+ * 60+ times across the set and twice in the client. A solid border says *this
+ * is a thing*; a dashed one says *this is where a thing goes*, and the squad
+ * builder is unreadable without the distinction.
+ */
+.lz-empty {
+  border: 1px dashed var(--color-line);
+  border-radius: 8px;
+  background-color: transparent;
+}
+
+.lz-shield {
+  clip-path: var(--shape-shield);
+}
+.lz-plate {
+  clip-path: var(--shape-plate);
+}
+.lz-plate-sm {
+  clip-path: var(--shape-plate-sm);
+}
+.lz-pennant-up {
+  clip-path: var(--shape-pennant-up);
+}
+.lz-pennant-down {
+  clip-path: var(--shape-pennant-down);
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * 019 US4 — motion, and the switch that turns all of it off (FR-016)
+ *
+ * Declared here rather than per component so there is exactly one place a
+ * reduced-motion preference has to be honoured. `!important` because the
+ * alternative is trusting sixteen screens to remember, and the day one forgets
+ * is the day somebody with a vestibular disorder gets a full-screen animation.
+ * The END STATE still shows — motion is suppressed, never information.
+ * ---------------------------------------------------------------------------
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /*

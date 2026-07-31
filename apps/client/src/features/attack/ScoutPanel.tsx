@@ -69,7 +69,7 @@ export function ScoutPanel({ scout, children }: ScoutPanelProps) {
   return (
     <section
       aria-label={`Scouting ${scout.username}`}
-      className="flex flex-col gap-4 rounded border border-line bg-surface p-6"
+      className="flex flex-col gap-4 lz-surface p-6"
     >
       <header className="flex items-baseline justify-between gap-4">
         <h3 className="font-display text-h2 tracking-widest uppercase text-parchment">

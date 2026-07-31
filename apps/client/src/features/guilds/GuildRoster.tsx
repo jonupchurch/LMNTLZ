@@ -81,7 +81,7 @@ export function GuildRoster({
       </header>
 
       {guild.motd ? (
-        <p className="text-body rounded border border-line bg-surface p-3 text-parchment">
+        <p className="text-body lz-surface p-3 text-parchment">
           {guild.motd}
         </p>
       ) : null}

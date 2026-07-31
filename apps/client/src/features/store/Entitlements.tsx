@@ -34,7 +34,7 @@ export function Entitlements({ entitlements, nextBoundaryAt }: EntitlementsProps
   return (
     <section
       aria-label="What you hold"
-      className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4"
+      className="flex flex-col gap-3 lz-surface p-4"
     >
       <h2 className="text-caption font-mono tracking-[0.2em] uppercase text-faint">
         What you hold

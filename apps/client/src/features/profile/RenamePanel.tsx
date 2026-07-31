@@ -96,7 +96,7 @@ export function RenamePanel({
             onChange={(e) => setValue(e.target.value)}
             placeholder="A new name"
             maxLength={24}
-            className="w-full rounded border border-line bg-raised px-3 py-2 text-body text-parchment"
+            className="w-full lz-surface-raised px-3 py-2 text-body text-parchment"
           />
         </label>
 

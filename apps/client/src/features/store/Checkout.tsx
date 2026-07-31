@@ -52,7 +52,7 @@ export function Checkout({
     return (
       <section
         aria-label="Checkout"
-        className="rounded-lg border border-line bg-surface p-4"
+        className="lz-surface p-4"
       >
         <p role="status" className="text-body text-muted">
           Purchasing is unavailable right now. Nothing here can be bought yet — this is
@@ -63,9 +63,9 @@ export function Checkout({
   }
 
   return (
-    <section aria-label="Checkout" className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4">
+    <section aria-label="Checkout" className="flex flex-col gap-3 lz-surface p-4">
       {sku === null ? (
-        <p className="text-body text-muted">Choose a duration.</p>
+        <p className="lz-empty text-body p-4 text-center text-muted">Choose a duration.</p>
       ) : (
         <>
           <p className="text-body text-parchment">

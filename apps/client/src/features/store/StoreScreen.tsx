@@ -180,7 +180,7 @@ export function StoreScreen({ onUnauthenticated }: StoreScreenProps): JSX.Elemen
                     className={[
                       'flex w-full flex-col gap-1 rounded-lg border-2 p-3 text-left transition-colors',
                       sku.id === chosen
-                        ? 'border-gold bg-raised'
+                        ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
                         : 'border-line bg-surface hover:border-faint',
                     ].join(' ')}
                   >

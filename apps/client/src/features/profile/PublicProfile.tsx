@@ -51,7 +51,7 @@ export function PublicProfile({ profile }: { profile: PublicProfileData }): JSX.
     <article className="space-y-8">
       <header className="flex items-start gap-5">
         <div
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded border border-line bg-raised text-caption tracking-widest text-faint uppercase"
+          className="flex h-16 w-16 shrink-0 items-center justify-center lz-surface-raised text-caption tracking-widest text-faint uppercase"
           aria-hidden="true"
         >
           {/* The artwork is part of the visual pass; the slot and its

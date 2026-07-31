@@ -68,8 +68,18 @@ export interface ButtonProps
 /** Base, then the forced-hover and forced-pressed appearances for the gallery. */
 const VARIANT: Record<ButtonVariant, { base: string; hover: string; pressed: string }> = {
   primary: {
-    base: 'bg-gold text-void font-semibold',
-    hover: 'bg-light-lit text-void font-semibold',
+    /**
+     * **019 US1 — the CTA is a ramp, not a flat fill** (FR-002).
+     *
+     * `linear-gradient(140deg,#F2C744,#B5732E)` appears in the Design System,
+     * Battle and Matchmaking exports alike — gold into crush, at 140°. It is
+     * the most repeated single treatment in the set, and the client had it
+     * nowhere. The glow is the same pairing the export always uses: a bloom
+     * plus a hard 1px edge, so the button keeps its shape against a light
+     * ground.
+     */
+    base: 'bg-linear-[140deg] from-gold to-crush text-void font-semibold shadow-(--shadow-glow-gold)',
+    hover: 'bg-linear-[140deg] from-light-lit to-gold text-void font-semibold shadow-(--shadow-glow-gold-strong)',
     pressed: 'bg-light-deep text-parchment font-semibold',
   },
   secondary: {

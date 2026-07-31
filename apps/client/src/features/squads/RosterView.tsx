@@ -101,7 +101,7 @@ export function RosterView({ roster, selectedHeroId, onSelect }: RosterViewProps
                 aria-pressed={selected}
                 className={[
                   'w-full rounded border px-3 py-2 text-left transition-colors',
-                  selected ? 'border-gold bg-raised' : 'border-line bg-surface hover:border-faint',
+                  selected ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line bg-surface hover:border-faint',
                 ].join(' ')}
               >
                 {/* 017 T042 — the roster is where all 27 emblems appear at once. */}

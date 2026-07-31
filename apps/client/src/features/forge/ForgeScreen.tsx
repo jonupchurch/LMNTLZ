@@ -189,7 +189,7 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
     <>
       {/* --- the hero list, 238px in the export ------------------------------ */}
       <Panel span={3}>
-        <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-3">
+        <div className="flex flex-col gap-3 lz-surface p-3">
           <label className="flex flex-col gap-1">
             <span className="text-caption font-display uppercase tracking-wide text-muted">
               Search champions
@@ -219,7 +219,7 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
                 className={[
                   'text-caption flex-1 rounded border py-1 font-mono uppercase',
                   filter === value
-                    ? 'border-gold bg-raised text-parchment'
+                    ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
                     : 'border-line text-faint',
                 ].join(' ')}
               >
@@ -246,7 +246,7 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
                     className={[
                       'flex w-full items-center gap-2 rounded border px-2 py-1 text-left transition-colors',
                       h.id === heroId
-                        ? 'border-gold bg-raised'
+                        ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
                         : 'border-line hover:border-faint',
                     ].join(' ')}
                   >
@@ -310,7 +310,7 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
 
       {/* --- the ledger, 412px in the export -------------------------------- */}
       <Panel span={3}>
-        <div className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-4">
+        <div className="flex flex-col gap-4 lz-surface p-4">
           <h2 className="text-caption font-mono tracking-[0.2em] uppercase text-faint">
             {SLOT_LABEL[slot]} slot
           </h2>

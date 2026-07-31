@@ -88,8 +88,30 @@ export function HeroCard({
       {...(onSelect ? { type: 'button' as const, onClick: () => onSelect(hero) } : {})}
       data-scale={scale}
       data-hero={hero.id}
-      className={`flex flex-col rounded-lg bg-surface text-left shadow-(--shadow-glow-1) ${
+      /**
+       * **019 US1 — the card is chamfered and lifted, not a flat rectangle.**
+       *
+       * `lz-plate` is the export's martial cut on the bottom-right; the hero
+       * card carries it regardless of the champion's family, because here the
+       * shape is the *card's* silhouette rather than a type marker — the type
+       * markers are the two `TypeBadge`s in the corner, which do vary.
+       *
+       * `pr-6` on top of the scale padding: the chamfer removes the bottom
+       * right 22%, and without the extra inset the reach/might/speed pills run
+       * into the cut. Measured against the longest real hero name
+       * (`Auriel Dawnkeep`) rather than a fixture.
+       *
+       * The shape sits on the root here and the root is a `button` when
+       * selectable, which would normally eat the focus ring — so the ring is
+       * re-established as an inset shadow on `:focus-visible`, which `clip-path`
+       * cannot clip. `tests/components/shape.test.tsx` holds it.
+       */
+      className={`lz-plate lz-surface flex flex-col pr-6 text-left ${
         fill ? FILLED[scale] : SCALE[scale]
+      } ${
+        onSelect
+          ? 'transition-shadow duration-(--duration-fast) hover:shadow-(--shadow-glow-air) focus-visible:shadow-[inset_0_0_0_2px_var(--color-air)]'
+          : ''
       }`}
     >
       <div className="flex items-start gap-2">

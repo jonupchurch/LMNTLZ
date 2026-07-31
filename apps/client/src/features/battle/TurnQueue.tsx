@@ -56,7 +56,7 @@ export function TurnQueue({ state, lookahead = DEFAULT_LOOKAHEAD, heroName }: Tu
   const heroOf = (instanceId: string) => state.heroes.find((h) => h.instanceId === instanceId);
 
   return (
-    <section aria-label="Turn order" className="rounded border border-line bg-surface p-4">
+    <section aria-label="Turn order" className="lz-surface p-4">
       <header className="mb-3 flex items-baseline justify-between">
         <h3 className="text-caption font-display tracking-widest uppercase text-parchment">Turn order</h3>
         <span className="font-mono text-caption text-faint">projected</span>

@@ -94,7 +94,7 @@ export function AvatarPicker({
                 onClick={() => void choose(key)}
                 className={[
                   'w-full rounded border px-2 py-3 text-caption tracking-widest uppercase',
-                  selected ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
+                  selected ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment' : 'border-line text-faint',
                 ].join(' ')}
               >
                 {LABEL[key] ?? key}

@@ -56,7 +56,7 @@ export function DefenseConfig({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded border border-line bg-surface p-4">
+    <div className="flex flex-col gap-3 lz-surface p-4">
       <h4 className="font-display text-body tracking-wide text-parchment">{hero.name}</h4>
 
       <label className="flex flex-col gap-1">

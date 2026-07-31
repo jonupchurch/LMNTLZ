@@ -97,7 +97,7 @@ export function StageLadder({
                 done
                   ? 'border-earth bg-earth-deep/20 text-parchment'
                   : next
-                    ? 'border-gold bg-raised text-parchment'
+                    ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
                     : 'border-line text-faint',
               ].join(' ')}
             >

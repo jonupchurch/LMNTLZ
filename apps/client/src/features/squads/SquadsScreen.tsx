@@ -382,7 +382,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
             onClick={() => setEditing(z)}
             className={[
               'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
-              editing === z ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
+              editing === z ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment' : 'border-line text-faint',
             ].join(' ')}
           >
             {ZONE_LABEL[z]}
@@ -420,7 +420,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
               onClick={() => setEditing(slot)}
               className={[
                 'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
-                editing === slot ? 'border-gold bg-raised text-parchment' : 'border-line text-faint',
+                editing === slot ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment' : 'border-line text-faint',
               ].join(' ')}
             >
               Attack {slot + 1}
@@ -503,7 +503,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
               className={[
                 'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
                 allocation.isComplete && !saving
-                  ? 'border-gold bg-raised text-parchment hover:bg-gold/20'
+                  ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment hover:bg-gold/20'
                   : 'border-line text-faint',
               ].join(' ')}
             >
@@ -576,7 +576,7 @@ export function SquadsScreen({ onUnauthenticated }: SquadsScreenProps = {}) {
                 }
               />
             ) : (
-              <p className="rounded border border-line bg-surface p-4 font-mono text-caption text-faint">
+              <p className="lz-surface p-4 font-mono text-caption text-faint">
                 {configuring.hero.name} is playing her Role&rsquo;s defaults. Save this zone to
                 see them and change them.
               </p>

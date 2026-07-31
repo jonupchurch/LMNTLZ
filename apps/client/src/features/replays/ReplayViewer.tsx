@@ -247,7 +247,7 @@ export function ReplayViewer({
           <div
             aria-live="polite"
             data-cursor={cursor}
-            className="rounded-lg border border-line bg-surface p-4"
+            className="lz-surface p-4"
           >
             {current === null ? (
               <p className="text-body text-faint">
@@ -286,7 +286,7 @@ export function ReplayViewer({
 
       <Panel span={4}>
         <div className="flex flex-col gap-4">
-          <section aria-label="Still standing" className="rounded-lg border border-line bg-surface p-4">
+          <section aria-label="Still standing" className="lz-surface p-4">
             <h2 className="text-caption mb-2 font-mono tracking-[0.2em] uppercase text-faint">
               Still standing
             </h2>
@@ -318,7 +318,7 @@ export function ReplayViewer({
             <section
               aria-label="Result"
               className={`rounded-lg border p-4 ${
-                log.conclusion.winner === viewerRole ? 'border-gold bg-raised' : 'border-line bg-surface'
+                log.conclusion.winner === viewerRole ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line bg-surface'
               }`}
             >
               <h2 className="text-h3 font-display uppercase tracking-widest text-parchment">

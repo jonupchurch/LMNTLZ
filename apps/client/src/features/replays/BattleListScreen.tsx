@@ -103,7 +103,9 @@ export function BattleListScreen({
         ) : list.battles.length === 0 ? (
           /* A statement about the player, not about this list — the same
              wording rule `BattleRecord.tsx` follows for a stranger's profile. */
-          <p className="text-body text-muted">You have not fought a battle yet.</p>
+          <p className="lz-empty text-body p-6 text-center text-muted">
+            You have not fought a battle yet.
+          </p>
         ) : (
           <table aria-label="Your battles" className="text-body w-full border-collapse">
             <thead>
