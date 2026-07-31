@@ -45,6 +45,7 @@ import {
   resolvedSeatConfig,
   targetRuleMenu,
   validateSquadShape,
+  validateStorableShape,
   type SquadShape,
 } from './allocation.js';
 import {
@@ -329,7 +330,20 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
   let seats: SeatInput[];
   try {
     seats = parseSeats(await c.req.json().catch(() => null), 'defense');
-    validateSquadShape(seatsToShape('pending', 'defense', seats).seats);
+    /**
+     * **Storable, not battle-ready.** A defense zone saves with fewer than six —
+     * empty included — so a player can shuffle champions between two zones and
+     * three attack squads without finishing every move in one sitting. Before
+     * this, moving one champion out of a zone left that zone un-savable until a
+     * replacement was found, which is exactly the reorganisation nobody could
+     * perform.
+     *
+     * Every *impossible* placement is still refused; only the count moved. The
+     * roster already reports a short zone as `canDefend: false`, and
+     * `createBattle` refuses to start a battle for a player whose defense is
+     * incomplete — so a stored short squad reaches no battle from either side.
+     */
+    validateStorableShape(seatsToShape('pending', 'defense', seats).seats);
     /**
      * **Materialised here rather than left to the repository's fallback.** That
      * fallback is empty strings and an empty ranking — enough to store a row, and

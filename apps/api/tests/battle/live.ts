@@ -168,6 +168,23 @@ export async function arena(tag: string): Promise<Arena> {
   await put(defender, '/v1/squads/defense/hidden', formation(hiddenHeroes, true));
   await put(attacker, '/v1/squads/offense/0', formation(attackHeroes, false));
 
+  /**
+   * **The attacker defends too, because you cannot attack until you can.**
+   *
+   * A defense zone stores at any size so a player can reorganise, and the price
+   * is that `createBattle` refuses an attacker whose own zones are short. This
+   * fixture used to give the attacker an offense squad and nothing else — a
+   * player who takes Hidden-sized rewards while offering nothing back and can
+   * never be ambushed, which is not a state the game has.
+   *
+   * **After the offense save, and on champions it does not hold.** Seating a
+   * champion on defense evicts her from every attack squad, so doing this first
+   * — or with `attackHeroes` — would invalidate the squad this arena exists to
+   * fight with, and every battle test would fail on `attack-squad-invalid`.
+   */
+  await put(attacker, '/v1/squads/defense/visible', formation(defenseHeroes, true));
+  await put(attacker, '/v1/squads/defense/hidden', formation(hiddenHeroes, true));
+
   const createdBattles: string[] = [];
 
   return {

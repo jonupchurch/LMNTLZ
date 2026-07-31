@@ -109,6 +109,13 @@ export {
   freeSeatsInRow,
   isPowerRanking,
   validateFormation,
+  /**
+   * Everything `validateFormation` checks except the count — what a *stored*
+   * squad must satisfy, as against what a *fighting* one must. See its header:
+   * the six-champion rule did not relax, it moved to the moment a battle
+   * starts.
+   */
+  validatePlacement,
 } from './formation.js';
 export type { FormationFault, FormationFaultCode, Seat, SquadRow } from './formation.js';
 

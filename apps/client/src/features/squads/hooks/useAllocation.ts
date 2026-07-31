@@ -21,7 +21,14 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SQUAD_SIZE, validateFormation, type FormationFault, type Seat, type SquadRow } from '@lmntlz/sim/rules';
+import {
+  SQUAD_SIZE,
+  validateFormation,
+  validatePlacement,
+  type FormationFault,
+  type Seat,
+  type SquadRow,
+} from '@lmntlz/sim/rules';
 import type { ConfiguredSeat, RosterResponse, SeatConfigWire, Zone } from '../types.js';
 
 export const DEFENSE_TOTAL = 12;
@@ -33,6 +40,17 @@ export interface AllocationView {
   /** `null` when the six seats are a legal 2/3/1 formation. */
   readonly fault: FormationFault | null;
   readonly isComplete: boolean;
+  /**
+   * Legal enough to **store**, which is less than legal enough to fight.
+   *
+   * A defense zone saves at any size — empty included — so a player can shuffle
+   * champions between two zones and three attack squads without finishing every
+   * move in one sitting. `isComplete` is still what a battle needs; this is what
+   * the Save button needs. Same distinction the server draws between
+   * `validatePlacement` and `validateFormation`, from the same module, so the
+   * button and the route cannot disagree about it.
+   */
+  readonly isStorable: boolean;
   /** Heroes committed to either defense zone, across the whole account. */
   readonly defending: ReadonlySet<string>;
   /** How many of the 27 remain for offense once defense is committed. */
@@ -175,6 +193,8 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
   }, []);
 
   const fault = useMemo(() => validateFormation(seats), [seats]);
+  /* Everything except the count. An unfinished squad is not a broken one. */
+  const placementFault = useMemo(() => validatePlacement(seats), [seats]);
 
   const defending = useMemo(() => {
     const committed = new Set<string>();
@@ -195,6 +215,7 @@ export function useAllocation(roster: RosterResponse | null, editing: Zone | num
     seats,
     fault,
     isComplete: seats.length === SQUAD_SIZE && fault === null,
+    isStorable: placementFault === null,
     defending,
     poolForOffense: (roster?.heroes.length ?? 0) - defending.size,
     behaviour,

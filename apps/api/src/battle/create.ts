@@ -25,13 +25,19 @@
 import { randomInt } from 'node:crypto';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { contentVersion } from '@lmntlz/content';
-import { engineVersion } from '@lmntlz/sim/rules';
+import { SQUAD_SIZE, engineVersion } from '@lmntlz/sim/rules';
 import { createSeed } from '@lmntlz/sim/resolver';
 import { db } from '../db/client.js';
 import { accounts } from '../db/schema/accounts.js';
 import { battles } from '../db/schema/battles.js';
 import { playerRatings, STARTING_RATING } from '../db/schema/ratings.js';
-import { squads, squadSeats, squadMemberConfig, type SquadZone } from '../db/schema/squads.js';
+import {
+  SQUAD_ZONES,
+  squads,
+  squadSeats,
+  squadMemberConfig,
+  type SquadZone,
+} from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
 import { STARTER_GRANT_SCORE, leagueOf } from '../matchmaking/league.js';
@@ -50,6 +56,7 @@ import type { ActionPacket } from './idempotency.js';
 export type CreateFailure =
   | 'no-attack-squad'
   | 'attack-squad-invalid'
+  | 'defense-incomplete'
   | 'opponent-undefended'
   | 'opponent-is-self';
 
@@ -204,6 +211,36 @@ export async function createBattle(
     throw new CannotStartBattleError(
       'attack-squad-invalid',
       'That attack squad is invalid — a hero in it has been moved to defense.',
+    );
+  }
+
+  /**
+   * **You cannot attack until both your zones can defend.**
+   *
+   * A defense zone is storable at any size, so a player can reorganise across
+   * two zones and three attack squads without completing every move in one
+   * sitting. This is the price of that: the shuffle is free, going to war on
+   * the back of it is not.
+   *
+   * It is a rule about fairness rather than about tidiness. PvP here is
+   * asynchronous — you attack a stored snapshot — so a player who kept an empty
+   * Hidden zone would be taking Hidden-sized rewards from other people while
+   * offering nothing back, and would be permanently un-ambushable, which is the
+   * one mechanism that puts anybody into a Hidden battle at all.
+   *
+   * **Checked on the server, not by hiding a button.** The client greys out
+   * `FIND BATTLE` and says why, but that is a courtesy; this is the rule.
+   */
+  const zones = await Promise.all(
+    SQUAD_ZONES.map((zone) => loadSquadRow(attackerId, 'defense', { zone })),
+  );
+  const short = zones.findIndex((z) => (z?.seats.length ?? 0) !== SQUAD_SIZE);
+  if (short !== -1) {
+    const zone = SQUAD_ZONES[short]!;
+    const seated = zones[short]?.seats.length ?? 0;
+    throw new CannotStartBattleError(
+      'defense-incomplete',
+      `Your ${zone} zone has ${seated} of ${SQUAD_SIZE} champions. Both zones must be able to defend before you can attack.`,
     );
   }
 

@@ -90,10 +90,28 @@ const putOffense = (slot: number | string, seats: unknown, name = 'Vanguard') =>
   });
 
 describe('the shape is 422', () => {
-  it('rejects five seats instead of six', async () => {
-    const res = await putDefense('visible', defenseSeats(ROSTER.slice(0, 6)).slice(0, 5));
-    expect(res.status).toBe(422);
-    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('wrong-size');
+  /**
+   * **An attack squad is still exactly six; a defense zone is not.**
+   *
+   * This asserted `422` for both until defense zones became storable at any
+   * size, so a player could shuffle champions between two zones and three attack
+   * squads without finishing every move in one sitting. The rule did not
+   * disappear — it moved to `createBattle`, which refuses an attacker whose own
+   * zones are short.
+   *
+   * Both halves are asserted together deliberately: the interesting claim is the
+   * *difference*, and a test that only covered the relaxed side would keep
+   * passing if the strict side quietly relaxed too.
+   */
+  it('rejects five seats on an attack squad, and accepts five on a defense zone', async () => {
+    const five = defenseSeats(ROSTER.slice(0, 6)).slice(0, 5);
+
+    const offense = await putOffense(0, five.map(({ config: _c, ...seat }) => seat));
+    expect(offense.status).toBe(422);
+    expect(((await offense.json()) as { error: { code: string } }).error.code).toBe('wrong-size');
+
+    const defense = await putDefense('visible', five);
+    expect(defense.status, await defense.clone().text()).toBe(200);
   });
 
   it('rejects a ranking that is not a permutation of 0-5', async () => {

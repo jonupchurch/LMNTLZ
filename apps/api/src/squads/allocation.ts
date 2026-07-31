@@ -26,6 +26,7 @@ import {
   SQUAD_SIZE,
   isPowerRanking as isRanking,
   validateFormation,
+  validatePlacement,
   type FormationFaultCode,
   type Seat,
 } from '@lmntlz/sim/rules';
@@ -78,6 +79,30 @@ export class InvalidSquadError extends Error {
  */
 export function validateSquadShape(seats: readonly Seat[]): void {
   const fault = validateFormation(seats);
+  if (fault) throw new InvalidSquadError(fault.code, fault.detail);
+}
+
+/**
+ * **What a squad has to satisfy to be *stored*, which is less than to fight.**
+ *
+ * A defense zone can be saved with fewer than six — empty, even — so a player
+ * can reorganise across two zones and three attack squads without having to
+ * complete every move in one sitting. Moving one champion between zones used to
+ * mean the source zone was un-savable until a replacement was found, which is
+ * the shuffle nobody could perform.
+ *
+ * **Nothing was relaxed about fighting.** Every impossible placement is still
+ * refused here — an unknown row, two champions in one seat, the same champion
+ * twice, a champion who does not exist — because those are wrong at three
+ * heroes exactly as at six. What moved is the *count*, and it moved to the two
+ * places that need it: `defenseReadiness`, which already reported an incomplete
+ * zone as unable to defend, and `createBattle`, which now refuses to start one.
+ *
+ * A stored short squad therefore never reaches a battle from either side. It
+ * cannot attack, and it cannot be attacked.
+ */
+export function validateStorableShape(seats: readonly Seat[]): void {
+  const fault = validatePlacement(seats);
   if (fault) throw new InvalidSquadError(fault.code, fault.detail);
 }
 

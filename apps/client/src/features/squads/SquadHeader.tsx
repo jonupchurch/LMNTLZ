@@ -23,6 +23,7 @@
  */
 
 import type { JSX } from 'react';
+import { SQUAD_SIZE } from '@lmntlz/sim/rules';
 import { Button } from '../../components/index.js';
 import type { RosterResponse, Zone } from './types.js';
 
@@ -44,6 +45,13 @@ export interface SquadHeaderProps {
   readonly onEdit: (next: Editing) => void;
   readonly placed: number;
   readonly isComplete: boolean;
+  /**
+   * Legal enough to store. **Defense saves at any size**, so a player can move
+   * a champion out of a zone without having a replacement chosen — the shuffle
+   * that was impossible to even start before 019. Attack squads still need six.
+   */
+  readonly isStorable: boolean;
+
   readonly saving: boolean;
   readonly name: string;
   readonly onName: (next: string) => void;
@@ -60,6 +68,7 @@ export function SquadHeader({
   onEdit,
   placed,
   isComplete,
+  isStorable,
   saving,
   name,
   onName,
@@ -69,6 +78,29 @@ export function SquadHeader({
   onFindBattle,
 }: SquadHeaderProps): JSX.Element {
   const attacking = isAttack(editing);
+
+  /**
+   * **Both zones must be able to defend before anybody may attack.**
+   *
+   * Derived here from the roster rather than passed in, because the roster is
+   * already the one source for `canDefend` — a prop would be a second copy of an
+   * answer this component can already see, and the two would disagree the first
+   * time somebody forgot to thread it.
+   *
+   * Read from the **stored** zones on purpose. The squad being edited right now
+   * is not saved yet, so a player who has just dragged a sixth champion in has
+   * not yet earned the right to leave; pressing Save is what earns it, and the
+   * refetch turns the button on.
+   *
+   * **This is a courtesy, not the rule.** `createBattle` refuses the same case
+   * server-side — a client cannot be trusted with an authorization check.
+   */
+  const zoneStanding = (['visible', 'hidden'] as const).map((zone, index) => ({
+    label: ROMAN[index]!,
+    seated: roster.assignments.defense[zone].seats.length,
+    canDefend: roster.assignments.defense[zone].canDefend,
+  }));
+  const canAttack = zoneStanding.every((z) => z.canDefend);
 
   return (
     <div className="flex flex-col gap-2">
@@ -196,7 +228,7 @@ export function SquadHeader({
               <Button
                 variant="primary"
                 size="sm"
-                state={isComplete ? 'rest' : 'disabled'}
+                state={isComplete && canAttack ? 'rest' : 'disabled'}
                 onClick={onFindBattle}
               >
                 Find battle
@@ -208,7 +240,10 @@ export function SquadHeader({
             variant="primary"
             size="sm"
             aria-label={`Set as defense, ${labelOf(editing)}`}
-            state={saving ? 'loading' : isComplete ? 'rest' : 'disabled'}
+            /* **Storable, not complete.** A half-built zone is a save-worthy
+               state; it simply cannot defend, which the roster says and the
+               line below repeats. */
+            state={saving ? 'loading' : isStorable ? 'rest' : 'disabled'}
             onClick={onSave}
           >
             {saving ? 'Saving…' : 'Set as defense'}
@@ -223,8 +258,24 @@ export function SquadHeader({
       <p className="text-caption text-faint">
         {attacking
           ? 'Up to three Striking Six, saved and swapped per matchup. You command these on offense; reach decides who can act on turn one, and the back seat cannot attack while your lines hold.'
-          : 'Two zones the engine runs for you. The Visible six is the only squad anyone can choose to attack; the Hidden six is reached by ambush alone, and pays more. Editing either resets its hold streak.'}
+          : 'Two zones the engine runs for you. The Visible six is the only squad anyone can choose to attack; the Hidden six is reached by ambush alone, and pays more. Editing either resets its hold streak. A zone saves half-built, so you can shuffle freely — it just cannot defend until it is six.'}
       </p>
+
+      {/**
+       * **The reason the primary action is off, in words.**
+       *
+       * A disabled button is an answer to "can I?" and never to "why not?", and
+       * this one is off for a reason a player fixes on a different tab of this
+       * same screen. Saying so is the difference between a rule and a dead
+       * control — especially now that a half-built zone saves happily, which
+       * makes it easy to leave one short and forget.
+       */}
+      {!canAttack ? (
+        <p role="status" className="text-caption text-gold">
+          Both defense zones need six champions before you can attack. Yours are{' '}
+          {zoneStanding.map((z) => `${z.label} ${z.seated}/${SQUAD_SIZE}`).join(' and ')}.
+        </p>
+      ) : null}
     </div>
   );
 }

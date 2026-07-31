@@ -178,9 +178,20 @@ export async function saveDefenseSquad(
 
     const reset = streakResets(previous, next);
 
-    await tx.insert(squadSeats).values(
-      seats.map((s) => ({ squadId, row: s.row, index: s.index, heroId: s.heroId })),
-    );
+    /**
+     * **Guarded, because a defense zone can now be saved empty.**
+     *
+     * `INSERT ... VALUES ()` with nothing in it is not a query, and the driver
+     * raises rather than inserting zero rows — so clearing a zone returned a
+     * `500` while every earlier step had already succeeded. It was unreachable
+     * until the size rule moved out of the save path; it is the ordinary way to
+     * empty a zone now.
+     */
+    if (seats.length > 0) {
+      await tx.insert(squadSeats).values(
+        seats.map((s) => ({ squadId, row: s.row, index: s.index, heroId: s.heroId })),
+      );
+    }
 
     const withConfig = seats.filter((s) => s.config);
     if (withConfig.length > 0) {
@@ -261,6 +272,9 @@ export async function saveOffenseSquad(
  * squad that is merely incomplete looks the same as one they never finished.
  */
 export async function evictFromOffense(accountId: string, heroIds: readonly string[]): Promise<string[]> {
+  /* Nobody committed, nobody evicted — and `inArray(col, [])` is not a
+     predicate the driver will build. This guard predates 019 and was dead
+     until then; clearing a zone is the first call that reaches it. */
   if (heroIds.length === 0) return [];
 
   return db().transaction(async (tx) => {

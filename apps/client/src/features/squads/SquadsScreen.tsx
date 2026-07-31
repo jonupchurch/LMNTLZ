@@ -337,7 +337,16 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
    * inventing a configuration and calling it the player's.
    */
   const save = useCallback(async () => {
-    if (!allocation.isComplete || saving) return;
+    /**
+     * **An attack squad needs six; a defense zone needs only to be legal.**
+     *
+     * The same split the server draws, and it has to be drawn here too or the
+     * button the header enables would be one this function silently ignores —
+     * which is the shape of the *"you can't change any heroes"* defect: a
+     * control that looks live and returns without doing anything.
+     */
+    const allowed = isAttack(editing) ? allocation.isComplete : allocation.isStorable;
+    if (!allowed || saving) return;
 
     setSaving(true);
     setProblem(null);
@@ -500,6 +509,7 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
             onEdit={setEditing}
             placed={allocation.seats.length}
             isComplete={allocation.isComplete}
+            isStorable={allocation.isStorable}
             saving={saving}
             name={attackName}
             onName={setAttackName}

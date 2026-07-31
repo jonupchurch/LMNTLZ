@@ -25,7 +25,7 @@
  */
 
 import type { Hero, HeroId } from '@lmntlz/content';
-import { ROW_CAPACITY, type Seat, type SquadRow } from '@lmntlz/sim/rules';
+import { ROW_CAPACITY, SQUAD_SIZE as ROW_TOTAL, type Seat, type SquadRow } from '@lmntlz/sim/rules';
 import { FORCE_RING, HeroMarks, HeroPortrait } from '../../components/index.js';
 import type { AllocationView } from './hooks/useAllocation.js';
 import { enemyReach, ROW_NUMBER, seatReach } from './reachPreview.js';
@@ -239,10 +239,27 @@ export function SquadBuilder({
        * of the screen, not an error condition. Only the save is gated.
        */}
       <p role="status" className="text-caption mt-2 min-h-5 font-mono">
-        {allocation.fault ? (
-          <span className="text-slash-lit">{allocation.fault.detail}</span>
-        ) : (
+        {/**
+         * **Three states, because "short" stopped meaning "wrong".**
+         *
+         * A defense zone saves at any size now, so painting `A squad is exactly
+         * 6 champions; this one has 3` in the failure colour beside a live Save
+         * button would be the screen contradicting itself. Being short is a
+         * *stage*, and it gets the colour of a stage; an impossible placement
+         * is still a fault and still reads as one.
+         *
+         * An attack squad is unchanged — it has to be six to be saved at all,
+         * so for offense short is still the thing standing in the way.
+         */}
+        {allocation.fault === null ? (
           <span className="text-earth-lit">Formation is legal.</span>
+        ) : allocation.fault.code === 'wrong-size' && kind === 'defense' ? (
+          <span className="text-gold">
+            {allocation.seats.length} of {ROW_TOTAL} placed. Save whenever you like — this zone
+            simply cannot defend until it is {ROW_TOTAL}.
+          </span>
+        ) : (
+          <span className="text-slash-lit">{allocation.fault.detail}</span>
         )}
       </p>
     </section>

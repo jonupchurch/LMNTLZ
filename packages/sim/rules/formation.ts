@@ -79,9 +79,65 @@ export function validateFormation(seats: readonly Seat[]): FormationFault | null
     };
   }
 
+  const placement = validatePlacement(seats);
+  if (placement) return placement;
+
+  /**
+   * **Unreachable today, and kept deliberately.**
+   *
+   * `ROW_CAPACITY` sums to exactly `SQUAD_SIZE`, so there are precisely six
+   * legal positions - six seats that are all in-bounds and all distinct must
+   * occupy every one of them, which forces 2/3/1. Enumerated in the test: of all
+   * 6-position selections with valid, distinct positions, **zero** have wrong
+   * row counts.
+   *
+   * It stays because it is the check that survives someone changing a capacity,
+   * and a formation bug is not a thing to discover from a battle. It lives here
+   * rather than in `validatePlacement` because it is an exactly-six rule: a
+   * partial squad holds fewer than a row's capacity by definition, and applying
+   * this to one would reject every squad on its way to six.
+   */
+  const perRow = countRows(seats);
+  for (const row of SQUAD_ROWS) {
+    if (perRow[row] !== ROW_CAPACITY[row]) {
+      return {
+        code: 'wrong-row-counts',
+        detail: `The ${row} row holds ${ROW_CAPACITY[row]}; this squad has ${perRow[row]}.`,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Everything `validateFormation` checks **except the count**.
+ *
+ * ### Why the size rule is separable
+ *
+ * A squad on its way to six is not a broken squad, it is an unfinished one, and
+ * the two need different answers. Every other rule here is about a seat being
+ * *impossible* — a row that does not exist, two champions in one place, the same
+ * champion twice — and those are as wrong at three heroes as at six. The count
+ * is the only rule that is merely *not yet satisfied*.
+ *
+ * That distinction is what lets a player save a half-built defense and come
+ * back to it. It is deliberately **not** a relaxation of the battle rule: a
+ * squad still fights at exactly six, `validateFormation` still says so, and the
+ * gate moved to the place that starts a fight rather than the place that stores
+ * a plan.
+ *
+ * ### The row counts are checked here too, as a ceiling rather than a target
+ *
+ * A partial squad cannot be asked to hold 2/3/1 — it holds fewer. What it must
+ * not do is exceed a row: seven champions in the middle row is impossible at any
+ * size, and `index-out-of-row` already catches it seat by seat because indices
+ * are bounded by `ROW_CAPACITY`. So distinct in-bounds positions are sufficient,
+ * and there is no partial equivalent of `wrong-row-counts` to write.
+ */
+export function validatePlacement(seats: readonly Seat[]): FormationFault | null {
   const positions = new Set<string>();
   const heroes = new Set<string>();
-  const perRow: Record<SquadRow, number> = { front: 0, middle: 0, back: 0 };
 
   for (const [seatIndex, seat] of seats.entries()) {
     if (!isRow(seat.row)) {
@@ -136,32 +192,16 @@ export function validateFormation(seats: readonly Seat[]): FormationFault | null
       }
       throw err;
     }
-
-    perRow[seat.row] += 1;
-  }
-
-  /**
-   * **Unreachable today, and kept deliberately.**
-   *
-   * `ROW_CAPACITY` sums to exactly `SQUAD_SIZE`, so there are precisely six
-   * legal positions — six seats that are all in-bounds and all distinct must
-   * occupy every one of them, which forces 2/3/1. Enumerated in the test: of all
-   * 6-position selections with valid, distinct positions, **zero** have wrong
-   * row counts.
-   *
-   * It stays because it is the check that survives someone changing a capacity,
-   * and a formation bug is not a thing to discover from a battle.
-   */
-  for (const row of SQUAD_ROWS) {
-    if (perRow[row] !== ROW_CAPACITY[row]) {
-      return {
-        code: 'wrong-row-counts',
-        detail: `The ${row} row holds ${ROW_CAPACITY[row]}; this squad has ${perRow[row]}.`,
-      };
-    }
   }
 
   return null;
+}
+
+/** Seats per row. Only `validateFormation` wants it — see `validatePlacement`. */
+function countRows(seats: readonly Seat[]): Record<SquadRow, number> {
+  const perRow: Record<SquadRow, number> = { front: 0, middle: 0, back: 0 };
+  for (const seat of seats) if (isRow(seat.row)) perRow[seat.row] += 1;
+  return perRow;
 }
 
 /**
