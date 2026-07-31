@@ -177,17 +177,22 @@ describe('the shape is 422', () => {
 });
 
 describe('a hero committed elsewhere is 409', () => {
-  it('refuses a hero already on the other defense zone, and names it', async () => {
+  /**
+   * **This asserted a `409` and now asserts a `200`** (2026-07-31).
+   *
+   * A champion may hold a seat in both zones — the exclusivity that matters is
+   * between *defense and attack*, and standing in both zones does not touch it.
+   * `partialDefense.test.ts` covers the rule properly, including that the
+   * offense pool is the union rather than the sum; this is kept as the
+   * inversion of what used to be here, so the change is visible at the place
+   * that used to forbid it.
+   */
+  it('accepts a hero already on the other defense zone', async () => {
     expect((await putDefense('visible', defenseSeats(ROSTER.slice(0, 6)))).status).toBe(200);
 
     // Overlaps by one with the visible zone.
     const res = await putDefense('hidden', defenseSeats([ROSTER[0]!, ...ROSTER.slice(6, 11)]));
-    expect(res.status).toBe(409);
-
-    const body = (await res.json()) as { heroId: string; zone: string };
-    expect(body.heroId).toBe(ROSTER[0]);
-    // "cannot be used" is not actionable; naming the zone is.
-    expect(body.zone).toBe('visible');
+    expect(res.status, await res.clone().text()).toBe(200);
   });
 
   it('refuses a defending hero on an attack squad, naming the zone', async () => {
@@ -200,7 +205,15 @@ describe('a hero committed elsewhere is 409', () => {
       { row: 'back', index: 0, heroId: ROSTER[16] },
     ]);
     expect(res.status).toBe(409);
-    expect(((await res.json()) as { zone: string }).zone).toBe('visible');
+    /**
+     * **Either zone, because she is genuinely in both** — the test above just
+     * put her there. Pinning this to `visible` made it depend on which zone the
+     * server happens to scan first, which is not a promise the route makes and
+     * not a fact a player needs. What matters is that a zone is named at all:
+     * "she cannot attack" alone sends them hunting.
+     */
+    const { zone } = (await res.json()) as { zone: string };
+    expect(['visible', 'hidden']).toContain(zone);
   });
 
   it('permits re-saving the SAME zone with the same heroes', async () => {

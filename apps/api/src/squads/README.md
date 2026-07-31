@@ -7,10 +7,12 @@ player to an opponent.
 
 ```
 27 champions, all unlocked, identical for every player
-12 to defense across two engine-run zones — and those 12 cannot attack
-up to 3 attack squads drawn from the remaining 15
+12 defense SEATS across two engine-run zones — and nobody in them can attack
+a champion may hold a seat in BOTH zones, so that is 6-12 people
+up to 3 attack squads drawn from whoever is left: 15 at the widest split, 21 at
+the narrowest
 
-  3 × 6 = 18 > 15   →  overlap between attack squads is FORCED
+  3 × 6 = 18 > 15   →  overlap between attack squads is FORCED at the widest
 ```
 
 **That last line is the one to hold on to.** Overlap is not an edge case to be

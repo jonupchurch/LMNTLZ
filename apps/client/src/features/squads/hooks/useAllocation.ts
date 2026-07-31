@@ -31,7 +31,15 @@ import {
 } from '@lmntlz/sim/rules';
 import type { ConfiguredSeat, RosterResponse, SeatConfigWire, Zone } from '../types.js';
 
-export const DEFENSE_TOTAL = 12;
+/**
+ * Twelve defense **seats** — two zones of six.
+ *
+ * **Not twelve champions.** A champion may stand in both zones, so the number
+ * of people committed to defense is 6–12 and has to be counted as a union of
+ * the two zones rather than as a sum. Nothing renders this as a champion count
+ * any more; it is kept because twelve seats is still what the two zones hold.
+ */
+export const DEFENSE_SEATS = 12;
 export const ATTACK_SQUADS = 3;
 
 export interface AllocationView {

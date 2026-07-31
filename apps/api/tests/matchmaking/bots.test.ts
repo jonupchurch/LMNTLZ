@@ -173,10 +173,16 @@ describe('the starter ramp is legal content (T045 · T046)', () => {
       }
 
       /**
-       * **Twelve distinct champions, because one cannot defend both zones.** Bots are
-       * saved through the players' own `PUT /v1/squads/defense/:zone`, which answers
-       * `409` for a hero already on the other zone — so a reused champion is a seeding
-       * failure, not an illegal squad.
+       * **Twelve distinct champions — a choice now, not a constraint.**
+       *
+       * This used to be enforced by the route, which answered `409` for a hero
+       * already on the other zone. A champion may hold both zones since
+       * 2026-07-31, so a reused champion here would be **legal and silent** —
+       * a bot that looks like twelve opponents and is really six, which is the
+       * opposite of what a curated ladder is for.
+       *
+       * So the assertion is load-bearing in a way it was not before: the route
+       * no longer backs it up, and this is the only thing that would notice.
        */
       const all = [...bot.visible, ...bot.hidden].map((s) => s.heroId);
       expect(new Set(all).size, 'a champion is on both of this bot’s zones').toBe(12);

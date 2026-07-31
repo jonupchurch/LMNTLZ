@@ -262,22 +262,27 @@ describe('a refused save', () => {
      *
      * A single `error` state served both "the roster would not load" and "this
      * action failed", and it replaced the whole page — so a rejected save threw
-     * away the squad the player had just composed. A `409` here is recoverable in
-     * one click, and the server's message names the champion and the zone.
+     * away the squad the player had just composed. This refusal is recoverable
+     * in one click, and the server's message names the champion.
+     *
+     * **The fixture used to be `409 hero_on_other_zone`, which no longer
+     * exists** — a champion may stand in both zones now. It is a real refusal
+     * the route still emits, because a fixture carrying an impossible response
+     * proves the client handles a case the server cannot produce.
      */
     saveResponse = {
-      status: 409,
+      status: 422,
       body: {
         error: {
-          code: 'hero_on_other_zone',
-          message: 'Bramwen is already defending your hidden zone.',
+          code: 'duplicate-hero',
+          message: 'Bramwen is in this squad twice. A champion holds one seat per squad.',
         },
       },
     };
     await screenReady();
     await userEvent.click(screen.getByRole('button', { name: /Set as defense, Zone I/ }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/already defending your hidden zone/);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/in this squad twice/);
     // The screen the player was working on is still there.
     expect(screen.getByLabelText('defense squad formation')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Set as defense, Zone I/ })).toBeInTheDocument();

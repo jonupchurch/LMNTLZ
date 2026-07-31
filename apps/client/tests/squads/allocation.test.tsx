@@ -101,7 +101,37 @@ describe('the roster shows all 27, always', () => {
 
   it('states the pool, which is why overlap keeps happening', () => {
     render(<RosterView roster={roster()} selectedHeroId={null} onSelect={() => {}} />);
-    expect(screen.getByText(/12 \/ 12 on defense · 15 left for 3 squads of 6/)).toBeInTheDocument();
+    expect(screen.getByText(/12 on defense · 15 left for 3 squads of 6/)).toBeInTheDocument();
+  });
+
+  /**
+   * **Distinct champions, not seats filled** (2026-07-31).
+   *
+   * A champion may hold a seat in both zones now, so twelve seats can be six
+   * people — and the number this sentence is about is how many are *unavailable
+   * to offense*, which is the union. Summing the two zones would say `12 on
+   * defense · 21 left for 3 squads of 6`: thirty-three champions out of a
+   * roster of twenty-seven.
+   */
+  it('counts a champion defending both zones once', () => {
+    const base = roster();
+    const six = base.assignments.defense.visible.seats;
+    const doubled = {
+      ...base,
+      assignments: {
+        ...base.assignments,
+        defense: {
+          ...base.assignments.defense,
+          hidden: { ...base.assignments.defense.hidden, seats: six },
+        },
+      },
+      /* The server computes this as a union too; the fixture has to agree or
+         the two halves of the sentence would come from different arithmetic. */
+      available: { ...base.available, forOffense: IDS.slice(6) },
+    };
+
+    render(<RosterView roster={doubled} selectedHeroId={null} onSelect={() => {}} />);
+    expect(screen.getByText(/6 on defense · 21 left for 3 squads of 6/)).toBeInTheDocument();
   });
 
   it('always shows the ambush chance, from the server (FR-015)', () => {

@@ -138,7 +138,10 @@ test.describe('the screen loads and shows the whole roster', () => {
     await mockApi(page);
     await page.goto('/');
 
-    await expect(page.getByText(/12 \/ 12 on defense · 15 left for 3 squads of 6/)).toBeVisible();
+    /* `12 / 12` became plain `12`: twelve stopped being the number of champions
+       on defense the moment one could hold a seat in both zones. Twelve seats,
+       6–12 people, and this line counts people. */
+    await expect(page.getByText(/12 on defense · 15 left for 3 squads of 6/)).toBeVisible();
     // Served, never computed here.
     await expect(page.getByText(/\+2% per win, up to 90%/)).toBeVisible();
   });
@@ -357,11 +360,13 @@ test.describe('the squad actually saves', () => {
     await page.route('**/v1/squads/defense/visible', (route) =>
       route.request().method() === 'PUT'
         ? route.fulfill({
-            status: 409,
+            /* Was `409 hero_on_other_zone`, which the route no longer emits —
+               a champion may stand in both zones. This is a refusal it does. */
+            status: 422,
             json: {
               error: {
-                code: 'hero_on_other_zone',
-                message: 'Ossic is already defending your hidden zone.',
+                code: 'duplicate-hero',
+                message: 'Ossic is in this squad twice. A champion holds one seat per squad.',
               },
             },
           })
@@ -371,7 +376,7 @@ test.describe('the squad actually saves', () => {
 
     await page.getByRole('button', { name: /Set as defense, Zone I/ }).click();
 
-    await expect(page.getByRole('alert')).toContainText(/already defending your hidden zone/);
+    await expect(page.getByRole('alert')).toContainText(/in this squad twice/);
     // Not a blank page with a sentence on it: the work is still there.
     await expect(page.getByLabel('defense squad formation')).toBeVisible();
     await expect(page.locator('[data-hero]')).toHaveCount(27);

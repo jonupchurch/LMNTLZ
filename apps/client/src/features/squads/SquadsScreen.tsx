@@ -220,7 +220,7 @@ export function SquadsScreen({ onUnauthenticated, onFindBattle }: SquadsScreenPr
 
       /**
        * **An attack squad seats nobody who is defending, and it is refused here
-       * rather than by the server** (`409 hero_on_other_zone`). The refusal is
+       * rather than by the server** (`409 hero_on_defense`). The refusal is
        * cheap to make locally and the roster already says which zone she is in —
        * and a player who has to press Save to find out has already composed a
        * squad around somebody who cannot be in it.

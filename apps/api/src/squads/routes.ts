@@ -361,25 +361,29 @@ squadRoutes.put('/squads/defense/:zone', async (c) => {
     throw err;
   }
 
-  // **A hero may not hold a seat in both zones.** Checked against the OTHER
-  // zone only — a hero staying in the zone being saved is the ordinary case.
-  const stored = await loadSquads(accountId);
-  const other = stored.find((s) => s.kind === 'defense' && s.zone !== zone);
-  if (other) {
-    const held = new Set(other.seats.map((s) => s.heroId));
-    const clash = seats.find((s) => held.has(s.heroId));
-    if (clash) {
-      return c.json(
-        {
-          ...apiError('hero_on_other_zone', `${clash.heroId} is already defending your ${other.zone} zone.`),
-          heroId: clash.heroId,
-          zone: other.zone,
-        },
-        409,
-      );
-    }
-  }
-
+  /**
+   * **A champion may hold a seat in both zones.**
+   *
+   * This used to `409`. The exclusivity that matters is between *defense and
+   * attack* — a champion the engine is defending with cannot also be one the
+   * player attacks with, and that is enforced in both directions by
+   * `availableForOffense` and the eviction on commit below. Whether she stands
+   * in one zone or both is a decision rather than a conflict.
+   *
+   * It is a real trade rather than free reuse. The two zones are separate
+   * battles against separate attackers, so a champion in both is *not* twice as
+   * strong anywhere — she is one squad's answer used twice, which means one
+   * scouting read counters both zones, and it is the Visible squad that anyone
+   * can scout. Concentrating six champions across both zones also frees up to
+   * six more for the three attack squads, and that is the point: the cost is
+   * predictability and the payoff is depth on offense.
+   *
+   * Nothing downstream assumed uniqueness: `defendingHeroes` was already a
+   * union across both zones, and a battle snapshots one zone at a time. The
+   * `loadSquads` call that fed the check went with it — it was a whole read of
+   * every squad on the account, on the critical path of every defense save,
+   * and nothing else in this handler wanted it.
+   */
   const result = await saveDefenseSquad(accountId, zone, seats);
 
   /**

@@ -16,11 +16,16 @@ scoutable and the only one anyone can choose to attack, and a *Hidden* squad
 that is never shown and never selectable. The sole way into a Hidden battle is
 to be **ambushed**: +2% per consecutive attack win, capped at 90%, always
 displayed, and Hidden battles pay more. Every defense squad also tracks its own
-public **hold streak**, reset when the squad is edited. Defense totals 12
-heroes, which then *cannot* attack,
-and keeps up to **3 attack squads** drawn from the remaining 15; those squads
-may overlap, and must, since 3 × 6 exceeds 15. Moving a hero to defense evicts
-it from any attack squad and invalidates it. Squads are 6 heroes in a fixed
+public **hold streak**, reset when the squad is edited. Defense fills **12
+seats** across the two zones, and everyone in them *cannot* attack — but **a
+champion may hold a seat in both zones**, so that is 6–12 *people*, the player's
+choice. Doubling up is a trade rather than free reuse: the two zones are
+separate battles, so one champion in both is one answer used twice and the
+Visible squad is the one anybody can scout. What it buys is offense — up to **3
+attack squads** drawn from whoever is left, which is 15 at the widest split and
+21 at the narrowest. Those squads may overlap, and must at 15, since 3 × 6
+exceeds it. **Defense and attack stay strictly exclusive**: moving a hero to
+defense evicts it from every attack squad and invalidates them. Squads are 6 heroes in a fixed
 **2 front · 3 middle · 1 back** formation;
 **the player commands offense while the engine runs everyone's defense.** PvP is
 asynchronous — you attack snapshots of other players' defense squads, so there

@@ -210,6 +210,78 @@ describe('a defense zone can be stored half-built', () => {
   });
 });
 
+/**
+ * **One champion, both zones** (019).
+ *
+ * This used to be a `409`. The exclusivity that matters is between defense and
+ * attack — a champion the engine defends with cannot be one the player attacks
+ * with — and standing in both zones does not touch that.
+ *
+ * It is a trade, not free reuse: the two zones are separate battles against
+ * separate attackers, so a champion in both is one answer used twice, and the
+ * Visible squad is the one anybody can scout. What it buys is offense — every
+ * champion doubled up is one more available for the three attack squads.
+ */
+describe('a champion may defend both zones', () => {
+  it('accepts the same six in Visible and Hidden', async () => {
+    const player = await signUp('doubled');
+    const six = ROSTER.slice(0, 6);
+
+    expect((await putDefense(player, 'visible', six)).status).toBe(200);
+    const second = await putDefense(player, 'hidden', six);
+    expect(second.status, await second.clone().text()).toBe(200);
+
+    const zones = (await rosterOf(player)).assignments.defense;
+    expect(zones['visible']!.seats).toHaveLength(6);
+    expect(zones['hidden']!.seats).toHaveLength(6);
+    /* Both zones can defend — six seats each, whoever is in them. */
+    expect(zones['visible']!.canDefend).toBe(true);
+    expect(zones['hidden']!.canDefend).toBe(true);
+  });
+
+  /**
+   * **The pool is a union, and this is the assertion that says so.**
+   *
+   * Twelve seats held by six champions leaves **21** for offense, not 15. A
+   * count that added the two zones would report 12 committed out of a roster of
+   * 27 and hand the player fifteen — with six of them unable to attack.
+   */
+  it('leaves the other twenty-one available to attack', async () => {
+    const player = await signUp('union');
+    const six = ROSTER.slice(0, 6);
+
+    expect((await putDefense(player, 'visible', six)).status).toBe(200);
+    expect((await putDefense(player, 'hidden', six)).status).toBe(200);
+
+    const res = await app.request('/v1/roster', {
+      headers: { authorization: `Bearer ${player.token}` },
+    });
+    const body = (await res.json()) as { available: { forOffense: string[] } };
+
+    expect(body.available.forOffense).toHaveLength(ROSTER.length - 6);
+    for (const id of six) {
+      expect(body.available.forOffense, `${id} is defending and cannot attack`).not.toContain(id);
+    }
+  });
+
+  /**
+   * **Defending both zones still means defending.** The rule that did not
+   * change, asserted beside the one that did — a champion doubled up must not
+   * become attackable through some seam in the union.
+   */
+  it('still refuses to seat a doubled-up champion on an attack squad', async () => {
+    const player = await signUp('doubled-atk');
+    const six = ROSTER.slice(0, 6);
+
+    expect((await putDefense(player, 'visible', six)).status).toBe(200);
+    expect((await putDefense(player, 'hidden', six)).status).toBe(200);
+
+    const res = await putOffense(player, 0, [...six.slice(0, 1), ...ROSTER.slice(6, 11)]);
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('hero_on_defense');
+  });
+});
+
 describe('you cannot attack until both your zones can defend', () => {
   /** An opponent who can be attacked, so the refusal is never about them. */
   async function opponent(tag: string): Promise<Player> {

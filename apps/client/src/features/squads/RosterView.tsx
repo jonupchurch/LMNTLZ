@@ -42,7 +42,7 @@ import {
   TypeIcon,
 } from '../../components/index.js';
 import type { RosterResponse, Zone } from './types.js';
-import { ATTACK_SQUADS, DEFENSE_TOTAL } from './hooks/useAllocation.js';
+import { ATTACK_SQUADS } from './hooks/useAllocation.js';
 
 /**
  * The two zones and the three attack slots, as the badge numbers them.
@@ -180,9 +180,19 @@ export function RosterView({
       .map(({ hero }) => hero);
   }, [roster.heroes, search, forces, banes]);
 
-  const committed =
-    roster.assignments.defense.visible.seats.length +
-    roster.assignments.defense.hidden.seats.length;
+  /**
+   * **Distinct champions on defense, not seats filled.**
+   *
+   * A champion may now stand in both zones, so the two seat counts add up to
+   * twelve while as few as six people are committed — and the number that
+   * matters to the sentence below is how many are *unavailable to offense*,
+   * which is the union. Adding the two would have said `12 on defense · 21 left
+   * for 3 squads of 6`, which is 33 champions out of a roster of 27.
+   */
+  const committed = new Set([
+    ...roster.assignments.defense.visible.seats.map((s) => s.heroId),
+    ...roster.assignments.defense.hidden.seats.map((s) => s.heroId),
+  ]).size;
 
   return (
     <section aria-label="Champion roster" className="flex flex-col gap-3">
@@ -283,8 +293,11 @@ export function RosterView({
            * squads of 6 is why overlap keeps happening, and no per-squad message
            * conveys it.
            */}
-          {committed} / {DEFENSE_TOTAL} on defense · {roster.available.forOffense.length} left for{' '}
-          {ATTACK_SQUADS} squads of 6
+          {/* `DEFENSE_TOTAL` is gone from this line: twelve stopped being the
+              number of *champions* on defense the moment one could stand in
+              both zones. It is still twelve seats; it is 6–12 people. */}
+          {committed} on defense · {roster.available.forOffense.length} left for {ATTACK_SQUADS}{' '}
+          squads of 6
         </p>
       </div>
 

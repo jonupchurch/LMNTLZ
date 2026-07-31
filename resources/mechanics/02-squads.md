@@ -110,8 +110,19 @@ opponent.
 ### Two defense zones — Visible and Hidden
 
 A player must defend **two** zones. Each is held by its own 6-hero squad, so
-**12 heroes are committed to defense** at all times, and both are run by the
-engine when attacked.
+**12 defense seats are committed** at all times, and both are run by the engine
+when attacked.
+
+**A champion may hold a seat in both zones.** Twelve seats is therefore 6–12
+*people*, and how far to concentrate is a real decision (2026-07-31). It is not
+free reuse — the zones are separate battles against separate attackers, so a
+champion in both is one answer used twice, and the Visible squad is the one
+anybody can scout, so a read on her counters both. What doubling up buys is the
+offense pool: 15 champions at the widest split, 21 at the narrowest, against
+three attack squads of 6.
+
+Defense and attack remain **strictly exclusive** — anyone holding a defense seat
+is unavailable to every attack squad, in both directions.
 
 The two have **fixed, permanent roles** — the player designates which squad
 holds which:
