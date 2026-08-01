@@ -19,18 +19,33 @@
  */
 
 import {
+  CONTROL_DURATION,
+  absorb,
+  applyStatus,
   battleEnded,
   damagePreview,
+  dotTickForTier,
+  durationForTier,
+  effectiveStat,
+  HP_PER_TOUGHNESS,
   healPreview,
   heroStateOf,
   isStanding,
   legalTargets,
   maxHp,
+  potencyForTier,
+  riderLandProbability,
+  shieldForTier,
+  shredFraction,
+  statChangeForTier,
+  statusTargeting,
   type BattleState,
   type Conclusion,
   type HeroState,
+  type StatusInstance,
+  type Tier,
 } from '../rules/index.js';
-import { getHero, type Power } from '@lmntlz/content';
+import { getHero, powerEffectiveness, type Power, type Rider } from '@lmntlz/content';
 import { drawBelow, drawInt } from './rng.js';
 import type { Seed } from './seed.js';
 import { nextDrawIndex, orderedLog, type BattleAction, type Provenance, type ReDeriveResult } from './replay.js';
@@ -116,6 +131,207 @@ const replaceHero = (state: BattleState, next: HeroState): BattleState => ({
   heroes: state.heroes.map((h) => (h.instanceId === next.instanceId ? next : h)),
 });
 
+/**
+ * Build the effect a rider describes, at the magnitude its tier buys (020).
+ *
+ * **The rider says *what*; the tier says *how much*.** Nothing here reads a
+ * number off the authored data, because the authored data has none — that is
+ * Constitution XV, and it is what lets a rebalance edit one table in
+ * `05-status.md` rather than 87 entries.
+ */
+function instanceFor(
+  rider: Rider,
+  power: Power,
+  applier: HeroState,
+  bearer: HeroState,
+): StatusInstance | null {
+  const tier = power.tier as Tier;
+  const might = effectiveStat(applier, getHero(applier.heroId).stats, 'might');
+
+  const base = {
+    kind: rider.kind,
+    stat: rider.stat,
+    sourceInstanceId: applier.instanceId,
+    sourcePowerId: power.id,
+    escalation: 0,
+    ticksDealt: 0,
+    cleansable: true,
+  } as const;
+
+  switch (rider.kind) {
+    case 'burn':
+    case 'bleed':
+    case 'poison': {
+      const tick = dotTickForTier(tier, might);
+      /**
+       * **Snapshotted at application** — the type multiplier against *this*
+       * target, folded in now and never recalculated. The applier can die, be
+       * buffed or be debuffed and the effect is unchanged, which is why a
+       * damage-over-time effect needs no fallback rule for a dead applier.
+       */
+      const typed = tick * powerEffectiveness(power, getHero(bearer.heroId));
+      if (typed <= 0) return null;
+      return { ...base, magnitude: Math.round(typed), turnsRemaining: durationForTier(tier) };
+    }
+
+    case 'buff':
+    case 'debuff':
+      return {
+        ...base,
+        magnitude: statChangeForTier(tier),
+        turnsRemaining: durationForTier(tier),
+      };
+
+    case 'shred':
+      return {
+        ...base,
+        magnitude: shredFraction(rider.band ?? 'small'),
+        turnsRemaining: durationForTier(tier),
+      };
+
+    case 'shield':
+      return {
+        ...base,
+        magnitude: shieldForTier(tier, might),
+        turnsRemaining: durationForTier(tier),
+      };
+
+    /**
+     * **Control is priced separately and never scales with tier.** One turn of
+     * stun is the strongest single effect in the game; taking its duration from
+     * the tier table would hand a tier-5 a four-turn stun.
+     */
+    case 'stun':
+    case 'silence':
+      return { ...base, magnitude: 0, turnsRemaining: CONTROL_DURATION };
+
+    case 'taunt':
+    case 'fade':
+      return { ...base, magnitude: 0, turnsRemaining: durationForTier(tier) };
+
+    default:
+      return null;
+  }
+}
+
+interface RiderOutcome {
+  readonly state: BattleState;
+  readonly landed: readonly string[];
+  readonly resisted: readonly string[];
+  readonly drawsUsed: bigint;
+}
+
+/**
+ * Stage 3 of the draw order: **one contest per rider, per struck target.**
+ *
+ * Four rules, and each one is a place this could silently go wrong:
+ *
+ * - **A self-rider is never contested** and consumes no draw. A hero does not
+ *   resist its own buff, and `05-status.md` says friendly effects skip the
+ *   contest entirely.
+ * - **Each rider is contested separately** (FR-004) — resisting a burn does not
+ *   resist a slow. Every door is its own roll.
+ * - **Order is the authored order**, never an object's key order, which is a
+ *   replay hazard that does not look like one.
+ * - **Only heroes still standing** take a rider. Applying a burn to a corpse
+ *   would consume a draw for an effect that can never tick.
+ */
+function enactRiders(
+  seed: Seed,
+  state: BattleState,
+  actor: HeroState,
+  power: Power,
+  struck: readonly string[],
+  drawIndex: bigint,
+): RiderOutcome {
+  if (power.riders.length === 0) {
+    return { state, landed: [], resisted: [], drawsUsed: 0n };
+  }
+
+  let next = state;
+  let used = 0n;
+  const landed: string[] = [];
+  const resisted: string[] = [];
+
+  for (const rider of power.riders) {
+    if (rider.at === 'self') {
+      // Uncontested, and it costs no draw.
+      const applier = heroStateOf(next, actor.instanceId);
+      next = applyOrRemove(next, applier, rider, power, applier, landed);
+      continue;
+    }
+
+    for (const targetId of struck) {
+      const bearer = heroStateOf(next, targetId);
+      if (!isStanding(bearer)) continue;
+
+      const chance = riderLandProbability(
+        next,
+        actor.instanceId,
+        targetId,
+        potencyForTier(power.tier as Tier),
+      );
+      const sticks = drawBelow(seed, drawIndex + used, chance);
+      used += 1n;
+
+      if (!sticks) {
+        resisted.push(`${rider.kind}:${targetId}`);
+        continue;
+      }
+
+      next = applyOrRemove(next, heroStateOf(next, actor.instanceId), rider, power, bearer, landed);
+    }
+  }
+
+  return { state: next, landed, resisted, drawsUsed: used };
+}
+
+/** Apply an effect, or strip every effect of that kind. */
+function applyOrRemove(
+  state: BattleState,
+  applier: HeroState,
+  rider: Rider,
+  power: Power,
+  bearer: HeroState,
+  landed: string[],
+): BattleState {
+  const current = heroStateOf(state, bearer.instanceId);
+
+  if (rider.op === 'remove') {
+    const before = current.statuses.length;
+    const statuses = current.statuses.filter((s) => s.kind !== rider.kind || !s.cleansable);
+    if (statuses.length === before) return state;
+    landed.push(`${rider.kind}:${current.instanceId}`);
+    return replaceHero(state, { ...current, statuses });
+  }
+
+  const instance = instanceFor(rider, power, applier, current);
+  if (instance === null || instance.turnsRemaining <= 0) return state;
+
+  const statuses = applyStatus(current.statuses, instance);
+  landed.push(`${rider.kind}:${current.instanceId}`);
+
+  /**
+   * **A `Toughness` buff is temporary hit points** (`05-status.md`).
+   *
+   * It raises maximum HP *and* grants the same amount as current HP, which is
+   * what makes it useful the moment it lands rather than only after the next
+   * heal. Without this it would be a bigger empty pool — worth nothing to a
+   * champion about to die, which is exactly when it is cast.
+   *
+   * Granted only when the effect is genuinely new: `applyStatus` refreshes rather
+   * than stacks a re-cast from the same source, and paying the HP again would
+   * turn a refresh into a heal that spams.
+   */
+  const isNew = statuses.length > current.statuses.length;
+  const grant =
+    isNew && instance.kind === 'buff' && instance.stat === 'toughness'
+      ? instance.magnitude * HP_PER_TOUGHNESS
+      : 0;
+
+  return replaceHero(state, { ...current, statuses, hp: current.hp + grant });
+}
+
 export interface Resolution {
   readonly state: BattleState;
   readonly packet: ResolvedPacket;
@@ -150,8 +366,16 @@ export function resolveOne(
   let consumed = 0n;
   const at = (): bigint => drawIndex + consumed;
 
-  // ---- choose the target -------------------------------------------------
-  const legal = legalTargets(state, actor.instanceId, power.id);
+  /**
+   * ---- choose the target -------------------------------------------------
+   *
+   * **The two arguments this call has never passed** (020). `legalTargets` has
+   * accepted `filters` and `compulsion` since 002 and was called with three of
+   * five, so every taunt and fade on the board was invisible to it — which is why
+   * Tank and Buffer had no mechanical existence at all.
+   */
+  const { filters, compulsion } = statusTargeting(state, actor.instanceId);
+  const legal = legalTargets(state, actor.instanceId, power.id, filters, compulsion);
 
   if (legal.candidates.length === 0) {
     // The hero passes. It still reached Resolution; it simply had nothing to do.
@@ -267,27 +491,43 @@ export function resolveOne(
   let total = 0;
   const deaths: string[] = [];
 
+  const struck: string[] = [];
+
   for (const target of targetsOf(state, power, primary)) {
     const perTarget = damagePreview(next, actor.instanceId, power.id, target.instanceId);
-    const amount = crit ? perTarget.critFinal : perTarget.final;
+    const raw = crit ? perTarget.critFinal : perTarget.final;
 
     const current = heroStateOf(next, target.instanceId);
     if (!isStanding(current)) continue;
 
-    const hp = Math.max(0, current.hp - amount);
-    total += Math.min(amount, current.hp);
-    next = replaceHero(next, { ...current, hp });
+    /**
+     * **The shield eats first, and a broken one passes the remainder through in
+     * the same step** — it never absorbs a whole strike for free.
+     */
+    const { throughput, statuses } = absorb(current, raw);
+
+    const hp = Math.max(0, current.hp - throughput);
+    total += Math.min(throughput, current.hp);
+    next = replaceHero(next, { ...current, hp, statuses });
 
     if (hp === 0) deaths.push(current.instanceId);
+    else struck.push(current.instanceId);
   }
 
-  // ---- 3. riders ----------------------------------------------------------
-  // The mechanism is here and the draw slot is reserved. No rider is authored on
-  // any power yet — `03-powers.md` describes them in prose and the workbook has
-  // no column — so this loop is empty today and consumes nothing. See
-  // packages/content/README.md.
-  const ridersLanded: string[] = [];
-  const ridersResisted: string[] = [];
+  // ---- 3. riders — one contest each, only on a payload that connected ------
+  const { state: afterRiders, landed, resisted, drawsUsed } = enactRiders(
+    seed,
+    next,
+    actor,
+    power,
+    struck,
+    at(),
+  );
+  consumed += drawsUsed;
+  next = afterRiders;
+
+  const ridersLanded = landed;
+  const ridersResisted = resisted;
 
   return {
     state: next,

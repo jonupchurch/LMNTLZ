@@ -8,9 +8,9 @@
  */
 
 import type { DamageType, Family } from './types.js';
-import type { AuthoredHero, HeroStats, Power, Role } from './schema.js';
+import type { AuthoredHero, HeroStats, Power, Rider, Role } from './schema.js';
 
-export type { HeroStats, Power, Role };
+export type { HeroStats, Power, Rider, Role };
 
 export type Reach = 1 | 2;
 export type Tier = 0 | 1 | 2 | 3 | 4 | 5;

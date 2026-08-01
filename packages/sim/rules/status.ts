@@ -44,7 +44,8 @@
  */
 
 import type { Hero } from '@lmntlz/content';
-import type { HeroState, StatusInstance } from './state.js';
+import { heroStateOf, type BattleState, type HeroState, type StatusInstance } from './state.js';
+import type { Compulsion, TargetFilter } from './targeting.js';
 
 export type StatKey = keyof Hero['stats'];
 
@@ -433,6 +434,73 @@ export function upkeepDamage(hero: HeroState): number {
   }
 
   return total;
+}
+
+// ---------------------------------------------------------------------------
+// Targeting effects
+// ---------------------------------------------------------------------------
+
+/**
+ * Turn the taunt and fade statuses on the board into the filter and compulsion
+ * `legalTargets` has always accepted **and never once been given** (020).
+ *
+ * `targeting.ts` has taken `filters` and `compulsion` parameters since 002; the
+ * resolver called it with three of five arguments, so taunt and fade — and with
+ * them the Tank and Buffer roles — had no mechanical existence at all.
+ *
+ * ### Two behaviours that are emergent, not coded
+ *
+ * **Taunt and fade cancel on the same hero.** `legalTargets` applies filters
+ * first and then looks for the compulsion's target; a hero removed by its own
+ * fade is no longer there to be compelled to. That is Tank versus Buffer, and it
+ * needs no special case — only a test.
+ *
+ * **A fade that would empty the candidate set is ignored**, so a faded Buffer
+ * that is the last thing an attacker can reach becomes targetable. Also already
+ * in `legalTargets`, as one of its two anti-deadlock invariants.
+ *
+ * ### Whose taunt applies
+ *
+ * A taunt sits on the hero **being protected** — `The Bulwark Holds` taunts *to*
+ * Coll — so the compulsion an attacker feels is the taunt on an enemy it can
+ * reach. Reach is checked by `legalTargets` itself, which is why a taunting tank
+ * two rows away compels nobody.
+ *
+ * **Nearest first when several taunt at once**, then instance id. Any total order
+ * would do; what matters is that it is *deterministic*, because a replay that
+ * picked differently on a second evaluation would diverge.
+ */
+export function statusTargeting(
+  state: BattleState,
+  actorInstanceId: string,
+): { readonly filters: readonly TargetFilter[]; readonly compulsion: Compulsion | null } {
+  const actor = heroStateOf(state, actorInstanceId);
+  const enemySide = actor.side === 'attacker' ? 'defender' : 'attacker';
+
+  const has = (hero: HeroState, kind: StatusKind): boolean =>
+    hero.statuses.some((s) => s.kind === kind && s.turnsRemaining > 0);
+
+  const taunting = state.heroes
+    .filter((h) => h.side === enemySide && h.hp > 0 && has(h, 'taunt') && !has(h, 'fade'))
+    .sort((a, b) => Math.abs(a.row - actor.row) - Math.abs(b.row - actor.row)
+      || (a.instanceId < b.instanceId ? -1 : a.instanceId > b.instanceId ? 1 : 0));
+
+  const faded = new Set(
+    state.heroes.filter((h) => has(h, 'fade') && !has(h, 'taunt')).map((h) => h.instanceId),
+  );
+
+  const filters: TargetFilter[] = [];
+  if (faded.size > 0) {
+    filters.push({
+      name: 'fade',
+      permits: (candidates) => candidates.filter((c) => !faded.has(c.instanceId)),
+    });
+  }
+
+  return {
+    filters,
+    compulsion: taunting[0] ? { name: 'taunt', instanceId: taunting[0].instanceId } : null,
+  };
 }
 
 /**

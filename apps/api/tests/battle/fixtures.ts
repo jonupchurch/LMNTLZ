@@ -9,7 +9,7 @@
  */
 
 import { getAllHeroes, getHero } from '@lmntlz/content';
-import type { BattleState, HeroState } from '@lmntlz/sim/rules';
+import type { BattleState, HeroState, StatusInstance } from '@lmntlz/sim/rules';
 import { buildInitialState, type SnapshotSeat } from '../../src/battle/board.js';
 
 export const ROSTER: readonly string[] = getAllHeroes().map((h) => h.id);
@@ -54,6 +54,31 @@ export function board(
 }
 
 /** Replace one hero on the board. Returns a new state; nothing is mutated. */
+/**
+ * One status instance with every field defaulted (020).
+ *
+ * **A builder rather than object literals**, because `StatusInstance` gained four
+ * fields when the status layer was implemented and every test that spelled the
+ * shape out by hand had to be edited. The ones that came through here did not.
+ */
+export function status(
+  kind: StatusInstance['kind'],
+  patch: Partial<StatusInstance> = {},
+): StatusInstance {
+  return {
+    kind,
+    turnsRemaining: 1,
+    magnitude: 0,
+    stat: null,
+    sourceInstanceId: 'd-front-0',
+    sourcePowerId: 'test-power',
+    escalation: 0,
+    ticksDealt: 0,
+    cleansable: true,
+    ...patch,
+  };
+}
+
 export function withHero(
   state: BattleState,
   instanceId: string,

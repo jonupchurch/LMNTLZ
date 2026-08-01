@@ -345,16 +345,46 @@ describe('the draws a DECISION consumes are part of the packet', () => {
      * engine turn additionally spends **one** decision draw on this board,
      * because a uniform attacking squad makes the tiebreak certain.
      *
-     * So the total is computable from the events alone — and dropping the
-     * decision draws makes the reported span exactly `engineTurns` short.
+     * **Plus one draw per hostile rider contested** (020, step 3). Riders are
+     * contested one at a time and only against a hero the payload connected
+     * with; a rider aimed at the caster is never contested and spends nothing.
+     * The two are separable without looking up the power, because a landed
+     * rider records the instance it sits on — a self-rider names the actor.
+     *
+     * **What is no longer asserted, and why** (020). This used to add exactly
+     * `engineTurns` for the decisions, on the reasoning that a uniform attacking
+     * squad makes every tiebreak certain. That stopped being true once riders
+     * landed — and for a good reason rather than a bad one: the first attack now
+     * also applies an effect, so by the second decision the attackers are no
+     * longer identical and `lowest-current-hp` picks a target outright, spending
+     * no draw. The count was never a property of the boundary rule; it was a
+     * property of a board where nothing had happened yet.
+     *
+     * So the floor is asserted exactly and the decisions are asserted to be
+     * *present*. That still catches the regression this test exists for —
+     * dropping decision draws entirely, so the next turn re-reads a spent index —
+     * without pinning a number that legitimately moves.
      */
+    const riderDraws = acted.reduce((sum, e) => {
+      const onOthers = e.outcome.ridersLanded.filter(
+        (r) => !r.endsWith(`:${e.actorInstanceId}`),
+      ).length;
+      return sum + BigInt(onOthers + e.outcome.ridersResisted.length);
+    }, 0n);
+
     const resolutionDraws = acted.reduce(
       (sum, e) => sum + (e.outcome.healing > 0 && e.outcome.damage === 0 ? 0n : e.outcome.hit ? 2n : 1n),
       0n,
     );
-    const expected = resolutionDraws + BigInt(engineTurns);
+    const floor = resolutionDraws + riderDraws;
 
-    expect(opening.drawsConsumed).toBe(expected);
+    expect(opening.drawsConsumed, 'fewer draws than the events alone require').toBeGreaterThanOrEqual(
+      floor,
+    );
+    expect(
+      opening.drawsConsumed,
+      'the decision draws were not counted — the next turn will re-read a spent index',
+    ).toBeGreaterThan(floor);
   });
 });
 

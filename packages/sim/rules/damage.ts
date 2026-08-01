@@ -12,8 +12,15 @@
  */
 
 import { getHero, powerEffectiveness, type Effectiveness, type Power } from '@lmntlz/content';
-import { effectiveStat, heroStateOf, type BattleState, type HeroState } from './state.js';
+import {
+  effectiveStat,
+  heroStateOf,
+  type BattleState,
+  type HeroState,
+  type StatusInstance,
+} from './state.js';
 import { critChance, hitProbability } from './probability.js';
+import { shieldOf, shredFactor } from './status.js';
 
 /** `01-stats.md`. The same constant as the stat cap, and deliberately so. */
 export const K = 75;
@@ -153,8 +160,27 @@ export function damagePreview(
 
   const packet = packetOf(attacker, power);
 
-  const armor = effectiveStat(defender, defenderHero.stats, 'armor');
-  const magicResist = effectiveStat(defender, defenderHero.stats, 'magicResist');
+  /**
+   * **Shred is a percentage of the wall, taken before Penetration** (020).
+   *
+   * The order is fixed and `05-status.md` fixes it, because Vantric's kit stacks
+   * four sources of one effect and nothing said how they compose:
+   *
+   *   1. shred multiplies the mitigation stat
+   *   2. `Penetration` is subtracted from what is left
+   *   3. the result feeds the curve, where a negative `E` **amplifies**
+   *
+   * Subtracting Penetration first would let a shred bite into an already-negative
+   * `E` and *reduce* the amplification — a strip making an attack weaker.
+   *
+   * And it is a percentage rather than flat points for a reason the curve makes
+   * unavoidable: mitigation is steepest at low `E`, so a flat shred is worth more
+   * against a lightly armored target than a heavily armored one. That is exactly
+   * backwards for an effect called "find the seam".
+   */
+  const armor = effectiveStat(defender, defenderHero.stats, 'armor') * shredFactor(defender, 'armor');
+  const magicResist =
+    effectiveStat(defender, defenderHero.stats, 'magicResist') * shredFactor(defender, 'magicResist');
   const penetration = effectiveStat(attacker, getHero(attacker.heroId).stats, 'penetration');
 
   const answering = resistedBy(power);
@@ -190,6 +216,58 @@ export function damagePreview(
     critChance: critChance(state, attackerInstanceId),
     critFinal: Math.round(Math.max(critFloor, critAfterType)),
   };
+}
+
+/** What a shield ate, and what got through to the health pool. */
+export interface AbsorbResult {
+  /** Damage the shield took. Never more than the shield had. */
+  readonly absorbed: number;
+  /** Damage reaching HP. */
+  readonly throughput: number;
+  /** The bearer's statuses with the shield reduced, or dropped if it broke. */
+  readonly statuses: readonly StatusInstance[];
+}
+
+/**
+ * Spend a shield against an incoming hit (020, FR-013).
+ *
+ * **A shield that breaks mid-hit passes the remainder through in the same step.**
+ * It never eats a whole strike for free, which is what keeps it from being
+ * strictly better than mitigation — and shields already matter more than
+ * mitigation does, because they are **the only thing that can fully negate a
+ * landed hit**. Mitigation caps at 50% reduction and the damage floor guarantees
+ * 25% gets through, so nothing else in the game can take a hit to zero.
+ *
+ * Applied **after** the type multiplier and the floor, not before: the floor is a
+ * guarantee about what a *hit* delivers, and a shield is a thing standing in
+ * front of the health pool. Absorbing first would let a shield shrink the packet
+ * the floor is computed from, which would quietly make the floor a percentage of
+ * the shield rather than of the blow.
+ */
+export function absorb(
+  hero: HeroState,
+  incoming: number,
+): AbsorbResult {
+  const pool = shieldOf(hero);
+  if (pool <= 0) return { absorbed: 0, throughput: incoming, statuses: hero.statuses };
+
+  const absorbed = Math.min(pool, incoming);
+  let left = absorbed;
+
+  const statuses: StatusInstance[] = [];
+  for (const s of hero.statuses) {
+    if (s.kind !== 'shield' || left <= 0) {
+      statuses.push(s);
+      continue;
+    }
+    const taken = Math.min(s.magnitude, left);
+    left -= taken;
+    // A spent shield is REMOVED, not kept at 0 — absent and zero mean the same
+    // thing to every reader, and keeping both would be two states for one fact.
+    if (s.magnitude - taken > 0) statuses.push({ ...s, magnitude: s.magnitude - taken });
+  }
+
+  return { absorbed, throughput: incoming - absorbed, statuses };
 }
 
 /**

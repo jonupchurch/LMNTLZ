@@ -39,7 +39,7 @@ export {
 export { contentVersion } from './version.js';
 
 export { UnknownHeroError } from './hero.js';
-export type { Hero, HeroStats, Power, Role, Reach, Tier } from './hero.js';
+export type { Hero, HeroStats, Power, Rider, Role, Reach, Tier } from './hero.js';
 /**
  * The 27 ids as a literal union, generated with the roster (017 T035).
  *

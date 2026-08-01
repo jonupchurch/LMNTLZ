@@ -33,12 +33,16 @@
 import { getHero } from '@lmntlz/content';
 import {
   afterTick,
+  afterUpkeep,
   battleEnded,
   cooldownsAfterResolution,
   gainPerTick,
   heroStateOf,
   isIncapacitated,
   isStanding,
+  maxHp,
+  tickDurations,
+  upkeepDamage,
   type BattleState,
   type Conclusion,
   type HeroState,
@@ -173,20 +177,86 @@ export function applyResolution(
     if (power && power.cooldown > 0) ticked[firedPowerId] = power.cooldown;
   }
 
-  const statuses = hero.statuses
-    .map((s) => ({ ...s, turnsRemaining: s.turnsRemaining - 1 }))
-    .filter((s) => s.turnsRemaining > 0);
+  /**
+   * **`tickDurations` rather than the inline copy this used to hold** (020).
+   *
+   * The arithmetic was identical and had been correct for four features — on an
+   * array that was always empty, because nothing could create a status. Now that
+   * effects exist, expiry is a rule with real consequences, and a rule gets one
+   * implementation.
+   */
+  const statuses = tickDurations(hero.statuses);
 
   return {
     ...state,
     heroes: state.heroes.map((h) =>
-      h.instanceId === instanceId ? { ...h, cooldowns: ticked, statuses } : h,
+      h.instanceId === instanceId
+        ? clampToPool({ ...h, cooldowns: ticked, statuses })
+        : h,
     ),
     /**
      * **Counted per hero turn, not per round**, because that is what the tier
      * gates and the 300-turn cap are both measured in.
      */
     heroTurn: state.heroTurn + 1,
+  };
+}
+
+/**
+ * **A `Toughness` buff is temporary hit points, and losing it must not kill.**
+ *
+ * `maxHp` is `Toughness × 8` read through `effectiveStat`, so a `Toughness` buff
+ * raises the pool for free while it lasts — and `05-status.md` additionally
+ * grants the same amount as *current* HP, which is what makes it useful the
+ * moment it lands rather than only after the next heal.
+ *
+ * When it expires the pool falls, and current HP has to come down with it.
+ * **Clamped to a minimum of 1**, deliberately: a champion whose entire remaining
+ * health was temporary would otherwise die to the expiry of its own buff, which
+ * is a death with no killer, no event and no way for a player to read what
+ * happened. Losing the buff should return it to the brink, not past it.
+ */
+function clampToPool(hero: HeroState): HeroState {
+  if (hero.hp <= 0) return hero;
+  const pool = maxHp(hero);
+  return hero.hp > pool ? { ...hero, hp: Math.max(1, pool) } : hero;
+}
+
+/**
+ * **Upkeep — the phase that did not exist** (020 T019).
+ *
+ * `takeTurn` was `resolveOne` followed by Resolution, with no Upkeep at all. That
+ * was correct while nothing could apply a damage-over-time effect and is the
+ * reason `upkeepDamage` would otherwise have been another uncalled seam.
+ *
+ * Two rules, both from `05-status.md` and `04-turns.md`:
+ *
+ * - **Ticks resolve before the hero acts**, so a champion can die to a burn
+ *   without ever taking its turn.
+ * - **Death during Upkeep is the only early termination of a turn.** `phasesFor`
+ *   has always returned `['upkeep']` for that case; nothing has ever reached it.
+ *
+ * The tick is **snapshotted** — computed when the effect landed — so this
+ * consumes no randomness and needs no seed.
+ */
+export function applyUpkeep(
+  state: BattleState,
+  instanceId: string,
+): { readonly state: BattleState; readonly damage: number; readonly died: boolean } {
+  const hero = heroStateOf(state, instanceId);
+  const damage = upkeepDamage(hero);
+
+  if (damage <= 0 && hero.statuses.length === 0) {
+    return { state, damage: 0, died: false };
+  }
+
+  const hp = Math.max(0, hero.hp - damage);
+  const next: HeroState = { ...hero, hp, statuses: afterUpkeep(hero.statuses) };
+
+  return {
+    state: { ...state, heroes: state.heroes.map((h) => (h.instanceId === instanceId ? next : h)) },
+    damage,
+    died: hp === 0 && hero.hp > 0,
   };
 }
 
@@ -209,21 +279,51 @@ export function takeTurn(
   intent: ActionIntent,
   drawIndex: bigint,
 ): TakenTurn {
-  const hero = heroStateOf(state, intent.actorInstanceId);
+  /**
+   * **Phase 1 — Upkeep, before anything else** (020). Damage-over-time ticks
+   * here, so a champion can die to a burn without ever taking its turn.
+   */
+  const upkeep = applyUpkeep(state, intent.actorInstanceId);
+  const afterUpkeepState = upkeep.state;
 
-  if (isIncapacitated(hero)) {
+  if (upkeep.died) {
+    /*
+     * **The only early termination of a turn**, and the case `phasesFor` has
+     * described since 002 without anything ever reaching it. No Resolution: the
+     * hero is off the board, so there are no cooldowns left to tick.
+     */
     return {
-      state: applyResolution(state, intent.actorInstanceId, null),
-      outcome: passOutcome(state),
+      state: { ...afterUpkeepState, heroTurn: afterUpkeepState.heroTurn + 1 },
+      outcome: {
+        ...passOutcome(afterUpkeepState),
+        damage: upkeep.damage,
+        deaths: [intent.actorInstanceId],
+        conclusion: battleEnded(afterUpkeepState),
+      },
       drawsConsumed: 0n,
     };
   }
 
-  const resolved = resolveOne(seed, state, intent, drawIndex);
+  const hero = heroStateOf(afterUpkeepState, intent.actorInstanceId);
+
+  if (isIncapacitated(hero)) {
+    return {
+      state: applyResolution(afterUpkeepState, intent.actorInstanceId, null),
+      outcome: passOutcome(afterUpkeepState),
+      drawsConsumed: 0n,
+    };
+  }
+
+  const resolved = resolveOne(seed, afterUpkeepState, intent, drawIndex);
 
   return {
     state: applyResolution(resolved.state, intent.actorInstanceId, intent.powerId),
-    outcome: resolved.packet,
+    /*
+     * Upkeep damage is added to the turn's reported damage rather than hidden.
+     * A burn that took 14 off a champion is something the battle log has to be
+     * able to say, or a player watches their health fall for no stated reason.
+     */
+    outcome: { ...resolved.packet, damage: resolved.packet.damage + upkeep.damage },
     drawsConsumed: resolved.drawsConsumed,
   };
 }

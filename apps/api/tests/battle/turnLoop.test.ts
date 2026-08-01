@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { getHero } from '@lmntlz/content';
 import { gainPerTick, isIncapacitated, turnQueue } from '@lmntlz/sim/rules';
 import { applyResolution, nextActor, takeTurn } from '../../src/battle/turnLoop.js';
-import { autoPowerOf, board, fell, ROSTER, withHero } from './fixtures.js';
+import { autoPowerOf, board, fell, ROSTER, status, withHero } from './fixtures.js';
 
 const ATTACKER = 'a-front-0';
 
@@ -246,7 +246,7 @@ describe('Resolution is unconditional', () => {
      */
     const stunned = withHero(board(), ATTACKER, {
       cooldowns: { [auto]: 2 },
-      statuses: [{ kind: 'stun', turnsRemaining: 1, potency: 0, sourceInstanceId: 'd-front-0' }],
+      statuses: [status('stun')],
     });
 
     expect(isIncapacitated(stunned.heroes.find((h) => h.instanceId === ATTACKER)!)).toBe(true);
@@ -262,8 +262,8 @@ describe('Resolution is unconditional', () => {
   it('expires a status that has run out and keeps one that has not', () => {
     const state = withHero(board(), ATTACKER, {
       statuses: [
-        { kind: 'stun', turnsRemaining: 1, potency: 0, sourceInstanceId: 'd-front-0' },
-        { kind: 'bleed', turnsRemaining: 3, potency: 10, sourceInstanceId: 'd-front-0' },
+        status('stun'),
+        status('bleed', { turnsRemaining: 3, magnitude: 10 }),
       ],
     });
 

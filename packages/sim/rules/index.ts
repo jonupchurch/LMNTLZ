@@ -64,6 +64,7 @@ export {
   shredFraction,
   statChangeForTier,
   statusPoints,
+  statusTargeting,
   tickDurations,
   upkeepDamage,
 } from './status.js';
@@ -99,6 +100,7 @@ export {
   DAMAGE_FLOOR_FRACTION,
   HP_PER_TOUGHNESS,
   K,
+  absorb,
   damagePreview,
   healPreview,
   maxHp,
@@ -106,7 +108,7 @@ export {
   packetOf,
   resistedBy,
 } from './damage.js';
-export type { DamagePreview } from './damage.js';
+export type { AbsorbResult, DamagePreview } from './damage.js';
 
 export { legalTargets, mustPass, poolFor } from './targeting.js';
 export type { Compulsion, TargetFilter, TargetingResult, TargetingStage } from './targeting.js';
@@ -216,4 +218,21 @@ export type { Conclusion } from './ending.js';
  */
 export const ENGINE_RNG = 'splitmix64';
 
-export const engineVersion = (): string => `e0.2.0-${ENGINE_RNG}`;
+/**
+ * **`e0.2.0` → `e0.3.0` for 020 — Constitution XVI.**
+ *
+ * Rider contests consume draws at step 3 that no battle before this feature
+ * consumed. The slot was reserved and documented from the start, but reserving an
+ * index is not the same as spending one: a battle **in flight** took zero draws
+ * there, so re-deriving it under this engine would read a different index for the
+ * targeting tiebreak and for every action after it. Same log, different past.
+ *
+ * **Stored replays are not at risk and this is worth being exact about.** A replay
+ * is a stored event log and is never re-simulated — that is the whole of XVI and
+ * why a balance patch cannot reach backwards. Every record carries the version it
+ * was recorded under and plays back as recorded.
+ *
+ * The risk is confined to battles that are open when the deploy lands, which is
+ * why **deploys drain before switching**. See `specs/020-status-and-passives/`.
+ */
+export const engineVersion = (): string => `e0.3.0-${ENGINE_RNG}`;
