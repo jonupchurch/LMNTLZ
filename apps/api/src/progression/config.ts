@@ -127,6 +127,38 @@ export const BOOSTED_EVENTS_PER_DAY = 10;
 /** `150 · 150 · 150 · 200`. Re-exported so no caller reaches into the schema. */
 export { STAGE_COSTS, STAGE_BOOSTS, FULL_RUNE_COST };
 
+/**
+ * **What a hero's runes return when melted down — 80%** (2026-08-01).
+ *
+ * ### This reverses a decision, and the reversal is recorded rather than implied
+ *
+ * `06-progression.md` said the only operations were *advance a stage* and
+ * *destroy and start over*, with destruction refunding nothing: **"the stages are
+ * not refunded and the allocation is gone."** Jon reversed that deliberately. The
+ * doc now carries both the new rule and what it costs, because a constant that
+ * quietly contradicts canon is how the two stop agreeing.
+ *
+ * ### What the 20% is for
+ *
+ * Re-speccing is named as the endgame shard sink, and at a 100% loss it is a very
+ * large one. At 80% back it shrinks to a fifth of that — the 20% is the whole of
+ * the remaining sink, so it is the number to move if re-speccing turns out to be
+ * too cheap, and it is deliberately a *rate* rather than a flat fee so it scales
+ * with what was actually invested.
+ *
+ * It also cuts the other way, in a direction the project wants: Constitution XIV
+ * makes a nerf a last resort **because runes are destroyed on replacement**, so a
+ * nerf writes off a player's spend. At 80% back it writes off a fifth of it, and
+ * the compensating grant `06-progression.md` prescribes gets correspondingly
+ * cheaper.
+ *
+ * **A rate, not a table.** Refunding per stage would let a player reclaim the
+ * trace boost and keep the major, which is the piecemeal editing the same section
+ * of `06-progression.md` still forbids — and that prohibition is *not* reversed.
+ * A refund takes every rune on the hero or none.
+ */
+export const REFUND_RATE = 0.8;
+
 // ---------------------------------------------------------------------------
 // The cap
 // ---------------------------------------------------------------------------
@@ -239,6 +271,8 @@ export interface ProgressionConfig {
   readonly fullRuneCost: number;
   readonly capInRunes: number;
   readonly balanceCap: number;
+  /** `0.8`. Served so the refund control never types a percentage of its own. */
+  readonly refundRate: number;
 }
 
 export function progressionConfig(): ProgressionConfig {
@@ -253,5 +287,6 @@ export function progressionConfig(): ProgressionConfig {
     fullRuneCost: FULL_RUNE_COST,
     capInRunes: CAP_IN_RUNES,
     balanceCap: BALANCE_CAP,
+    refundRate: REFUND_RATE,
   };
 }

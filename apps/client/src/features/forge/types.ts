@@ -60,5 +60,44 @@ export interface ShardsResponse {
     /** `[20, 10, 5, 0]`. **Stage 4 grants no points** — it buys utility. */
     readonly stageBoosts: readonly number[];
     readonly fullRuneCost: number;
+    /**
+     * `0.8` — what melting a champion's runes returns.
+     *
+     * **Served, like every other economy number here.** The refund dialog shows
+     * `80%` by rounding this, never by writing it: a typed percentage is a
+     * second implementation of the rate, and the day it moves the screen quotes
+     * one number while the server pays another.
+     */
+    readonly refundRate: number;
   };
+}
+
+/**
+ * What a refund would destroy and what it returns — **computed by the server**
+ * and delivered as the body of the `409` that refuses an unconfirmed melt.
+ *
+ * The refusal carrying the quote is what lets the dialog open populated. The
+ * alternative is a second round trip whose answer can differ from the one the
+ * confirm then acts on.
+ */
+export interface RefundQuote {
+  readonly heroId: string;
+  readonly slots: readonly {
+    readonly slot: RuneSlot;
+    readonly stage: number;
+    /** What this rune's current stage cost — never lifetime spend on the slot. */
+    readonly value: number;
+    readonly allocations: RuneAllocations;
+    readonly utility: string | null;
+  }[];
+  readonly invested: number;
+  readonly refund: number;
+  readonly rate: number;
+}
+
+/** The quote, plus what actually happened. */
+export interface RefundResult extends RefundQuote {
+  readonly balance: number;
+  readonly gearScore: number;
+  readonly destroyed: number;
 }

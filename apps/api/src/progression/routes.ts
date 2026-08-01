@@ -33,7 +33,7 @@ import { balance, lifetimeEarned, victoriesToday } from './ledger.js';
 import { capDescription } from './cap.js';
 import { dailyMultiplier } from './income.js';
 import { ownedRunes } from './read.js';
-import { placeStage, rebuildRune, RuneError } from './runes.js';
+import { placeStage, quoteRefund, rebuildRune, refundHero, RuneError } from './runes.js';
 import { nextBoundaryAt, progressionConfig } from './config.js';
 import { ratingOf } from './rating.js';
 
@@ -42,6 +42,13 @@ export const progressionRoutes = new Hono<AuthedEnv>();
 progressionRoutes.use('/me/shards', requireSession);
 progressionRoutes.use('/me/runes', requireSession);
 progressionRoutes.use('/heroes/:heroId/runes/:slot', requireSession);
+/**
+ * **Registered before the `:slot` guard would ever see it.** Hono matches on the
+ * concrete path, so `/heroes/:heroId/runes` and `/heroes/:heroId/runes/:slot` are
+ * different routes and each needs its own `use` — a refund arriving unauthed
+ * would otherwise reach the handler.
+ */
+progressionRoutes.use('/heroes/:heroId/runes', requireSession);
 
 /**
  * The player's balance, today's position on the curve, and the cap.
@@ -179,6 +186,79 @@ progressionRoutes.post('/heroes/:heroId/runes/:slot', async (c) => {
         return c.json(apiError('needs_confirmation', err.message), 409);
       }
       return c.json(apiError('unprocessable', err.message), 422);
+    }
+    throw err;
+  }
+});
+
+/**
+ * **Melt every rune on one hero** — `DELETE /v1/heroes/:heroId/runes`
+ * (2026-08-01).
+ *
+ * ### `DELETE` on the collection, which is what this actually is
+ *
+ * The verb and the path together say the whole operation: every rune on this
+ * hero, gone. A `POST .../refund` would have read as *create a refund* and left
+ * the URL silent about scope — and scope is the part a player most needs to be
+ * sure of, because there is no per-slot version and never will be
+ * (`06-progression.md` still forbids piecemeal editing).
+ *
+ * The shard credit is a *consequence* of the deletion rather than the resource
+ * being created, which is why the response carries the quote it acted on: what
+ * was destroyed, what it was worth, and what came back.
+ *
+ * ### Confirmation travels as a query parameter, because DELETE has no body
+ *
+ * Some clients and intermediaries drop a body on `DELETE`. `?confirmed=true` is
+ * the same gate the rebuild runs in its body, and the unconfirmed response is a
+ * `409` carrying the full quote — so the dialog is populated by the refusal
+ * rather than by a second round trip.
+ */
+progressionRoutes.delete('/heroes/:heroId/runes', async (c) => {
+  const { accountId } = requireContext(c);
+  const heroId = c.req.param('heroId');
+  const confirmed = c.req.query('confirmed') === 'true';
+
+  try {
+    return c.json(await refundHero(accountId, heroId, confirmed), 200);
+  } catch (err) {
+    if (err instanceof UnknownHeroError) {
+      return c.json(apiError('not_found', `No such hero: ${heroId}.`), 404);
+    }
+    if (err instanceof RuneError) {
+      if (err.code === 'needs-confirmation') {
+        return c.json(apiError('needs_confirmation', err.message), 409);
+      }
+      return c.json(apiError('unprocessable', err.message), 422);
+    }
+    throw err;
+  }
+});
+
+/**
+ * **What melting this champion would destroy and return** — read-only.
+ *
+ * The collection `GET` beside the collection `DELETE`: *what is here and what is
+ * it worth*, then *take it*. It exists so the confirm dialog is populated by the
+ * server's own arithmetic rather than the client's.
+ *
+ * That distinction is the whole point. `invested` and `refund` are the ladder's
+ * arithmetic — a client computing `floor(invested × rate)` for the dialog would
+ * be a second implementation, and the two would disagree **quietly** the first
+ * time the rate moved: shown one number, paid another, with nothing failing.
+ *
+ * **Not `/runes/quote`**, which would collide with `/runes/:slot` and arrive at
+ * that handler as a slot named "quote".
+ */
+progressionRoutes.get('/heroes/:heroId/runes', async (c) => {
+  const { accountId } = requireContext(c);
+  const heroId = c.req.param('heroId');
+
+  try {
+    return c.json(await quoteRefund(accountId, heroId), 200);
+  } catch (err) {
+    if (err instanceof UnknownHeroError) {
+      return c.json(apiError('not_found', `No such hero: ${heroId}.`), 404);
     }
     throw err;
   }

@@ -28,11 +28,14 @@ import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
 import { Button, HeroIcon, Panel, TypeBadge } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
 import { DestroyConfirm } from './DestroyConfirm.js';
+import { RefundConfirm } from './RefundConfirm.js';
 import { SlotPlanner, placedPoints } from './SlotPlanner.js';
 import { StageLadder } from './StageLadder.js';
 import {
   RUNE_SLOTS,
   type OwnedHeroRunes,
+  type RefundQuote,
+  type RefundResult,
   type RunesResponse,
   type RuneSlot,
   type ShardsResponse,
@@ -77,6 +80,8 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
   const [slot, setSlot] = useState<RuneSlot>('primary');
   const [draftStat, setDraftStat] = useState<StatKey | null>(null);
   const [confirming, setConfirming] = useState(false);
+  /** The server's quote, and "the melt dialog is open" — deliberately one state. */
+  const [refunding, setRefunding] = useState<RefundQuote | null>(null);
 
   const unauthenticated = useCallback(
     (err: unknown): boolean => {
@@ -138,6 +143,51 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
   const heroRunes = forHero(heroId);
   const current = heroRunes.slots.find((s) => s.slot === slot)!;
   const nextBoost = shards?.config.stageBoosts[current.stage] ?? 0;
+
+  /**
+   * Melting a champion down, in two steps: **read the quote, then act on it.**
+   *
+   * The dialog opens on the server's own numbers rather than on arithmetic done
+   * here, so what a player is shown is what the confirm will pay. `refunding`
+   * holds the quote and doubles as "the dialog is open" — one piece of state,
+   * so there is no way to be open without one.
+   */
+  const askRefund = async (): Promise<void> => {
+    setBusy(true);
+    setError(null);
+    try {
+      const quote = await api<RefundQuote>(`/heroes/${heroId}/runes`);
+      if (quote.slots.length === 0) {
+        setError('That champion has no runes to melt.');
+        return;
+      }
+      setRefunding(quote);
+    } catch (err) {
+      if (unauthenticated(err)) return;
+      setError('Could not read what that champion’s runes are worth.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const doRefund = async (): Promise<void> => {
+    setBusy(true);
+    setError(null);
+    try {
+      await api<RefundResult>(`/heroes/${heroId}/runes?confirmed=true`, { method: 'DELETE' });
+      setRefunding(null);
+      setDraftStat(null);
+      setConfirming(false);
+      /* Refetch, never patch — the balance, the runes and the gear score all moved. */
+      await load();
+    } catch (err) {
+      if (unauthenticated(err)) return;
+      setError(err instanceof ApiError && err.status === 422 ? err.message : 'Could not melt those runes.');
+      setRefunding(null);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const commit = async (rebuild: boolean): Promise<void> => {
     if (!shards) return;
@@ -290,6 +340,42 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
                 <TypeBadge type={hero.secondary} size="sm" />
               </span>
             </header>
+
+            {/*
+             * **A hero-level control, beside the hero-level total.** It melts
+             * every slot, so it belongs with "◈ N invested" rather than in the
+             * per-slot ledger where it would read as acting on the open slot.
+             *
+             * Hidden when there is nothing to melt: a disabled button on a bare
+             * champion invites a click that can only ever be refused.
+             */}
+            {heroRunes.slots.some((s) => s.stage > 0) && (
+              <div className="flex flex-wrap items-baseline gap-3">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  state={busy ? 'disabled' : 'rest'}
+                  onClick={() => void askRefund()}
+                >
+                  Melt all runes
+                </Button>
+                {shards ? (
+                  <span className="text-caption font-mono text-faint">
+                    returns {Math.round(shards.config.refundRate * 100)}% of what is placed
+                  </span>
+                ) : null}
+              </div>
+            )}
+
+            {refunding ? (
+              <RefundConfirm
+                heroName={hero.name}
+                quote={refunding}
+                busy={busy}
+                onConfirm={() => void doRefund()}
+                onCancel={() => setRefunding(null)}
+              />
+            ) : null}
 
             <SlotPlanner
               hero={hero}

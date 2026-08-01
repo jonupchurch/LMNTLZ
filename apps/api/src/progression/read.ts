@@ -41,14 +41,8 @@
 import { eq } from 'drizzle-orm';
 import { getAllHeroes, type StatKey } from '@lmntlz/content';
 import { db } from '../db/client.js';
-import {
-  RUNE_SLOTS,
-  STAGE_COSTS,
-  runes,
-  type RuneAllocations,
-  type RuneSlot,
-} from '../db/schema/runes.js';
-import { slotAccepts } from './runes.js';
+import { RUNE_SLOTS, runes, type RuneAllocations, type RuneSlot } from '../db/schema/runes.js';
+import { slotAccepts, spentThroughStage } from './runes.js';
 import type { RuneLoadout } from '../battle/board.js';
 
 export interface OwnedRuneSlot {
@@ -74,20 +68,6 @@ export interface OwnedRuneSlot {
 export interface OwnedHeroRunes {
   readonly heroId: string;
   readonly slots: readonly OwnedRuneSlot[];
-}
-
-/**
- * What stages 1..`stage` cost in total.
- *
- * Derived rather than read from the ledger. The ledger is the authority on a
- * *balance* and it records reasons rather than slots, so attributing a debit to
- * one of 81 slots would mean parsing a reason string — and `STAGE_COSTS` is the
- * same array the charge was computed from, so the two cannot disagree.
- */
-export function spentThroughStage(stage: number): number {
-  let total = 0;
-  for (let s = 1; s <= stage; s += 1) total += STAGE_COSTS[s - 1] ?? 0;
-  return total;
 }
 
 /**

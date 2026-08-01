@@ -27,8 +27,10 @@ import { closeDb, db } from '../../src/db/client.js';
 import { runes, RUNE_SLOTS, STAGE_COSTS } from '../../src/db/schema/runes.js';
 import { shardLedger } from '../../src/db/schema/ledger.js';
 import { append } from '../../src/progression/ledger.js';
-import { ownedRunes, spentThroughStage } from '../../src/progression/read.js';
-import { placeStage } from '../../src/progression/runes.js';
+import { ownedRunes } from '../../src/progression/read.js';
+/* `spentThroughStage` moved to `runes.ts` with the refund — `read.ts` imports
+   from there already, so reaching the other way would have closed a cycle. */
+import { placeStage, spentThroughStage } from '../../src/progression/runes.js';
 import { signIn, type Signed } from '../profiles/session.js';
 import { dropAccount } from './helpers.js';
 

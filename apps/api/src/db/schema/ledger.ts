@@ -61,6 +61,25 @@ export const LEDGER_REASONS = [
   'rune-stage',
   /** A rebuild: the single 650 charge that destroys and replaces a full rune. */
   'rune-rebuild',
+  /**
+   * **Melting a hero's runes down — the only positive row that is not income**
+   * (2026-08-01).
+   *
+   * It reverses the player's own spend at `REFUND_RATE`, which makes it a
+   * different kind of thing from every other credit here and is why it gets its
+   * own reason rather than borrowing `grant`:
+   *
+   * - It **bypasses the balance cap**, like a grant. Capping it would confiscate
+   *   shards a player had already paid, and confiscate them from exactly the
+   *   heavily-invested players who are the ones with runes worth melting.
+   * - It must **never count as lifetime earned**, or a player placing and
+   *   refunding in a loop would graduate out of the starter league without ever
+   *   winning a battle. `lifetimeEarned` is an **allowlist** of
+   *   `attack-victory · defense-hold`, so this is excluded by construction rather
+   *   than by anybody remembering to exclude it — which is the argument for
+   *   adding a reason here instead of reusing `grant`.
+   */
+  'rune-refund',
   /** A prize — event placement, ladder finish, or blanket compensation. Bypasses the cap. */
   'grant',
   /** Bought with money (011). Refused *before* the rail if it would exceed the cap. */

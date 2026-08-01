@@ -38,7 +38,7 @@ import {
   type RuneRow,
   type RuneSlot,
 } from '../db/schema/runes.js';
-import { FULL_RUNE_COST } from './config.js';
+import { FULL_RUNE_COST, REFUND_RATE } from './config.js';
 import { append, balance } from './ledger.js';
 import {
   recordPlacement,
@@ -87,6 +87,26 @@ export function pointsThroughStage(stage: number): number {
 /** What advancing from `stage` to `stage + 1` costs. */
 export function costOfStage(stage: number): number {
   return STAGE_COSTS[stage - 1] ?? 0;
+}
+
+/**
+ * What stages 1..`stage` cost in total.
+ *
+ * Derived rather than read from the ledger. The ledger is the authority on a
+ * *balance* and it records reasons rather than slots, so attributing a debit to
+ * one of 81 slots would mean parsing a reason string — and `STAGE_COSTS` is the
+ * same array the charge was computed from, so the two cannot disagree.
+ *
+ * **Moved here from `read.ts` when the refund arrived.** `read.ts` already
+ * imports `slotAccepts` from this file, so a refund reaching backwards for it
+ * would have closed an import cycle — and it belongs beside `costOfStage` and
+ * `pointsThroughStage` regardless: all three answer *what does a stage cost or
+ * grant*, from the same two arrays.
+ */
+export function spentThroughStage(stage: number): number {
+  let total = 0;
+  for (let s = 1; s <= stage; s += 1) total += STAGE_COSTS[s - 1] ?? 0;
+  return total;
 }
 
 /**
@@ -280,12 +300,14 @@ export async function placeStage(
  * Destroy a completed rune and start a new one in its place — **one transaction
  * with one charge of `FULL_RUNE_COST`** (T022, FR-008).
  *
- * ### There is deliberately no refund path
+ * ### A rebuild still refunds nothing, and that is now a narrower claim
  *
- * Commitment is the mechanic. Destruction on replacement is why a balance change
- * writes off real spend, which is the origin of the balance-upward rule
- * (Constitution XIV) — a refund would quietly undo the thing the rest of the
- * design is built around.
+ * ⚠️ **Reversed 2026-08-01.** This used to read *"there is deliberately no refund
+ * path"*. There is one — `refundHero` below — and it returns `REFUND_RATE` of a
+ * hero's whole rune investment. What is unchanged is *this* operation: a rebuild
+ * of one slot is still a full charge with nothing back, because it is the
+ * *impatient* path. A player who wants the shards returns them all and starts the
+ * hero over.
  *
  * The confirm is not boilerplate: it must name that the old rune is gone
  * **including its utility effect**, and that the new one is **not necessarily an
@@ -360,6 +382,145 @@ export async function rebuildRune(
       stage: MAX_STAGE,
       charged: FULL_RUNE_COST,
       balance: current - FULL_RUNE_COST,
+      gearScore,
+    };
+  });
+}
+
+/**
+ * What a hero's runes are worth back, and what they hold right now.
+ *
+ * Returned by the refusal path as well as the success path, so the confirm
+ * dialog can name every rune it is about to destroy rather than a total.
+ */
+export interface RefundQuote {
+  readonly heroId: string;
+  /** One entry per placed rune, in `RUNE_SLOTS` order. Empty slots are absent. */
+  readonly slots: readonly {
+    readonly slot: RuneSlot;
+    readonly stage: number;
+    readonly value: number;
+    readonly allocations: RuneAllocations;
+    readonly utility: string | null;
+  }[];
+  /** Sum of `value` — what was actually paid for what is currently placed. */
+  readonly invested: number;
+  /** `floor(invested × REFUND_RATE)`. */
+  readonly refund: number;
+  readonly rate: number;
+}
+
+/**
+ * Quote a refund without touching anything.
+ *
+ * **Valued at the CURRENT stage, never at lifetime spend on the slot.** A slot
+ * rebuilt three times cost 650 × 3 and is worth one rune; refunding lifetime
+ * spend would pay a player back for value that was already destroyed, and would
+ * turn rebuild-then-refund into a way to print shards. `runes.ts`'s schema note
+ * refuses to store spend per rune for the neighbouring reason — *"a source that
+ * could report spend is a source somebody scores by accident"* — so the current
+ * stage is both the right answer and the only one available.
+ */
+export async function quoteRefund(accountId: string, heroId: string): Promise<RefundQuote> {
+  getHero(heroId); // 404s an unknown hero before anything else is read.
+
+  const rows = await db()
+    .select()
+    .from(runes)
+    .where(and(eq(runes.accountId, accountId), eq(runes.heroId, heroId)));
+
+  const order = new Map(RUNE_SLOTS.map((slot, at) => [slot, at]));
+  const placed = rows
+    .filter((row): row is RuneRow & { slot: RuneSlot } => order.has(row.slot as RuneSlot))
+    .sort((a, b) => (order.get(a.slot) ?? 0) - (order.get(b.slot) ?? 0))
+    .map((row) => ({
+      slot: row.slot,
+      stage: row.stage,
+      value: spentThroughStage(row.stage),
+      allocations: row.allocations,
+      utility: row.stage >= MAX_STAGE ? row.utilityEffect : null,
+    }));
+
+  const invested = placed.reduce((sum, r) => sum + r.value, 0);
+
+  return {
+    heroId,
+    slots: placed,
+    invested,
+    /* `floor`, so rounding never invents a shard. Every stage total is a
+       multiple of 50 and 0.8 of it is whole, but the rate is a tuning dial and
+       the next value chosen will not be. */
+    refund: Math.floor(invested * REFUND_RATE),
+    rate: REFUND_RATE,
+  };
+}
+
+export interface RefundResult extends RefundQuote {
+  readonly balance: number;
+  readonly gearScore: number;
+  /** How many runes were destroyed. `slots.length`, stated so a caller need not count. */
+  readonly destroyed: number;
+}
+
+/**
+ * **Melt every rune on one hero for `REFUND_RATE` of what is placed** (2026-08-01).
+ *
+ * ### All three slots or none
+ *
+ * `06-progression.md` forbids piecemeal editing — a player cannot reclaim the
+ * trace boost and keep the major — and that prohibition is **not** what was
+ * reversed here. A per-slot refund would be exactly it, one level up: melt the
+ * common slot, keep the primary, and the hero is re-specced for 20%. Taking the
+ * whole hero keeps the unit of commitment a *hero* rather than a component.
+ *
+ * ### The credit bypasses the balance cap, deliberately
+ *
+ * It is the player's own spend coming back. Capping it would confiscate shards
+ * already paid, from exactly the heavily-invested players who are the only ones
+ * with runes worth melting — the same asymmetry, and the same argument, that
+ * `cap.ts` records for grants.
+ *
+ * ### Confirm-gated like a rebuild, and for a stronger reason
+ *
+ * A rebuild destroys one rune; this destroys up to three, including their
+ * utility effects, and the refusal carries the full quote so the dialog can name
+ * each one. A player who has not seen the list has not consented to it.
+ */
+export async function refundHero(
+  accountId: string,
+  heroId: string,
+  confirmed: boolean,
+): Promise<RefundResult> {
+  const quote = await quoteRefund(accountId, heroId);
+
+  if (quote.slots.length === 0) {
+    throw new RuneError('slot-mismatch', 'That champion has no runes to refund.');
+  }
+
+  if (!confirmed) {
+    throw new RuneError(
+      'needs-confirmation',
+      `Refunding destroys all ${quote.slots.length} of this champion's runes, including any utility effects, and returns ${quote.refund} of the ${quote.invested} placed. It cannot be undone.`,
+    );
+  }
+
+  /* Read BEFORE the transaction, as `rebuildRune` does. `balance()` runs on
+     `db()` rather than `tx`, so calling it inside would not see the credit just
+     appended — the arithmetic would look right and depend on that. */
+  const current = await balance(accountId);
+
+  return db().transaction(async (tx) => {
+    /* Credited, then the runes go — one transaction, so a failure between the
+       two cannot leave a player paid for runes they still hold. */
+    await append(accountId, quote.refund, 'rune-refund', null, tx);
+    await tx.delete(runes).where(and(eq(runes.accountId, accountId), eq(runes.heroId, heroId)));
+
+    const gearScore = await recordPlacement(accountId, tx);
+
+    return {
+      ...quote,
+      destroyed: quote.slots.length,
+      balance: current + quote.refund,
       gearScore,
     };
   });

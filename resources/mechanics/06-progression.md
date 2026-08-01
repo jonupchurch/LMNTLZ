@@ -92,8 +92,48 @@ everything placed in it, whatever stage it had reached.
 
 > **There is no piecemeal editing.** A player cannot swap the second stat, or
 > trade one utility effect for another, or reclaim the trace boost. The only
-> operations are *advance to the next stage* and *destroy and start over*. A
-> stage-4 rune that needs one stat changed costs the full 650 to rebuild.
+> operations are *advance to the next stage*, *destroy and start over*, and
+> *melt the champion down*. A stage-4 rune that needs one stat changed costs the
+> full 650 to rebuild.
+
+### Melting a champion down — **80% back, added 2026-08-01**
+
+**This reverses the rule above and the reversal is deliberate.** The earlier text
+read *"the stages are not refunded and the allocation is gone"*, full stop. It no
+longer does.
+
+> A player may **melt every rune on one champion** and receive **80% of what is
+> currently placed**. All three slots or none. The 20% is the sink.
+
+Four things bound it, and each is the reason a looser version was not taken:
+
+- **Per champion, never per slot.** A per-slot refund would *be* the piecemeal
+  editing the paragraph above still forbids: melt the common slot, keep the
+  primary, and the champion is re-specced for a fifth of the cost. The unit of
+  commitment stays a champion.
+- **Valued at what is *placed*, never at lifetime spend.** A slot rebuilt three
+  times cost three full runes and holds one. Paying back a fraction of lifetime
+  spend would return shards for value already destroyed, and rebuild-then-melt
+  would become an income source rather than a sink. This is the same reasoning
+  that keeps gear score on placed runes rather than spend.
+- **A rebuild still refunds nothing.** It is the impatient path — one slot, now,
+  full price. A player who wants the shards back melts the champion and starts
+  it over.
+- **The credit ignores the balance cap**, for the reason the cap's asymmetry
+  already exists: it is the player's own spend returning, and capping it would
+  confiscate shards from exactly the heavily-invested players who are the only
+  ones with runes worth melting.
+
+**What it costs the design.** Re-speccing is named below as the endgame sink, and
+at a 100% loss it was a large one; at 80% back it is a fifth of that. The 20% is
+therefore *the whole of the remaining re-spec sink*, and it is the number to move
+if re-speccing proves too cheap.
+
+**What it buys.** Constitution XIV makes a nerf a last resort **because** runes
+are destroyed on replacement, so a nerf writes off real spend. At 80% back it
+writes off a fifth of it, and the compensating grant this document prescribes
+gets correspondingly cheaper. The rate is served as `config.refundRate`, so
+moving it is a deploy rather than a client release.
 
 ### Why staged rather than all-or-nothing
 
