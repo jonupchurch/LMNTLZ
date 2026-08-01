@@ -199,6 +199,69 @@ describe('riders and crits', () => {
     }
   });
 
+  /**
+   * **The rider contest is NOT clamped, and this is the test that proves it.**
+   *
+   * It ran through the 65–95% accuracy clamp until 2026-08-01. Nothing called it,
+   * so nothing misbehaved — and the monotonic test above passes clamped, because
+   * a floor is still non-decreasing. That is the shape of a test that cannot see
+   * the bug it is next to.
+   *
+   * These numbers come from `05-status.md` itself: *"an average stick rate of 31%
+   * at tier 1 rising to 87% at tier 5"*. Anything that reintroduces a floor moves
+   * tier 1 to 65% and fails here immediately.
+   */
+  it('lands riders at the rates 05-status.md states, across all 729 pairs', () => {
+    const heroes = getAllHeroes();
+    const POTENCY = [20, 28, 36, 44, 52]; // tier 1..5
+
+    const averages = POTENCY.map((potency) => {
+      let sum = 0;
+      for (const source of heroes) {
+        for (const target of heroes) {
+          const state = duel(source.id, target.id);
+          sum += riderLandProbability(state, 'a', 'd', potency);
+        }
+      }
+      return sum / (heroes.length * heroes.length);
+    });
+
+    /*
+     * Pinned to the measured values, with the document's rounding noted, rather
+     * than to the document's printed figures: tier 5 measures 86.5%, which `05`
+     * prints as "87%". Asserting 0.87 to two places fails by 0.0001 — a test
+     * that would read as an engine defect when the only disagreement is where
+     * a percentage got rounded.
+     */
+    expect(averages[0], 'tier 1 — 05 prints 31%; a clamp puts this at 0.65').toBeCloseTo(0.312, 3);
+    expect(averages[4], 'tier 5 — 05 prints 87%').toBeCloseTo(0.865, 3);
+
+    /* Every tier strictly beats the one below — the sentence the catalog is
+       written against, and the thing a floor destroys by flattening 1..3. */
+    for (let i = 1; i < averages.length; i += 1) {
+      expect(averages[i]!, `tier ${i + 1} vs ${i}`).toBeGreaterThan(averages[i - 1]! + 0.1);
+    }
+  });
+
+  /**
+   * The property `05-status.md` fits the 20–60 potency band to achieve:
+   * *"nothing deterministic in either direction."* A rider that always lands is
+   * not a contest, and one that never lands is a dead power.
+   */
+  it('is never certain in either direction, at any tier', () => {
+    const heroes = getAllHeroes();
+
+    for (const potency of [20, 28, 36, 44, 52]) {
+      for (const source of heroes) {
+        for (const target of heroes) {
+          const p = riderLandProbability(duel(source.id, target.id), 'a', 'd', potency);
+          expect(p, `${source.id}->${target.id} @${potency}`).toBeGreaterThan(0);
+          expect(p, `${source.id}->${target.id} @${potency}`).toBeLessThan(1);
+        }
+      }
+    }
+  });
+
   it('computes crit as Luck x 0.5 percent', () => {
     const state = duel('h01', 'h19');
     const luck = getAllHeroes().find((h) => h.id === 'h01')!.stats.luck;

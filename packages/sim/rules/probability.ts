@@ -113,6 +113,39 @@ export function hitProbability(
  *
  * One implementation; the edge is a parameter. Two implementations of one
  * contest is how they drift.
+ *
+ * ### ⚠️ It is NOT clamped, and it used to be — corrected 2026-08-01
+ *
+ * This ran through `clampProbability` for as long as it has existed. Nothing in
+ * production called it, so nothing was wrong in a battle; it became wrong the
+ * moment the status engine started asking it whether a rider lands.
+ *
+ * The clamp is `MIN_HIT_PROBABILITY`/`MAX_HIT_PROBABILITY` — named for *hits*,
+ * and justified above by a specific accuracy problem: `Agility` + `Luck` runes
+ * can build a defender nothing can touch. `Resolve` cannot produce that, and the
+ * floor it imposed here was catastrophic to the tier ladder. Measured over all
+ * 729 pairs:
+ *
+ * | tier | potency | unclamped | clamped | `05-status.md` says |
+ * |---|---|---|---|---|
+ * | 1 | 20 | **31.2%** | 65.0% | 31% |
+ * | 2 | 28 | 46.1% | 65.5% | — |
+ * | 3 | 36 | 61.5% | 68.9% | — |
+ * | 4 | 44 | 75.6% | 77.4% | — |
+ * | 5 | 52 | **86.5%** | 86.5% | 87% |
+ *
+ * Unclamped reproduces the document exactly. Clamped, a tier-1 rider lands more
+ * than **twice** as often as designed, and tiers 1–3 collapse into 65.0 / 65.5 /
+ * 68.9 — three tiers that are supposed to be visibly different arriving as one.
+ * *"Every tier strictly beats the one below"* is the sentence the whole catalog
+ * is written against.
+ *
+ * **And the clamp was never the safety rail it looked like.** At every tier the
+ * unclamped contest is deterministic in neither direction — 0 of 729 auto-land
+ * and 0 of 729 can-never-land — which is the property `05-status.md` fits the
+ * 20–60 potency band to achieve. Runes cannot break it either: raising the
+ * target's `Resolve` *or* its `Luck` both push the probability down, so
+ * investment by the defender only ever makes a rider harder to land.
  */
 export function riderLandProbability(
   state: BattleState,
@@ -125,12 +158,10 @@ export function riderLandProbability(
 
   const m = statOf(state, target, 'resolve') - potency;
 
-  return clampProbability(
-    contestProbability(
-      dieSize(statOf(state, source, 'luck')),
-      dieSize(statOf(state, target, 'luck')),
-      m,
-    ),
+  return contestProbability(
+    dieSize(statOf(state, source, 'luck')),
+    dieSize(statOf(state, target, 'luck')),
+    m,
   );
 }
 
