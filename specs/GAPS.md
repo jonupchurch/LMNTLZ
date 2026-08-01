@@ -1,6 +1,6 @@
 # The gap register
 
-**Compiled 2026-07-30. Revised 2026-07-31 after feature 018.** Every gap between
+**Compiled 2026-07-30. Revised 2026-07-31 after features 018 and 019.** Every gap between
 what is built and what a player can reach, with the evidence for each. Reproduce
 it with `py tools/gap-audit.py` — the script diffs API routes against client call
 sites, verb-aware, and is the source of the route numbers below.
@@ -145,6 +145,57 @@ been bought**, so the code path was never exercised even by hand.
 > **Now owned by 011 T045–T047.** It must land before the store screen does — a
 > store that sells a pass which pays nothing is worse than no store at all.
 
+## 2c · ⛔ A battle pays, and never says what it paid — found 2026-07-31
+
+**The server settles every battle and the client is never told the result.** Like
+2b this is not a route gap — the route is called, it answers, and the field simply
+is not in the answer — so `gap-audit.py` cannot see it.
+
+`settle()` in `apps/api/src/battle/settle.ts` does the work on every conclusion:
+
+```ts
+await awardShards(...)          // income for the win or the loss
+applyRating(ratingDeltas({...}))  // the ladder moves
+// returns { settled, winner, attackStreak, holdStreak }
+```
+
+None of that reaches the player. `ActionPacket` carries `{ events, state,
+conclusion }`, and `Conclusion` is `{ winner, reason }` plus a share pair on one
+variant. **No shards, no rating delta, no new rating, no streak.** Even the
+`SettleResult` the API already computes is discarded by `settleAndRecord`, which
+reads only `result.settled` to decide whether to write the replay blob.
+
+So a player finishes a fight and the screen says **`Victory`** and the reason.
+What they earned is real, banked and invisible until they navigate to another
+screen and notice a different number.
+
+### Why it was invisible
+
+The same shape as the boost pass, and it appears to work for the same reason:
+**nothing is wrong with the payment.** The shards land, the rating moves, the
+records are correct. There is no error, no missing row, and no failing test — the
+information is simply never asked for by the one screen that should show it.
+
+007 owned the battle and its packet; 010 owned progression and its rewards.
+Neither owned the sentence *"and then tell them"*.
+
+### What it blocks
+
+The **results half of `LMNTLZ Matchmaking and Results.dc.html`** — the VICTORY /
+DEFEAT screen, with its rating delta, its rewards list and its squad recap. 019
+rebuilt the matchmaking half of that export and deliberately left the results half
+alone, because the screen cannot be drawn honestly against a payload that does not
+carry a single number it wants. It is also why `attack` still reports two absent
+`keyframes` in `design-audit.py`: the `m-rise` animation belongs to the results
+banner.
+
+> **Follow-up, not yet owned by a task.** The fix is small and crosses both halves:
+> return the settlement from `settleAndRecord`, add it to `ActionPacket` (or a
+> sibling `settlement` field), and draw the results screen. Note that **battle
+> stats — total damage, super-effective hits, powers used — are a separate
+> question**: the client sees one packet at a time and a resumed battle has no
+> history, so those must either be accumulated server-side or left out.
+
 ## 3 · Vendor and installer gaps
 
 - **⏸ There is no payment provider — and this is now deferred by decision.**
@@ -235,6 +286,13 @@ of their user stories their own tasks cannot deliver, and where the work went. A
 fully-checked list should not read as a delivered feature.
 
 ## Still genuinely open
+
+**⛔ A battle never tells the player what it paid — see 2c.** Found 2026-07-31
+while scoping the results screen. The shards and the rating change are real,
+banked and correct; the payload the screen reads carries none of them, so the
+result is the word `Victory` and nothing else. **Follow-up, not yet owned by a
+task.** It is the one thing blocking the results half of the Matchmaking and
+Results export.
 
 **⛔ The store has no design, and it is the only screen that takes money.** Twenty
 exports and not one is a store, shop, checkout or pricing screen. 018 US2 specifies
