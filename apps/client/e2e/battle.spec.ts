@@ -89,18 +89,33 @@ const state = (turnOfInstance: string | null, defenderHp = 1250) => ({
 const BATTLE_ID = 'e2e-battle';
 
 /** Put the player back into a battle in progress, as a reload would. */
-async function inBattle(page: Page): Promise<void> {
+async function inBattle(
+  page: Page,
+  /**
+   * **The resume path's own ambush flag**, which the route did not carry until
+   * 2026-08-01 and the client hardcoded to `false`. So a player who reloaded
+   * during an ambush lost the only notice they were in one — reported live.
+   */
+  zone: 'visible' | 'hidden' = 'visible',
+): Promise<void> {
   await signedIn(page);
 
   await page.route('**/v1/battles/open', (route) =>
     route.fulfill({ json: { battleId: BATTLE_ID, startedAt: '2026-07-29T00:00:00.000Z', expiresAt: '2026-07-30T00:00:00.000Z' } }),
   );
 
+  await page.route('**/v1/me/shards', (route) =>
+    route.fulfill({
+      json: { balance: 0, config: { hiddenMultiplier: 2, hiddenRatingMultiplier: 2 } },
+    }),
+  );
+
   await page.route(`**/v1/battles/${BATTLE_ID}`, (route) =>
     route.fulfill({
       json: {
         battleId: BATTLE_ID,
-        zone: 'visible',
+        zone,
+        ambushed: zone === 'hidden',
         sequence: 4,
         state: state('a-front-0'),
         conclusion: null,
@@ -110,6 +125,62 @@ async function inBattle(page: Page): Promise<void> {
     }),
   );
 }
+
+/**
+ * **The ambush announcement, in a browser, because that is where it failed.**
+ *
+ * `battleScreen.test.tsx` asserted the word "Ambushed" was in the DOM and passed
+ * for as long as the feature has existed. It was in the DOM — as a 12px caption
+ * beneath a heading that already said HIDDEN ZONE. jsdom does no layout and has
+ * no viewport, so "present" and "noticed" are the same thing to it and opposite
+ * things to a player.
+ *
+ * Playwright can ask the questions that actually distinguish them: is it above
+ * the header, and is it bigger than the caption it replaced.
+ */
+test.describe('an ambush announces itself', () => {
+  test('survives a reload — the banner is there on the resumed battle', async ({ page }) => {
+    await inBattle(page, 'hidden');
+    await page.goto('/');
+
+    const banner = page.getByTestId('ambush-banner');
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText(/ambushed/i);
+
+    /* What it is worth, served. Two chips, both from `GET /v1/me/shards`. */
+    await expect(banner.locator('[data-chip="hidden-shards"]')).toContainText('×2');
+    await expect(banner.locator('[data-chip="hidden-rating"]')).toContainText('×2');
+  });
+
+  /**
+   * **Above the zone heading, and that is the whole fix.** The old announcement
+   * sat *below* it, so the first thing the eye met was HIDDEN ZONE and the
+   * explanation read as its subtitle. Comparing the two boxes is the only
+   * assertion that can tell the new arrangement from the old one.
+   */
+  test('sits above the zone heading rather than under it', async ({ page }) => {
+    await inBattle(page, 'hidden');
+    await page.goto('/');
+
+    const banner = await page.getByTestId('ambush-banner').boundingBox();
+    const heading = await page.getByRole('heading', { name: /hidden zone/i }).boundingBox();
+
+    expect(banner).not.toBeNull();
+    expect(heading).not.toBeNull();
+    expect(banner!.y).toBeLessThan(heading!.y);
+    /* The caption it replaced was 12px tall. Anything in that range is the bug
+       coming back wearing the new test id. */
+    expect(banner!.height).toBeGreaterThan(40);
+  });
+
+  test('stays off an ordinary Visible battle', async ({ page }) => {
+    await inBattle(page, 'visible');
+    await page.goto('/');
+
+    await expect(page.getByRole('region', { name: 'Battle board' })).toBeVisible();
+    await expect(page.getByTestId('ambush-banner')).toHaveCount(0);
+  });
+});
 
 test.describe('a battle is reachable at all', () => {
   test('a player mid-battle lands on the battle, not the squad builder', async ({ page }) => {

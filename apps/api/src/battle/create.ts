@@ -39,7 +39,7 @@ import {
   type SquadZone,
 } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
-import { ambushChance } from '../squads/ambush.js';
+import { ambushChance, wasAmbushed } from '../squads/ambush.js';
 import { runeLoadouts } from '../progression/read.js';
 import { STARTER_GRANT_SCORE, leagueOf } from '../matchmaking/league.js';
 import { buildInitialState } from './board.js';
@@ -392,7 +392,11 @@ export async function createBattle(
      * always displayed, so a Hidden battle arriving unannounced would read as a
      * bug in the one part of the design that depends on players trusting a
      * number they cannot verify.
+     *
+     * `GET /battles/:battleId` reports it from the same helper — the resume path
+     * used to hardcode `false`, so reloading once erased the only announcement a
+     * player ever got.
      */
-    ambushed: zone === 'hidden',
+    ambushed: wasAmbushed(zone),
   };
 }

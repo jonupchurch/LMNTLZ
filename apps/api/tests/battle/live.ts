@@ -225,6 +225,8 @@ export async function arena(tag: string): Promise<Arena> {
 export interface StartedBattle {
   readonly battleId: string;
   readonly zone: string;
+  /** Whether the ambush fired. `GET /battles/:id` must agree with this. */
+  readonly ambushed: boolean;
   readonly sequence: number;
   readonly packet: { events: unknown[]; state: BattleShape; conclusion: unknown };
 }

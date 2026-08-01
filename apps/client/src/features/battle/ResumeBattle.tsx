@@ -93,11 +93,20 @@ export function ResumeBattle({ onUnauthenticated, fallback, onLeave }: ResumeBat
             battleId: view.battleId,
             zone: view.zone,
             /**
-             * **Not announced on a resume.** The ambush was announced when the
-             * battle started; repeating it on every reload would read as a
-             * fresh ambush each time.
+             * ⚠️ **This was hardcoded `false`, and the reasoning was wrong.**
+             *
+             * It argued that the ambush is announced once, when the battle
+             * starts, and that repeating it on a reload would read as a fresh
+             * ambush. The first half is true and the second half assumed a
+             * *toast*. `AmbushBanner` is a **state** — "you are in their Hidden
+             * six", present for as long as that is true — so re-reading it on a
+             * reload is correct rather than confusing, and suppressing it meant
+             * one refresh permanently erased the only notice the player got.
+             *
+             * Reported live, so this went out as an ambush a player fought
+             * without ever being told it was one.
              */
-            ambushed: false,
+            ambushed: view.ambushed,
             sequence: view.sequence,
             packet: { events: [], state: view.state, conclusion: view.conclusion },
           },

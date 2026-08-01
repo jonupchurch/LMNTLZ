@@ -68,6 +68,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { accounts } from './accounts.js';
+import { SQUAD_ZONES } from './squads.js';
 
 /**
  * Why a battle stopped. `elimination` and `turn_cap` are wins; the rest are not.
@@ -147,8 +148,16 @@ export const battles = pgTable(
      */
     defenderIsBot: boolean('defender_is_bot').notNull().default(false),
 
-    /** Which of the defender's two zones was fought. `hidden` only via ambush. */
-    zone: text('zone').notNull(),
+    /**
+     * Which of the defender's two zones was fought. `hidden` only via ambush.
+     *
+     * **`{ enum }` is a TypeScript refinement, not a SQL change** — the column
+     * is still `text` and no migration follows — and it is what `squads.zone`
+     * has said all along. Without it this read back as a bare `string`, so
+     * every consumer that needed the union wrote `battle.zone as SquadZone`;
+     * there were two such casts and adding a third is what prompted this.
+     */
+    zone: text('zone', { enum: SQUAD_ZONES }).notNull(),
 
     /**
      * **Server-only, and it never appears in a response.** The resolver consumes

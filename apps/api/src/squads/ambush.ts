@@ -19,6 +19,8 @@
  * literal `2`-per-win or `90` cap and requires zero matches.
  */
 
+import type { SquadZone } from '../db/schema/squads.js';
+
 /** Percentage points added to ambush chance per consecutive attack win. */
 export const AMBUSH_PER_WIN = 2;
 
@@ -45,6 +47,23 @@ export function ambushChance(attackStreak: number): number {
 
 /** The streak at which the cap is first reached — 45. Derived, never written down twice. */
 export const AMBUSH_CAP_AT = AMBUSH_CAP / AMBUSH_PER_WIN;
+
+/**
+ * **Was this battle an ambush?** — one definition, because two would drift.
+ *
+ * It is not merely a synonym for the zone. Only the attacker can load a battle
+ * (`loadForCaller` refuses everyone else), the defense is engine-run, and the
+ * Hidden squad *cannot be chosen* — so for the one account that can ever ask,
+ * "this battle is Hidden" and "I was ambushed into it" are the same fact.
+ *
+ * Written as a function anyway rather than inlined, because the day a Hidden
+ * battle becomes reachable some other way this is the one line that has to
+ * change. There were three sites: `create.ts` announcing it, `settleAndRecord`
+ * deciding whether an ambushed loss spares the attack streak, and
+ * `GET /battles/:battleId` — which had no copy at all, which is how the resume
+ * path came to report `false` for every ambush ever fought.
+ */
+export const wasAmbushed = (zone: SquadZone): boolean => zone === 'hidden';
 
 export interface StreakOutcome {
   readonly attackStreak: number;

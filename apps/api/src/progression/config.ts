@@ -264,6 +264,14 @@ export interface ProgressionConfig {
   readonly attackVictory: number;
   readonly defenseHold: number;
   readonly hiddenMultiplier: number;
+  /**
+   * `2` — the Hidden **rating** double, which is a different number from
+   * `hiddenMultiplier` and served for the same reason: the battle screen tells
+   * an ambushed player what the fight is worth, and the two multipliers are the
+   * whole of that answer. A screen that typed `×2` twice would keep saying it
+   * after either one moved.
+   */
+  readonly hiddenRatingMultiplier: number;
   readonly dailyTiers: readonly { readonly through: number | null; readonly multiplier: number }[];
   readonly holdsAreTiered: boolean;
   readonly stageCosts: readonly number[];
@@ -280,6 +288,7 @@ export function progressionConfig(): ProgressionConfig {
     attackVictory: ATTACK_VICTORY,
     defenseHold: DEFENSE_HOLD,
     hiddenMultiplier: HIDDEN_MULTIPLIER,
+    hiddenRatingMultiplier: HIDDEN_RATING_MULTIPLIER,
     dailyTiers: DAILY_TIERS,
     holdsAreTiered: HOLDS_ARE_TIERED,
     stageCosts: STAGE_COSTS,

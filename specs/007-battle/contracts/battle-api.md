@@ -121,12 +121,21 @@ pace; the server already resolved it.
 ## `GET /v1/battles/:battleId`
 
 ```jsonc
-{ "battleId": "btl_...", "sequence": 7, "state": { ... }, "conclusion": null }
+{ "battleId": "btl_...", "zone": "hidden", "ambushed": true,
+  "sequence": 7, "state": { ... }, "conclusion": null }
 ```
 
 **Re-derived from the action log on every call.** There is no cached state to go
 stale and no invalidation to get wrong. This is also the resynchronisation route
 after a `409`.
+
+**`ambushed` added 2026-08-01, and its absence was a live bug.** `POST /battles`
+has always announced the ambush; this route carried neither the flag nor a way to
+infer one, so the resume path hardcoded `false` — and a player who reloaded
+during a Hidden battle lost the only notice they were in one. Reported from play.
+It is served rather than derived client-side from `zone`: the two agree because
+only the attacker can load a battle and a Hidden squad cannot be chosen, and that
+agreement is a *rule*, which belongs on the server.
 
 `410` if expired. **Never** contains the seed, `drawIndexBefore`, or
 `drawsConsumed`.

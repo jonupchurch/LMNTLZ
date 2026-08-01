@@ -401,6 +401,29 @@
   );
 }
 
+/*
+ * **The same hatch in gold**, and the colour is the whole difference.
+ *
+ * `.lz-hatch-dark` above is built to lie *over a portrait* — it is dark on
+ * darker, so on an ordinary surface it disappears and reads as a shadow rather
+ * than as a material. The ambush banner learned that the expensive way: a `w-10`
+ * band of it against `--color-raised` was invisible in a screenshot and looked
+ * exactly like a rendering bug.
+ *
+ * The geometry is the export's and is deliberately identical to `.lz-sealed` —
+ * 135°, a 6px stripe on a 12px pitch — because that is the material a player
+ * already associates with the Hidden six they were shown and could not scout.
+ * Only the ink changes: gold, because this hatch marks the zone that pays
+ * double rather than the one that is merely concealed.
+ */
+.lz-hatch-gold {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(242 199 68 / 0.22) 0 6px,
+    transparent 6px 12px
+  );
+}
+
 .lz-shield {
   clip-path: var(--shape-shield);
 }

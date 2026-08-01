@@ -49,6 +49,7 @@ import {
   MAINTENANCE_MESSAGE,
 } from './maintenance.js';
 import type { SquadZone } from '../db/schema/squads.js';
+import { wasAmbushed } from '../squads/ambush.js';
 
 /**
  * Settle a battle that has ended, if nobody has yet.
@@ -98,10 +99,10 @@ async function settleAndRecord(
     battleId: battle.id,
     attackerId: battle.attackerId,
     defenderId: battle.defenderId,
-    zone: battle.zone as SquadZone,
+    zone: battle.zone,
     conclusion,
     turnCount,
-    wasAmbush: battle.zone === 'hidden',
+    wasAmbush: wasAmbushed(battle.zone),
   });
 
   /**
@@ -162,7 +163,7 @@ async function settleAndRecord(
     attackStreak: result.attackStreak,
     holdStreak: result.holdStreak,
     turnCount,
-    zone: battle.zone as SquadZone,
+    zone: battle.zone,
   };
 }
 
@@ -587,6 +588,15 @@ battleRoutes.get('/battles/:battleId', async (c) => {
   return c.json({
     battleId: battle.id,
     zone: battle.zone,
+    /**
+     * **The one field the resume path was missing** — and its absence was not
+     * cosmetic. `POST /battles` announces the ambush; this route did not carry
+     * the fact at all, so the client hardcoded `false` and a single reload
+     * erased the only notice a player ever received that the squad in front of
+     * them was the Hidden six. Derived from the same helper as `create.ts` so
+     * the two answers cannot diverge.
+     */
+    ambushed: wasAmbushed(battle.zone),
     sequence: battle.sequence,
     state: battle.state,
     conclusion: battle.conclusion,

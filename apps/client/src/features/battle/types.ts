@@ -91,11 +91,32 @@ export interface ActResponse {
 export interface BattleView {
   readonly battleId: string;
   readonly zone: 'visible' | 'hidden';
+  /**
+   * **Served, not derived from `zone`.** They happen to agree today — only the
+   * attacker can load a battle and a Hidden squad cannot be chosen — but that
+   * agreement is a rule, and a client that re-derived it would be a second copy
+   * of the rule sitting in the build that ships to Steam.
+   */
+  readonly ambushed: boolean;
   readonly sequence: number;
   readonly state: BattleState;
   readonly conclusion: Conclusion | null;
   readonly startedAt: string;
   readonly concludedAt: string | null;
+}
+
+/**
+ * What a Hidden battle is worth, **as served** — the slice of
+ * `GET /v1/me/shards` the ambush banner needs and nothing else.
+ *
+ * Two constants, not one. `hiddenMultiplier` doubles the shard payout and
+ * `hiddenRatingMultiplier` doubles the winner's positive rating delta; they
+ * happen to both be `2` today and they are tuned independently, so the screen
+ * reads two fields rather than one number twice.
+ */
+export interface AmbushRewards {
+  readonly shardMultiplier: number;
+  readonly ratingMultiplier: number;
 }
 
 export interface ActionIntent {

@@ -55,6 +55,7 @@ import {
 import type { ActionIntent, Seed } from '@lmntlz/sim/resolver';
 import { db } from '../db/client.js';
 import { battleActions, battles } from '../db/schema/battles.js';
+import type { SquadZone } from '../db/schema/squads.js';
 import { buildInitialState } from './board.js';
 import { expiryMs } from './expiry.js';
 import type { TurnEvent } from './idempotency.js';
@@ -86,7 +87,7 @@ export interface LiveBattle {
   readonly attackerId: string | null;
   readonly defenderId: string | null;
   readonly defenderIsBot: boolean;
-  readonly zone: string;
+  readonly zone: SquadZone;
   /**
    * **Present, and structurally unable to reach a response.** `Seed.toJSON`
    * throws, so a handler that spread this object into `c.json` fails loudly

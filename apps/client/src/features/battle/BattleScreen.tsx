@@ -30,7 +30,7 @@
  * contract nothing had exercised.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getHero } from '@lmntlz/content';
 import {
   availablePowers,
@@ -40,6 +40,7 @@ import {
   type Conclusion,
 } from '@lmntlz/sim/rules';
 import { api, ApiError } from '../../lib/api.js';
+import { AmbushBanner } from './AmbushBanner.js';
 import { BattleBoard } from './BattleBoard.js';
 import { PowerDetail } from '../../components/index.js';
 import { PowerDock } from './PowerDock.js';
@@ -51,6 +52,7 @@ import { ResultScreen } from './ResultScreen.js';
 import { useIntent, type IntentPhase } from './useIntent.js';
 import type {
   ActionPacket,
+  AmbushRewards,
   BattleSettlement,
   BattleView,
   StartedBattle,
@@ -105,6 +107,42 @@ export function BattleScreen({
   const [hovered, setHovered] = useState<string | null>(null);
   /** Likewise for the power detail — the one being peeked at, not chosen. */
   const [peeked, setPeeked] = useState<string | null>(null);
+  /** What a Hidden battle pays. Fetched only when there is an ambush to explain. */
+  const [ambushRewards, setAmbushRewards] = useState<AmbushRewards | null>(null);
+
+  /**
+   * **The one request this screen makes that is not a turn**, and it is fetched
+   * lazily on purpose: an ordinary Visible battle — the overwhelming majority —
+   * never asks for it at all.
+   *
+   * A failure is swallowed. `AmbushBanner` renders the announcement without the
+   * numbers, which is the half that actually answers the bug this fixes; making
+   * the announcement wait on a config request would put it back behind a network
+   * failure, silently, for the players on the worst connections.
+   */
+  useEffect(() => {
+    if (!started.ambushed) return;
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const shards = await api<{
+          config: { hiddenMultiplier: number; hiddenRatingMultiplier: number };
+        }>('/me/shards');
+        if (cancelled) return;
+        setAmbushRewards({
+          shardMultiplier: shards.config.hiddenMultiplier,
+          ratingMultiplier: shards.config.hiddenRatingMultiplier,
+        });
+      } catch {
+        /* The banner still announces. See above. */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [started.ambushed]);
 
   const up = state.turnOfInstance;
   const actor = up === null ? undefined : state.heroes.find((h) => h.instanceId === up);
@@ -272,20 +310,25 @@ export function BattleScreen({
    */
   return (
     <main className="mx-auto flex max-w-[1600px] flex-col gap-3 p-4">
+      {/**
+       * **Above the header, not inside it.** The ambush used to be a caption
+       * under the zone heading, which is the one place it could not be seen: the
+       * heading already said *Hidden zone*, so the line beneath it read as a
+       * restatement rather than as the reason. A player who got their first
+       * ambush reported not noticing one had happened.
+       *
+       * The player is owed this. The chance is displayed on three screens and
+       * rolled where nobody can check it, so a Hidden battle arriving
+       * unannounced reads as a bug in the one number the design asks players to
+       * trust without being able to verify.
+       */}
+      {started.ambushed && <AmbushBanner rewards={ambushRewards} />}
+
       <header className="lz-surface flex flex-wrap items-center justify-between gap-4 px-4 py-3">
         <div>
           <h2 className="text-h2 font-display tracking-widest text-parchment uppercase">
             {started.zone === 'hidden' ? 'Hidden zone' : 'Visible zone'}
           </h2>
-          {started.ambushed && (
-            /**
-             * **The player is owed the reason.** The ambush chance is displayed
-             * everywhere and rolled where nobody can see it, so a Hidden battle
-             * arriving unannounced would read as a bug in the one number the
-             * design asks players to trust without being able to verify.
-             */
-            <p className="text-caption font-mono text-gold">Ambushed — their Hidden squad</p>
-          )}
         </div>
 
         <div className="flex items-center gap-5">

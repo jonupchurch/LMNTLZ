@@ -254,6 +254,29 @@ describe('GET /v1/battles/:battleId', () => {
     });
     expect(res.status).toBe(404);
   });
+
+  /**
+   * **The resume path used to report nothing at all.** `POST /battles` announced
+   * the ambush and this route omitted the field, so the client hardcoded `false`
+   * and one reload permanently erased the only notice a player got that they
+   * were fighting a Hidden squad. Reported from live play, 2026-08-01.
+   *
+   * Asserted as *agreement with the creating response* rather than against a
+   * literal, because the zone is a random roll: pinning `false` here would pass
+   * on every run where the ambush did not fire, which is most of them, and the
+   * one run that mattered would be the flake.
+   */
+  it('reports the ambush the creating response reported', async () => {
+    const res = await app.request(`/v1/battles/${started.battleId}`, {
+      headers: a.attacker.headers(),
+    });
+    const view = (await res.json()) as { zone: string; ambushed: boolean };
+
+    expect(view.ambushed, 'GET disagreed with POST about the ambush').toBe(started.ambushed);
+    expect(typeof view.ambushed, 'the field was absent, which is how this broke').toBe('boolean');
+    /* And it is the zone's own fact, not an independent one that could drift. */
+    expect(view.ambushed).toBe(view.zone === 'hidden');
+  });
 });
 
 describe('creating a battle validates the request (with nothing open)', () => {

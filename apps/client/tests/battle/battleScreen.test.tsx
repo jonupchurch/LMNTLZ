@@ -309,18 +309,94 @@ describe('the conclusion', () => {
   });
 });
 
+/**
+ * **Reported from live play, 2026-08-01**: *"I think I got my first ambush, but
+ * there's no notification that it's an ambush other than the different squad."*
+ *
+ * The two tests that used to live here passed the whole time. They asserted
+ * `getByText(/ambushed/i)` against a 12px caption tucked under a heading that
+ * already read **HIDDEN ZONE** — present in the DOM, invisible on the screen.
+ * That is the shape of assertion this project keeps relearning: *it says the
+ * word* is not *the player is told*.
+ *
+ * So these pin the things that carry the announcement instead — that it is its
+ * own region, that it states what the fight is worth, and that the numbers are
+ * the server's.
+ */
 describe('an ambush is announced', () => {
-  it('says so when the server put the player into the Hidden zone', () => {
-    stubFetch(() => ({ status: 200, body: {} }));
+  const SHARDS = {
+    balance: 0,
+    config: { hiddenMultiplier: 3, hiddenRatingMultiplier: 7 },
+  };
+
+  it('gives the ambush a region of its own, not a line under the zone heading', async () => {
+    stubFetch(() => ({ status: 200, body: SHARDS }));
 
     render(<BattleScreen started={started({ zone: 'hidden', ambushed: true })} />);
-    expect(screen.getByText(/ambushed/i)).toBeTruthy();
+
+    const banner = await screen.findByTestId('ambush-banner');
+    expect(banner.textContent).toMatch(/ambushed/i);
+    /* The heading is the *other* element. If the banner ever collapses back into
+       the header this fails, which is the regression being guarded. */
+    expect(banner.contains(screen.getByRole('heading', { name: /hidden zone/i }))).toBe(false);
   });
 
-  it('says nothing about an ambush on an ordinary attack', () => {
-    stubFetch(() => ({ status: 200, body: {} }));
+  /**
+   * **Deliberately absurd multipliers.** Both constants are `2` in production,
+   * so a component that typed `×2` would agree with the server forever and this
+   * suite would never know. `3` and `7` can only come off the wire — and they
+   * are different from each other, so swapping the two fields fails too.
+   */
+  it('states what the Hidden battle pays, in the server’s numbers', async () => {
+    stubFetch(() => ({ status: 200, body: SHARDS }));
+
+    render(<BattleScreen started={started({ zone: 'hidden', ambushed: true })} />);
+
+    const banner = await screen.findByTestId('ambush-banner');
+    await waitFor(() => expect(banner.textContent).toMatch(/×3/));
+    expect(banner.querySelector('[data-chip="hidden-shards"]')?.textContent).toMatch(/×3/);
+    expect(banner.querySelector('[data-chip="hidden-rating"]')?.textContent).toMatch(/×7/);
+    expect(calls.some((c) => c.url.includes('/me/shards'))).toBe(true);
+  });
+
+  /** The rating double is the winner's positive delta only; a Hidden loss costs
+      the same as any other. Promising a symmetric swing would be a lie. */
+  it('qualifies the rating double as a win-only bonus', async () => {
+    stubFetch(() => ({ status: 200, body: SHARDS }));
+
+    render(<BattleScreen started={started({ zone: 'hidden', ambushed: true })} />);
+
+    const chip = (await screen.findByTestId('ambush-banner')).querySelector(
+      '[data-chip="hidden-rating"]',
+    );
+    expect(chip?.textContent).toMatch(/on a win/i);
+  });
+
+  /**
+   * The announcement is the bug being fixed; the numbers are the flourish. A
+   * banner that waited on a config request would put the original defect back on
+   * exactly the connections least able to survive it.
+   */
+  it('still announces when the rewards request fails', async () => {
+    stubFetch((url) =>
+      url.includes('/me/shards') ? { status: 500, body: {} } : { status: 200, body: {} },
+    );
+
+    render(<BattleScreen started={started({ zone: 'hidden', ambushed: true })} />);
+
+    const banner = await screen.findByTestId('ambush-banner');
+    expect(banner.textContent).toMatch(/ambushed/i);
+    expect(banner.textContent).not.toMatch(/×/);
+  });
+
+  it('says nothing about an ambush on an ordinary attack, and asks for nothing', () => {
+    stubFetch(() => ({ status: 200, body: SHARDS }));
 
     render(<BattleScreen started={started()} />);
-    expect(screen.queryByText(/ambushed/i)).toBeNull();
+
+    expect(screen.queryByTestId('ambush-banner')).toBeNull();
+    /* The overwhelming majority of battles are Visible. None of them should pay
+       for a request that exists to explain an ambush. */
+    expect(calls.some((c) => c.url.includes('/me/shards'))).toBe(false);
   });
 });

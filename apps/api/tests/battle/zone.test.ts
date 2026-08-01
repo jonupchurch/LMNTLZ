@@ -15,7 +15,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { AMBUSH_CAP, AMBUSH_CAP_AT, AMBUSH_PER_WIN, ambushChance } from '../../src/squads/ambush.js';
+import {
+  AMBUSH_CAP,
+  AMBUSH_CAP_AT,
+  AMBUSH_PER_WIN,
+  ambushChance,
+  wasAmbushed,
+} from '../../src/squads/ambush.js';
 import { decideZone } from '../../src/battle/create.js';
 
 describe('the ambush roll', () => {
@@ -63,5 +69,39 @@ describe('the ambush roll', () => {
 
     expect(visible).toBe(100 - AMBUSH_CAP);
     expect(visible).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * **Three call sites had written this comparison out by hand** — `create.ts`
+ * reporting the ambush, `settleAndRecord` deciding whether the loss resets the
+ * attack streak, and `GET /battles/:battleId`, which had not written it at all
+ * and reported `false` for every ambush ever fought.
+ *
+ * Two agreeing copies of a rule and one missing copy is exactly the failure the
+ * project has a memory of: a rule needs one implementation or the copies drift
+ * quietly. So the predicate is a function, and this is what pins it to the roll
+ * it is supposed to describe.
+ */
+describe('whether a battle was an ambush', () => {
+  it('is true of every zone `decideZone` calls hidden, and false of every other', () => {
+    for (const streak of [0, 1, 10, AMBUSH_CAP_AT, AMBUSH_CAP_AT * 10]) {
+      for (let roll = 0; roll < 100; roll += 1) {
+        const zone = decideZone(streak, roll);
+        expect(wasAmbushed(zone), `streak ${streak}, roll ${roll}`).toBe(zone === 'hidden');
+      }
+    }
+  });
+
+  it('agrees with the ambush chance on how many of a hundred rolls it claims', () => {
+    /* The predicate and the percentage are two views of one number; if they ever
+       disagree, one of the screens quoting the odds is lying. */
+    for (const streak of [1, 7, 25, AMBUSH_CAP_AT]) {
+      const ambushes = Array.from({ length: 100 }, (_, roll) =>
+        wasAmbushed(decideZone(streak, roll)),
+      ).filter(Boolean).length;
+
+      expect(ambushes, `streak ${streak}`).toBe(ambushChance(streak));
+    }
   });
 });
