@@ -127,6 +127,91 @@ test.describe('a battle is reachable at all', () => {
     await expect(page.getByRole('region', { name: /squad formation/ })).toHaveCount(0);
   });
 
+  /**
+   * **The axis runs left to right, and only a layout engine can say so.**
+   *
+   * `battlefield.test.tsx` proves the six columns are in the DOM in order 1→6
+   * with the seam between 3 and 4. jsdom does no layout, so all of that is true
+   * of six columns stacked on top of each other, or six columns 8 pixels wide.
+   * The direction is the thing `board.ts` warns about: getting it backwards
+   * inverts every reach test while still looking plausible.
+   */
+  test('draws the six rows side by side, 1 to 6, with the seam in the middle', async ({ page }) => {
+    await inBattle(page);
+    await page.goto('/');
+
+    const field = page.getByRole('region', { name: 'Battle board' });
+    await expect(field).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const marks = await field
+      .locator('[data-row], [data-seam]')
+      .evaluateAll((els) =>
+        els.map((el) => ({
+          key: el.hasAttribute('data-seam') ? 'seam' : el.getAttribute('data-row'),
+          x: Math.round(el.getBoundingClientRect().x),
+          y: Math.round(el.getBoundingClientRect().y),
+          w: Math.round(el.getBoundingClientRect().width),
+        })),
+      );
+
+    expect(marks.map((m) => m.key)).toEqual(['1', '2', '3', 'seam', '4', '5', '6']);
+
+    for (let i = 1; i < marks.length; i += 1) {
+      expect(marks[i]!.x, `${marks[i]!.key} is not right of ${marks[i - 1]!.key}`).toBeGreaterThan(
+        marks[i - 1]!.x,
+      );
+      expect(Math.abs(marks[i]!.y - marks[0]!.y), `${marks[i]!.key} wrapped`).toBeLessThan(2);
+    }
+
+    /* Wide enough to hold a portrait, not a sliver. The seam is deliberately
+       narrow and is excluded. */
+    for (const mark of marks.filter((m) => m.key !== 'seam')) {
+      expect(mark.w, `row ${mark.key} is ${mark.w}px wide`).toBeGreaterThan(80);
+    }
+  });
+
+  /**
+   * The rail cards are 64px and carry a name, a Force, a row, a reach and a
+   * health bar. An overlay landed straight on top of all five — every fact
+   * present in the DOM and none of them readable, which is invisible to jsdom
+   * by construction.
+   */
+  test('never draws a rail card’s overlay on top of its own label', async ({ page }) => {
+    await inBattle(page);
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+
+    const cards = await page
+      .getByRole('region', { name: 'Engine defense' })
+      .evaluate((rail) =>
+        [...rail.querySelectorAll('[data-combatant]')]
+          .filter((card) => card.querySelector('[data-state="down"], [data-state="unreachable"]'))
+          .map((card) => ({
+            id: card.getAttribute('data-combatant'),
+            labelled:
+              (card.querySelector('[data-may-ellipsis]') as HTMLElement | null)?.offsetParent !==
+              undefined
+                ? (card.querySelector('[data-may-ellipsis]') as HTMLElement | null)?.offsetParent !==
+                  null
+                : false,
+          })),
+      );
+
+    /**
+     * **The guard, and it is not decoration.** With every defender in reach and
+     * standing there is no overlay anywhere, and the filter below returns `[]`
+     * whether the bug is present or not — a green test asserting nothing.
+     */
+    expect(cards.length, 'no rail card carries an overlay; this asserts nothing').toBeGreaterThan(
+      0,
+    );
+    expect(
+      cards.filter((c) => c.labelled).map((c) => c.id),
+      'a rail overlay is drawn over the card’s own label',
+    ).toEqual([]);
+  });
+
   test('a player with no battle still reaches their squads', async ({ page }) => {
     await signedIn(page);
     await page.route('**/v1/roster', (route) => route.fulfill({ status: 500, body: '{}' }));

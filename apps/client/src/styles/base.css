@@ -368,6 +368,22 @@
   );
 }
 
+/*
+ * The battle screen's *you cannot reach this* veil.
+ *
+ * Same diagonal as `.lz-sealed` but opaque rather than a tint, because it lies
+ * over a portrait and has to hold a label. The export draws it exactly here and
+ * nowhere else: `repeating-linear-gradient(135deg, rgba(14,12,23,.74) 0 6px,
+ * rgba(14,12,23,.52) 6px 12px)`.
+ */
+.lz-hatch-dark {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(14 12 23 / 0.74) 0 6px,
+    rgb(14 12 23 / 0.52) 6px 12px
+  );
+}
+
 .lz-shield {
   clip-path: var(--shape-shield);
 }

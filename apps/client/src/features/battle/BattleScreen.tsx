@@ -30,17 +30,22 @@
  * contract nothing had exercised.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { getHero } from '@lmntlz/content';
 import {
   availablePowers,
-  isStanding,
+  distance,
   legalTargets,
   type BattleState,
   type Conclusion,
 } from '@lmntlz/sim/rules';
 import { api, ApiError } from '../../lib/api.js';
+import { BattleBoard } from './BattleBoard.js';
+import { PowerDock } from './PowerDock.js';
+import { SquadRail } from './SquadRail.js';
+import { TargetRead } from './TargetRead.js';
 import { TurnQueue } from './TurnQueue.js';
+import { readTarget } from './read.js';
 import { useIntent, type IntentPhase } from './useIntent.js';
 import type { ActionPacket, BattleView, StartedBattle, TurnEvent } from './types.js';
 
@@ -86,6 +91,8 @@ export function BattleScreen({
   const [conclusion, setConclusion] = useState(started.packet.conclusion);
   const [powerId, setPowerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Whatever is under the cursor, for the read. Purely presentational. */
+  const [hovered, setHovered] = useState<string | null>(null);
 
   const up = state.turnOfInstance;
   const actor = up === null ? undefined : state.heroes.find((h) => h.instanceId === up);
@@ -116,6 +123,46 @@ export function BattleScreen({
       ? [targeting.compelled]
       : targeting.candidates
     : [];
+
+  /**
+   * Enemies the chosen power cannot reach, and how far away each one is.
+   *
+   * **Drawn rather than omitted.** An enemy that is simply not clickable looks
+   * like a bug; one hatched with `3 rows away` is the reach rule explaining
+   * itself — and reach opens up as rows empty, so the same champion becomes
+   * available later in the same battle without anything else changing.
+   *
+   * Only ever computed for the *other* side. An ally is not a target and is not
+   * out of reach either, and hatching six of your own champions every time you
+   * pick an attack would be nonsense.
+   */
+  const unreachable = useMemo(() => {
+    const out = new Map<string, number>();
+    if (actor === undefined || chosen === null) return out;
+
+    const legal = new Set(targets);
+    const friendly = getHero(actor.heroId).powers.find((p) => p.id === chosen)?.friendly ?? false;
+    const wanted = friendly ? actor.side : actor.side === 'attacker' ? 'defender' : 'attacker';
+
+    for (const hero of state.heroes) {
+      if (hero.side !== wanted || hero.hp <= 0 || legal.has(hero.instanceId)) continue;
+      out.set(hero.instanceId, distance(state, actor.row, hero.row));
+    }
+    return out;
+  }, [actor, chosen, state, targets]);
+
+  /**
+   * **Recomputed from the live state every render, never stored.** A read held
+   * in state would go stale the moment a packet landed and would then be
+   * describing a champion at the health they had a second ago.
+   */
+  const read = useMemo(
+    () =>
+      up === null || chosen === null || hovered === null
+        ? null
+        : readTarget(state, up, chosen, hovered),
+    [state, up, chosen, hovered],
+  );
 
   const apply = useCallback(
     (packet: ActionPacket, next: number) => {
@@ -186,26 +233,83 @@ export function BattleScreen({
     [busy, chosen, commit, sequence, up],
   );
 
+  /**
+   * **Three regions, and the middle one is the battle** — the export's 266px
+   * rail, a fluid field, and a 300px rail. The screen used to be a single
+   * centred column with a board of bordered boxes in it, and the two things a
+   * player checks constantly, *how is my squad* and *what will this do*, had
+   * nowhere to live.
+   */
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-8">
-      <header className="flex items-baseline justify-between">
-        <h2 className="font-display text-h1 tracking-widest uppercase text-parchment">
-          {started.zone === 'hidden' ? 'Hidden Zone' : 'Visible Zone'}
-        </h2>
-        {started.ambushed && (
-          /**
-           * **The player is owed the reason.** The ambush chance is displayed
-           * everywhere and rolled where nobody can see it, so a Hidden battle
-           * arriving unannounced would read as a bug in the one number the
-           * design asks players to trust without being able to verify.
-           */
-          <p className="font-mono text-caption text-gold">Ambushed — their Hidden squad</p>
-        )}
+    <main className="mx-auto flex max-w-[1600px] flex-col gap-3 p-4">
+      <header className="lz-surface flex flex-wrap items-center justify-between gap-4 px-4 py-3">
+        <div>
+          <h2 className="text-h2 font-display tracking-widest text-parchment uppercase">
+            {started.zone === 'hidden' ? 'Hidden zone' : 'Visible zone'}
+          </h2>
+          {started.ambushed && (
+            /**
+             * **The player is owed the reason.** The ambush chance is displayed
+             * everywhere and rolled where nobody can see it, so a Hidden battle
+             * arriving unannounced would read as a bug in the one number the
+             * design asks players to trust without being able to verify.
+             */
+            <p className="text-caption font-mono text-gold">Ambushed — their Hidden squad</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-5">
+          <div className="text-center">
+            {/**
+             * **Turns, not rounds.** The export's header says `ROUND`, and the
+             * engine has no such unit: `heroTurn` counts *hero* turns, which is
+             * what every cooldown and every tier gate is measured in. Printing
+             * one word over the other number would make a player's mental model
+             * of a cooldown wrong by a factor of the squad size.
+             */}
+            <p className="text-caption font-mono tracking-widest text-faint uppercase">Turn</p>
+            <p className="text-h2 font-mono tabular-nums text-parchment">{state.heroTurn}</p>
+          </div>
+
+          <p
+            data-turn={conclusion ? 'over' : up === null ? 'engine' : 'yours'}
+            className={[
+              'text-caption rounded-sm px-2.5 py-1 font-mono tracking-widest uppercase ring-1 ring-inset',
+              conclusion
+                ? 'text-faint ring-line'
+                : up === null
+                  ? 'text-slash-lit ring-slash/50'
+                  : 'text-gold ring-gold/50',
+            ].join(' ')}
+          >
+            {conclusion ? 'Battle over' : up === null ? 'Engine acting' : 'Your turn'}
+          </p>
+        </div>
       </header>
 
-      <div className="flex gap-6">
-        <div className="flex flex-1 flex-col gap-4">
-          <Board state={state} activeInstanceId={up} targets={targets} onTarget={send} busy={busy} />
+      {/* `items-start` so a short rail stays short. Stretching all three to the
+          tallest left the squad rail as a 240×1000 box holding six 64px cards. */}
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_minmax(0,19rem)]">
+        <SquadRail
+          state={state}
+          side="attacker"
+          activeInstanceId={up}
+          targets={targets}
+          unreachable={unreachable}
+          onHover={setHovered}
+          busy={busy}
+        />
+
+        <div className="flex min-w-0 flex-col gap-3">
+          <BattleBoard
+            state={state}
+            activeInstanceId={up}
+            targets={targets}
+            unreachable={unreachable}
+            onTarget={send}
+            onHover={setHovered}
+            busy={busy}
+          />
 
           {conclusion ? (
             <Outcome conclusion={conclusion} onLeave={onLeave} />
@@ -218,8 +322,8 @@ export function BattleScreen({
              */
             <Resolving phase={phase} />
           ) : (
-            <Choice
-              actorName={actor ? heroName(actor.heroId) : null}
+            <PowerDock
+              actor={actor}
               offered={offered}
               chosen={chosen}
               onChoose={setPowerId}
@@ -228,14 +332,23 @@ export function BattleScreen({
           )}
 
           {error && (
-            <p role="alert" className="font-mono text-body text-slash-lit">
+            <p role="alert" className="text-body font-mono text-slash-lit">
               {error}
             </p>
           )}
         </div>
 
-        {/* 300px, the width the Battle export gives its right rail. */}
-        <aside className="flex w-75 shrink-0 flex-col gap-4">
+        <aside className="flex min-w-0 flex-col gap-3">
+          <SquadRail
+            state={state}
+            side="defender"
+            activeInstanceId={up}
+            targets={targets}
+            unreachable={unreachable}
+            onHover={setHovered}
+            busy={busy}
+          />
+          <TargetRead read={read} hasPower={chosen !== null} />
           <TurnQueue state={state} heroName={heroName} />
           <EventLog events={events} />
         </aside>
@@ -283,162 +396,6 @@ const describe = (event: TurnEvent): string =>
     : `${event.actorInstanceId} → ${event.targetInstanceId ?? '—'}: ${
         event.outcome.hit ? `${event.outcome.damage}${event.outcome.crit ? ' crit' : ''}` : 'miss'
       }`;
-
-interface BoardProps {
-  readonly state: BattleState;
-  readonly activeInstanceId: string | null;
-  readonly targets: readonly string[];
-  readonly onTarget: (instanceId: string) => void;
-  readonly busy: boolean;
-}
-
-/**
- * Rows 1–3 are the player's, 4–6 the enemy's, on one shared axis (017 T050).
- *
- * **The axis is now on the screen instead of only in this comment.** The board
- * used to draw two `flex-wrap` heaps labelled *Defenders* and *Your squad*,
- * sorted by row and then allowed to wrap — so the one fact that decides every
- * targeting question, *which row is this champion standing in*, was the one
- * thing you could not see. `LMNTLZ Battle.dc.html` prints `ROW {{ u.row }}` on
- * every card for exactly that reason.
- *
- * Six labelled rows, 6 down to 1, top to bottom: the enemy's back row is
- * furthest away and the player's front row sits against the enemy's. A row
- * that empties keeps its heading, because an empty row is load-bearing —
- * distance counts *occupied* rows crossed, so a cleared row is what opens the
- * back seat's range, and hiding it would hide the mechanic.
- */
-function Board({ state, activeInstanceId, targets, onTarget, busy }: BoardProps) {
-  const legal = new Set(targets);
-
-  const cell = (instanceId: string) => {
-    const hero = state.heroes.find((h) => h.instanceId === instanceId)!;
-    const selectable = legal.has(instanceId);
-    const down = !isStanding(hero);
-
-    return (
-      <button
-        key={instanceId}
-        type="button"
-        disabled={!selectable || busy}
-        onClick={() => onTarget(instanceId)}
-        aria-label={`${heroName(hero.heroId)}, ${hero.hp} of ${hero.maxHp} health${
-          selectable ? ', targetable' : ''
-        }`}
-        className={`w-32 rounded border p-2 text-left transition-colors ${
-          down
-            ? 'border-line bg-bg opacity-40'
-            : instanceId === activeInstanceId
-              ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
-              : selectable
-                ? 'border-gold/60 bg-surface hover:bg-raised'
-                : 'border-line bg-surface'
-        } ${selectable && !busy ? 'cursor-pointer' : 'cursor-default'}`}
-      >
-        <span className="block truncate font-display text-caption tracking-wide text-parchment">
-          {heroName(hero.heroId)}
-        </span>
-        <span className="mt-1 block font-mono text-[0.65rem] text-faint">
-          {hero.hp} / {hero.maxHp}
-        </span>
-        <span aria-hidden className="mt-1 block h-1 w-full rounded bg-void">
-          <span
-            className="block h-1 rounded bg-gold"
-            style={{ width: `${Math.max(0, Math.round((hero.hp / hero.maxHp) * 100))}%` }}
-          />
-        </span>
-      </button>
-    );
-  };
-
-  /** Row 6 at the top, row 1 at the bottom — the far end of the axis first. */
-  const ROWS = [6, 5, 4, 3, 2, 1] as const;
-
-  return (
-    <section
-      aria-label="Battle board"
-      className="flex flex-col gap-2 lz-surface p-6"
-    >
-      {ROWS.map((row) => {
-        const here = state.heroes.filter((h) => h.row === row);
-        const theirs = row >= 4;
-
-        return (
-          <div
-            key={row}
-            data-row={row}
-            className={[
-              'flex items-center gap-3 rounded px-2 py-1',
-              /* The two halves are separated, and the seam sits between 3 and
-                 4 — which is where the axis actually crosses. */
-              theirs ? 'bg-void/40' : '',
-              row === 4 ? 'mb-4' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            <h3 className="text-caption w-28 shrink-0 font-mono tracking-widest uppercase text-faint">
-              Row {row} · {theirs ? 'theirs' : 'yours'}
-            </h3>
-            <div className="flex min-w-0 flex-wrap gap-2">
-              {here.length === 0 ? (
-                <p className="lz-empty text-caption px-3 py-1 font-mono text-faint">
-                  {/* Not hidden: an empty row shortens every distance across it. */}
-                  empty — nothing to cross
-                </p>
-              ) : (
-                here.map((h) => cell(h.instanceId))
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </section>
-  );
-}
-
-interface ChoiceProps {
-  readonly actorName: string | null;
-  readonly offered: readonly { readonly id: string; readonly name: string }[];
-  readonly chosen: string | null;
-  readonly onChoose: (powerId: string) => void;
-  readonly busy: boolean;
-}
-
-function Choice({ actorName, offered, chosen, onChoose, busy }: ChoiceProps) {
-  return (
-    <section aria-label="Your move" className="lz-surface p-4">
-      <p className="mb-3 font-mono text-caption text-faint">
-        {actorName ? `${actorName} is up — choose a power, then a target.` : 'Waiting…'}
-      </p>
-
-      <div className="flex flex-wrap gap-2">
-        {offered.map((power) => (
-          <button
-            key={power.id}
-            type="button"
-            disabled={busy}
-            onClick={() => onChoose(power.id)}
-            aria-pressed={power.id === chosen}
-            className={`rounded border px-3 py-2 font-display text-caption tracking-wide uppercase transition-colors ${
-              power.id === chosen
-                ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-gold'
-                : 'border-line bg-bg text-muted hover:bg-raised'
-            }`}
-          >
-            {power.name}
-          </button>
-        ))}
-      </div>
-
-      {offered.length === 0 && (
-        <p className="lz-empty p-3 font-mono text-caption text-faint">
-          Nothing in reach — the turn will pass.
-        </p>
-      )}
-    </section>
-  );
-}
 
 function Outcome({
   conclusion,

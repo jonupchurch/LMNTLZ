@@ -75,8 +75,16 @@ describe('what the screen offers', () => {
      * answer and is wrong, and the player finds out by having a move refused.
      * Scoped to the move panel so the board's target buttons are not counted.
      */
+    /**
+     * **Identified by `data-power`, not by the button's text.** A power card
+     * carries its Force, tier and cooldown as well as its name now, so reading
+     * `textContent` compared `Root and HoldT11 turn` against `Root and Hold`
+     * and failed on a rewording rather than on a wrong set.
+     */
     const panel = screen.getByRole('region', { name: 'Your move' });
-    const offered = [...panel.querySelectorAll('button')].map((b) => b.textContent ?? '');
+    const offered = [...panel.querySelectorAll('[data-power]')].map(
+      (b) => b.getAttribute('data-power') ?? '',
+    );
 
     expect(expected.length).toBeGreaterThan(0);
     expect([...offered].sort()).toEqual([...expected].sort());
@@ -218,10 +226,26 @@ describe('one request per choice', () => {
      */
     const upNow = resynced.heroes.find((h) => h.instanceId === resynced.turnOfInstance)!;
     await waitFor(() =>
-      expect(
-        screen.getByRole('region', { name: 'Your move' }).textContent,
-      ).toContain(`${nameOf(upNow.heroId)} is up`),
+      expect(screen.getByRole('region', { name: 'Your move' }).textContent).toContain(
+        nameOf(upNow.heroId),
+      ),
     );
+
+    /**
+     * **And the powers on offer are that champion's**, which the name alone
+     * does not prove — a panel that redrew its heading from the new state while
+     * still offering the old actor's powers would satisfy the line above.
+     */
+    const theirs = new Set(
+      availablePowers(resynced, resynced.turnOfInstance!).map((p) => p.id),
+    );
+    const shown = [
+      ...screen.getByRole('region', { name: 'Your move' }).querySelectorAll('[data-power]'),
+    ].map((el) => el.getAttribute('data-power'));
+    expect(shown.length).toBeGreaterThan(0);
+    for (const id of shown) {
+      expect(theirs.has(id!), `${id} does not belong to ${nameOf(upNow.heroId)}`).toBe(true);
+    }
   });
 });
 
