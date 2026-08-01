@@ -595,6 +595,45 @@ test.describe('the result', () => {
   });
 
   /**
+   * **The way out sits in the banner, not under the rewards** (Jon, 2026-08-01).
+   *
+   * It used to be the last thing on the screen, below the squad recap and the
+   * two stat panels. Asserting the button merely *exists* could not tell the
+   * two positions apart, and did not — the sibling test above passed throughout.
+   * This asserts the ordering instead, which is the thing that changed.
+   *
+   * **Not asserted: above the fold.** At the 1280×720 floor the result region
+   * itself begins around y≈770 because the board above it is tall, so nothing
+   * inside it clears the fold and claiming otherwise would be a test that lies.
+   * The move is worth ~390px of scrolling, and that is the honest claim.
+   */
+  test('the way out sits in the banner, above the squad recap', async ({ page }) => {
+    await inBattle(page);
+    await concludeWith(page, SETTLEMENT);
+    await finish(page);
+
+    const exitBox = () =>
+      page.getByRole('button', { name: /choose another target/i }).boundingBox();
+
+    // Width-independent: it is in the banner, ahead of the recap.
+    const exit = (await exitBox())!;
+    const recap = (await page.getByText('Your six').boundingBox())!;
+    expect(exit.y, 'the exit fell below the squad recap again').toBeLessThan(recap.y);
+
+    /*
+     * Beside the verdict rather than under it — only once the banner is wide
+     * enough to hold verdict, exit and rating on one row. At the 1280 floor the
+     * result column is ~664px and it wraps to its own line, which is correct
+     * responsive behaviour and not what this asserts.
+     */
+    await page.setViewportSize({ width: 1600, height: 900 });
+    const wide = (await exitBox())!;
+    const verdict = (await page.getByRole('heading', { name: /victory/i }).boundingBox())!;
+    expect(wide.x, 'the exit is not beside the verdict').toBeGreaterThan(verdict.x + verdict.width);
+    expect(wide.y, 'the exit dropped below the verdict').toBeLessThan(verdict.y + verdict.height);
+  });
+
+  /**
    * **The regression this locks down.** For four features a battle ended, paid
    * shards, moved the rating — and the screen said `Victory` and nothing else,
    * because `settleAndRecord` read one field of the settlement and discarded the

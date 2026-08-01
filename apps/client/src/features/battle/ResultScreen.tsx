@@ -121,6 +121,31 @@ export function ResultScreen({
             ) : null}
           </div>
 
+          {/*
+           * **The exits live in the banner, beside the verdict** (Jon,
+           * 2026-08-01). They used to be the last thing on the screen, below the
+           * squad recap and both stat panels — about 390px further down, on a
+           * screen that already starts below the fold at the 1280×720 floor.
+           * The verdict is where a player's eye already is.
+           *
+           * They wrap to their own line when the banner is too narrow to hold
+           * verdict, exits and rating in one row, which is the 1280 case.
+           */}
+          {onAgain || onLeave ? (
+            <div className="flex shrink-0 flex-wrap items-center gap-2 self-center">
+              {onAgain ? (
+                <Button variant="primary" onClick={onAgain}>
+                  Battle again
+                </Button>
+              ) : null}
+              {onLeave ? (
+                <Button variant="secondary" onClick={onLeave}>
+                  Choose another target
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+
           {settlement ? (
             <div className="flex shrink-0 items-start gap-8">
               <div className="text-right">
@@ -248,19 +273,6 @@ export function ResultScreen({
             </dl>
           </div>
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {onAgain ? (
-          <Button variant="primary" onClick={onAgain}>
-            Battle again
-          </Button>
-        ) : null}
-        {onLeave ? (
-          <Button variant="secondary" onClick={onLeave}>
-            Choose another target
-          </Button>
-        ) : null}
       </div>
     </section>
   );
