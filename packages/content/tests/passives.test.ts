@@ -99,7 +99,7 @@ describe('the unwritten effects', () => {
    * create a second source for 22 unmade design decisions. This test exists so that
    * number is visible and so nobody can quietly add a 23rd.
    */
-  const UNWRITTEN = 22;
+  const UNWRITTEN = 19;
 
   it('leaves exactly the effects the design has not written', () => {
     const blank = PASSIVES.filter((p) => p.effect === null);
@@ -117,14 +117,24 @@ describe('the unwritten effects', () => {
     }
   });
 
-  /** The five uniques other rules lean on must keep their text. */
-  it('keeps the five documented hook mechanics', () => {
+  /**
+   * The eight uniques the design has actually written must keep their text.
+   *
+   * ⚠️ **Three of these were missed on the first pass** and shipped as *"effect not yet
+   * specified"* on a live screen, because that pass read `03-powers.md` only. A
+   * passive's spec lives wherever its mechanic lives — these three are in
+   * `05-status.md`. Listed by name so a future edit cannot quietly drop one back.
+   */
+  it('keeps every documented effect, from both source documents', () => {
     for (const name of [
       'Immovable',
       'Already Gone',
       'Nothing to Discuss',
       "The Duelist's Habit",
       'It All Comes Back',
+      'Never Quite Out',
+      'Written in Pencil',
+      'Banked Coals',
     ]) {
       expect(getPassive(name)?.effect, `${name} lost its authored effect`).toBeTruthy();
     }

@@ -100,12 +100,50 @@ const HOUSE: ReadonlyArray<Passive & { readonly belongsTo: DamageType }> = [
  * consuming, tier 5 spends it.
  */
 const UNIQUE_EFFECTS: Readonly<Record<string, string>> = {
+  /* --- 03-powers.md, the five hook mechanics other rules depend on ----------- */
   Immovable: 'Cannot be compelled by taunt.',
   'Already Gone': 'Cannot be the target of a reactive power.',
   'Nothing to Discuss': 'Denies reactions to anyone this hero damages.',
   "The Duelist's Habit":
     'Gains damage against a target it has not yet struck — the exact inverse of It All Comes Back.',
-  'It All Comes Back': 'Adds a Reckoning stack to a target each time this hero damages it. Tier 4 reads the stacks without consuming them; tier 5 spends every stack for a finishing burst.',
+  'It All Comes Back':
+    'Adds a Reckoning stack to a target each time this hero damages it. Tier 4 reads the stacks without consuming them; tier 5 spends every stack for a finishing burst.',
+
+  /**
+   * --- 05-status.md ---------------------------------------------------------
+   *
+   * ⚠️ **Found only on a second pass, and the first pass had already shipped.**
+   * The initial catalog read `03-powers.md` alone and marked these unwritten, so the
+   * roster drawer told a player *"effect not yet specified"* about three effects the
+   * design had settled — one of which, Cindara's, `05-status.md` quotes as an example
+   * while explaining the duration table.
+   *
+   * **A passive's spec is not all in one document.** `03-powers.md` owns the taxonomy;
+   * the effects live wherever the mechanic they touch lives, which for these three is
+   * the status system.
+   */
+  'Never Quite Out':
+    'Her burns cannot be cleansed. They still expire — they cannot be removed early.',
+  'Written in Pencil':
+    'Her debuffs cannot be cleansed. They still expire — they cannot be removed early.',
+  'Banked Coals':
+    'Her effects last one turn longer — +1 turn on top of the tier’s duration, never added magnitude.',
+};
+
+/**
+ * ⚠️ **Half-settled, and deliberately not given effect text.**
+ *
+ * `05-status.md`'s balance review fixes that Ossic's `The Bone Beneath` grants **`Magic
+ * Resist` rather than `Armor`** — every arcane hero sits at the roster-minimum Armor 15,
+ * so an Armor buff improved the stat they have least of *and* the one answering fewest
+ * attacks. That settles the **stat**. It does not settle the trigger, the magnitude or
+ * the duration, so there is no effect to state and the drawer correctly says so.
+ *
+ * Recorded here so the authoring pass starts from the constraint rather than
+ * rediscovering it and picking `Armor`.
+ */
+export const PARTIALLY_SETTLED: Readonly<Record<string, string>> = {
+  'The Bone Beneath': 'Must grant Magic Resist, not Armor (05-status.md).',
 };
 
 /** Every unique passive on the roster, in roster order. */
