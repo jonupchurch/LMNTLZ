@@ -295,3 +295,89 @@ test.describe('a player can reach an opponent from the squad screen', () => {
     await expect(verdictOf()).toBeVisible();
   });
 });
+
+/**
+ * The candidate rail carries enough to choose with (019).
+ *
+ * ### The screen it replaced
+ *
+ * Every offering was a handle, a rating and two hold-streak chips — so choosing
+ * an opponent from six of them was choosing at random, and the export's whole
+ * left column exists to stop that. `CandidateRail.tsx` had named the three
+ * missing pieces as *"one server field each"* and left them out rather than
+ * approximating; this is them arriving.
+ *
+ * These assertions are in a browser because the interesting failure is
+ * **rendering nothing**: a spread whose hero ids do not resolve draws an empty
+ * strip, and a unit test asserting "the component returned" passes over it.
+ */
+test.describe('choosing who to attack', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockApi(page);
+    await mockAttack(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Matchmaking', exact: true }).click();
+    await expect(page.getByLabel('Opponents')).toBeVisible();
+  });
+
+  test('draws every defender as twelve Force bars', async ({ page }) => {
+    const rail = page.getByLabel('Opponents');
+    const cards = rail.locator('[data-candidate]');
+    await expect(cards).not.toHaveCount(0);
+
+    // Six champions, two Forces each. Anything else means the spread is drawing
+    // a tally of nine rather than the wall in seat order.
+    for (const card of await cards.all()) {
+      await expect(card.locator('[data-force-bar]')).toHaveCount(12);
+    }
+  });
+
+  test('every bar carries a real Force, not a blank', async ({ page }) => {
+    /*
+     * The guard that stops this passing on an empty strip. `TypeSpread` skips a
+     * hero id it cannot resolve, so a fixture of invented ids renders zero bars
+     * — and "no bar has a bad Force" is trivially true of no bars.
+     */
+    const forces = await page
+      .getByLabel('Opponents')
+      .locator('[data-force-bar]')
+      /* The value lives on `data-force-bar` itself, not on a separate
+         `data-force` — reading the wrong attribute gave twelve nulls and a
+         failure that looked like the Forces were blank rather than like the
+         selector was. */
+      .evaluateAll((els) => els.map((e) => e.getAttribute('data-force-bar')));
+
+    expect(forces.length).toBeGreaterThan(0);
+    const NINE = ['earth', 'air', 'fire', 'water', 'light', 'dark', 'slash', 'pierce', 'crush'];
+    for (const force of forces) {
+      expect(NINE, `a bar rendered "${force}"`).toContain(force);
+    }
+  });
+
+  test('shows what a win is worth and what a loss costs, both signed', async ({ page }) => {
+    // Both, never only the upside — the player is weighing a trade.
+    const first = page.getByLabel('Opponents').locator('[data-candidate]').first();
+    await expect(first).toContainText(/win \+\d+/i);
+    await expect(first).toContainText(/lose −?-?\d+/i);
+  });
+
+  test('reads the matchup as hard, even or soft', async ({ page }) => {
+    const chips = page.getByLabel('Opponents').locator('[data-risk]');
+    await expect(chips).not.toHaveCount(0);
+
+    const labels = await chips.evaluateAll((els) =>
+      els.map((e) => e.getAttribute('data-risk')),
+    );
+    for (const label of labels) {
+      expect(['hard', 'even', 'soft'], `a chip read "${label}"`).toContain(label);
+    }
+
+    /*
+     * And it is a *reading of the gap*, not a constant. The fixture's two
+     * defenders sit 180 points apart around a rating of 1000, so they must not
+     * land in the same band — a chip that said one word about everybody would be
+     * decoration, which is the defect the roster's verdict chip already had.
+     */
+    expect(new Set(labels).size, 'every opponent read the same').toBeGreaterThan(1);
+  });
+});

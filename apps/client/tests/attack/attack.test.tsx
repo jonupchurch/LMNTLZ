@@ -53,6 +53,13 @@ const candidate = (i: number, over: Record<string, unknown> = {}) => ({
   rating: 1200 - i * 10,
   visibleHoldStreak: i,
   hiddenHoldStreak: i * 2,
+  /* Real ids, so `TypeSpread` resolves real Forces. Invented ones would be
+     skipped and the strip would silently render nothing. */
+  visibleHeroIds: getAllHeroes()
+    .slice(i, i + 6)
+    .map((h) => h.id),
+  winDelta: 18,
+  lossDelta: -12,
   ...over,
 });
 

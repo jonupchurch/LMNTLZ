@@ -283,6 +283,12 @@ export const CANDIDATES = {
       rating: 1180,
       visibleHoldStreak: 4,
       hiddenHoldStreak: 9,
+      /* Real champion ids, so the type spread resolves real Forces — a fixture
+         of invented ids would render an empty strip and every assertion about
+         it would pass for the wrong reason. */
+      visibleHeroIds: IDS.slice(0, 6),
+      winDelta: 18,
+      lossDelta: -12,
     },
     {
       playerId: 'acc_2',
@@ -291,6 +297,9 @@ export const CANDIDATES = {
       rating: 1000,
       visibleHoldStreak: 0,
       hiddenHoldStreak: 0,
+      visibleHeroIds: IDS.slice(6, 12),
+      winDelta: 8,
+      lossDelta: -24,
     },
   ],
   ambushChance: 14,

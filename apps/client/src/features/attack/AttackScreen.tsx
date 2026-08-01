@@ -297,6 +297,9 @@ export function AttackScreen({
           candidates={list.candidates}
           selected={target}
           onSelect={(playerId) => void openScout(playerId)}
+          /* The chip is a reading of the gap, so the rail needs both sides of
+             the subtraction. The swing itself is the server's. */
+          myRating={standing?.rating ?? 0}
         />
       </Panel>
 

@@ -11,30 +11,59 @@
  * restricts the playing itself, and the economy already bounds what volume
  * pays. So the card shape is the export's and the count is the server's.
  *
- * ### Three things the export's card carries that this one cannot
+ * ### The three the card was missing, and where each of them came from
  *
- * | Drawn there | Why not here |
+ * They were named here as *"one server field each"* and left out rather than
+ * approximated. All three landed in 019:
+ *
+ * | Drawn | Source |
  * |---|---|
- * | a 12-segment bar of the defender's damage types | `/matchmaking/candidates` does not serve squad composition, and teaching it to would put a scoutable fact on a route nobody has scouted through |
- * | `WIN +34 / LOSE −22` | the rating swing is the server's arithmetic (K bands 40/20/10, doubled on a Hidden win) and the client must not do it a second time |
- * | a `HARD / EVEN / SOFT` risk chip | derived from the above; a difficulty word this screen invented would read as the server's opinion |
+ * | a 12-segment bar of the defender's Forces | `visibleHeroIds` on the wire; the **Forces are derived** client-side from `@lmntlz/content` (XV) |
+ * | `WIN +18 / LOSE −12` | `winDelta`/`lossDelta`, computed by the same `ratingDeltas` the settlement uses — never a second ladder |
+ * | a `HARD / EVEN / SOFT` risk chip | the rating gap, **here**, because it is a reading of two numbers the client already has rather than a rule |
  *
- * All three are worth having and all three are **one server field each**. They
- * are named here rather than approximated.
+ * The split between the last two is the interesting one. The swing is the
+ * **ladder's arithmetic** and a client copy would drift silently the first time
+ * a K band moved. The chip is a *label on a subtraction* — no rule, nothing to
+ * drift from, and putting it on the wire would mean a round trip to re-render a
+ * word. Ask whether a number is a rule or a reading.
  */
 
 import type { Candidate } from './types.js';
+import { TypeSpread } from './TypeSpread.js';
+
+/**
+ * How this matchup reads, from the rating gap alone.
+ *
+ * The bands are deliberately wide. A rating gap is a **weak** predictor in a
+ * game whose whole premise is that the roster is identical and the edge is the
+ * matchup — so a chip implying precision would be lying about what it knows.
+ * Three words, and `EVEN` is the widest of them.
+ */
+const RISK_BAND = 100;
+
+function riskOf(theirs: number, mine: number): { label: string; tone: string } {
+  const gap = theirs - mine;
+  if (gap > RISK_BAND) return { label: 'hard', tone: 'text-danger ring-danger/50' };
+  if (gap < -RISK_BAND) return { label: 'soft', tone: 'text-earth-lit ring-earth/50' };
+  return { label: 'even', tone: 'text-faint ring-line' };
+}
+
+const signed = (n: number): string => (n > 0 ? `+${n}` : String(n));
 
 export interface CandidateRailProps {
   readonly candidates: readonly Candidate[];
   readonly selected: string | null;
   readonly onSelect: (playerId: string) => void;
+  /** The caller's own rating, for the risk chip's subtraction. */
+  readonly myRating: number;
 }
 
 export function CandidateRail({
   candidates,
   selected,
   onSelect,
+  myRating,
 }: CandidateRailProps): React.JSX.Element {
   return (
     <section aria-label="Opponents" className="flex flex-col gap-3">
@@ -72,10 +101,32 @@ export function CandidateRail({
                   <span className="text-body truncate font-display tracking-wide text-parchment">
                     {candidate.username}
                   </span>
-                  <span className="text-caption shrink-0 font-mono tabular-nums text-faint">
-                    {candidate.rating}
+                  {/* The export's risk chip, top-right beside the handle. */}
+                  <span
+                    data-risk={riskOf(candidate.rating, myRating).label}
+                    className={`text-caption shrink-0 rounded-sm px-1.5 py-px font-mono tracking-wider uppercase ring-1 ring-inset ${
+                      riskOf(candidate.rating, myRating).tone
+                    }`}
+                  >
+                    {riskOf(candidate.rating, myRating).label}
                   </span>
                 </span>
+
+                <span className="text-caption mt-0.5 flex items-baseline justify-between gap-2 font-mono tabular-nums text-faint">
+                  <span>{candidate.rating}</span>
+                  {/*
+                   * `WIN +18 / LOSE −12`, both from the server. The two are shown
+                   * together because the question a player is weighing is the
+                   * *trade*, and a screen showing only the upside would be
+                   * selling the fight rather than describing it.
+                   */}
+                  <span className="flex gap-2">
+                    <span className="text-earth-lit">win {signed(candidate.winDelta)}</span>
+                    <span className="text-danger">lose {signed(candidate.lossDelta)}</span>
+                  </span>
+                </span>
+
+                <TypeSpread heroIds={candidate.visibleHeroIds} />
 
                 <span className="mt-2 flex flex-wrap items-center gap-1.5">
                   <span className="text-caption inline-flex items-center gap-1 rounded-sm px-1.5 py-px font-mono ring-1 ring-line ring-inset">

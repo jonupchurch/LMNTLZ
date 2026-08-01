@@ -265,3 +265,68 @@ describe('no slate, no rotation, no cooldown (T013)', () => {
     expect(mineSecond).toEqual(mineFirst);
   });
 });
+
+/**
+ * What a candidate card needs to be a decision rather than a name (019).
+ *
+ * `LMNTLZ Matchmaking and Results.dc.html` draws every offering with a
+ * twelve-bar type spread and a `WIN +18 / LOSE −12` swing. Both were named in
+ * `CandidateRail.tsx` as *"one server field each"* and deliberately left out.
+ */
+describe('an offering carries enough to choose with', () => {
+  it('serves each defender’s Visible six, in seat order', async () => {
+    const list = await candidates(attacker);
+    const them = list.candidates.find((c) => c.playerId === strong);
+    expect(them, 'the strong defender is not in the pool').toBeDefined();
+
+    // Six, because the query inner-joins on a *complete* Visible squad.
+    expect(them!.visibleHeroIds).toHaveLength(6);
+
+    /*
+     * **Seat order, and this is the assertion that catches the enum trap.**
+     * `row` is a text column, so `ORDER BY row` sorts `back, front, middle` —
+     * alphabetically, not by formation. The fixture seats the roster in order
+     * across front/front/middle/middle/middle/back, so correct output is the
+     * first six roster ids and the alphabetical bug puts the back-line champion
+     * first.
+     */
+    expect(them!.visibleHeroIds).toEqual(ROSTER.slice(0, 6));
+  });
+
+  it('never serves anybody’s Hidden squad', async () => {
+    const list = await candidates(attacker);
+    for (const c of list.candidates) {
+      // The absence of the field *is* the disclosure rule (XVII). A count, a
+      // key or an empty array would each tell a scout something.
+      expect(Object.keys(c)).not.toContain('hiddenHeroIds');
+      expect(JSON.stringify(c)).not.toContain('hidden_hero');
+    }
+  });
+
+  it('quotes a swing that is a gain on a win and a cost on a loss', async () => {
+    const list = await candidates(attacker);
+    for (const c of list.candidates) {
+      expect(c.winDelta, `${c.username} gains nothing for winning`).toBeGreaterThan(0);
+      expect(c.lossDelta, `${c.username} loses nothing for losing`).toBeLessThan(0);
+    }
+  });
+
+  /**
+   * **The assertion a hardcoded pair cannot satisfy.** Beating somebody rated
+   * far above you must be worth more than beating somebody far below — that is
+   * what the ladder is for — so a constant, or a copied field, fails here while
+   * passing every shape check above.
+   */
+  it('is worth more to beat a stronger defender than a weaker one', async () => {
+    const list = await candidates(attacker);
+    const up = list.candidates.find((c) => c.playerId === strong)!;
+    const down = list.candidates.find((c) => c.playerId === weak)!;
+    expect(up, 'the strong defender is missing').toBeDefined();
+    expect(down, 'the weak defender is missing').toBeDefined();
+
+    expect(up.winDelta).toBeGreaterThan(down.winDelta);
+    // And the reverse: losing to somebody weaker costs more than losing to
+    // somebody stronger.
+    expect(down.lossDelta).toBeLessThan(up.lossDelta);
+  });
+});

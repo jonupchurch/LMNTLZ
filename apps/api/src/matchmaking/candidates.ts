@@ -36,11 +36,12 @@
  * every account created before those calls existed has no stamp and never will.
  */
 
-import { and, asc, desc, eq, gte, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
-import { SQUAD_SIZE } from '@lmntlz/sim/rules';
+import { and, asc, desc, eq, gte, inArray, isNotNull, lt, ne, or, isNull, sql } from 'drizzle-orm';
+import { SQUAD_ROWS, SQUAD_SIZE } from '@lmntlz/sim/rules';
 import { db } from '../db/client.js';
 import { accounts } from '../db/schema/accounts.js';
 import { playerRatings, STARTING_RATING } from '../db/schema/ratings.js';
+import { ratingDeltas } from '../progression/rating.js';
 import { squads, squadSeats } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
@@ -56,6 +57,57 @@ export interface Candidate {
   readonly rating: number;
   readonly visibleHoldStreak: number;
   readonly hiddenHoldStreak: number;
+  /**
+   * The six champions on their **Visible** squad, in seat order (019).
+   *
+   * `LMNTLZ Matchmaking and Results.dc.html` draws every offering with a
+   * twelve-bar type spread — six champions × two Forces — so a player can tell
+   * *"a wall I have answers for"* from *"a wall I do not"* before spending a
+   * click on it. Without it the rail is a name and a number, and choosing an
+   * opponent is choosing at random.
+   *
+   * ### Ids, not Forces — the Forces are derived
+   *
+   * The client already resolves `primary`/`secondary` from `@lmntlz/content`,
+   * which is in its bundle; sending nine-colour spreads would be **a second copy
+   * of derived data** and Constitution XV forbids exactly that. It is also
+   * smaller: six ids against twelve type strings.
+   *
+   * ### Why this is not a disclosure (XVII)
+   *
+   * **The Visible squad is the scoutable one** — that is its whole definition,
+   * and the only squad anybody can choose to attack. `GET /players/:id/scout`
+   * already returns these six champions to any authenticated caller, with no
+   * cost, no cooldown and no record of who looked. So this shows the same thing
+   * one step earlier, not a thing that was hidden.
+   *
+   * The **Hidden** squad is not here and must never be: no ids, no count, no
+   * key. See `ScoutView` — the absence of the field *is* the rule.
+   */
+  readonly visibleHeroIds: readonly string[];
+  /**
+   * What beating this defender is worth, and what losing to them costs — the
+   * export's `WIN +18 / LOSE −12` (019).
+   *
+   * ### Computed by `ratingDeltas`, the same function settlement uses
+   *
+   * A client-side preview would be **a second implementation of the ladder**,
+   * and the two would disagree the first time a K band moved. Worse, they would
+   * disagree *quietly*: the player would be shown +18, be paid +14, and have no
+   * way to tell which was wrong. Both numbers come from the one function.
+   *
+   * ### It is a forecast, not a promise, and that is inherent
+   *
+   * Both ratings can move between drawing this rail and resolving the battle —
+   * either player may fight somebody else first. The export labels this as the
+   * swing on offer rather than a guarantee, which is the honest framing.
+   *
+   * Always quoted for the **Visible** zone, because that is the battle being
+   * chosen. An ambush pays double on a win, and the screen says so separately
+   * rather than folding a 14%-likely bonus into a headline number.
+   */
+  readonly winDelta: number;
+  readonly lossDelta: number;
 }
 
 export interface CandidateList {
@@ -109,6 +161,9 @@ export async function candidates(accountId: string): Promise<CandidateList> {
     .select({
       gearScore: effectiveGearScore,
       attackStreak: sql<number>`coalesce(${playerStreaks.attackStreak}, 0)`,
+      /* The caller's own half of every swing preview below. */
+      rating: sql<number>`coalesce(${playerRatings.rating}, ${STARTING_RATING})`,
+      ratedBattles: sql<number>`coalesce(${playerRatings.ratedBattles}, 0)`,
     })
     .from(accounts)
     .leftJoin(playerRatings, eq(playerRatings.accountId, accounts.id))
@@ -298,6 +353,41 @@ export async function candidates(accountId: string): Promise<CandidateList> {
    */
   const ordered = [...all].sort((a, b) => Number(b.rating) - Number(a.rating) || a.playerId.localeCompare(b.playerId));
 
+  /**
+   * Every offering's Visible six, in **one** query rather than one per candidate.
+   *
+   * A pool can be twenty players; twenty round trips to draw a rail is the shape
+   * of a screen that gets slower the healthier the league is. The seats are
+   * ordered by `(row, index)` so the six come back in the order the wall stands
+   * in, which is what `ScoutedWall` and the spread both read.
+   */
+  const spreads = await visibleSixOf(ordered.map((r) => r.playerId));
+
+  /**
+   * The swing on offer against one defender, both ways.
+   *
+   * **`ratingDeltas` twice, once per outcome** — the function takes the result
+   * as an input rather than returning a pair, and reimplementing the sign here
+   * would be the second ladder this comment exists to prevent. `.attacker` is
+   * the caller's half; `.defender` is the other player's and is not disclosed.
+   */
+  const swing = (theirRating: number, theirRatedBattles: number) => {
+    const shared = {
+      attacker: Number(own.rating),
+      defender: theirRating,
+      attackerRatedBattles: Number(own.ratedBattles),
+      defenderRatedBattles: theirRatedBattles,
+      /* The battle being chosen is always a Visible one. An ambush is the
+         server's roll afterwards, and it doubles a *win* — quoting it here would
+         advertise a bonus that is 14%-likely at best. */
+      zone: 'visible' as const,
+    };
+    return {
+      winDelta: ratingDeltas({ ...shared, attackerWon: true }).attacker,
+      lossDelta: ratingDeltas({ ...shared, attackerWon: false }).attacker,
+    };
+  };
+
   return {
     league,
     positionInLeague: positionInLeague(gearScore),
@@ -310,6 +400,12 @@ export async function candidates(accountId: string): Promise<CandidateList> {
       rating: Number(r.rating),
       visibleHoldStreak: r.visibleHoldStreak,
       hiddenHoldStreak: Number(r.hiddenHoldStreak),
+      /* A candidate without a full Visible squad is not a candidate at all —
+         the query inner-joins on it — so this is six in practice. Defaulted
+         rather than asserted: an empty spread draws nothing, where a throw here
+         would take down the whole rail. */
+      visibleHeroIds: spreads.get(r.playerId) ?? [],
+      ...swing(Number(r.rating), Number(r.ratedBattles)),
     })),
     ambushChance: ambushChance(Number(own.attackStreak)),
     consecutiveWins: Number(own.attackStreak),
@@ -317,6 +413,73 @@ export async function candidates(accountId: string): Promise<CandidateList> {
 }
 
 /** One row shape for every pool query, so the three cannot drift apart. */
+/**
+ * Every named account's **Visible** six, keyed by account, in seat order.
+ *
+ * ### One query, and the `zone` filter is the disclosure rule
+ *
+ * `kind = 'defense' AND zone = 'visible'` is not a convenience — it is what
+ * keeps the Hidden squad out of this result set entirely. A serialiser that
+ * filtered afterwards would be one edit away from leaking six champions nobody
+ * is allowed to see; a query that never loads them cannot (Constitution XVII,
+ * and the same argument `scoutSerializer` makes about rune allocations).
+ *
+ * ### ⚠️ `ORDER BY row` sorts the enum ALPHABETICALLY
+ *
+ * `row` is `text`, so SQL orders it `back, front, middle` — not the formation's
+ * `front, middle, back`. The first version of this did exactly that and the
+ * comment above it claimed seat order, which is the worst kind of wrong: a
+ * spread that looks plausible and puts the back-line champion first.
+ *
+ * So the sort is done here against `SQUAD_ROWS`, which is the one place the
+ * order is defined (`packages/sim/rules/formation.ts`). Postgres still gets an
+ * `ORDER BY` on `index` — without one it promises nothing at all, and a spread
+ * whose bars shuffle between requests reads as the opponent having edited their
+ * squad.
+ */
+async function visibleSixOf(accountIds: readonly string[]): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>();
+  /* `inArray` with an empty list is a SQL syntax error in some drivers and an
+     always-false predicate in others. Neither is worth finding out at runtime. */
+  if (accountIds.length === 0) return out;
+
+  const rows = await db()
+    .select({ accountId: squads.accountId, heroId: squadSeats.heroId, row: squadSeats.row, index: squadSeats.index })
+    .from(squadSeats)
+    .innerJoin(squads, eq(squads.id, squadSeats.squadId))
+    .where(
+      and(
+        inArray(squads.accountId, [...accountIds]),
+        eq(squads.kind, 'defense'),
+        eq(squads.zone, 'visible'),
+      ),
+    )
+    .orderBy(asc(squadSeats.index));
+
+  const byAccount = new Map<string, { heroId: string; row: string; index: number }[]>();
+  for (const row of rows) {
+    const list = byAccount.get(row.accountId);
+    if (list) list.push(row);
+    else byAccount.set(row.accountId, [row]);
+  }
+
+  const rank = (r: string): number => {
+    const at = (SQUAD_ROWS as readonly string[]).indexOf(r);
+    /* An unknown row sorts last rather than to 0 — `indexOf` returning -1 would
+       silently promote it to the front of the wall. */
+    return at === -1 ? SQUAD_ROWS.length : at;
+  };
+
+  for (const [accountId, seats] of byAccount) {
+    seats.sort((a, b) => rank(a.row) - rank(b.row) || a.index - b.index);
+    out.set(
+      accountId,
+      seats.map((s) => s.heroId),
+    );
+  }
+  return out;
+}
+
 async function defenders(
   eligible: ReturnType<typeof and>,
   pool: ReturnType<typeof and>,
@@ -332,6 +495,11 @@ async function defenders(
       isBot: accounts.isBot,
       gear: effectiveGearScore,
       rating,
+      /* Needed so the swing preview feeds `ratingDeltas` exactly the inputs the
+         settlement will. It only affects the *defender's* half of the pair, but
+         passing a stand-in would make this preview silently wrong the day the
+         formula starts reading it for the attacker's. */
+      ratedBattles: sql<number>`coalesce(${playerRatings.ratedBattles}, 0)`,
       visibleHoldStreak: squads.holdStreak,
       hiddenHoldStreak: sql<number>`coalesce((
         select h.hold_streak from ${squads} h

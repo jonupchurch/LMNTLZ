@@ -18,6 +18,22 @@ export interface Candidate {
   readonly rating: number;
   readonly visibleHoldStreak: number;
   readonly hiddenHoldStreak: number;
+  /**
+   * Their **Visible** six, in seat order — the export's twelve-bar type spread.
+   *
+   * Ids, not Forces: the client resolves `primary`/`secondary` from
+   * `@lmntlz/content`, so the wire carries no derived data (XV). The Visible
+   * squad is the scoutable one by definition, and `GET /players/:id/scout`
+   * already serves exactly these six to any signed-in caller — this is the same
+   * disclosure one step earlier, not a new one.
+   *
+   * **The Hidden six are not here and never will be.** No ids, no count, no key.
+   */
+  readonly visibleHeroIds: readonly string[];
+  /** Rating gained by beating them, from the server's own `ratingDeltas`. */
+  readonly winDelta: number;
+  /** Rating lost by losing to them. Negative. */
+  readonly lossDelta: number;
 }
 
 export interface CandidateList {
