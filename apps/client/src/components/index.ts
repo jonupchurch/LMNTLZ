@@ -62,6 +62,8 @@ export { HeroCard, maxHpOf } from './hero/HeroCard.js';
 export type { HeroCardProps, HeroCardScale } from './hero/HeroCard.js';
 export { HeroPortrait } from './hero/HeroPortrait.js';
 export type { HeroPortraitProps } from './hero/HeroPortrait.js';
+export { DoorCluster } from './hero/DoorCluster.js';
+export type { DoorClusterProps } from './hero/DoorCluster.js';
 export { HeroMarks } from './hero/HeroMarks.js';
 export type { HeroMarksProps } from './hero/HeroMarks.js';
 export { RunePips } from './hero/RunePips.js';

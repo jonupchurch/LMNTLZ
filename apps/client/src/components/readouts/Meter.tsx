@@ -72,7 +72,16 @@ export function Meter({
         aria-valuenow={indeterminate ? undefined : value}
         aria-valuemin={0}
         aria-valuemax={indeterminate ? undefined : max}
-        className="h-2 overflow-hidden rounded-sm bg-void ring-1 ring-line"
+        /*
+         * **The well's rim is INSET, which is what the exports draw** —
+         * `box-shadow: inset 0 0 0 1px #42215B`, three times in
+         * `LMNTLZ Hero Card.dc.html` alone and the only thing separating a
+         * near-empty bar from the dark ground behind it. `ring-1` put the same
+         * hairline *outside* the box, which adds a pixel to the meter's height
+         * on every screen that stacks them and is the first thing a `clip-path`
+         * would eat. `--shadow-hairline` is the token for exactly this.
+         */
+        className="h-2 overflow-hidden rounded-sm bg-void shadow-(--shadow-hairline)"
       >
         <div
           className={[

@@ -206,12 +206,18 @@ def project_components() -> dict[str, set[str]]:
     """
     contributed: dict[str, set[str]] = {}
     classes = project_classes()
+    # **Tokens too, or this layer under-reports exactly what the token layer was
+    # added to catch.** `Meter` spends its inset hairline as
+    # `shadow-(--shadow-hairline)`; without resolving that here, every screen
+    # that renders a `<Meter>` inherits an incomplete answer, and the two fixes
+    # only work together.
+    tokens = project_tokens()
 
     for path in sorted((CLIENT / "components").rglob("*.tsx")):
         name = path.stem
         if name.endswith(".generated"):
             continue
-        spent = set(client_vocabulary([path], classes).elements())
+        spent = set(client_vocabulary([path], classes, None, tokens).elements())
         keep = spent & {
             "clip-path",
             "box-shadow",
@@ -228,10 +234,55 @@ def project_components() -> dict[str, set[str]]:
     return contributed
 
 
+def project_tokens() -> dict[str, set[str]]:
+    """`--shadow-hairline` -> {"box-shadow", "inset-shadow"}, and so on.
+
+    ### The same mistake a THIRD time, one level deeper again
+
+    `project_classes` taught this tool that a treatment can be spent through a
+    named CSS class; `project_components` taught it that a component spends one
+    too. Both were found the same way — a number that refused to move after work
+    aimed straight at it.
+
+    This is the third: a treatment spent through a **custom property**. 019 gave
+    `Meter`'s well the export's inset hairline as
+    `shadow-(--shadow-hairline)`, and the audit went on reporting
+    `inset-shadow ABSENT` because the word `inset` appears only in `base.css`,
+    on the token's definition, and never at the call site.
+
+    Left unfixed it is worse than a wrong number: it pushes whoever is chasing
+    the metric to write `shadow-[inset_0_0_0_1px_...]` by hand — an untokenised
+    literal — purely to satisfy the scan. **A measurement that rewards
+    duplicating a token is measuring the wrong thing.**
+    """
+    if not BASE_CSS.exists():
+        return {}
+
+    css = re.sub(r"/\*[\s\S]*?\*/", "", BASE_CSS.read_text(encoding="utf-8"))
+    tokens: dict[str, set[str]] = {}
+    for match in re.finditer(r"(--[a-zA-Z0-9-]+)\s*:\s*([^;]+);", css):
+        name, value = match.group(1), match.group(2)
+        props: set[str] = set()
+        if re.search(r"\d+px|\binset\b", value) and ("shadow" in name or "inset" in value):
+            props.add("box-shadow")
+            if "inset" in value:
+                props.add("inset-shadow")
+            if re.search(r"0 0 \d+px", value):
+                props.add("glow")
+        if "gradient" in value:
+            props.add("gradient")
+        if "polygon" in value or "clip-path" in name:
+            props.add("clip-path")
+        if props:
+            tokens[name] = props
+    return tokens
+
+
 def client_vocabulary(
     sources: list[Path],
     classes: dict[str, set[str]],
     components: dict[str, set[str]] | None = None,
+    tokens: dict[str, set[str]] | None = None,
 ) -> Counter:
     v: Counter = Counter()
     for path in sources:
@@ -256,6 +307,12 @@ def client_vocabulary(
         v["tracking"] += len(re.findall(r"tracking-", code))
         v["tabular"] += len(re.findall(r"tabular-nums", code))
         v["portrait"] += len(re.findall(r"<img\b|backgroundImage", code))
+
+        # Spent through a custom property: `shadow-(--shadow-hairline)`.
+        for token, props in (tokens or {}).items():
+            uses = len(re.findall(rf"\({re.escape(token)}\)|var\(\s*{re.escape(token)}\s*\)", code))
+            for prop in props:
+                v[prop] += uses
 
         # Spent through a named class in `base.css`.
         for name, props in classes.items():
@@ -300,6 +357,13 @@ def main() -> int:
         print(f"Resolved {len(classes)} treatment classes from base.css: "
               f"{', '.join(sorted(classes))}\n")
 
+    tokens = project_tokens()
+    if not tokens:
+        print("!! no design tokens resolved from base.css — a screen spending a")
+        print("   treatment through `shadow-(--shadow-hairline)` will read as absent.")
+    else:
+        print(f"Resolved {len(tokens)} treatment tokens from base.css.\n")
+
     components = project_components()
     if not components:
         print("!! no shared components resolved — a screen that spends a treatment")
@@ -321,7 +385,7 @@ def main() -> int:
         if not srcs:
             print(f"!! no sources for {name}: {dirs}")
             continue
-        have = client_vocabulary(srcs, classes, components)
+        have = client_vocabulary(srcs, classes, components, tokens)
         missing = [k for k in want if want[k] > 0 and have[k] == 0]
         rows.append((name, export_name, want, have, missing))
 

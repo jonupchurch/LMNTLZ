@@ -53,11 +53,13 @@ import {
   Button,
   HeroCard,
   HeroIcon,
+  HeroPortrait,
   Panel,
   RelationshipStrip,
   TextField,
   TypeBadge,
 } from '../../components/index.js';
+import { FORCE_ABBR, FORCE_FILL, FORCE_TEXT } from '../../components/type/forceClasses.js';
 
 export interface RosterScreenProps {
   readonly onInspect?: (hero: Hero) => void;
@@ -263,16 +265,29 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
            * over 9 types, so the flat line is 6 and a tall bar is a Force that
            * is over-represented among *secondaries*.
            */}
+          {/*
+            **`bg-current` with no `text-*` on the ancestor is `currentColor`,
+            which here was the inherited parchment** — so nine Force meters
+            rendered as nine identical off-white blocks and the one thing they
+            exist to show, which Force is over-represented, was carried by height
+            alone. A solid core fill, which is what the export draws
+            (`background:{{ m.core }}`) — the `deep → base` ramp belongs on bars
+            that read left-to-right, and these read bottom-up.
+
+            The labels come from `FORCE_ABBR` rather than `slice(0, 3)`, which
+            was quietly writing `lig` and `pie` where the export writes `LGT`
+            and `PRC`.
+          */}
           <div className="flex items-end gap-1" aria-hidden>
             {DAMAGE_TYPES.map((type) => (
               <span key={type} className="flex w-6 flex-col items-center gap-1">
                 <span className="flex h-8 w-full items-end rounded-sm bg-raised">
                   <span
-                    className="w-full rounded-sm bg-current"
+                    className={`w-full rounded-sm ${FORCE_FILL[type]}`}
                     style={{ height: `${((counts.get(type) ?? 0) / 9) * 100}%` }}
                   />
                 </span>
-                <span className="text-caption font-mono text-faint">{type.slice(0, 3)}</span>
+                <span className="text-caption font-mono text-faint">{FORCE_ABBR[type]}</span>
               </span>
             ))}
           </div>
@@ -347,25 +362,71 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
             aria-label={`${selected.name}, champion detail`}
             className="flex flex-col gap-4 lz-surface p-4"
           >
-            <div className="flex items-start gap-3">
-              <HeroIcon heroId={selected.id as HeroId} name={selected.name} size="detail" />
-              <div className="min-w-0 flex-1">
-                <h2 className="text-h2 font-display uppercase tracking-wide">{selected.name}</h2>
-                <p className="text-caption text-muted font-mono uppercase">
-                  {selected.role} · reach {selected.reach}
-                </p>
+            {/**
+             * **The drawer opens with the champion's face**, which is what the
+             * export draws and what this panel was missing entirely: it led with
+             * a 40px emblem and a line of text, on a screen whose whole subject
+             * is 27 illustrations. The head is 330px in the export; here it is an
+             * aspect ratio so it tracks the column instead of fighting it.
+             */}
+            <div className="relative -m-4 mb-0 aspect-4/3 overflow-hidden">
+              <HeroPortrait
+                heroId={selected.id as HeroId}
+                force={selected.primary}
+                sizes="392px"
+                scrim
+                fill
+              />
+              <div className="absolute top-2 left-2">
+                <TypeBadge type={selected.primary} size="md" />
               </div>
-              <Button
-                variant="icon"
-                size="sm"
-                aria-label="Close detail"
-                onClick={() => setSelected(null)}
-              >
-                ✕
-              </Button>
+              <div className="absolute top-2 right-2">
+                <Button
+                  variant="icon"
+                  size="sm"
+                  aria-label="Close detail"
+                  onClick={() => setSelected(null)}
+                >
+                  ✕
+                </Button>
+              </div>
+              {/* Over the scrim, as the export has it — the art's bottom third is
+                  ramped to `void` precisely so a name can sit here. */}
+              <div className="absolute inset-x-0 bottom-0 flex items-end gap-2 p-3">
+                <HeroIcon heroId={selected.id as HeroId} name={selected.name} size="chip" />
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-h2 truncate font-display uppercase tracking-wide">
+                    {selected.name}
+                  </h2>
+                  <p className="text-caption text-muted font-mono uppercase">
+                    {selected.role} · reach {selected.reach}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <RelationshipStrip hero={selected} />
+
+            {/**
+             * **The export's derivation line, and it is the most teachable thing
+             * on the screen.** It prints `strengths = { DARK, WATER }`, then
+             * `Bane = counter(DARK) = LIGHT` — so a player reading one champion
+             * learns the rule that generates every champion's weaknesses, rather
+             * than memorising 27 sets of four Forces.
+             *
+             * Every value is read off the hero, which derived it. Writing the
+             * arrow by hand here would be a second implementation of `counter()`
+             * living in a paragraph (Constitution XV).
+             */}
+            <p className="text-caption border-t border-line pt-3 font-mono leading-relaxed text-faint">
+              strengths = {'{'} {selected.primary}, {selected.secondary} {'}'}
+              <br />
+              Bane = counter({selected.primary}) ={' '}
+              <span className={FORCE_TEXT[selected.bane]}>{selected.bane}</span>
+              <br />
+              Fault = counter({selected.secondary}) ={' '}
+              <span className={FORCE_TEXT[selected.fault]}>{selected.fault}</span>
+            </p>
 
             <section aria-label="Powers">
               <h3 className="text-caption mb-2 font-mono tracking-[0.2em] uppercase text-faint">

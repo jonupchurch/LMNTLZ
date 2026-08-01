@@ -1,17 +1,29 @@
 /**
- * `HeroCard` — three scales carrying **the same data** (017 T026).
+ * `HeroCard` — **let the portrait carry the card** (017 T026, rebuilt in 019).
  *
- * The contract's rule, and it is the interesting one: *"all three scales carry
- * the same data; only density differs, so a caller never loses information by
- * choosing a smaller one."* A chip that dropped the relationship cluster would
- * make the battlefield the one screen where you cannot see what you are weak
- * to — which is the screen where it matters.
+ * That sentence is the h1 of `LMNTLZ Hero Card.dc.html`, and until 019 this
+ * component did the opposite. It was a text card: a 20px emblem, a name, a role,
+ * an HP meter and the five-rung effectiveness ladder, on a chamfered surface. The
+ * export draws three shapes and **all three are an illustration with UI over its
+ * darkened lower third** — wide for detail, tall for battle, tile for browsing 27.
  *
- * So every scale renders identity, forces, reach, relationships and HP. What
- * changes is how much room each gets. The export sets the floor: *"tile floor
- * is 160px; below that, drop the epithet before anything else"* — and twelve
- * chips share a 1280×720 window, so the chip is the constraint that sets the
- * type floor for the whole design.
+ * What that cost was measurable rather than aesthetic. On the roster it rendered
+ * **135 rows of `×1.50 / ×1.25 / ×1.00 / ×0.80 / ×0.50`** — the same five numbers
+ * 27 times — and truncated **13 of the 27 champion names** to fit them, so the
+ * one field a player scans by was the field that got cut. `DoorCluster` carries
+ * the same four Forces in a 34px corner and gives the name its own line.
+ *
+ * ### The three scales still carry the same data
+ *
+ * The contract's rule holds: *"all three scales carry the same data; only density
+ * differs, so a caller never loses information by choosing a smaller one."*
+ *
+ * `compact` swapping the ladder for the cluster is a density change, not a data
+ * change — the ladder's five multipliers are **fixed constants** identical for
+ * every champion, and the four Forces are what vary. Dropping the constants and
+ * keeping the variables is the definition of getting denser. HP is the one thing
+ * `compact` genuinely omits, and only when no `hp` is passed: on a browsing grid
+ * every champion is undamaged, so the bar is 27 identical full meters.
  *
  * > **There is no epithet in the data.** The export writes "NYXARA / the Kind
  * > Veil", and `AuthoredHero` has `id`, `name` and `slug` — no epithet field
@@ -27,15 +39,18 @@ import type { Hero, HeroId } from '@lmntlz/content';
 import { HeroIcon } from '../icons/HeroIcon.js';
 import { RelationshipStrip } from '../type/RelationshipStrip.js';
 import { TypeBadge } from '../type/TypeBadge.js';
+import { FORCE_RING } from '../type/forceClasses.js';
 import { Meter } from '../readouts/Meter.js';
 import { Pill } from '../readouts/Pill.js';
+import { DoorCluster } from './DoorCluster.js';
+import { HeroPortrait } from './HeroPortrait.js';
 
 export type HeroCardScale = 'compact' | 'standard' | 'full';
 
 export interface HeroCardProps {
   readonly hero: Hero;
   readonly scale?: HeroCardScale;
-  /** Current HP. Omitted means undamaged. */
+  /** Current HP. Omitted means undamaged — and on `compact`, means no meter. */
   readonly hp?: number;
   readonly onSelect?: (hero: Hero) => void;
   /**
@@ -58,17 +73,21 @@ export interface HeroCardProps {
 /** `CLAUDE.md`: `HP = Toughness × 50`. */
 export const maxHpOf = (hero: Hero): number => hero.stats.toughness * 50;
 
-const SCALE: Record<HeroCardScale, string> = {
-  compact: 'w-40 p-2 gap-1',
-  standard: 'w-56 p-3 gap-2',
-  full: 'w-75 p-4 gap-3',
+const WIDTH: Record<HeroCardScale, string> = {
+  compact: 'w-40',
+  standard: 'w-56',
+  full: 'w-75',
 };
 
-/** The same padding and gap, with the width handed to the container. */
-const FILLED: Record<HeroCardScale, string> = {
-  compact: 'w-full p-2 gap-1',
-  standard: 'w-full p-3 gap-2',
-  full: 'w-full p-4 gap-3',
+/**
+ * The export's crops, per its own "Portrait crop rules" panel: the tile is
+ * tighter with the face in the upper third, the larger shapes give the figure
+ * more room. `object-top` in `HeroPortrait` does the work; this is the box.
+ */
+const ART: Record<HeroCardScale, string> = {
+  compact: 'aspect-[158/214]',
+  standard: 'aspect-[224/240]',
+  full: 'aspect-[300/300]',
 };
 
 export function HeroCard({
@@ -79,7 +98,6 @@ export function HeroCard({
   fill = false,
 }: HeroCardProps): React.JSX.Element {
   const max = maxHpOf(hero);
-  const current = hp ?? max;
   const compact = scale === 'compact';
   const Root = onSelect ? 'button' : 'div';
 
@@ -89,34 +107,47 @@ export function HeroCard({
       data-scale={scale}
       data-hero={hero.id}
       /**
-       * **019 US1 — the card is chamfered and lifted, not a flat rectangle.**
+       * **The frame takes the House colour** — `border:1px solid {{ h.frame }}`
+       * in the Roster export, per champion, with a matching glow on hover. It is
+       * the cheapest way to make a grid of 27 sort itself into nine families
+       * before anything is read.
        *
-       * `lz-plate` is the export's martial cut on the bottom-right; the hero
-       * card carries it regardless of the champion's family, because here the
-       * shape is the *card's* silhouette rather than a type marker — the type
-       * markers are the two `TypeBadge`s in the corner, which do vary.
+       * ### The chamfer is gone, and that is deliberate
        *
-       * `pr-6` on top of the scale padding: the chamfer removes the bottom
-       * right 22%, and without the extra inset the reach/might/speed pills run
-       * into the cut. Measured against the longest real hero name
-       * (`Auriel Dawnkeep`) rather than a fixture.
-       *
-       * The shape sits on the root here and the root is a `button` when
-       * selectable, which would normally eat the focus ring — so the ring is
-       * re-established as an inset shadow on `:focus-visible`, which `clip-path`
-       * cannot clip. `tests/components/shape.test.tsx` holds it.
+       * The card used to carry `lz-plate`. A chamfer removes the bottom-right
+       * ~22%, which is exactly where the export puts the door cluster — the two
+       * cannot both have that corner. The export's own tile is a plain
+       * `border-radius:10px` rectangle for this reason; the *shapes* on this card
+       * are the marks inside it, which is where they carry meaning. That also
+       * frees the focus ring to be an ordinary outline again, since there is no
+       * `clip-path` on the root to eat it.
        */
-      className={`lz-plate lz-surface flex flex-col pr-6 text-left ${
-        fill ? FILLED[scale] : SCALE[scale]
-      } ${
+      className={[
+        'lz-surface relative flex flex-col overflow-hidden text-left ring-1',
+        FORCE_RING[hero.primary],
+        fill ? 'w-full' : WIDTH[scale],
         onSelect
-          ? 'transition-shadow duration-(--duration-fast) hover:shadow-(--shadow-glow-air) focus-visible:shadow-[inset_0_0_0_2px_var(--color-air)]'
-          : ''
-      }`}
+          ? 'transition-shadow duration-(--duration-fast) hover:shadow-(--shadow-glow-air) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-air'
+          : '',
+      ].join(' ')}
     >
-      <div className="flex items-start gap-2">
+      {/* --- the art, and everything that sits over it -------------------- */}
+      <span className={`relative block w-full ${ART[scale]}`}>
+        <HeroPortrait
+          heroId={hero.id as HeroId}
+          force={hero.primary}
+          sizes={compact ? '(max-width: 1600px) 20vw, 214px' : '300px'}
+          scrim
+          fill
+        />
+
+        {/* Top-left: the House. The export's 26px type badge. */}
+        <span className="absolute top-2 left-2">
+          <TypeBadge type={hero.primary} size="compact" />
+        </span>
+
         {/*
-          T042 — the emblem.
+          Bottom-left: who she is.
 
           `Hero['id']` is `string`, because it comes out of a zod schema and
           cannot narrow; `HeroIcon` wants the 27-value `HeroId` union. This is
@@ -130,33 +161,70 @@ export function HeroCard({
           still a type error, and a hero added without an icon still breaks the
           build on the record's exhaustiveness.
         */}
-        <HeroIcon
-          heroId={hero.id as HeroId}
-          name={hero.name}
-          size={scale === 'full' ? 'detail' : 'chip'}
-        />
-        <span className="min-w-0 flex-1">
-          <span className="text-h3 block truncate font-display font-semibold uppercase">
-            {hero.name}
+        <span className="absolute bottom-2 left-2">
+          <HeroIcon heroId={hero.id as HeroId} name={hero.name} size="chip" />
+        </span>
+
+        {/* Bottom-right: the four doors. */}
+        <span className="absolute right-2 bottom-2">
+          <DoorCluster hero={hero} />
+        </span>
+      </span>
+
+      {/* --- the title strip, SOLID and beneath the art ------------------- */}
+      {/*
+        **A strip, never a scrim over the bottom of the illustration.** The
+        squad-builder export settled this one and it applies identically here: a
+        name over a painting is legible only while the pixels behind it stay
+        dark, and the bottom edge of 27 different illustrations is not something
+        anybody controls. The scrim above is for the marks, which are opaque
+        shapes; the text gets its own ground.
+      */}
+      <span className={`flex flex-col gap-1 bg-surface ${compact ? 'p-2' : 'p-3'}`}>
+        {/*
+          **The name gets the whole line, and the reach chip drops to the row
+          below.** Sharing a line with the chip cost `Hettamar Ironfall` and
+          `Reyna Two-Rivers` their last four characters at the 160px floor — and
+          the name is the field a player scans by, so it is the one field that
+          must never be the thing that gets cut. The export lays it out this way
+          for the same reason: a title line, then `epithet · R2` beneath it.
+        */}
+        {/* `data-hero-name` is how the e2e clipping check finds this. It cannot
+            select on `.font-display` — `TypeBadge` carries that class too and
+            sits earlier in the card, so the check silently measured the badge
+            and passed on a deliberately-truncated name. */}
+        <span
+          data-hero-name
+          className="text-h3 block truncate font-display font-semibold uppercase"
+        >
+          {hero.name}
+        </span>
+        <span className="flex items-baseline justify-between gap-2">
+          <span className="text-caption truncate font-mono uppercase text-muted">{hero.role}</span>
+          {/* Reach gates all targeting, so it is the one stat that earns a place
+              on a browsing tile. `shrink-0` — it is never what truncates. */}
+          <span className="text-caption shrink-0 rounded-sm border border-air px-1 font-mono text-air">
+            R{hero.reach}
           </span>
-          <span className="text-caption text-muted block font-mono uppercase">{hero.role}</span>
         </span>
-        <span className="flex shrink-0 gap-1">
-          <TypeBadge type={hero.primary} size="compact" />
-          <TypeBadge type={hero.secondary} size="compact" />
-        </span>
-      </div>
 
-      <Meter value={current} max={max} tone={hero.primary} label="HP" bare={compact} />
+        {/* HP only where it means something: a damaged champion, or a scale
+            with room. 27 identical full meters on a browsing grid is noise. */}
+        {(!compact || hp !== undefined) && (
+          <Meter value={hp ?? max} max={max} tone={hero.primary} label="HP" bare={compact} />
+        )}
 
-      <div className="flex flex-wrap gap-1">
-        <Pill label="REACH">{hero.reach}</Pill>
-        {!compact && <Pill label="MIGHT">{hero.stats.might}</Pill>}
-        {!compact && <Pill label="SPD">{hero.stats.speed}</Pill>}
-      </div>
+        {!compact && (
+          <span className="flex flex-wrap gap-1">
+            <Pill label="MIGHT">{hero.stats.might}</Pill>
+            <Pill label="SPD">{hero.stats.speed}</Pill>
+          </span>
+        )}
 
-      {/* Present at every scale — the labels drop, the meaning does not. */}
-      <RelationshipStrip hero={hero} compact={compact} />
+        {/* The full ladder at the scales that can hold it. `compact` carries the
+            same four Forces through `DoorCluster` on the art above. */}
+        {!compact && <RelationshipStrip hero={hero} />}
+      </span>
     </Root>
   );
 }
