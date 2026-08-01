@@ -27,6 +27,7 @@ import {
   checkRosterRules,
   statBudgetFor,
   type AuthoredHero,
+  type Rider,
   type Role,
   type ValidationFailure,
 } from '../packages/content/src/schema.js';
@@ -35,6 +36,7 @@ const root = (p: string): string => fileURLToPath(new URL(`../${p}`, import.meta
 
 const WORKBOOK = root('resources/characters/hero-stats.xlsx');
 const OVERLAY = root('tools/power-targeting.json');
+const RIDERS = root('tools/power-riders.json');
 const OUT_HEROES = root('packages/content/src/heroes.generated.ts');
 const OUT_VERSION = root('packages/content/src/version.generated.ts');
 const OUT_MATCHUPS = root('resources/characters/MATCHUPS.md');
@@ -319,6 +321,54 @@ function readOverlay(actives: ReadonlyMap<string, PowerDef>): Overlay {
   return parsed;
 }
 
+// ---------------------------------------------------------------------------
+// The authored rider file (020)
+// ---------------------------------------------------------------------------
+
+interface RiderFile {
+  readonly riders: Record<string, readonly Rider[]>;
+}
+
+/**
+ * What each power does on arrival.
+ *
+ * **A stricter check than the targeting overlay's**, and deliberately: that file
+ * is a set of exceptions, so a power absent from it simply takes the defaults.
+ * This one is a **census**. Every active power must appear, because an empty list
+ * means *"deliberately carries no rider"* and being absent must not be able to
+ * mean the same thing — otherwise "has none" and "nobody has read this prompt"
+ * become indistinguishable, which is the collapse FR-018 exists to prevent.
+ *
+ * So it fails in both directions: a power in the workbook and not here, and a
+ * name here that is not an active power.
+ */
+function readRiders(actives: ReadonlyMap<string, PowerDef>): RiderFile {
+  const parsed = JSON.parse(readFileSync(RIDERS, 'utf8')) as RiderFile;
+  const named = Object.keys(parsed.riders);
+
+  for (const name of named) {
+    if (!actives.has(name)) {
+      note(
+        `tools/power-riders.json names "${name}", which is not an active power in ` +
+          `the workbook — the rider file has drifted from Power List`,
+      );
+    }
+  }
+
+  const seen = new Set(named);
+  for (const name of actives.keys()) {
+    if (!seen.has(name)) {
+      note(
+        `tools/power-riders.json has no entry for "${name}". Every active power must ` +
+          `appear — use [] for a power that deliberately carries no rider, so that ` +
+          `"has none" stays distinguishable from "not yet authored".`,
+      );
+    }
+  }
+
+  return parsed;
+}
+
 /**
  * Self-clearing debt.
  *
@@ -425,6 +475,7 @@ function readHeroes(
   wb: ExcelJS.Workbook,
   powerList: PowerList,
   overlay: Overlay,
+  riders: RiderFile,
   heroPowers: ReadonlyMap<string, HeroPowers>,
 ): AuthoredHero[] {
   const sheet = sheetOf(wb, 'Hero Stats');
@@ -529,6 +580,14 @@ function readHeroes(
         targets: overlay.targets[powerName] ?? 'single',
         friendly: overlay.friendly.includes(powerName),
         reactive: overlay.reactive.includes(powerName),
+        /**
+         * **`?? []` is a fallback for the type checker, not for the data.**
+         * `readRiders` has already failed the build for any active power absent
+         * from the file, so this branch is unreachable — and it must stay a
+         * hard failure rather than a quiet default, or a missing entry would
+         * silently mean "carries no rider".
+         */
+        riders: riders.riders[powerName] ?? [],
       };
     });
 
@@ -714,9 +773,10 @@ async function main(): Promise<void> {
 
   const powerList = readPowerList(wb);
   const overlay = readOverlay(powerList.actives);
+  const riders = readRiders(powerList.actives);
   warnOnUnclearedNoDamage(overlay, powerList.actives);
   const heroPowers = readHeroPowers(wb);
-  const heroes = readHeroes(wb, powerList, overlay, heroPowers);
+  const heroes = readHeroes(wb, powerList, overlay, riders, heroPowers);
 
   const failures: ValidationFailure[] = [
     ...checkRosterRules(heroes),

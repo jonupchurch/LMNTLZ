@@ -1,0 +1,594 @@
+{
+  "$comment": [
+    "AUTHORED DATA, not derived. Read by tools/build-content.ts (feature 020).",
+    "",
+    "What a power does ON ARRIVAL. The workbook has no rider column, and `Power`",
+    "had no rider field at all until 020 -- so a rider was UNREPRESENTABLE rather",
+    "than merely unauthored, which is why resolve.ts could honestly hardcode",
+    "`ridersLanded: []` at every exit.",
+    "",
+    "NO MAGNITUDES AND NO DURATIONS LIVE HERE. Both derive from the applying",
+    "power's tier via the table in resources/mechanics/05-status.md, so a rebalance",
+    "edits one table instead of 87 entries (Constitution XV). The schema is strict",
+    "and rejects a magnitude by name. The single exception is `band` for shred,",
+    "whose 20/30/40% is the one magnitude the tier table does not determine.",
+    "",
+    "ORDER IS SIGNIFICANT. Riders are contested one RNG draw each, in the order",
+    "written here, and the draw order is part of the engine contract. This is an",
+    "array for that reason and never an object.",
+    "",
+    "EVERY ACTIVE POWER APPEARS, including those with none. An empty list means",
+    "\"deliberately carries no rider\"; being absent is a build failure. Without that",
+    "distinction \"has none\" and \"nobody has read this prompt yet\" look identical,",
+    "which is the exact collapse FR-018 exists to prevent.",
+    "",
+    "AUTHORED BY READING ALL 87 PROMPTS, ONE AT A TIME. Not extracted. The explicit",
+    "\"Rider:\" clause is a tier-1/tier-2 convention only -- 18 powers carry it, the",
+    "tier-0 autos state they have NONE, and every tier-3/4/5 power folds its effect",
+    "into prose (\"Coll also gains a temporary Magic Resist buff\"). A regex over the",
+    "Prompt column returns zero riders for the entire top half of the roster and",
+    "looks like a clean answer.",
+    "",
+    "`at` IS NOT `friendly`. Most buffs in this roster ride an ATTACK and land on",
+    "the caster; the power still aims at an enemy. See the same warning in",
+    "tools/power-targeting.json, which learned it first.",
+    "",
+    "$damageShape and $unmodelled below are documentation, not data. The first",
+    "records powers whose special behaviour is a damage modifier rather than a",
+    "status, so an empty list is never mistaken for an unread prompt. The second",
+    "records effects the prompts describe that 05-status.md has no family for --",
+    "adding a seventh family is a design decision, not a build one."
+  ],
+  "riders": {
+    "Sundered Ground": [],
+    "Cutting Gale": [],
+    "Ember Lash": [],
+    "Undertow": [],
+    "Verdict Light": [],
+    "Veilcut": [],
+    "Open Line": [],
+    "Seamfinder": [],
+    "Deadweight": [],
+    "Root and Hold": [
+      {
+        "kind": "debuff",
+        "stat": "speed",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Thin the Air": [
+      {
+        "kind": "debuff",
+        "stat": "perception",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Feed the Bloom": [
+      {
+        "kind": "burn",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Wear the Stone": [
+      {
+        "kind": "shred",
+        "stat": "armor",
+        "at": "target",
+        "op": "apply",
+        "band": "small"
+      }
+    ],
+    "Nothing Hidden": [
+      {
+        "kind": "fade",
+        "stat": null,
+        "at": "target",
+        "op": "remove",
+        "band": null
+      }
+    ],
+    "Draw the Veil": [
+      {
+        "kind": "debuff",
+        "stat": "perception",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Redouble": [],
+    "Thread the Guard": [],
+    "Make an Opening": [
+      {
+        "kind": "shred",
+        "stat": "armor",
+        "at": "target",
+        "op": "apply",
+        "band": "small"
+      }
+    ],
+    "The Mountain Answers": [
+      {
+        "kind": "debuff",
+        "stat": "speed",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Sky Unmoored": [
+      {
+        "kind": "debuff",
+        "stat": "perception",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Everything Burns Twice": [
+      {
+        "kind": "burn",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Tide Remembers": [
+      {
+        "kind": "shred",
+        "stat": "armor",
+        "at": "target",
+        "op": "apply",
+        "band": "moderate"
+      }
+    ],
+    "The First Word Spoken": [
+      {
+        "kind": "fade",
+        "stat": null,
+        "at": "target",
+        "op": "remove",
+        "band": null
+      },
+      {
+        "kind": "debuff",
+        "stat": "perception",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Last Silence": [
+      {
+        "kind": "debuff",
+        "stat": "perception",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "One Clean Stroke": [
+      {
+        "kind": "bleed",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Single Truth": [],
+    "The Sky Falls": [
+      {
+        "kind": "shred",
+        "stat": "armor",
+        "at": "target",
+        "op": "apply",
+        "band": "moderate"
+      }
+    ],
+    "The Bloom Lends Heat": [
+      {
+        "kind": "buff",
+        "stat": "might",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Silence Lends Cover": [
+      {
+        "kind": "buff",
+        "stat": "agility",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Word Lends Sight": [
+      {
+        "kind": "buff",
+        "stat": "perception",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Tide Lends Patience": [
+      {
+        "kind": "buff",
+        "stat": "resolve",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Sky Lends Swiftness": [
+      {
+        "kind": "buff",
+        "stat": "speed",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Deep Lends Weight": [
+      {
+        "kind": "buff",
+        "stat": "toughness",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Years in the Making": [],
+    "Kneel and Raise": [
+      {
+        "kind": "buff",
+        "stat": "magicResist",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Orchard Over Ruin": [],
+    "A Distance Never Closed": [],
+    "Fair Weather": [],
+    "Jump First": [
+      {
+        "kind": "buff",
+        "stat": "speed",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Room Warms": [
+      {
+        "kind": "burn",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Less Left to Lose": [],
+    "The Coal, Not the Flame": [
+      {
+        "kind": "burn",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Your Own Past, Rising": [],
+    "Give Ground, Take Coast": [
+      {
+        "kind": "buff",
+        "stat": "magicResist",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Perfectly Calm": [
+      {
+        "kind": "debuff",
+        "stat": "perception",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Gaze Accuses": [
+      {
+        "kind": "buff",
+        "stat": null,
+        "at": "target",
+        "op": "remove",
+        "band": null
+      }
+    ],
+    "Enough Light for Everyone": [],
+    "The Lantern Holds": [
+      {
+        "kind": "buff",
+        "stat": "resolve",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "A Kindness, Ending": [],
+    "Unmake the Wound": [],
+    "I Know Your Hour": [
+      {
+        "kind": "buff",
+        "stat": "resolve",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Never Twice": [],
+    "Two Rivers Meeting": [],
+    "Clear the Room": [
+      {
+        "kind": "buff",
+        "stat": "armor",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The One Gap": [],
+    "Already Behind You": [],
+    "Before You Decide": [
+      {
+        "kind": "buff",
+        "stat": "armor",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "All At Once": [],
+    "End of Argument": [],
+    "Guards Break First": [
+      {
+        "kind": "buff",
+        "stat": "armor",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "shred",
+        "stat": "armor",
+        "at": "target",
+        "op": "apply",
+        "band": "moderate"
+      }
+    ],
+    "Wrath of the Slow Stone": [],
+    "The God-Bone Wakes": [
+      {
+        "kind": "buff",
+        "stat": "magicResist",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "buff",
+        "stat": "toughness",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Green Crown Descends": [
+      {
+        "kind": "buff",
+        "stat": "magicResist",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Thin Blade Falls": [],
+    "Whisper from the High Reach": [
+      {
+        "kind": "buff",
+        "stat": "speed",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "buff",
+        "stat": "agility",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Nothing to Catch You": [
+      {
+        "kind": "debuff",
+        "stat": "agility",
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "First Spark, Last Laugh": [],
+    "Glad Ruin": [],
+    "The Long Burn": [
+      {
+        "kind": "burn",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Drown in What You Did": [],
+    "The Bulwark Holds": [
+      {
+        "kind": "buff",
+        "stat": "magicResist",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "taunt",
+        "stat": null,
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Still Pool Closes": [
+      {
+        "kind": "silence",
+        "stat": null,
+        "at": "target",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Sentence Passed": [],
+    "The Unhidden Hour": [
+      {
+        "kind": "buff",
+        "stat": null,
+        "at": "target",
+        "op": "remove",
+        "band": null
+      }
+    ],
+    "Last Light on the Wall": [
+      {
+        "kind": "buff",
+        "stat": "resolve",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "buff",
+        "stat": "toughness",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "taunt",
+        "stat": null,
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Mercy at the End": [],
+    "The Undoing": [
+      {
+        "kind": "buff",
+        "stat": null,
+        "at": "target",
+        "op": "remove",
+        "band": null
+      }
+    ],
+    "Shepherd of Endings": [
+      {
+        "kind": "buff",
+        "stat": "resolve",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Immaculate": [],
+    "The Current Takes All": [],
+    "The Wide Reaping": [
+      {
+        "kind": "buff",
+        "stat": "toughness",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "The Spear Finds It": [],
+    "Quicker Than Told": [],
+    "The Long Point": [
+      {
+        "kind": "buff",
+        "stat": "armor",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      }
+    ],
+    "Avalanche": [],
+    "Ironfall": [],
+    "The Undenied": [
+      {
+        "kind": "buff",
+        "stat": "armor",
+        "at": "self",
+        "op": "apply",
+        "band": null
+      },
+      {
+        "kind": "shred",
+        "stat": "armor",
+        "at": "target",
+        "op": "apply",
+        "band": "large"
+      }
+    ]
+  },
+  "$damageShape": {
+    "Thread the Guard": "Penetration bonus ON THIS HIT. Riders enact in phase 4, after damage, so a status here would miss the hit it is for.",
+    "The Single Truth": "A larger Penetration bonus on this hit. Same reason as Thread the Guard.",
+    "Years in the Making": "Damage rises with each prior turn Bramwen has taken.",
+    "Orchard Over Ruin": "Recovers a portion of damage dealt (leech).",
+    "A Distance Never Closed": "Cannot be evaded — an accuracy override.",
+    "Less Left to Lose": "Damage rises as Pyrrhic's own Toughness falls.",
+    "Your Own Past, Rising": "Scales with the target Reckoning stacks and does NOT consume them.",
+    "A Kindness, Ending": "Execute — bonus damage below half Toughness.",
+    "Never Twice": "Cannot be evaded.",
+    "The One Gap": "Ignores 40% of the mitigation left after Seams Everywhere.",
+    "Already Behind You": "Cannot be evaded.",
+    "All At Once": "Reads Armor already stripped: +10% per 10%, max +40%. Leaves the shred in place.",
+    "The Thin Blade Falls": "Guaranteed critical.",
+    "First Spark, Last Laugh": "Bonus damage if the target is already burning.",
+    "Glad Ruin": "Sacrifices own Toughness for damage.",
+    "Drown in What You Did": "CONSUMES every Reckoning stack for a finishing burst.",
+    "Sentence Passed": "Bonus damage to a target with no buffs remaining.",
+    "Mercy at the End": "Execute, scaling further the lower the target Toughness.",
+    "Immaculate": "Ignores 40% of the target mitigation.",
+    "The Spear Finds It": "Ignores 40% of the mitigation left after Seams Everywhere.",
+    "Quicker Than Told": "Acts again immediately if the target is defeated, chaining.",
+    "Avalanche": "CONSUMES every Armor-shred stack: each 10% removed becomes +15%, max +60%.",
+    "Ironfall": "Ignores 40% of the target mitigation.",
+    "The Green Crown Descends": "Also leeches a larger portion of damage dealt."
+  },
+  "$unmodelled": {
+    "The Sky Falls": "\"plus brief vulnerability\" — 05-status.md has no vulnerability family. The 30% Armor shred IS modelled.",
+    "Shepherd of Endings": "\"marks the target for bonus damage from allies\" — no mark family exists.",
+    "The Unhidden Hour": "Also cleanses the whole squad. This file records the contested half (the enemy strip); the friendly half needs a power that touches BOTH sides, which `friendly` cannot express — a known limit the targeting overlay already records."
+  }
+}

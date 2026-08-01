@@ -102,6 +102,95 @@ export const heroStatsSchema = z.strictObject({
 
 export type HeroStats = z.infer<typeof heroStatsSchema>;
 
+/**
+ * The eleven status kinds a rider can apply. Mirrors `StatusKind` in
+ * `packages/sim/rules/status.ts`, which is where the *behaviour* of each lives.
+ *
+ * Restated here rather than imported because `@lmntlz/content` must not depend on
+ * `@lmntlz/sim` — the dependency runs the other way, and a cycle between the
+ * roster and the engine would be a genuine architectural problem rather than an
+ * inconvenience. A test asserts the two lists agree.
+ */
+const statusKindSchema = z.enum([
+  'burn',
+  'bleed',
+  'poison',
+  'buff',
+  'debuff',
+  'shred',
+  'shield',
+  'taunt',
+  'fade',
+  'stun',
+  'silence',
+]);
+
+/**
+ * One authored rider.
+ *
+ * **Carries no magnitude and no duration, and that is enforced rather than
+ * encouraged** — the schema is strict, so a file offering `magnitude` is rejected
+ * by name. Both derive from the applying power's tier (Constitution XV), which is
+ * what lets a rebalance edit one table in `05-status.md` instead of 87 entries
+ * here.
+ *
+ * The one exception is `band`, for shred: the three shred bands are 20/30/40% and
+ * are the single magnitude the tier table does not determine.
+ */
+export const riderSchema = z.strictObject({
+  kind: statusKindSchema,
+  /**
+   * Required for `buff`, `debuff` and `shred`; forbidden otherwise. Checked as a
+   * refinement below rather than by a union, so the error names the power.
+   */
+  stat: z.enum(STAT_KEYS).nullable(),
+  /**
+   * **Load-bearing, and the existing targeting overlay learned this the hard way.**
+   *
+   * Most buffs in this roster ride an *attack* and land on the caster — *"Ossic
+   * also raises a wall of bone around himself"*. The power still aims at an enemy.
+   * Marking such a power `friendly` would make the engine send a damaging strike
+   * at an ally, so who the POWER targets and who the RIDER lands on are two
+   * different questions.
+   */
+  at: z.union([z.literal('target'), z.literal('self')]),
+  /**
+   * **Apply an effect, or take one away.**
+   *
+   * Light's whole identity is removal — *Nothing Hidden* strips `fade` so a hidden
+   * enemy becomes selectable, and *The Gaze Accuses* strips a buff before the hit
+   * lands. Without this, those powers would have to be recorded as carrying no
+   * rider, which is exactly the "deliberately none" / "not yet authored" collapse
+   * FR-018 exists to prevent.
+   */
+  op: z.union([z.literal('apply'), z.literal('remove')]),
+  /** Shred only — the 20/30/40% bands. `null` for every other kind. */
+  band: z.union([z.literal('small'), z.literal('moderate'), z.literal('large')]).nullable(),
+})
+  /**
+   * **Only an `apply` needs a stat.** A *strip* takes buffs away without caring
+   * which stat they raised — Seraphel's `The Gaze Accuses` removes one active
+   * buff, Lucen's `The Unhidden Hour` and Nyxara's `The Undoing` remove all of
+   * them. Requiring a stat there would force an author to name one arbitrarily
+   * and the engine to ignore it.
+   *
+   * Caught by this schema rejecting the first draft of the rider file, which is
+   * the check working rather than an inconvenience.
+   */
+  .refine(
+    (r) =>
+      r.op === 'remove' || !['buff', 'debuff', 'shred'].includes(r.kind) || r.stat !== null,
+    { message: 'an applied buff, debuff or shred rider must name a stat' },
+  )
+  .refine((r) => (r.op === 'remove' ? r.stat === null : true), {
+    message: 'a removal names a kind, never a stat — it takes every effect of that kind',
+  })
+  .refine((r) => (r.kind === 'shred' ? r.band !== null : r.band === null), {
+    message: 'band is required for shred and forbidden for every other kind',
+  });
+
+export type Rider = z.infer<typeof riderSchema>;
+
 export const powerSchema = z.strictObject({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -131,6 +220,18 @@ export const powerSchema = z.strictObject({
   friendly: z.boolean(),
   /** Accepted now so the hero-numbers pass needs no migration (T039). */
   reactive: z.boolean(),
+  /**
+   * **What the power does on arrival** (020).
+   *
+   * An **array**, because riders are contested one RNG draw each and the draw
+   * order is part of the engine contract. An object's key order is a replay
+   * hazard that does not look like one.
+   *
+   * Empty means *"deliberately carries none"* — the eight tier-0 autos say so in
+   * their own prompt text. Every active power is required to appear, so "has
+   * none" and "not yet authored" stay distinguishable (FR-018).
+   */
+  riders: z.array(riderSchema).readonly(),
 });
 
 export type Power = z.infer<typeof powerSchema>;

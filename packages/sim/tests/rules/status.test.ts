@@ -13,7 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { getHero } from '@lmntlz/content';
+import { getAllHeroes, getHero } from '@lmntlz/content';
 import {
   CROWD_CONTROL,
   STATUS_CATALOG,
@@ -408,6 +408,53 @@ describe('shred and shields', () => {
 });
 
 // ---------------------------------------------------------------------------
+
+/**
+ * **The seam between the roster and the engine, and neither side can check it
+ * alone.**
+ *
+ * `@lmntlz/content` declares the eleven kinds a rider may name; `packages/sim`
+ * decides what each one does. Content cannot import sim — the dependency runs one
+ * way, and a cycle between the roster and the engine would be a real architectural
+ * problem. So content restates the list, and a restated list is exactly the kind
+ * that drifts silently.
+ *
+ * This is the only place both are in scope. Without it, a kind authored on a power
+ * and missing from the catalog would be a rider that lands on nothing: no error, no
+ * failing test, just a power that quietly does less than its text says — the shape
+ * of defect this whole feature exists to remove.
+ */
+describe('the roster and the catalog agree about what a rider can be', () => {
+  const authored = [
+    ...new Set(
+      getAllHeroes().flatMap((h) => h.powers.flatMap((p) => p.riders.map((r) => r.kind))),
+    ),
+  ].sort();
+
+  it('every kind any power applies exists in the catalog', () => {
+    for (const kind of authored) {
+      expect(STATUS_KINDS as readonly string[], `no catalog entry for "${kind}"`).toContain(kind);
+    }
+  });
+
+  it('every rider that names a stat names one the engine can read', () => {
+    for (const hero of getAllHeroes()) {
+      for (const power of hero.powers) {
+        for (const rider of power.riders) {
+          if (rider.stat === null) continue;
+          expect(
+            effectiveStat(
+              { ...hero, statuses: [], statMods: {} } as never,
+              hero.stats,
+              rider.stat,
+            ),
+            `${power.id} names a stat effectiveStat cannot read`,
+          ).toBeTypeOf('number');
+        }
+      }
+    }
+  });
+});
 
 describe('cleanse and strip', () => {
   it('a cleanse removes negatives and leaves positives', () => {
