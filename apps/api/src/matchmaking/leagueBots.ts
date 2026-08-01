@@ -85,11 +85,20 @@ import {
  */
 interface LeagueRung {
   readonly name: string;
-  readonly band: Exclude<BotBand, 'starter' | 'bronze'>;
+  readonly band: Exclude<BotBand, 'starter'>;
   readonly runes: number;
   /** The most of six that any single type may beat. Lower is harder. */
   readonly ceiling: number;
   readonly themes: readonly [DamageType, DamageType, DamageType];
+  /**
+   * The generated rungs' index into the 252 theme combinations.
+   *
+   * Present only on generated rungs, and it exists so a composition collision can be
+   * *resolved* rather than reported: the builder advances to the next support pair and
+   * recomposes. Absent on the authored twenty-four, whose themes are chosen by hand and
+   * must never be moved by an algorithm.
+   */
+  readonly walk?: number;
 }
 
 /**
@@ -111,7 +120,7 @@ interface LeagueRung {
  * it off stage 1 — it has only six carriers in the whole roster, and an exact
  * six-seat squad on fire has exactly one solution.
  */
-const LEAGUE_RAMP: readonly LeagueRung[] = Object.freeze([
+const AUTHORED_RAMP: readonly LeagueRung[] = Object.freeze([
   /* --- Silver · the starter lesson, with gear behind it -- coverage 4 -------- */
   { name: 'The Weighed Coast', band: 'silver', runes: 20, ceiling: 4, themes: ['water', 'earth', 'pierce'] },
   { name: 'The Hollow Crown', band: 'silver', runes: 22, ceiling: 4, themes: ['dark', 'air', 'crush'] },
@@ -165,6 +174,198 @@ const LEAGUE_RAMP: readonly LeagueRung[] = Object.freeze([
 /** `The Weighed Coast` → `Weighed_Coast`, matching the starter ramp's convention. */
 const accountName = (name: string): string => name.replace(/^The /, '').replace(/\s+/g, '_');
 
+/* ===========================================================================
+ * The hundred (Jon, 2026-08-01)
+ * ======================================================================== */
+
+/**
+ * **A hundred more opponents, twenty per band — and Bronze finally gets some.**
+ *
+ * > *"If we need to create more bots for now, let's make 100 new bots across all the
+ * > leagues."*
+ *
+ * The immediate reason is the offered list going random: five drawn at random from a
+ * pool of six is not a rotation, it is the same six shuffled. Variety is a property of
+ * the **pool**, and the pool was 6 per band.
+ *
+ * ### Bronze had nothing at all, and that was a live defect
+ *
+ * The twenty starter bots are `band: 'starter'`, which the nursery clause excludes from
+ * every ordinary pool — *"a player who returns after leaving would be farming a pool
+ * built for beginners"* — and `AUTHORED_RAMP` starts at Silver. So **the league every
+ * player lands in the moment they graduate had no authored defenders**, fell under
+ * `MIN_POOL`, and widened, which serves up to 2.67× gear against a published 1.67×
+ * guarantee. `BOT_DISTRIBUTION` allocates Bronze 20% and nothing had ever filled it.
+ *
+ * ### Generated, and stated as such
+ *
+ * The twenty-four above are hand-authored: named for what the squad *does*, themed for
+ * spread against their neighbours. These hundred are composed from a word table and a
+ * theme walk. **That is a real drop in character and it is the trade being made** — a
+ * hundred hand-authored rungs is the single largest authoring job in the project
+ * (`009` budgets ~130 of them), and an empty Bronze is shipping today. The authored
+ * ramp is deliberately left first in the list so it keeps its identity.
+ */
+
+/** The nine, in a fixed order — the theme walk below indexes into this. */
+const TYPES: readonly DamageType[] = Object.freeze([
+  'earth',
+  'air',
+  'fire',
+  'water',
+  'light',
+  'dark',
+  'slash',
+  'pierce',
+  'crush',
+]);
+
+/**
+ * Ten by ten, so the hundred names are exactly the product and none repeat.
+ *
+ * **Short on purpose.** `accountName` turns `The Quiet Crown` into `Quiet_Crown`, and
+ * `validateUsername` caps at 16 characters — the cap that stopped the seeder mid-run at
+ * bot 41 last time, after twenty rows had already been written. The longest pair here
+ * is 12, and `leagueBots.test.ts` checks all of them before anything is written.
+ */
+const ADJECTIVES = Object.freeze([
+  'Iron',
+  'Cold',
+  'Pale',
+  'Deep',
+  'Grey',
+  'Still',
+  'Sworn',
+  'Bound',
+  'Quiet',
+  'Waking',
+]);
+
+const NOUNS = Object.freeze([
+  'Tide',
+  'Gate',
+  'Crown',
+  'Vigil',
+  'Reach',
+  'Wall',
+  'Oath',
+  'Mark',
+  'Span',
+  'Bell',
+]);
+
+/**
+ * Where each band's gear may sit, in complete runes.
+ *
+ * Derived from `LEAGUE_BANDS ÷ COMPLETE_RUNE_SCORE` rather than chosen, so a band edit
+ * moves these with it. Bronze is the narrow one — eight rune values for twenty bots —
+ * because **the starter ramp already occupies almost all of Bronze**, climbing to 19
+ * runes against Silver's floor of 20. Bots therefore share gear scores inside Bronze,
+ * which is fine: `botRating` still spreads them, and two bots at the same gear with
+ * different squads are two different fights.
+ */
+const BAND_RUNES: Readonly<Record<Exclude<BotBand, 'starter'>, readonly [number, number]>> =
+  Object.freeze({
+    bronze: [12, 19],
+    silver: [20, 31],
+    gold: [32, 49],
+    platinum: [50, 69],
+    diamond: [70, 81],
+  });
+
+/** Coverage tightens above Silver, and 3 is the composable floor — see the note above. */
+const BAND_CEILING: Readonly<Record<Exclude<BotBand, 'starter'>, number>> = Object.freeze({
+  bronze: 4,
+  silver: 4,
+  gold: 3,
+  platinum: 3,
+  diamond: 3,
+});
+
+/**
+ * ⚠️ **There are only 252 squads in the game, and the arithmetic says so.**
+ *
+ * `DOMINANT_SEATS = 3` and **every type has exactly three champions**, so a squad's
+ * lead theme does not merely *bias* it — it fixes three of the six seats to precisely
+ * the three champions of that type. The remaining three come from the six champions of
+ * the two support themes, and `select` is deterministic, so a squad is a pure function
+ * of `(lead, {second, third})`:
+ *
+ *     9 leads × C(8,2) support pairs = 9 × 28 = 252
+ *
+ * A hundred new bots need 200 more squads on top of the 48 already composed. **248
+ * against a ceiling of 252 is not comfortable, it is the whole space**, and a walk that
+ * reuses any support pair collides immediately — a first attempt using coprime strides
+ * produced **52 duplicate squads**, including pairs inside the same band, where two bots
+ * really are the same fight.
+ *
+ * So the pairs are *enumerated* rather than walked. `k` indexes the 252 combinations
+ * directly: the lead cycles every rung so neighbours never want the same answer, and
+ * the support pair advances only after all nine leads have used it. Distinct by
+ * construction for every `k < 252`, which is checked rather than trusted.
+ */
+const SUPPORT_PAIRS = 28;
+
+function themeWalk(k: number): readonly [DamageType, DamageType, DamageType] {
+  const lead = k % 9;
+
+  /* The 28 unordered pairs of the eight non-lead types, in a fixed order. */
+  const others = TYPES.filter((_, i) => i !== lead);
+  const pairs: Array<readonly [DamageType, DamageType]> = [];
+  for (let a = 0; a < others.length; a += 1) {
+    for (let b = a + 1; b < others.length; b += 1) pairs.push([others[a]!, others[b]!]);
+  }
+
+  const [second, third] = pairs[Math.floor(k / 9) % SUPPORT_PAIRS]!;
+  return [TYPES[lead]!, second, third];
+}
+
+const BANDS: readonly Exclude<BotBand, 'starter'>[] = Object.freeze([
+  'bronze',
+  'silver',
+  'gold',
+  'platinum',
+  'diamond',
+]);
+
+/** Twenty per band across the five — the hundred. */
+const PER_BAND = 20;
+
+function generatedRamp(): readonly LeagueRung[] {
+  const rungs: LeagueRung[] = [];
+
+  BANDS.forEach((band, bandIndex) => {
+    const [lo, hi] = BAND_RUNES[band];
+
+    for (let i = 0; i < PER_BAND; i += 1) {
+      const k = bandIndex * PER_BAND + i;
+
+      rungs.push({
+        /* The product of the two tables, walked so a band is not all one adjective. */
+        name: `The ${ADJECTIVES[k % ADJECTIVES.length]!} ${NOUNS[Math.floor(k / ADJECTIVES.length) % NOUNS.length]!}`,
+        band,
+        /* Spread across the band rather than bunched, so a player at the floor still
+           meets somebody they can beat and one at the ceiling still meets somebody above. */
+        runes: lo + Math.round(((hi - lo) * i) / (PER_BAND - 1)),
+        ceiling: BAND_CEILING[band],
+        themes: themeWalk(k),
+        walk: k,
+      });
+    }
+  });
+
+  return Object.freeze(rungs);
+}
+
+/**
+ * The authored twenty-four first, then the generated hundred.
+ *
+ * **Order is identity here, not just sequence**: `position` and `botRating` both read
+ * the index, so putting the generated rungs after the authored ones leaves the original
+ * twenty-four where they were.
+ */
+const LEAGUE_RAMP: readonly LeagueRung[] = Object.freeze([...AUTHORED_RAMP, ...generatedRamp()]);
+
 /**
  * The Hidden squad's themes: the next rung's, or — at the very top — the trap.
  *
@@ -190,12 +391,73 @@ function hiddenThemesFor(
  * not have to know which file it came from.
  */
 export interface LeagueBot extends StarterBot {
-  readonly band: Exclude<BotBand, 'starter' | 'bronze'>;
+  readonly band: Exclude<BotBand, 'starter'>;
 }
 
-export const LEAGUE_BOTS: readonly LeagueBot[] = Object.freeze(
-  LEAGUE_RAMP.map((rung, i) => {
-    const themes = hiddenThemesFor(rung, LEAGUE_RAMP[i + 1]);
+/**
+ * Composed, in order, resolving same-band collisions as it goes.
+ *
+ * **A loop rather than a `map`, because composing rung *n* now depends on what rungs
+ * `0…n-1` came out as.** Only 252 distinct squads exist (see `themeWalk`), so with 144
+ * bots the generator lands on an already-used composition from time to time. Inside a
+ * band that is the same fight offered twice, so the rung advances to the next support
+ * pair and recomposes.
+ *
+ * Authored rungs are **never** re-walked — their themes are a hand-made choice, and two
+ * of them are already seeded into a database where `battle_records` has recorded the
+ * squads. A collision involving one is left alone and pinned by the test instead.
+ */
+function composeRamp(): readonly LeagueBot[] {
+  const bots: LeagueBot[] = [];
+  /** `band:heroIds` of every Visible six already placed — the collision index. */
+  const placed = new Set<string>();
+
+  LEAGUE_RAMP.forEach((original, i) => {
+    let rung = original;
+
+    /* Up to 27 re-walks — three full turns of the nine leads. Beyond that the space is
+       genuinely exhausted and the collision is reported by the test rather than hidden. */
+    for (let attempt = 1; attempt <= 27 && rung.walk !== undefined; attempt += 1) {
+      const trial = composeOne(rung, i);
+      const key = `${rung.band}:${keyOf(trial.visible)}`;
+      if (!placed.has(key)) break;
+      rung = { ...rung, themes: themeWalk(rung.walk + 9 * attempt) };
+    }
+
+    const bot = composeOne(rung, i);
+    placed.add(`${bot.band}:${keyOf(bot.visible)}`);
+    bots.push(bot);
+  });
+
+  return Object.freeze(bots);
+}
+
+const keyOf = (seats: readonly BotSeat[]): string =>
+  seats
+    .map((s) => s.heroId)
+    .sort()
+    .join(',');
+
+export const LEAGUE_BOTS: readonly LeagueBot[] = composeRamp();
+
+/** One rung, composed. `i` is its index in `LEAGUE_RAMP`, which sets position and chain. */
+function composeOne(rung: LeagueRung, i: number): LeagueBot {
+  {
+    /**
+     * ⚠️ **The two ramps are separate chains, and the boundary is load-bearing.**
+     *
+     * `The Shut Gate` is the last authored rung, and being last is what gives it the
+     * *trap* Hidden squad — champions not punished by the type its Visible six invites.
+     * Appending the generated hundred gave it a "next" for the first time, which would
+     * have silently recomposed it into an ordinary themed squad.
+     *
+     * It is already seeded, and `battle_records` stores squad composition: Constitution
+     * XVI makes recorded battles permanent, so recomposing a live bot would leave those
+     * records describing a squad that no longer exists. The chain therefore breaks at
+     * the seam, and both ramps end in a trap exactly as each was written to.
+     */
+    const last = i + 1 === AUTHORED_RAMP.length || i + 1 === LEAGUE_RAMP.length;
+    const themes = hiddenThemesFor(rung, last ? undefined : LEAGUE_RAMP[i + 1]);
 
     /**
      * **Visible first, then Hidden from what is left.** The two zones cannot share
@@ -231,5 +493,5 @@ export const LEAGUE_BOTS: readonly LeagueBot[] = Object.freeze(
       dominant: rung.themes[0],
       invites: invitedAnswer(rung.themes),
     });
-  }),
-);
+  }
+}

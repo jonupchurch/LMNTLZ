@@ -430,7 +430,7 @@ export async function eligiblePool(accountId: string): Promise<EligiblePool> {
 export async function candidates(accountId: string): Promise<CandidateList> {
   const { own, league, gearScore, widened, pool } = await eligiblePool(accountId);
 
-  const ordered = takeSpread(pool, OFFER_LIMIT);
+  const ordered = drawOffers(pool, OFFER_LIMIT);
 
   /**
    * Every offering's Visible six, in **one** query rather than one per candidate.
@@ -607,7 +607,7 @@ async function defenders(
 }
 
 /**
- * Take `limit` from a rating-ordered list **without collapsing its range**.
+ * Draw `limit` at random from a rating-ordered list, **still in rating order**.
  *
  * ### Why not `slice(0, limit)`
  *
@@ -619,35 +619,59 @@ async function defenders(
  * So the top five of a bled list are the five highest-rated — which after a bleed
  * from above means the offers are *all* from the league above and none from the
  * player's own band. Truncating from the front would silently undo `bleed.ts`
- * entirely, and it would look like it was working.
+ * entirely, and it would look like it was working. A uniform draw cannot: it samples
+ * the pool in the pool's own proportions, which *is* the bleed mix.
  *
- * Sampling at even indices instead keeps the strongest, the weakest, and a spread
- * between them, so the proportions survive roughly intact and the player is offered
- * a **range of difficulty** rather than five versions of the same fight.
+ * ### ⚠️ This was deterministic until 2026-08-01, and the reversal is Jon's
  *
- * **Deterministic, and that is a rule rather than an accident.** A randomly sampled
- * list would let a player reroll the opponent screen until it offered somebody soft,
- * which converts a choice into a slot machine and quietly inflates every win rate on
- * the ladder. Same pool, same five, until the pool itself changes.
+ * > *"randomly chosen from the pool. It should not surface the same opponents over
+ * > and over."*
+ *
+ * The previous version sampled at even indices and this comment argued the opposite
+ * case: *"a randomly sampled list would let a player reroll the opponent screen until
+ * it offered somebody soft, which converts a choice into a slot machine."* That cost
+ * is real and is now accepted — **refreshing the screen redraws**, and a player who
+ * refreshes for a weak opponent will find one.
+ *
+ * Two things bound the damage. `ratingDeltas` already pays less for beating somebody
+ * rated below you, so shopping downward mostly buys time rather than standing. And the
+ * pool is the *only* thing that limits the draw, which is why a hundred bots landed in
+ * the same change: five drawn at random from six is not rotation, it is the same six
+ * shuffled.
+ *
+ * **The order of the result is still rating, descending.** Only membership is random —
+ * the contract's ordering promise is about how the five are read, not how they were
+ * chosen, and a randomly *ordered* list would make the rail jump around between draws.
+ *
+ * `random` is injected so the property tests can be exact rather than statistical; the
+ * server passes nothing and gets `Math.random`. This is matchmaking, not resolution —
+ * no seed is involved and none is disclosed (Constitution XII).
  */
-export function takeSpread<T>(ordered: readonly T[], limit: number): T[] {
+export function drawOffers<T>(
+  ordered: readonly T[],
+  limit: number,
+  random: () => number = Math.random,
+): T[] {
   if (limit <= 0) return [];
   if (ordered.length <= limit) return [...ordered];
-  if (limit === 1) return [ordered[0]!];
 
-  const picked: T[] = [];
-  const seen = new Set<number>();
-
-  /* `i / (limit - 1)` runs 0 … 1 inclusive, so the first and last are always taken
-     and the rest land evenly between them. */
+  /**
+   * **Partial Fisher–Yates over the indices, not `sort(() => random() - 0.5)`.**
+   * A comparator that returns random values is not a shuffle — it is biased, and how
+   * biased depends on the engine's sort implementation, so it would produce a
+   * different distribution on a different Node version.
+   */
+  const index = Array.from({ length: ordered.length }, (_, i) => i);
   for (let i = 0; i < limit; i += 1) {
-    const index = Math.round((i / (limit - 1)) * (ordered.length - 1));
-    if (seen.has(index)) continue;
-    seen.add(index);
-    picked.push(ordered[index]!);
+    const j = i + Math.floor(random() * (index.length - i));
+    [index[i], index[j]] = [index[j]!, index[i]!];
   }
 
-  return picked;
+  /* Back into rating order: membership is the random part, sequence is not. */
+  return index
+    .slice(0, limit)
+    .sort((a, b) => a - b)
+    .map((i) => ordered[i]!);
 }
 
 /**

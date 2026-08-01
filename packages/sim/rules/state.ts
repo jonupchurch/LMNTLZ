@@ -168,6 +168,25 @@ export function effectiveStat(
   base: Readonly<Hero['stats']>,
   key: keyof Hero['stats'],
 ): number {
-  const raw = base[key] + (hero.statMods[key] ?? 0);
+  return cappedStat(base[key], hero.statMods[key] ?? 0);
+}
+
+/**
+ * `base + points`, floored at 0 and capped at 75 — **the clamp on its own**.
+ *
+ * Extracted because three callers need it and only one of them has a `HeroState`.
+ * `effectiveStat` is the battle-time reading (authored stats plus buffs and debuffs);
+ * `board.ts` applies it to rune allocations when it builds `maxHp`; and the roster
+ * drawer shows a player what their runes actually bought, which happens nowhere near a
+ * battle.
+ *
+ * **All three must agree about what a 75 means**, and `board.ts` has already been
+ * caught once holding its own copy of a constant that matched by coincidence. A screen
+ * that showed Toughness 80 while the engine fought at 75 would make the cap look like
+ * a display bug rather than the rule that makes overcapping waste — which is the whole
+ * reason gear has to be spread rather than piled.
+ */
+export function cappedStat(base: number, points: number): number {
+  const raw = base + points;
   return raw < 0 ? 0 : raw > STAT_CAP ? STAT_CAP : raw;
 }

@@ -54,6 +54,29 @@ const GRADUATED_DAYS = 8;
 const poolIds = async (viewer: string): Promise<string[]> =>
   (await eligiblePool(viewer)).pool.map((r) => r.playerId);
 
+/**
+ * Draw until a named defender is one of the five offered, and return their card.
+ *
+ * **Only for assertions about the DECORATION** — `visibleHeroIds`, the rating swing —
+ * which exist only on what was actually offered. `OFFER_LIMIT` draws five at random
+ * (Jon, 2026-08-01), so a given eligible defender appears about `5/poolSize` of the
+ * time and a single call is a coin toss rather than a test.
+ *
+ * Eligibility is asserted first, so a genuinely-missing defender fails with *that*
+ * message instead of exhausting the attempts and blaming the draw. Forty attempts
+ * against a pool of ~22 leaves a false failure at roughly one in thirty thousand.
+ */
+const drawUntilOffered = async (viewer: string, playerId: string, attempts = 40) => {
+  expect(await poolIds(viewer), 'the defender is not even eligible').toContain(playerId);
+
+  for (let i = 0; i < attempts; i += 1) {
+    const found = (await candidates(viewer)).candidates.find((c) => c.playerId === playerId);
+    if (found) return found;
+  }
+
+  throw new Error(`${playerId} was eligible but never drawn in ${attempts} offers`);
+};
+
 async function defender(label: string, options: { seats?: number; rating?: number } = {}) {
   const [account] = await db()
     .insert(accounts)
@@ -276,8 +299,16 @@ describe('no slate, no rotation, no cooldown (T013)', () => {
      * the second, with every field unchanged. A new arrival is not consumption, and a
      * test that treats it as one is a test that fails for being right.
      */
-    const first = await candidates(attacker);
-    const second = await candidates(attacker);
+    /**
+     * ⚠️ **Asked of the pool, because the offer is now a random draw** (2026-08-01).
+     *
+     * Two calls no longer return the same five — that is the point of the draw — so
+     * "still present on the second call" is only a claim about *eligibility*. Comparing
+     * the offered lists would fail roughly four times in five while nothing whatsoever
+     * had been consumed, which is a test failing for being right.
+     */
+    const first = await eligiblePool(attacker);
+    const second = await eligiblePool(attacker);
 
     /**
      * **Scoped to this file's own defenders, and it took two tries to get there.** The
@@ -289,21 +320,21 @@ describe('no slate, no rotation, no cooldown (T013)', () => {
      * `strong` and `weak` are ours, they live until this file's own cleanup, and they are
      * the only two the claim is about.
      */
-    const find = (list: typeof first, id: string) => list.candidates.find((c) => c.playerId === id);
+    const find = (list: typeof first, id: string) => list.pool.find((r) => r.playerId === id);
 
     for (const [label, id] of [
       ['strong', strong],
       ['weak', weak],
     ] as const) {
       const before = find(first, id);
-      expect(before, `${label} was not offered on the first call`).toBeDefined();
+      expect(before, `${label} was not eligible on the first call`).toBeDefined();
       expect(find(second, id), `${label} vanished between calls`).toEqual(before);
     }
 
     // The requester's own fields are per-player, so those *are* byte-stable.
-    const { candidates: _first, ...mineFirst } = first;
-    const { candidates: _second, ...mineSecond } = second;
-    expect(mineSecond).toEqual(mineFirst);
+    expect(second.own).toEqual(first.own);
+    expect(second.league).toBe(first.league);
+    expect(second.widened).toBe(first.widened);
   });
 });
 
@@ -316,12 +347,10 @@ describe('no slate, no rotation, no cooldown (T013)', () => {
  */
 describe('an offering carries enough to choose with', () => {
   it('serves each defender’s Visible six, in seat order', async () => {
-    const list = await candidates(attacker);
-    const them = list.candidates.find((c) => c.playerId === strong);
-    expect(them, 'the strong defender is not in the pool').toBeDefined();
+    const them = await drawUntilOffered(attacker, strong);
 
     // Six, because the query inner-joins on a *complete* Visible squad.
-    expect(them!.visibleHeroIds).toHaveLength(6);
+    expect(them.visibleHeroIds).toHaveLength(6);
 
     /*
      * **Seat order, and this is the assertion that catches the enum trap.**
@@ -331,7 +360,7 @@ describe('an offering carries enough to choose with', () => {
      * first six roster ids and the alphabetical bug puts the back-line champion
      * first.
      */
-    expect(them!.visibleHeroIds).toEqual(ROSTER.slice(0, 6));
+    expect(them.visibleHeroIds).toEqual(ROSTER.slice(0, 6));
   });
 
   it('never serves anybody’s Hidden squad', async () => {

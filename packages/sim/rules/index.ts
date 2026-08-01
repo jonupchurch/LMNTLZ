@@ -22,6 +22,11 @@ export {
    */
   STAT_CAP,
   UnknownInstanceError,
+  /**
+   * The clamp with no battle around it — what `board.ts` applies to rune allocations
+   * and what the roster drawer shows a player their runes actually bought.
+   */
+  cappedStat,
   effectiveStat,
   frontRowOf,
   heroStateOf,

@@ -771,15 +771,17 @@ describe('the authored ramp, seeded', () => {
   });
 
   it('spans the gear ramp, so the pool is a ramp and not twenty of the same fight', async () => {
-    const list = await candidates(fresh);
-    const seeded = list.candidates.filter((c) => STARTER_BOTS.some((b) => b.username === c.username));
+    /* The **pool** is the ramp; the offer is five drawn at random from it, and five
+       draws can easily all be weak. Spanning is a property of what is eligible. */
+    const { pool } = await eligiblePool(fresh);
+    const seeded = pool.filter((r) => STARTER_BOTS.some((b) => b.username === r.username));
 
-    const ratings = seeded.map((c) => c.rating).sort((a, b) => a - b);
+    const ratings = seeded.map((r) => Number(r.rating)).sort((a, b) => a - b);
     expect(ratings[0], 'no weak opponent in the pool').toBeLessThan(STARTING_RATING);
     expect(ratings.at(-1), 'no strong opponent in the pool').toBeGreaterThan(STARTING_RATING);
 
     // Ordered by rating descending, which is the one place rating is allowed to appear.
-    const asServed = seeded.map((c) => c.rating);
+    const asServed = seeded.map((r) => Number(r.rating));
     expect(asServed, 'the pool is not ordered by rating').toEqual(
       [...asServed].sort((a, b) => b - a),
     );

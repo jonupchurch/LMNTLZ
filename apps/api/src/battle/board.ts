@@ -32,7 +32,7 @@
  */
 
 import { getHero, type StatKey } from '@lmntlz/content';
-import { AXIS_ROW_OF, HP_PER_TOUGHNESS, ROW_CAPACITY, STAT_CAP } from '@lmntlz/sim/rules';
+import { AXIS_ROW_OF, HP_PER_TOUGHNESS, ROW_CAPACITY, cappedStat } from '@lmntlz/sim/rules';
 import type { BattleState, HeroState, Side, SquadRow } from '@lmntlz/sim/rules';
 
 /**
@@ -90,10 +90,9 @@ export interface RuneLoadout {
  * already holding a literal `50` beside `HP_PER_TOUGHNESS`, where the two
  * agreeing was a coincidence nothing checked — see `hp` below.
  */
-const cappedStat = (base: number, points: number): number => {
-  const raw = base + points;
-  return raw < 0 ? 0 : raw > STAT_CAP ? STAT_CAP : raw;
-};
+/* Was a local copy of the clamp; it now lives beside `effectiveStat` in
+   `@lmntlz/sim/rules`, because the roster drawer needs the same reading and three
+   copies of "what a 75 means" is exactly the drift this file has been caught in. */
 
 /**
  * 2 front · 3 middle · 1 back, mapped onto the shared axis.

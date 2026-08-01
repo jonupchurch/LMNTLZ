@@ -23,10 +23,23 @@ import { LEAGUE_BOTS } from '../../src/matchmaking/leagueBots.js';
 import { bestAnswerCoverage, STARTER_BOTS, type BotSeat } from '../../src/matchmaking/starterBots.js';
 import { LEAGUE_NAMES, leagueOf } from '../../src/matchmaking/league.js';
 import { MIN_POOL, OFFER_LIMIT } from '../../src/matchmaking/config.js';
-import { takeSpread } from '../../src/matchmaking/candidates.js';
+import { drawOffers } from '../../src/matchmaking/candidates.js';
 
 const byId = new Map(getAllHeroes().map((h) => [h.id, h]));
 const heroesOf = (seats: readonly BotSeat[]): Hero[] => seats.map((s) => byId.get(s.heroId)!);
+
+/**
+ * Both ramps as one list, with the starter twenty carrying their band explicitly.
+ *
+ * `StarterBot` has no `band` field — every one of them is `'starter'`, written by
+ * `seedStarterBots` rather than stored on the content — so it is supplied here. That
+ * band is not cosmetic: it is what the nursery clause keys on to keep the beginner ramp
+ * out of every ordinary pool.
+ */
+const everyBot = () => [
+  ...STARTER_BOTS.map((b) => ({ ...b, band: 'starter' as const })),
+  ...LEAGUE_BOTS,
+];
 
 describe('every league has opponents', () => {
   /**
@@ -60,13 +73,53 @@ describe('every league has opponents', () => {
 });
 
 describe('the ramp is progressive', () => {
-  it('never goes backwards on gear', () => {
-    const all = [...STARTER_BOTS, ...LEAGUE_BOTS];
-    for (let i = 1; i < all.length; i += 1) {
-      expect(
-        all[i]!.gearScore,
-        `${all[i]!.name} (pos ${all[i]!.position}) is weaker than ${all[i - 1]!.name}`,
-      ).toBeGreaterThanOrEqual(all[i - 1]!.gearScore);
+  /**
+   * ⚠️ **Per band, not across the whole list, and the change is a correction.**
+   *
+   * This used to walk `[...STARTER_BOTS, ...LEAGUE_BOTS]` as one sequence. That held
+   * only while the league ramp was a single hand-authored run starting above Bronze —
+   * it was reading a property of the *file order*, not of the difficulty curve.
+   *
+   * The ramps are **parallel ladders, not one sequence**: the starter twenty are the
+   * nursery, reserved by `band: 'starter'` and excluded from every ordinary pool, and
+   * they already climb to 19 runes against Bronze's own ceiling of 19. A Bronze bot
+   * cannot be authored "above" them without leaving a one-value window. What a player
+   * actually experiences is their own band's spread, and that is what is asserted.
+   */
+  it('never goes backwards on gear inside a band, within one authoring run', () => {
+    /**
+     * **Scoped to a band AND a run, because there are now three runs.** The starter
+     * twenty, the authored twenty-four and the generated hundred are each written
+     * ascending, and each restarts at its band's floor — so a band holds two ascending
+     * sequences rather than one. What this guards is an authoring slip inside a run: a
+     * hand-typed rune count lower than the line above it.
+     */
+    const runOf = (position: number) =>
+      position <= STARTER_BOTS.length ? 'starter' : position <= 44 ? 'authored' : 'generated';
+
+    const groups = new Map<string, Array<{ name: string; position: number; gearScore: number }>>();
+    for (const bot of everyBot()) {
+      const key = `${bot.band}/${runOf(bot.position)}`;
+      groups.set(key, [...(groups.get(key) ?? []), bot]);
+    }
+
+    for (const [group, bots] of groups) {
+      for (let i = 1; i < bots.length; i += 1) {
+        expect(
+          bots[i]!.gearScore,
+          `${group}: ${bots[i]!.name} (pos ${bots[i]!.position}) is weaker than ${bots[i - 1]!.name}`,
+        ).toBeGreaterThanOrEqual(bots[i - 1]!.gearScore);
+      }
+    }
+  });
+
+  it('spreads every band across its own gear range rather than bunching', () => {
+    /* A band whose bots all share one gear score offers no range to climb through. */
+    for (const band of ['bronze', 'silver', 'gold', 'platinum', 'diamond']) {
+      const scores = new Set(
+        LEAGUE_BOTS.filter((b) => b.band === band).map((b) => b.gearScore),
+      );
+      expect(scores.size, `${band} offers ${scores.size} distinct gear scores`).toBeGreaterThan(3);
     }
   });
 
@@ -132,29 +185,70 @@ describe('no squad is a repeat of another squad', () => {
    * frozen defect — pinned here so that fixing it becomes a deliberate act rather
    * than an accident, and so this test does not simply fail forever.
    */
-  const KNOWN_FROZEN = 1;
+  const squadKey = (seats: readonly BotSeat[]): string =>
+    seats
+      .map((s) => s.heroId)
+      .sort()
+      .join(',');
 
-  it('has exactly one duplicate pair, the frozen one', () => {
+  const everySquad = () =>
+    [...STARTER_BOTS, ...LEAGUE_BOTS].flatMap((bot) => [
+      { bot, zone: 'visible' as const, key: squadKey(bot.visible) },
+      { bot, zone: 'hidden' as const, key: squadKey(bot.hidden) },
+    ]);
+
+  /**
+   * ⚠️ **The roster cannot supply a distinct squad per bot, and that is arithmetic.**
+   *
+   * `DOMINANT_SEATS = 3` with exactly three champions per type means the lead theme
+   * *fixes* three seats, so a composed squad is a function of `(lead, {second, third})`
+   * — **9 × C(8,2) = 252 squads in the entire game.** 144 bots need 288. The pigeonhole
+   * is not close: repeats are mandatory above 126 bots.
+   *
+   * So the rule that survives is the one a player can actually perceive. **Inside a
+   * band, two identical Visible sixes are the same fight offered twice** and that is
+   * forbidden. Across bands it is not: the same six at 12 runes and at 81 runes differ
+   * by 6.75× gear, which is a different fight by the widest margin the game has.
+   */
+  it('never offers the same Visible six twice inside one band', () => {
+    const seen = new Map<string, string>();
+    const collisions: string[] = [];
+
+    for (const bot of everyBot()) {
+      const key = `${bot.band}:${squadKey(bot.visible)}`;
+      const previous = seen.get(key);
+      if (previous) collisions.push(`${bot.band}: ${bot.name} == ${previous}`);
+      else seen.set(key, bot.name);
+    }
+
+    expect(collisions, collisions.join(' · ')).toEqual([]);
+  });
+
+  /**
+   * The global count is **pinned rather than forbidden**, so the number cannot drift
+   * upward unnoticed while nobody is looking at it.
+   *
+   * ### One of them is frozen and is asserted as PRESENT
+   *
+   * `The Nine Stones`' Hidden six and `The Windward Gate`'s Visible six are the same
+   * squad, and both bots are seeded. `battle_records` stores composition and
+   * Constitution XVI makes it permanent, so recomposing either would leave recorded
+   * battles describing a squad that no longer exists.
+   */
+  const KNOWN_REPEATS = 11;
+
+  it('holds the total number of repeated squads to a pinned figure', () => {
     const seen = new Map<string, string>();
     const duplicates: string[] = [];
 
-    for (const bot of [...STARTER_BOTS, ...LEAGUE_BOTS]) {
-      for (const [zone, seats] of [
-        ['visible', bot.visible],
-        ['hidden', bot.hidden],
-      ] as const) {
-        const key = seats
-          .map((s) => s.heroId)
-          .sort()
-          .join(',');
-        const previous = seen.get(key);
-        if (previous) duplicates.push(`${bot.name}/${zone} == ${previous}`);
-        else seen.set(key, `${bot.name}/${zone}`);
-      }
+    for (const { bot, zone, key } of everySquad()) {
+      const previous = seen.get(key);
+      if (previous) duplicates.push(`${bot.name}/${zone} == ${previous}`);
+      else seen.set(key, `${bot.name}/${zone}`);
     }
 
-    expect(duplicates, duplicates.join(' · ')).toHaveLength(KNOWN_FROZEN);
-    expect(duplicates[0]).toContain('Nine Stones');
+    expect(duplicates, duplicates.join(' · ')).toHaveLength(KNOWN_REPEATS);
+    expect(duplicates.join(' · '), 'the frozen pair is gone').toContain('Nine Stones');
   });
 
   it('gives every bot twelve distinct champions across its two zones', () => {
@@ -168,64 +262,111 @@ describe('no squad is a repeat of another squad', () => {
 });
 
 /**
- * **The offered list is capped at five** (Jon, 2026-08-01), and the interesting
- * half is *which* five.
+ * **Five, drawn at random from the pool** (Jon, 2026-08-01).
  *
- * `takeSpread` is unit-tested here rather than through `candidates()` because the
- * property that matters is about the sampling, not the database: a rating-ordered,
- * bleed-mixed list truncated from the front returns five defenders from the league
- * above and none from the player's own band.
+ * > *"randomly chosen from the pool. It should not surface the same opponents over
+ * > and over."*
+ *
+ * ⚠️ **This block previously asserted the exact opposite** — *"gives the same five for
+ * the same pool, every time"*, with a comment explaining that determinism was what
+ * stopped a player rerolling for a soft opponent. That is a reversed decision, not a
+ * bug, and it is recorded here rather than quietly deleted: the reroll is now possible
+ * and was judged an acceptable price for variety.
+ *
+ * `drawOffers` is unit-tested rather than driven through `candidates()` because the
+ * properties are about the sampling, not the database — and with an injected `random`
+ * they can be exact instead of statistical.
  */
-describe('capping the offered list', () => {
+describe('drawing the offered five', () => {
+  /** A generator cycling fixed values, so a draw is reproducible without being trivial. */
+  const rng = (...values: number[]): (() => number) => {
+    let i = 0;
+    return () => values[i++ % values.length]!;
+  };
+
+  const pool = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
+
   it('returns everything when the pool is already at or under the cap', () => {
-    expect(takeSpread([1, 2, 3], 5)).toEqual([1, 2, 3]);
-    expect(takeSpread([1, 2, 3, 4, 5], 5)).toEqual([1, 2, 3, 4, 5]);
+    expect(drawOffers([1, 2, 3], 5)).toEqual([1, 2, 3]);
+    expect(drawOffers([1, 2, 3, 4, 5], 5)).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it('never returns more than the cap', () => {
+  it('never returns more than the cap, and never a duplicate', () => {
     for (let n = 0; n <= 40; n += 1) {
-      const pool = Array.from({ length: n }, (_, i) => i);
-      expect(takeSpread(pool, OFFER_LIMIT).length).toBeLessThanOrEqual(OFFER_LIMIT);
+      const five = drawOffers(pool(n), OFFER_LIMIT);
+      expect(five.length, `pool of ${n}`).toBeLessThanOrEqual(OFFER_LIMIT);
+      expect(new Set(five).size, `pool of ${n} offered a duplicate`).toBe(five.length);
     }
   });
 
-  it('keeps both ends, so the easiest and hardest are always on offer', () => {
-    const pool = Array.from({ length: 22 }, (_, i) => i);
-    const five = takeSpread(pool, OFFER_LIMIT);
+  /**
+   * **Membership is random; sequence is not.** The contract promises rating order, and
+   * a randomly *ordered* rail would jump around between draws even when it offered the
+   * same people.
+   */
+  it('returns the draw in the pool’s own order', () => {
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const five = drawOffers(pool(30), OFFER_LIMIT);
+      expect([...five], 'the offered five came back out of rating order').toEqual(
+        [...five].sort((a, b) => a - b),
+      );
+    }
+  });
 
-    expect(five[0]).toBe(0);
-    expect(five.at(-1)).toBe(21);
+  /**
+   * The requirement, stated as a property: **the same pool must not keep producing the
+   * same five.** Sixty draws from a pool of thirty; a deterministic sampler yields one
+   * distinct result and fails here.
+   */
+  it('does not surface the same five over and over', () => {
+    const seen = new Set(
+      Array.from({ length: 60 }, () => drawOffers(pool(30), OFFER_LIMIT).join(',')),
+    );
+
+    expect(seen.size, 'sixty draws produced one lineup — the draw is not random').toBeGreaterThan(
+      10,
+    );
+  });
+
+  /** And every defender in the pool is genuinely reachable, not just a lucky subset. */
+  it('can reach every defender in the pool', () => {
+    const reached = new Set<number>();
+    for (let i = 0; i < 400; i += 1) for (const p of drawOffers(pool(22), OFFER_LIMIT)) reached.add(p);
+
+    expect(reached.size, `only ${reached.size} of 22 were ever offered`).toBe(22);
   });
 
   /**
    * ⚠️ **The bug `slice(0, 5)` would have shipped.** The list is sorted by rating
-   * descending and mixed by `bleed()`; defenders from the league above sort highest.
-   * Taking the head returns only them.
+   * descending and mixed by `bleed()`; defenders from the league above sort highest,
+   * so taking the head returns only them. A uniform draw samples the pool in the
+   * pool's own proportions, which is exactly the bleed mix.
    */
   it('does not collapse onto the top of the list, which would undo the bleed', () => {
-    /* Twelve own-band defenders, then four bled in from above sorting highest. */
-    const pool = [...Array.from({ length: 4 }, (_, i) => `above-${i}`), ...Array.from({ length: 12 }, (_, i) => `own-${i}`)];
+    const mixed = [
+      ...Array.from({ length: 4 }, (_, i) => `above-${i}`),
+      ...Array.from({ length: 12 }, (_, i) => `own-${i}`),
+    ];
 
-    const head = pool.slice(0, OFFER_LIMIT);
+    const head = mixed.slice(0, OFFER_LIMIT);
     expect(head.filter((p) => p.startsWith('own')), 'the naive slice is fine?').toHaveLength(1);
 
-    const spread = takeSpread(pool, OFFER_LIMIT);
-    expect(
-      spread.filter((p) => p.startsWith('own')).length,
-      `spread offered ${spread.join(', ')}`,
-    ).toBeGreaterThanOrEqual(3);
-  });
-
-  /** Deterministic, so refreshing the screen cannot reroll a softer opponent. */
-  it('gives the same five for the same pool, every time', () => {
-    const pool = Array.from({ length: 17 }, (_, i) => i);
-    expect(takeSpread(pool, OFFER_LIMIT)).toEqual(takeSpread(pool, OFFER_LIMIT));
-  });
-
-  it('is distinct — no defender is offered twice', () => {
-    for (const n of [6, 7, 9, 13, 22, 40]) {
-      const five = takeSpread(Array.from({ length: n }, (_, i) => i), OFFER_LIMIT);
-      expect(new Set(five).size, `pool of ${n}`).toBe(five.length);
+    /* Averaged over many draws the own-band share tracks the pool's 12/16, and the
+       assertion is deliberately loose — this is a claim about proportion, not luck. */
+    let own = 0;
+    const draws = 200;
+    for (let i = 0; i < draws; i += 1) {
+      own += drawOffers(mixed, OFFER_LIMIT).filter((p) => p.startsWith('own')).length;
     }
+
+    expect(own / draws, 'the draw is biased toward the league above').toBeGreaterThan(3);
+  });
+
+  /** Reproducible given its randomness, which is what makes the above testable at all. */
+  it('is a pure function of the pool and the numbers it is handed', () => {
+    const a = drawOffers(pool(17), OFFER_LIMIT, rng(0.1, 0.9, 0.4, 0.6, 0.25));
+    const b = drawOffers(pool(17), OFFER_LIMIT, rng(0.1, 0.9, 0.4, 0.6, 0.25));
+
+    expect(a).toEqual(b);
   });
 });

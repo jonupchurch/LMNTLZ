@@ -32,7 +32,7 @@ import { closeDb, db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
 import { playerRatings } from '../../src/db/schema/ratings.js';
 import { squads, squadSeats } from '../../src/db/schema/squads.js';
-import { candidates } from '../../src/matchmaking/candidates.js';
+import { candidates, eligiblePool } from '../../src/matchmaking/candidates.js';
 import {
   GEAR_BOUND,
   MIN_POOL,
@@ -146,7 +146,7 @@ afterAll(async () => {
 
 describe('bleed reaches next door only near a band edge (T052)', () => {
   it('offers nobody from another league to a player mid-band', async () => {
-    const list = await candidates(middle);
+    const list = await eligiblePool(middle);
     const mix = bleed(list.gearScore);
 
     // Non-vacuity: this fixture must genuinely be in the flat middle, or the
@@ -154,7 +154,7 @@ describe('bleed reaches next door only near a band edge (T052)', () => {
     expect(mix.up, 'the mid-band fixture is not actually mid-band').toBe(0);
     expect(mix.down).toBe(0);
 
-    const ids = list.candidates.map((c) => c.playerId);
+    const ids = list.pool.map((r) => r.playerId);
     for (const gold of goldFloor) {
       expect(ids, 'a mid-band player was offered the league above').not.toContain(gold);
     }
@@ -163,12 +163,12 @@ describe('bleed reaches next door only near a band edge (T052)', () => {
   });
 
   it('offers the league above to a player at the top of their band', async () => {
-    const list = await candidates(edge);
+    const list = await eligiblePool(edge);
     const mix = bleed(list.gearScore);
 
     expect(mix.up, 'the edge fixture is not actually at the edge').toBeGreaterThan(0.4);
 
-    const ids = list.candidates.map((c) => c.playerId);
+    const ids = list.pool.map((r) => r.playerId);
     expect(
       goldFloor.filter((g) => ids.includes(g)).length,
       'no bleed reached the league above',
@@ -182,15 +182,25 @@ describe('bleed reaches next door only near a band edge (T052)', () => {
      * Offering the top of Gold instead would make crossing a threshold a cliff in the
      * other direction, which is the sawtooth `bleed.ts` exists to remove.
      */
-    const list = await candidates(edge);
-    const ids = list.candidates.map((c) => c.playerId);
+    const list = await eligiblePool(edge);
+    const ids = list.pool.map((r) => r.playerId);
 
     const offeredGold = goldFloor.filter((g) => ids.includes(g));
     expect(offeredGold.length, 'the nearest Gold defenders were not offered').toBeGreaterThan(0);
-    expect(
-      offeredGold.length,
-      'every Gold defender was offered, so nothing was actually selected',
-    ).toBeLessThan(goldFloor.length);
+
+    /**
+     * ⚠️ **A "not all of them" assertion used to sit here and it was measuring the cap.**
+     *
+     * It read `offeredGold.length < goldFloor.length` — that bleed must select a *subset*
+     * of the league above. Against the offered five that was true no matter what bleed
+     * did, because five is fewer than nine; against the pool it is false, and correctly
+     * so: at the very edge of a band `bleed()` asks for half the pool from next door, and
+     * nine nearest-Gold fixtures is under that share.
+     *
+     * The claim that actually distinguishes a right answer from a wrong one is
+     * **direction** — the nearest are reachable and the strongest are not — and it is the
+     * line below. Counting was never the test.
+     */
     expect(ids, 'the top of Gold was offered to a Silver player').not.toContain(farGold);
     expect(list.widened, 'this pool widened, so bleed is not what was measured').toBe(false);
   });
@@ -217,14 +227,14 @@ describe('bleed reaches next door only near a band edge (T052)', () => {
 
 describe('widening is the last resort, and it says so (T052 · T053)', () => {
   it('reports false when the band can field a pool on its own', async () => {
-    const list = await candidates(edge);
+    const list = await eligiblePool(edge);
 
-    expect(list.candidates.length).toBeGreaterThanOrEqual(MIN_POOL);
+    expect(list.pool.length).toBeGreaterThanOrEqual(MIN_POOL);
     expect(list.widened, 'a healthy band widened anyway').toBe(false);
   });
 
   it('reports true when the band is empty, and reaches exactly one band out', async () => {
-    const list = await candidates(lonely);
+    const list = await eligiblePool(lonely);
 
     expect(leagueOf(list.gearScore)).toBe('platinum');
 
@@ -240,12 +250,12 @@ describe('widening is the last resort, and it says so (T052 · T053)', () => {
      * floor is the worst ratio a Platinum player can now face, and it must stay inside
      * the widened bound.
      */
-    for (const candidate of list.candidates) {
+    for (const candidate of list.pool) {
       expect(candidate.playerId, 'widening reached the Silver fixtures, two bands away').not.toBe(
         edge,
       );
     }
-    expect(list.candidates.map((c) => c.playerId)).toContain(farGold);
+    expect(list.pool.map((r) => r.playerId)).toContain(farGold);
   });
 
   it('never widens or bleeds for a starter player', async () => {
@@ -257,7 +267,7 @@ describe('widening is the last resort, and it says so (T052 · T053)', () => {
      * twenty bots, which `starter.test.ts` owns.
      */
     const fresh = await at(bandOf('bronze').floor, 'wFresh');
-    const list = await candidates(fresh);
+    const list = await eligiblePool(fresh);
 
     /**
      * With no starter bots seeded the league is closed, so this account is an ordinary
@@ -286,7 +296,7 @@ describe('the widen rate is instrumented from the first widened request (T054)',
     console.warn = (...args: unknown[]) => void lines.push(args.join(' '));
 
     try {
-      const list = await candidates(lonely);
+      const list = await eligiblePool(lonely);
       expect(list.widened, 'the fixture did not widen, so nothing could be logged').toBe(true);
     } finally {
       console.warn = original;
@@ -308,7 +318,7 @@ describe('the widen rate is instrumented from the first widened request (T054)',
     console.warn = (...args: unknown[]) => void lines.push(args.join(' '));
 
     try {
-      const list = await candidates(edge);
+      const list = await eligiblePool(edge);
       expect(list.widened).toBe(false);
     } finally {
       console.warn = original;
