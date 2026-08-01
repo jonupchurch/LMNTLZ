@@ -16,6 +16,7 @@ orders league-mates. Gear is never in the rating.
   "positionInLeague": 0.94,
   "gearScore": 2410,
   "widened": true,                    // shown to the player — see below
+  "poolSize": 22,                     // how many were ELIGIBLE, before the cap of 5
   "candidates": [
     { "playerId": "acc_...", "username": "reyna", "isBot": false,
       "rating": 1180, "league": "silver",
@@ -28,9 +29,33 @@ orders league-mates. Gear is never in the rating.
 ```
 
 **`candidates` is ordered, never filtered.** There is no parameter that would let
-rating exclude anybody — the signature is the enforcement. Every eligible defender
-in the league is present, every time: **no slate, no rotation, no cooldown on
-re-attacking someone you have already fought.**
+rating exclude anybody — the signature is the enforcement. **No slate, no rotation,
+no cooldown on re-attacking someone you have already fought.**
+
+**⚠️ Amended 2026-08-01: at most `OFFER_LIMIT` (5) are returned.** This previously
+read *"every eligible defender in the league is present, every time"*, and that half
+is reversed — Bronze holds twenty-two defenders and an opponent list is a decision
+rather than an inventory.
+
+The properties that carried the weight are unchanged, and the distinction is the
+point:
+
+| | before | now |
+|---|---|---|
+| eligibility | every defender in band | **unchanged** |
+| caller can narrow it | no | **no** — the cap is a server constant, not a parameter |
+| same pool ⇒ same five | — | **yes**, deterministic; no reroll |
+| rotation / cooldown | none | **none** |
+
+The five are sampled at **even indices** of the rating-ordered list, never the top
+five. The list is a deliberate mix of the player's own band plus proportional bleed
+from neighbours, and bleed candidates from above sort highest — so taking the head
+would return five defenders from the league above and none from the player's own,
+undoing the bleed while appearing to work.
+
+This is **not** the *slate of five* that `09-matchmaking.md` considered and dropped.
+That proposal refilled on use and blocked reappearance until twenty others had been
+fought; this changes only how many of an unchanged pool are drawn on screen.
 
 ### League edges bleed, and both ends
 

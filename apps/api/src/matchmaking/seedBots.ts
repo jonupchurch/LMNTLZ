@@ -39,8 +39,10 @@ import { squads } from '../db/schema/squads.js';
 import { usernameKey, validateUsername } from '../auth/username.js';
 import { configFor } from '../squads/allocation.js';
 import { saveDefenseSquad, type SeatInput } from '../squads/repository.js';
-import { botRating } from './bots.js';
+import { botRating, RATING_SPREAD } from './bots.js';
 import { STARTER_BOTS, type BotSeat, type StarterBot } from './starterBots.js';
+import { LEAGUE_BOTS } from './leagueBots.js';
+import { BOT_BANDS, type BotBand } from '../db/schema/accounts.js';
 
 export interface SeedReport {
   readonly created: readonly string[];
@@ -85,7 +87,23 @@ const withDefaults = (seats: readonly BotSeat[]): SeatInput[] =>
  * every query that joins `identities` is human-only for free — which is structural
  * protection rather than a filter somebody has to remember.
  */
-async function createBot(bot: StarterBot, index: number, total: number): Promise<void> {
+async function createBot(
+  bot: StarterBot,
+  index: number,
+  total: number,
+  /**
+   * **Which band the row is stamped with, and it is not cosmetic.**
+   *
+   * `starterLeagueOpen()` asks whether a bot exists *in the starter band*, and
+   * `removeStarterBots()` deletes only that band. Both are correct precisely
+   * because the band is written honestly — a Diamond bot stamped `starter` would
+   * open the starter league on an opponent no new player can survive, and would be
+   * deleted by a helper whose whole safety argument is that it is band-scoped.
+   */
+  band: BotBand,
+  /** Overrides the ramp-position rating. See `leagueBotRating`. */
+  rating?: number,
+): Promise<void> {
   /**
    * **Checked here rather than trusted.** These names are authored, so they are exactly
    * the kind of thing that is correct when written and wrong after an edit — and the
@@ -103,7 +121,7 @@ async function createBot(bot: StarterBot, index: number, total: number): Promise
       username: bot.username,
       usernameKey: usernameKey(bot.username),
       isBot: true,
-      botBand: 'starter',
+      botBand: band,
     })
     .returning({ id: accounts.id });
 
@@ -122,7 +140,7 @@ async function createBot(bot: StarterBot, index: number, total: number): Promise
    */
   await db().insert(playerRatings).values({
     accountId,
-    rating: botRating(index, total),
+    rating: rating ?? botRating(index, total),
     gearScore: bot.gearScore,
   });
 
@@ -169,7 +187,7 @@ export async function seedStarterBots(): Promise<SeedReport> {
       skipped.push(bot.username);
       continue;
     }
-    await createBot(bot, index, STARTER_BOTS.length);
+    await createBot(bot, index, STARTER_BOTS.length, 'starter');
     created.push(bot.username);
   }
 
@@ -177,7 +195,130 @@ export async function seedStarterBots(): Promise<SeedReport> {
 }
 
 /**
+ * A league bot's rating — **the starter ramp's curve, continued upward.**
+ *
+ * `botRating` spreads a band across `STARTING_RATING ± RATING_SPREAD`, i.e. 700 to
+ * 1,300, and the twenty starter bots already occupy all of it. Reusing it unshifted
+ * would rate the hardest Diamond opponent in the game exactly as the hardest Bronze
+ * one, and rating is the ladder standing a player is actually chasing.
+ *
+ * Offsetting by `2 × RATING_SPREAD` puts the weakest Silver bot at 1,300 — the same
+ * rating as the strongest starter bot — and climbs to 1,900 at the top. So the two
+ * ramps meet exactly rather than overlapping or leaving a gap, which is the same
+ * property `position` has: one continuous curve written in two files.
+ */
+export function leagueBotRating(index: number, count: number): number {
+  return botRating(index, count) + 2 * RATING_SPREAD;
+}
+
+/**
+ * Seed the twenty-four authored opponents **above** the starter league.
+ *
+ * Separate from `seedStarterBots` rather than merged into it, because the two answer
+ * different questions and one of them is load-bearing: `starterLeagueOpen()` asks
+ * whether the *starter* band is populated, and a combined seeder would make "the
+ * starter league is open" and "the higher leagues have opponents" the same fact.
+ * They are not — the starter bots shipped months before these did.
+ *
+ * Same idempotency contract, for the same Constitution XVI reason: a bot already
+ * present is **skipped, never updated**, because `battle_records` stores squad
+ * composition permanently and a recomposed bot would leave recorded battles
+ * describing a squad that no longer exists.
+ */
+export async function seedLeagueBots(): Promise<SeedReport> {
+  const keys = LEAGUE_BOTS.map((b) => usernameKey(b.username));
+
+  const existing = await db()
+    .select({ key: accounts.usernameKey })
+    .from(accounts)
+    .where(inArray(accounts.usernameKey, keys));
+
+  const present = new Set(existing.map((r) => r.key));
+
+  const created: string[] = [];
+  const skipped: string[] = [];
+
+  for (const [index, bot] of LEAGUE_BOTS.entries()) {
+    if (present.has(usernameKey(bot.username))) {
+      skipped.push(bot.username);
+      continue;
+    }
+    await createBot(
+      bot,
+      index,
+      LEAGUE_BOTS.length,
+      bot.band,
+      leagueBotRating(index, LEAGUE_BOTS.length),
+    );
+    created.push(bot.username);
+  }
+
+  return { created, skipped };
+}
+
+/**
+ * Remove every league bot — the undo for `seedLeagueBots`.
+ *
+ * **Scoped to the four bands above the starter league**, and it takes no account id,
+ * for the same reason `removeStarterBots` does not: a delete that can be pointed at
+ * an arbitrary account is one somebody eventually points at a player. It cannot
+ * touch a starter bot and it cannot touch a human.
+ */
+export async function removeLeagueBots(): Promise<number> {
+  const bands = BOT_BANDS.filter((b): b is BotBand => b !== 'starter' && b !== 'bronze');
+
+  const deleted = await db()
+    .delete(accounts)
+    .where(and(eq(accounts.isBot, true), inArray(accounts.botBand, bands)))
+    .returning({ id: accounts.id });
+
+  return deleted.length;
+}
+
+/**
+ * Remove exactly the bots named — **by username, never by a predicate.**
+ *
+ * ### ⚠️ This exists because a test was deleting production content
+ *
+ * `removeStarterBots()` deletes every `is_bot` row in the starter band, and
+ * `starter.test.ts` called it in `afterAll` to tidy up after seeding the ramp. On a
+ * database shared with production — which this is — those are **the same twenty
+ * rows the live game serves**. The suite could not tell its own bots from the
+ * game's, because `seedStarterBots()` is deterministic and produces identical rows
+ * either way. So every full API run silently emptied the starter league, and the
+ * symptom reached a player as *"I've been fighting the same 2 over and over"*: with
+ * no bots anywhere, matchmaking widened onto the only two human accounts.
+ *
+ * This project has a standing rule, paid for by deleting one of Jon's real battle
+ * records: **enumerate, show, then act by id.** A predicate delete cannot know what
+ * it did not create. `seedLeagueBots`/`seedStarterBots` both return `created`, which
+ * is precisely the list of things this run is entitled to remove.
+ */
+export async function removeBotsByUsername(usernames: readonly string[]): Promise<number> {
+  if (usernames.length === 0) return 0;
+
+  const deleted = await db()
+    .delete(accounts)
+    .where(
+      and(
+        eq(accounts.isBot, true),
+        inArray(
+          accounts.usernameKey,
+          usernames.map((u) => usernameKey(u)),
+        ),
+      ),
+    )
+    .returning({ id: accounts.id });
+
+  return deleted.length;
+}
+
+/**
  * Remove every starter bot and everything hanging off it.
+ *
+ * ⚠️ **Not for a test on a shared database** — see `removeBotsByUsername`. This
+ * deletes production's starter league along with anything a suite created, because
+ * the two are indistinguishable rows.
  *
  * **Here so the tests can clean up after themselves**, which
  * `tests/globalSetup.ts` enforces by failing the run on a leaked account — tests and

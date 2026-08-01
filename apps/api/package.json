@@ -17,7 +17,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=../../.env.local src/db/migrate.ts",
     "//db:seed-bots": "The twenty starter bots. seedStarterBots() shipped with feature 009 and its only callers were tests, which delete the bots again — so the function was perfect and production had none, which closed the starter league and silenced 013's warning. Idempotent: a bot already present is skipped.",
-    "db:seed-bots": "tsx --env-file-if-exists=../../.env.local src/db/seedBots.ts"
+    "db:seed-bots": "tsx --env-file-if-exists=../../.env.local src/db/seedBots.ts",
+    "//db:seed-league-bots": "The twenty-four opponents above Bronze. Every starter bot is Bronze (runes x 125 tops out at 2375; Silver's floor is 2500), so Silver through Diamond had NO authored defenders, candidates() fell below MIN_POOL and widened, and a player past Bronze met the same two accounts forever. Pass --dry-run first: it prints what would be created and the population per league before and after, and writes nothing.",
+    "db:seed-league-bots": "tsx --env-file-if-exists=../../.env.local src/db/seedLeagueBots.ts"
   },
   "//dependencies": "@vercel/analytics is INSTALLED AND NOT YET IMPORTED, deliberately. Web Analytics counts page views reported by a browser script and nothing this app returns is a page, so `track()` from its /server entry point is the only thing it can ever do here — expect no API page views in the dashboard, ever. The events worth sending are the ones that happen with no browser attached: the Paddle webhook (013) and the replay-cleanup cron (016 registers it). Neither exists. When the first one lands it goes behind an interface in src/analytics.ts, the way @vercel/blob went behind src/replays/storage.ts, so that a route handler never imports the vendor directly and no player identifier can be passed as an event property.",
   "dependencies": {

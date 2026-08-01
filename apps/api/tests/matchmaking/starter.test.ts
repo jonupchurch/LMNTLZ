@@ -28,11 +28,11 @@ import { accounts } from '../../src/db/schema/accounts.js';
 import { squads, squadSeats } from '../../src/db/schema/squads.js';
 import { overrideProvider } from '../../src/auth/providers.js';
 import { InvalidProviderTokenError, type IdentityProvider } from '../../src/auth/provider.js';
-import { candidates } from '../../src/matchmaking/candidates.js';
+import { candidates, eligiblePool } from '../../src/matchmaking/candidates.js';
 import { botRating } from '../../src/matchmaking/bots.js';
 import { STARTER_BOTS } from '../../src/matchmaking/starterBots.js';
 import {
-  removeStarterBots,
+  removeBotsByUsername,
   seedStarterBots,
   type SeedReport,
 } from '../../src/matchmaking/seedBots.js';
@@ -52,10 +52,23 @@ import {
   starterStatus,
 } from '../../src/matchmaking/starterLeague.js';
 import {
+  OFFER_LIMIT,
   STARTER_DAYS,
   STARTER_INCOME_MULTIPLIER,
   STARTER_SHARD_TARGET,
 } from '../../src/matchmaking/config.js';
+
+/**
+ * **Eligibility is asked of the pool; the offer is a separate question.**
+ *
+ * `candidates()` draws `OFFER_LIMIT` (5) spread across the rating order, so asking it
+ * *"is this fixture present?"* is really asking where that fixture sorts among every
+ * defender in the league — which is a fact about the rest of the database. The rules
+ * this file tests (the nursery is not farmable, a starter defense is dormant, a bot
+ * never ages out) are all eligibility rules, so they are read from `eligiblePool()`.
+ */
+const poolIds = async (viewer: string): Promise<string[]> =>
+  (await eligiblePool(viewer)).pool.map((r) => r.playerId);
 
 const RUN = `${process.pid}-${Math.floor(Math.random() * 1e9)}`;
 const ROSTER = getAllHeroes().map((h) => h.id);
@@ -169,7 +182,7 @@ describe('before any bot is authored, the league is closed', () => {
      * were actually protected** — a pool that thins for no reason, with nothing to
      * show it had.
      */
-    const ids = (await candidates(veteran)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(veteran);
     expect(ids, 'a new account should still be in the pool while the league is closed').toContain(
       fresh,
     );
@@ -219,7 +232,10 @@ describe('once a starter bot is authored, the league opens itself', () => {
 
     // Not empty first: "every candidate is a bot" is true of nothing at all.
     expect(list.candidates.length, 'an empty pool satisfies every claim below').toBeGreaterThan(0);
-    expect(list.candidates.map((c) => c.playerId)).toContain(bot);
+
+    /* Presence is asked of the pool: this fixture is one bot among twenty-plus authored
+       ones, so whether it lands in the five drawn is a fact about rating order. */
+    expect(await poolIds(fresh)).toContain(bot);
 
     for (const candidate of list.candidates) {
       expect(candidate.isBot, `${candidate.username} is not a bot`).toBe(true);
@@ -227,6 +243,7 @@ describe('once a starter bot is authored, the league opens itself', () => {
 
     // And specifically not the human accounts this file created.
     expect(list.candidates.map((c) => c.playerId)).not.toContain(veteran);
+    expect(await poolIds(fresh), 'a human reached the nursery pool').not.toContain(veteran);
   });
 
   it('offers the bot even though no bot has ever been active', async () => {
@@ -237,13 +254,13 @@ describe('once a starter bot is authored, the league opens itself', () => {
      * with no error anywhere. Checked here by backdating a bot past the window.
      */
     const oldBot = await player('sOldBot', { isBot: true, band: 'starter', ageDays: 400 });
-    const ids = (await candidates(fresh)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(fresh);
 
     expect(ids, 'a 400-day-old bot fell out of the pool').toContain(oldBot);
   });
 
   it('is never attacked — the defense is dormant (FR-020, SC-005)', async () => {
-    const ids = (await candidates(veteran)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(veteran);
 
     expect(ids, 'a starter player was offered as a target').not.toContain(fresh);
     // The veteran's own pool still works, or the assertion above is vacuous — and it is
@@ -264,7 +281,7 @@ describe('once a starter bot is authored, the league opens itself', () => {
      * permanent if the door is also shut from the other side**, and that is what this
      * checks.
      */
-    const ids = (await candidates(veteran)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(veteran);
 
     expect(ids, 'a graduated player was offered the beginner ramp').not.toContain(bot);
     for (const candidate of (await candidates(veteran)).candidates) {
@@ -272,7 +289,7 @@ describe('once a starter bot is authored, the league opens itself', () => {
     }
 
     // Non-vacuous: the same bot IS offered to somebody still in the starter league.
-    expect((await candidates(fresh)).candidates.map((c) => c.playerId)).toContain(bot);
+    expect(await poolIds(fresh)).toContain(bot);
   });
 
   it('is not itself in the starter league, because it is the pool', async () => {
@@ -374,14 +391,14 @@ describe('once a starter bot is authored, the league opens itself', () => {
 
     it('an exited player rejoins the ordinary pool immediately', async () => {
       const graduate = await player('sGrad');
-      expect((await candidates(graduate)).candidates.map((c) => c.playerId)).not.toContain(veteran);
+      expect(await poolIds(graduate)).not.toContain(veteran);
 
       await exitStarter(graduate, 'voluntary');
 
-      const ids = (await candidates(graduate)).candidates.map((c) => c.playerId);
+      const ids = await poolIds(graduate);
       expect(ids, 'graduating did not open the real pool').toContain(veteran);
       // And they can now be attacked, which is the other half of graduating.
-      expect((await candidates(veteran)).candidates.map((c) => c.playerId)).toContain(graduate);
+      expect(await poolIds(veteran)).toContain(graduate);
     });
   });
 
@@ -563,29 +580,66 @@ describe('once a starter bot is authored, the league opens itself', () => {
  */
 describe('the authored ramp, seeded', () => {
   let report: SeedReport;
+  /** The second run, which must be a pure no-op whatever the first one did. */
+  let rerun: SeedReport;
 
   beforeAll(async () => {
     report = await seedStarterBots();
+    rerun = await seedStarterBots();
   }, 180_000);
 
+  /**
+   * ### ⚠️ It removes what THIS RUN created, and nothing else
+   *
+   * This used to call `removeStarterBots()`, which deletes every `is_bot` row in
+   * the starter band. On a database shared with production — which this is — those
+   * are **the twenty bots the live game serves**, and the suite could not tell them
+   * from its own because `seedStarterBots()` is deterministic and produces
+   * identical rows either way.
+   *
+   * So every full API run emptied the starter league. It reached a player two ways
+   * at once: *"I've been fighting the same 2 over and over"* — with no bots
+   * anywhere, matchmaking widens onto the only human accounts — and, worse,
+   * **"No such player exists" on attacking somebody the candidate list had just
+   * offered**, which is this `afterAll` deleting a bot between the list being
+   * fetched and the attack being sent.
+   *
+   * `report.created` is exactly what this run brought into being: empty when
+   * production already had them, twenty on a clean database. Deleting by that list
+   * is the project's standing rule — **enumerate, then act by id** — applied to a
+   * test, which is where it was being broken.
+   */
   afterAll(async () => {
-    await removeStarterBots();
+    await removeBotsByUsername(report.created);
   }, 120_000);
 
-  it('creates all twenty, and skips them all on a second run', async () => {
+  /**
+   * **Idempotence is asserted unconditionally; creation only when it happened.**
+   *
+   * The old single assertion required an empty database, which is a claim about the
+   * *world* rather than about the seeder — and it is false on the machine that
+   * matters most, the one serving players. The second run must skip all twenty
+   * whether the first one created them or found them, and that is the property
+   * Constitution XVI actually needs.
+   */
+  it('is idempotent — a second run creates nothing and skips all twenty', () => {
+    expect(rerun.created).toEqual([]);
+    expect(rerun.skipped).toHaveLength(STARTER_BOTS.length);
+  });
+
+  it('creates all twenty when the database did not already have them', () => {
+    if (report.created.length === 0) {
+      /* Production already holds the ramp, so the seeder correctly skipped. The
+         idempotence test above is the assertion that matters in that case. */
+      expect(report.skipped).toHaveLength(STARTER_BOTS.length);
+      return;
+    }
     expect(report.created).toHaveLength(STARTER_BOTS.length);
     expect(report.skipped).toEqual([]);
-
-    /**
-     * **Idempotence is a correctness requirement, not a convenience.** `battle_records`
-     * stores squad composition and Constitution XVI makes those records permanent — so a
-     * re-seed that recreated a bot with a different squad would leave older records
-     * describing a squad that no longer exists, uncorrectably. Skipping is the only safe
-     * re-seed, which is why it is asserted rather than assumed.
-     */
-    const again = await seedStarterBots();
-    expect(again.created, 'a second seed created duplicates').toEqual([]);
-    expect(again.skipped).toHaveLength(STARTER_BOTS.length);
+    /* The re-seed is asserted above, unconditionally — see the idempotence test.
+       `battle_records` stores squad composition and Constitution XVI makes those
+       records permanent, so a re-seed that recreated a bot with a different squad
+       would leave older records describing a squad that no longer exists. */
   });
 
   it('gives every bot a player-legal username', async () => {
@@ -669,8 +723,8 @@ describe('the authored ramp, seeded', () => {
     expect(ratings.size, 'the bots all share one rating').toBeGreaterThan(15);
   });
 
-  it('offers a starter player the whole authored pool, all of it bots (T041)', async () => {
-    const list = await candidates(fresh);
+  it('draws a starter player from the whole authored pool, all of it bots (T041)', async () => {
+    const { pool } = await eligiblePool(fresh);
 
     /**
      * T041's claim, against the real content: **100% bots with at least twenty distinct.**
@@ -678,20 +732,41 @@ describe('the authored ramp, seeded', () => {
      * the same band, so this asserts the floor rather than an exact figure — a number that
      * depends on what another block did is a number that breaks when that block changes.
      */
-    const distinct = new Set(list.candidates.map((c) => c.playerId));
+    const distinct = new Set(pool.map((r) => r.playerId));
     expect(distinct.size, 'the authored pool is not all there').toBeGreaterThanOrEqual(
       STARTER_BOTS.length,
     );
 
-    for (const candidate of list.candidates) {
-      expect(candidate.isBot, `${candidate.username} is not a bot`).toBe(true);
+    for (const row of pool) {
+      expect(row.isBot, `${row.username} is not a bot`).toBe(true);
     }
 
     // Every authored bot specifically, by name — a count alone would pass on twenty
     // copies of one squad.
-    const names = new Set(list.candidates.map((c) => c.username));
+    const names = new Set(pool.map((r) => r.username));
     for (const bot of STARTER_BOTS) {
       expect(names, `${bot.username} is missing from the pool`).toContain(bot.username);
+    }
+  });
+
+  /**
+   * **The cap is the other half of T041, and it reverses part of it** (Jon, 2026-08-01).
+   *
+   * The pool is the whole authored ramp; the *offer* is five of it. Asserted here rather
+   * than folded into the test above, because "eligible" and "shown" became different
+   * numbers the moment `OFFER_LIMIT` existed, and a single test reading one and calling
+   * it the other is exactly how the distinction gets lost again.
+   */
+  it('shows five of that pool, and every one of them still a bot', async () => {
+    const list = await candidates(fresh);
+
+    expect(list.candidates.length).toBe(OFFER_LIMIT);
+    expect(list.poolSize, 'the offer was capped but the pool was not counted').toBeGreaterThan(
+      OFFER_LIMIT,
+    );
+
+    for (const candidate of list.candidates) {
+      expect(candidate.isBot, `${candidate.username} is not a bot`).toBe(true);
     }
   });
 

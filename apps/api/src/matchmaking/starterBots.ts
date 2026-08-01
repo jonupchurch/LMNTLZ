@@ -296,7 +296,7 @@ export const bestAnswerCoverage = (heroes: readonly Hero[]): number =>
  * dominant theme now takes its seats first, which makes the claim true by construction
  * instead of by luck.
  */
-function select(
+export function select(
   themes: readonly [DamageType, ...DamageType[]],
   exclude: ReadonlySet<string>,
   exact: boolean,
@@ -421,7 +421,7 @@ function five(six: readonly Hero[]): number {
  * seedings would break `battle_records` comparisons across a re-seed, and Constitution
  * XVI cannot correct a recorded battle afterwards.
  */
-function composeSquad(candidates: readonly Hero[], label: string): readonly BotSeat[] {
+export function composeSquad(candidates: readonly Hero[], label: string): readonly BotSeat[] {
   const reach2 = candidates.filter((h) => h.reach === 2);
   if (candidates.length < 6 || reach2.length < 1) {
     // Names the squad, because "4 champions available" alone does not say which rung of
@@ -489,7 +489,7 @@ function frontPriority(hero: Hero): number {
  * one by construction of the table above. This is what stage 3's Hidden squad is built
  * to resist.
  */
-const invitedAnswer = (themes: readonly [DamageType, ...DamageType[]]): DamageType =>
+export const invitedAnswer = (themes: readonly [DamageType, ...DamageType[]]): DamageType =>
   counter(themes[0]);
 
 /**

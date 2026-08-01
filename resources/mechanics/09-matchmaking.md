@@ -413,6 +413,28 @@ already answered by every account starting in the same league.
 > no slate, no rotation, and no cooldown on re-attacking someone you have already
 > fought.**
 
+### ⚠️ Amended 2026-08-01 — the pool is unchanged; **five of it are shown**
+
+Jon capped the offered list at five (`OFFER_LIMIT`). *"Every eligible defender is
+in the pool"* still holds exactly; *"…and all of them are offered"* no longer does.
+Bronze holds twenty-two authored defenders, and an opponent list is a **decision**
+rather than an inventory — the scouting read is what the screen is for.
+
+**Read against the slate below, because they are not the same proposal.** The slate
+of five was rejected for refilling on use and blocking reappearance until twenty
+others had been fought — both of which restrict *who you may attack*, which is the
+objection that killed it. This restricts only *how many are drawn at once*:
+
+- eligibility is untouched — the same defenders are in the pool
+- no rotation, no cooldown, nobody becomes unavailable
+- **deterministic** — the same pool yields the same five, so refreshing cannot
+  reroll a softer opponent, which is what would convert a choice into a slot machine
+- the five are sampled evenly across the rating order, so the range of difficulty
+  survives rather than collapsing onto the strongest five
+
+So the objection the slate failed on does not apply, and the design goal it was
+protecting — *people play a lot* — is untouched.
+
 **The design goal is that people play a lot**, and a rule restricting *who* you
 may attack restricts the playing itself. `06-progression.md`'s daily curve already
 bounds what volume *pays*; bounding the opponent as well would tax the same

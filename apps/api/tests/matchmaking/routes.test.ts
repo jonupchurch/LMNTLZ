@@ -89,6 +89,9 @@ describe('GET /v1/matchmaking/candidates', () => {
         'consecutiveWins',
         'gearScore',
         'league',
+        /* Added with `OFFER_LIMIT`: `candidates` is five of `poolSize`, and without the
+           denominator `widened: false` cannot be told from a band one account off it. */
+        'poolSize',
         'positionInLeague',
         'widened',
       ].sort(),

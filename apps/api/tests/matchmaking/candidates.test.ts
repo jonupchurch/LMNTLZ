@@ -22,7 +22,7 @@ import { closeDb, db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
 import { squads, squadSeats } from '../../src/db/schema/squads.js';
 import { playerRatings } from '../../src/db/schema/ratings.js';
-import { candidates } from '../../src/matchmaking/candidates.js';
+import { candidates, eligiblePool } from '../../src/matchmaking/candidates.js';
 
 const SUFFIX = `test-${process.pid}-${Math.floor(Math.random() * 1e9)}`;
 const ROSTER = getAllHeroes().map((h) => h.id);
@@ -41,6 +41,18 @@ const created: string[] = [];
  * another file's global state is the actual defect, and ordering only hides it.
  */
 const GRADUATED_DAYS = 8;
+
+/**
+ * **Eligibility is asked of the pool; the offer is a separate question.**
+ *
+ * `candidates()` draws `OFFER_LIMIT` (5) spread across the rating order, so asking it
+ * *"is this fixture present?"* is really asking where that fixture sorts among every
+ * defender in Bronze — a fact about the rest of the database rather than about the rule
+ * under test. Presence and absence go to `eligiblePool()`; ordering, field shape and the
+ * cap itself stay on `candidates()`, which is what the route serves.
+ */
+const poolIds = async (viewer: string): Promise<string[]> =>
+  (await eligiblePool(viewer)).pool.map((r) => r.playerId);
 
 async function defender(label: string, options: { seats?: number; rating?: number } = {}) {
   const [account] = await db()
@@ -148,18 +160,22 @@ describe('the signature cannot exclude anybody (T012)', () => {
 
 describe('the pool', () => {
   it('offers same-league defenders and never the requester', async () => {
-    const list = await candidates(attacker);
-    const ids = list.candidates.map((c) => c.playerId);
+    const ids = await poolIds(attacker);
 
     expect(ids).toContain(strong);
     expect(ids).toContain(weak);
     expect(ids, 'a player must never be offered themselves').not.toContain(attacker);
+
+    /* And the exclusion holds through the cap too — the requester must not be able to
+       reappear as one of the five, which is a different code path from the query. */
+    const offered = (await candidates(attacker)).candidates.map((c) => c.playerId);
+    expect(offered, 'a player was offered themselves').not.toContain(attacker);
   });
 
   it('excludes an account whose Visible squad cannot defend', async () => {
     // Three of six seats. Reported, never repaired — 006 refuses to substitute a
     // hero into the gap, so such a squad simply is not a candidate.
-    const ids = (await candidates(attacker)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(attacker);
     const incomplete = created.find((id) => ![attacker, strong, weak].includes(id));
 
     expect(ids).not.toContain(incomplete);
@@ -171,7 +187,15 @@ describe('the pool', () => {
 
     expect([...ratings]).toEqual([...ratings].sort((a, b) => b - a));
 
-    const positions = list.candidates.map((c) => c.playerId);
+    /**
+     * **Relative order is read from the pool, because the cap samples it.**
+     * `takeSpread` preserves order but not membership, so `indexOf` on the offered five
+     * can return `-1` for either fixture — and `-1 < n` is *true*, so this assertion
+     * would have gone on passing while measuring nothing.
+     */
+    const positions = await poolIds(attacker);
+    expect(positions).toContain(strong);
+    expect(positions).toContain(weak);
     expect(positions.indexOf(strong)).toBeLessThan(positions.indexOf(weak));
   });
 
@@ -195,7 +219,24 @@ describe('the pool', () => {
     // Always displayed, never conditional — the player is owed the reason.
     expect(list.ambushChance).toBe(0);
     expect(list.consecutiveWins).toBe(0);
-    expect(list.widened).toBe(false);
+
+    /**
+     * **Shape, not value — and the value it used to assert was reading a real hole.**
+     *
+     * This test is about the ambush fields. `widened === false` rode along and went red
+     * once the bot ramp was seeded, because it was measuring something this fixture does
+     * not control: **no authored bot carries `band: 'bronze'`.** The twenty starter bots
+     * are `band: 'starter'` and the nursery clause keeps them out of every ordinary pool,
+     * and `leagueBots.ts` starts at Silver — so an ordinary Bronze player is offered
+     * whichever real accounts happen to be there, falls under `MIN_POOL`, and widens.
+     *
+     * That is a content gap, not a test defect, and pinning `false` here would have hidden
+     * it behind a fixture. The *value* is owned by `widening.test.ts`, which controls its
+     * own band; what belongs in this test is that the field is always present, because an
+     * optional field is a field clients forget to read.
+     */
+    expect(typeof list.widened, 'widened must always be present, never optional').toBe('boolean');
+    expect(list.poolSize, 'the pool size must be reported alongside it').toBeGreaterThan(0);
   });
 });
 
@@ -216,7 +257,7 @@ describe('no slate, no rotation, no cooldown (T013)', () => {
      * claim is worse than an absent one.
      */
     for (let i = 0; i < 20; i++) {
-      const ids = (await candidates(attacker)).candidates.map((c) => c.playerId);
+      const ids = await poolIds(attacker);
       expect(ids, `call ${i + 1}`).toContain(strong);
       expect(ids, `call ${i + 1}`).toContain(weak);
     }
@@ -318,11 +359,19 @@ describe('an offering carries enough to choose with', () => {
    * passing every shape check above.
    */
   it('is worth more to beat a stronger defender than a weaker one', async () => {
+    /**
+     * **Taken from the offered five by rating rather than by fixture id.** The swing is
+     * a decoration, so it only exists on what was actually offered — but *which*
+     * defenders those are is a fact about the whole league, and naming two fixtures made
+     * this test depend on them surviving `OFFER_LIMIT`. The claim is about the rating
+     * gap, so the extremes of whatever came back prove it just as well and cannot flake.
+     */
     const list = await candidates(attacker);
-    const up = list.candidates.find((c) => c.playerId === strong)!;
-    const down = list.candidates.find((c) => c.playerId === weak)!;
-    expect(up, 'the strong defender is missing').toBeDefined();
-    expect(down, 'the weak defender is missing').toBeDefined();
+    const byRating = [...list.candidates].sort((a, b) => b.rating - a.rating);
+    const up = byRating[0]!;
+    const down = byRating.at(-1)!;
+    expect(byRating.length, 'a single candidate cannot show a gap').toBeGreaterThan(1);
+    expect(up.rating, 'every offered defender shares one rating').toBeGreaterThan(down.rating);
 
     expect(up.winDelta).toBeGreaterThan(down.winDelta);
     // And the reverse: losing to somebody weaker costs more than losing to

@@ -6,16 +6,30 @@
  * ### The signature is the enforcement, and that is the whole design
  *
  * `candidates(accountId)` takes **one argument**. There is no `excludeIds`, no
- * `minRating`, no `maxAttempts`, no `limit`, no cursor — nothing a caller could
- * pass to remove somebody. `contracts/matchmaking-api.md` puts it plainly: *"every
- * eligible defender in the league is present, every time: no slate, no rotation, no
- * cooldown on re-attacking someone you have already fought."*
+ * `minRating`, no `maxAttempts`, no caller-supplied limit, no cursor — nothing a
+ * caller could pass to remove somebody. That property is intact and is the one that
+ * matters: a rule restricting **who** you may attack restricts the playing itself,
+ * and the daily income curve already bounds what volume pays — 1.5× on the first
+ * five victories, base to twenty, half beyond. The economy handles farming, so
+ * matchmaking does not have to.
  *
- * That is not laziness about pagination. A rule restricting **who** you may attack
- * restricts the playing itself, and the daily income curve already bounds what
- * volume pays — 1.5× on the first five victories, base to twenty, half beyond. The
- * economy handles farming, so matchmaking does not have to, and adding a second
- * mechanism would be a second thing to keep in step.
+ * ### ⚠️ `OFFER_LIMIT` reverses "every eligible defender, every time" (2026-08-01)
+ *
+ * This header, and `contracts/matchmaking-api.md`, promised *"every eligible
+ * defender in the league is present, every time: no slate, no rotation."* Jon
+ * capped the offered list at five. The doc has been moved with the code, because a
+ * constant that quietly contradicts a written contract is how the two stop
+ * agreeing.
+ *
+ * **What changed is a reading, not a rule.** The cap is a server-side constant, not
+ * a parameter — no caller can narrow the pool, no cursor pages through it, and
+ * eligibility is untouched. Every defender the old contract admitted is still
+ * *eligible*; five of them are *shown*. Bronze holds twenty-two, and an opponent
+ * list is a decision rather than an inventory.
+ *
+ * **`takeSpread`, not `slice`** — see its own note. Truncating a rating-sorted,
+ * bleed-mixed list from the front would hand the player five defenders from the
+ * league *above* and none from their own band, silently undoing `bleed.ts`.
  *
  * ### Two seams, both honest, both named
  *
@@ -45,7 +59,7 @@ import { ratingDeltas } from '../progression/rating.js';
 import { squads, squadSeats } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
-import { INACTIVITY_DAYS, MIN_POOL, STARTER_DAYS } from './config.js';
+import { INACTIVITY_DAYS, MIN_POOL, OFFER_LIMIT, STARTER_DAYS } from './config.js';
 import { bleed, leagueAbove, leagueBelow } from './bleed.js';
 import { starterLeagueOpen, starterStatus } from './starterLeague.js';
 import { STARTER_GRANT_SCORE, bandOf, leagueOf, positionInLeague, type League } from './league.js';
@@ -117,9 +131,36 @@ export interface CandidateList {
   /** True only when a thin league had to reach outside its band. See `config.ts`. */
   readonly widened: boolean;
   readonly candidates: readonly Candidate[];
+  /**
+   * How many defenders were **eligible**, before `OFFER_LIMIT` drew from them.
+   *
+   * What makes `widened` readable: `widened: false` with a pool of 5 is a league one
+   * account away from breaking its guarantee, and the flag alone cannot say so.
+   */
+  readonly poolSize: number;
   /** Percent, 0–90. **Always displayed** — the player is owed the reason. */
   readonly ambushChance: number;
   readonly consecutiveWins: number;
+}
+
+/** One eligible defender, as the pool queries return them. */
+type PoolRow = Awaited<ReturnType<typeof defenders>>[number];
+
+/** The caller's own half of every rating swing, resolved once. */
+interface OwnStanding {
+  readonly gearScore: number;
+  readonly attackStreak: number;
+  readonly rating: number;
+  readonly ratedBattles: number;
+}
+
+export interface EligiblePool {
+  readonly own: OwnStanding;
+  readonly league: League;
+  readonly gearScore: number;
+  readonly widened: boolean;
+  /** Rating-ordered and **uncapped** — every defender this player may face. */
+  readonly pool: readonly PoolRow[];
 }
 
 /** `coalesce(gear_score, 1500)` — the seam, in SQL. */
@@ -150,13 +191,24 @@ export async function touchActivity(accountId: string): Promise<void> {
 }
 
 /**
- * The pool, ordered.
+ * Everything the player is **eligible** to face, rating-ordered and uncapped.
  *
  * **Assembly then ORDER, never a filtered query.** Rating appears exactly once, in
  * the `ORDER BY`. If it ever appears in a `WHERE`, this function has stopped being
  * what its contract says it is.
+ *
+ * ### Why this is a function of its own
+ *
+ * `OFFER_LIMIT` (Jon, 2026-08-01) draws five onto the screen, and folding that cap into
+ * the assembly made **eligibility unobservable**: every test asking *"does a returning
+ * player re-enter the pool?"* silently began reading a five-item sample instead, and
+ * four of them failed. A cap is a **presentation** decision and belongs on the far side
+ * of a seam from the rule it presents.
+ *
+ * Not reachable over the wire — `candidates()` is what the route serves — so no caller
+ * can ask for the uncapped list.
  */
-export async function candidates(accountId: string): Promise<CandidateList> {
+export async function eligiblePool(accountId: string): Promise<EligiblePool> {
   const [own] = await db()
     .select({
       gearScore: effectiveGearScore,
@@ -351,7 +403,34 @@ export async function candidates(accountId: string): Promise<CandidateList> {
    * result sets concatenated are not one ordered result set — and rating order is the
    * one thing the contract promises about sequence.
    */
-  const ordered = [...all].sort((a, b) => Number(b.rating) - Number(a.rating) || a.playerId.localeCompare(b.playerId));
+  const sorted = [...all].sort(
+    (a, b) => Number(b.rating) - Number(a.rating) || a.playerId.localeCompare(b.playerId),
+  );
+
+  return {
+    own: {
+      gearScore,
+      attackStreak: Number(own.attackStreak),
+      rating: Number(own.rating),
+      ratedBattles: Number(own.ratedBattles),
+    },
+    league,
+    gearScore,
+    widened,
+    pool: sorted,
+  };
+}
+
+/**
+ * The pool as the player is **offered** it.
+ *
+ * `OFFER_LIMIT` of `eligiblePool()`, sampled across the rating order rather than taken
+ * from the front, each decorated with its Visible six and both rating swings.
+ */
+export async function candidates(accountId: string): Promise<CandidateList> {
+  const { own, league, gearScore, widened, pool } = await eligiblePool(accountId);
+
+  const ordered = takeSpread(pool, OFFER_LIMIT);
 
   /**
    * Every offering's Visible six, in **one** query rather than one per candidate.
@@ -393,6 +472,7 @@ export async function candidates(accountId: string): Promise<CandidateList> {
     positionInLeague: positionInLeague(gearScore),
     gearScore,
     widened,
+    poolSize: pool.length,
     candidates: ordered.map((r) => ({
       playerId: r.playerId,
       username: r.username,
@@ -524,6 +604,50 @@ async function defenders(
     .orderBy(direction === 'asc' ? asc(effectiveGearScore) : desc(rating), accounts.id);
 
   return limit === undefined ? query : query.limit(limit);
+}
+
+/**
+ * Take `limit` from a rating-ordered list **without collapsing its range**.
+ *
+ * ### Why not `slice(0, limit)`
+ *
+ * The list is deliberately mixed: `bleedNeighbours` adds defenders from the league
+ * above and below in a proportion that depends on where the player sits in their
+ * band, and that mix is what makes crossing a threshold cost 0.2% instead of 12.6
+ * points of win rate. It is then sorted by **rating, descending**.
+ *
+ * So the top five of a bled list are the five highest-rated — which after a bleed
+ * from above means the offers are *all* from the league above and none from the
+ * player's own band. Truncating from the front would silently undo `bleed.ts`
+ * entirely, and it would look like it was working.
+ *
+ * Sampling at even indices instead keeps the strongest, the weakest, and a spread
+ * between them, so the proportions survive roughly intact and the player is offered
+ * a **range of difficulty** rather than five versions of the same fight.
+ *
+ * **Deterministic, and that is a rule rather than an accident.** A randomly sampled
+ * list would let a player reroll the opponent screen until it offered somebody soft,
+ * which converts a choice into a slot machine and quietly inflates every win rate on
+ * the ladder. Same pool, same five, until the pool itself changes.
+ */
+export function takeSpread<T>(ordered: readonly T[], limit: number): T[] {
+  if (limit <= 0) return [];
+  if (ordered.length <= limit) return [...ordered];
+  if (limit === 1) return [ordered[0]!];
+
+  const picked: T[] = [];
+  const seen = new Set<number>();
+
+  /* `i / (limit - 1)` runs 0 … 1 inclusive, so the first and last are always taken
+     and the rest land evenly between them. */
+  for (let i = 0; i < limit; i += 1) {
+    const index = Math.round((i / (limit - 1)) * (ordered.length - 1));
+    if (seen.has(index)) continue;
+    seen.add(index);
+    picked.push(ordered[index]!);
+  }
+
+  return picked;
 }
 
 /**

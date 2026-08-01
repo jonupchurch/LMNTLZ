@@ -23,9 +23,21 @@ import { closeDb, db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
 import { playerRatings } from '../../src/db/schema/ratings.js';
 import { squads, squadSeats } from '../../src/db/schema/squads.js';
-import { candidates, touchActivity } from '../../src/matchmaking/candidates.js';
+import { candidates, eligiblePool, touchActivity } from '../../src/matchmaking/candidates.js';
+
 import { INACTIVITY_DAYS } from '../../src/matchmaking/config.js';
 import { stripComments } from '../stripComments.js';
+
+/**
+ * **Eligibility is asked of the pool, never of the offer.**
+ *
+ * `candidates()` returns `OFFER_LIMIT` (5) sampled across the rating order, so
+ * `toContain(someId)` against it is a question about the *sample* — it passes or fails
+ * on where the fixture happens to sort among every defender in the league. Every
+ * assertion in this file is about the thirty-day clause, which is an eligibility rule.
+ */
+const poolIds = async (viewer: string): Promise<string[]> =>
+  (await eligiblePool(viewer)).pool.map((r) => r.playerId);
 
 const DAY_MS = 86_400_000;
 const RUN = `inact-${process.pid}-${Date.now()}`;
@@ -114,7 +126,7 @@ afterAll(async () => {
 
 describe('the thirty-day window is a clause, not a job (T043 · T049)', () => {
   it('keeps a defender idle for twenty-nine days and drops one idle for thirty-one', async () => {
-    const ids = (await candidates(viewer)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(viewer);
 
     /**
      * **Asserted as a pair in one read, because the boundary is the claim.** Either half
@@ -128,7 +140,7 @@ describe('the thirty-day window is a clause, not a job (T043 · T049)', () => {
   });
 
   it('re-enters the pool on the next request, with nothing run in between', async () => {
-    const before = (await candidates(viewer)).candidates.map((c) => c.playerId);
+    const before = await poolIds(viewer);
     expect(before, 'the fixture was not actually out of the pool').not.toContain(returning);
 
     await touchActivity(returning);
@@ -138,7 +150,7 @@ describe('the thirty-day window is a clause, not a job (T043 · T049)', () => {
      * the property the clause buys and a nightly job cannot: a player who returns is
      * attackable immediately rather than at whatever hour the sweep runs.
      */
-    const after = (await candidates(viewer)).candidates.map((c) => c.playerId);
+    const after = await poolIds(viewer);
     expect(after, 'a returning player is still invisible').toContain(returning);
   });
 
@@ -150,7 +162,7 @@ describe('the thirty-day window is a clause, not a job (T043 · T049)', () => {
      * pass every other test in this file.
      */
     const never = await defender('iNever', null);
-    const ids = (await candidates(viewer)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(viewer);
 
     expect(ids, 'an account with no activity row and no recent signup was offered').not.toContain(
       never,
@@ -275,7 +287,7 @@ describe('a bot is never idle, however long it sits (T049)', () => {
         ).map((seat, i) => ({ squadId: squad!.id, ...seat, heroId: heroes[i]!.id })),
       );
 
-    const ids = (await candidates(viewer)).candidates.map((c) => c.playerId);
+    const ids = await poolIds(viewer);
     expect(ids, 'a 400-day-old bot with no activity row fell out of the pool').toContain(bot!.id);
 
     // And it is genuinely marked, so a caller can exclude bots from an aggregate.

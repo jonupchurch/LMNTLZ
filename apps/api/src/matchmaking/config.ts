@@ -88,6 +88,21 @@ export const WIDENED_GEAR_BOUND = 2.67;
 export const MIN_POOL = 5;
 
 /**
+ * **How many opponents a player is offered at once** (Jon, 2026-08-01).
+ *
+ * Distinct from `MIN_POOL` despite sharing a value today, and the two must not be
+ * collapsed: `MIN_POOL` is the floor below which matchmaking *widens outside the
+ * band*, while this is how many of an adequate pool are put on screen. One is a
+ * safety valve, the other is a reading. They will drift the moment either is tuned.
+ *
+ * A cap exists at all because an opponent list is a **decision**, not an inventory.
+ * Bronze already holds twenty-two defenders; showing all of them turns choosing a
+ * fight into scanning a table, and the scouting read — six champions, their Forces,
+ * their weaknesses — is what the screen is actually for.
+ */
+export const OFFER_LIMIT = 5;
+
+/**
  * A defender must have been active inside this window to be offered.
  *
  * **Applied in the query, never by a nightly job.** A job leaves a returning player
