@@ -58,6 +58,14 @@ beforeEach(() => {
         return json(200, { holdStreak: 0, streakReset: true, evictedSquadIds: [], warnings: [] });
       }
       if (path.includes('/roster')) return json(200, payload);
+      /* The header reads the shard balance and the gear score on every navigation
+         (useAccountSummary). Answered blank here: this file is not about the header,
+         and a strict stub that throws would fail on a request the screen under test
+         never makes itself. An empty body leaves both numbers undefined, which is
+         exactly what the header draws nothing for. */
+      if (path.includes('/me/shards') || path.includes('/me/standing')) {
+        return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+      }
       throw new Error(`unstubbed request: ${method} ${path}`);
     }),
   );

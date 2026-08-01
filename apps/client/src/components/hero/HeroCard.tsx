@@ -44,11 +44,19 @@ import { Meter } from '../readouts/Meter.js';
 import { Pill } from '../readouts/Pill.js';
 import { DoorCluster } from './DoorCluster.js';
 import { HeroPortrait } from './HeroPortrait.js';
+import { RunePips } from './RunePips.js';
 
 export type HeroCardScale = 'compact' | 'standard' | 'full';
 
 export interface HeroCardProps {
   readonly hero: Hero;
+  /**
+   * Stage `0..4` for each of the three slots, `primary · secondary · common`.
+   *
+   * **Absent means the caller has no rune data**, not that the champion has none — see
+   * the render for why an empty array is not the same statement.
+   */
+  readonly runeStages?: readonly number[] | undefined;
   readonly scale?: HeroCardScale;
   /** Current HP. Omitted means undamaged — and on `compact`, means no meter. */
   readonly hp?: number;
@@ -92,6 +100,7 @@ const ART: Record<HeroCardScale, string> = {
 
 export function HeroCard({
   hero,
+  runeStages,
   scale = 'standard',
   hp,
   onSelect,
@@ -164,6 +173,25 @@ export function HeroCard({
         <span className="absolute bottom-2 left-2">
           <HeroIcon heroId={hero.id as HeroId} name={hero.name} size="chip" />
         </span>
+
+        {/**
+         * Top-right: what this champion is geared to (Jon, 2026-08-01).
+         *
+         * **The one free corner, and the right one.** The House sits top-left, the
+         * portrait chip bottom-left and the four doors bottom-right; gear is the fourth
+         * thing a player reads off a card and it had nowhere to go.
+         *
+         * It is the single fact that separates two entries on a roster where everybody
+         * owns all 27 — the same argument `squads/routes.ts` makes for drawing pips on
+         * the squad screen. Omitted rather than drawn empty when the caller has no rune
+         * data: three hollow pips would claim "nothing invested", which is a different
+         * statement from "not asked".
+         */}
+        {runeStages ? (
+          <span className="absolute top-2 right-2">
+            <RunePips stages={runeStages} name={hero.name} />
+          </span>
+        ) : null}
 
         {/* Bottom-right: the four doors. */}
         <span className="absolute right-2 bottom-2">

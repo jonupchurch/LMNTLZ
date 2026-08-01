@@ -8,6 +8,7 @@ import { ResumeBattle } from './features/battle/ResumeBattle.js';
 import type { StartedBattle } from './features/battle/types.js';
 import { ROSTER_SIZE } from '@lmntlz/content';
 import { AppShell, Header, Rail, type RailEntry } from './components/index.js';
+import { useAccountSummary } from './lib/useAccountSummary.js';
 import { GalleryScreen } from './features/gallery/GalleryScreen.js';
 import { LandingScreen } from './features/landing/LandingScreen.js';
 import { CodexScreen } from './features/codex/CodexScreen.js';
@@ -186,6 +187,17 @@ function GameApp(): JSX.Element {
     void signOut();
   }, []);
 
+  /**
+   * The two numbers beside the name, re-read **on every navigation**.
+   *
+   * `screen` is the revision key rather than a timer or a manual bump: both figures move
+   * as a consequence of *doing something* — a battle pays shards, the Forge spends them
+   * and moves gear, a melt moves both — and every one of those ends with the player
+   * leaving the screen they did it on. So arriving anywhere is exactly the moment the
+   * header should be re-read, and there is nothing to remember to call.
+   */
+  const { shards, power } = useAccountSummary(phase.kind === 'signed-in', screen);
+
   return (
     <div className="flex min-h-full flex-col">
       {/**
@@ -212,10 +224,20 @@ function GameApp(): JSX.Element {
        */}
       {phase.kind === 'signed-in' ? (
         <Header
-          /* No `shards` — the session payload carries no balance, and a
-             placeholder 0 would be a false claim about money. `onProfile` is
-             how the profile is reached (T020): one click on your own name,
-             never a rail slot. */
+          /**
+           * **Both numbers are now passed, and both are still optional.**
+           *
+           * This used to read *"no `shards` — the session payload carries no balance,
+           * and a placeholder 0 would be a false claim about money."* That reasoning
+           * was right and is unchanged; what changed is that the numbers are fetched
+           * rather than absent. `useAccountSummary` yields `undefined` until the server
+           * answers, so the header still draws nothing rather than a zero it made up.
+           *
+           * `onProfile` is how the profile is reached (T020): one click on your own
+           * name, never a rail slot.
+           */
+          shards={shards}
+          power={power}
           username={phase.account.username}
           onProfile={() => setScreen(screenFor('profile', phase.account.id))}
           onSignOut={onSignOut}

@@ -44,6 +44,21 @@ const runesReply = (allocations: Array<Record<string, number>>) => ({
   ],
 });
 
+/** A rune reply covering several champions, each at the stages given. */
+const runesFor = (byHero: Record<string, readonly number[]>) => ({
+  heroes: Object.entries(byHero).map(([heroId, stages]) => ({
+    heroId,
+    slots: (['primary', 'secondary', 'common'] as const).map((slot, i) => ({
+      slot,
+      element: null,
+      stage: stages[i] ?? 0,
+      allocations: {},
+      utility: null,
+      spent: 0,
+    })),
+  })),
+});
+
 const serve = (body: unknown | null) =>
   vi.stubGlobal(
     'fetch',
@@ -261,5 +276,120 @@ describe('the passive flyout', () => {
       String(hero.stats.might),
     );
     expect(screen.getByLabelText('Passives')).toBeInTheDocument();
+  });
+});
+
+/**
+ * The gear filter and the card's rune block (Jon, 2026-08-01).
+ *
+ * > *"add 'Partial Runes' and 'Fully Runed' as filters"* · *"in the upper right of the
+ * > hero cards, let's show the rune status block as well"*
+ *
+ * Both read the same `GET /me/runes` the stat panel does, and both have a state that is
+ * easy to get wrong in the same direction: **not knowing must not read as knowing.**
+ * Before the request lands there is no build to judge, and a champion whose runes have
+ * not loaded is not a bare one.
+ */
+describe('the gear filter', () => {
+  const heroes = getAllHeroes();
+  const full = heroes[0]!;
+  const partial = heroes[1]!;
+  const bare = heroes[2]!;
+
+  const withRunes = () =>
+    runesFor({ [full.id]: [4, 4, 4], [partial.id]: [4, 1, 0], [bare.id]: [0, 0, 0] });
+
+  const names = () =>
+    screen
+      .getAllByRole('listitem')
+      .map((li) => li.textContent ?? '')
+      .join(' | ');
+
+  const pick = async (label: string) =>
+    userEvent.click(await screen.findByRole('radio', { name: label }));
+
+  it('shows only champions with every slot at the cap under Fully runed', async () => {
+    serve(withRunes());
+    render(<RosterScreen />);
+    await pick('Fully runed');
+
+    const shown = names();
+    expect(shown).toContain(full.name);
+    expect(shown, 'a part-geared champion counted as finished').not.toContain(partial.name);
+    expect(shown, 'an ungeared champion counted as finished').not.toContain(bare.name);
+  });
+
+  /**
+   * **Partial is "something, but not everything"** — the Forge's own definition. A
+   * reading of "has any rune" would sweep in the fully-runed champions and make the two
+   * filters overlap, which is the mistake that looks right until you count.
+   */
+  it('excludes both the finished and the untouched under Partial', async () => {
+    serve(withRunes());
+    render(<RosterScreen />);
+    await pick('Partial');
+
+    const shown = names();
+    expect(shown).toContain(partial.name);
+    expect(shown, 'a fully runed champion is not partial').not.toContain(full.name);
+    expect(shown, 'an ungeared champion is not partial').not.toContain(bare.name);
+  });
+
+  /**
+   * ⚠️ **Offering a filter that can only empty the grid is a dead end.** With no runes
+   * read there is nothing for either option to match, so the control is not drawn.
+   */
+  it('is not offered at all when the account has no runes', async () => {
+    serve(null);
+    render(<RosterScreen />);
+    await screen.findAllByRole('listitem');
+
+    expect(screen.queryByRole('radiogroup', { name: 'Gear' })).toBeNull();
+    /* And Reach is still there, so the absence above is about gear and not a rail that
+       failed to render. */
+    expect(screen.getByRole('radiogroup', { name: 'Reach' })).toBeInTheDocument();
+  });
+
+  it('is cleared by Clear filters along with everything else', async () => {
+    serve(withRunes());
+    render(<RosterScreen />);
+    await pick('Fully runed');
+    expect(names()).not.toContain(bare.name);
+
+    await userEvent.click(screen.getByRole('button', { name: /clear filters/i }));
+
+    expect(names(), 'the gear filter survived a clear').toContain(bare.name);
+  });
+});
+
+describe('the rune block on a hero card', () => {
+  const heroes = getAllHeroes();
+
+  it('draws three pips once the runes are known', async () => {
+    serve(runesFor({ [heroes[0]!.id]: [4, 2, 0] }));
+    render(<RosterScreen />);
+
+    /* `RunePips` labels itself with the champion, which is how a card's block is told
+       from the drawer's content without reaching for a class name. */
+    await vi.waitFor(() =>
+      expect(screen.getAllByLabelText(new RegExp(heroes[0]!.name, 'i')).length).toBeGreaterThan(0),
+    );
+  });
+
+  /**
+   * The half that matters: **an unread build is not an empty one.** Three hollow pips
+   * would state "nothing invested" about a champion nobody has asked the server about.
+   */
+  it('draws nothing at all when the runes are unknown', async () => {
+    serve(null);
+    render(<RosterScreen />);
+    const cards = await screen.findAllByRole('listitem');
+
+    for (const card of cards) {
+      expect(
+        within(card).queryByText(/rune/i),
+        'a card claimed a build with no rune data loaded',
+      ).toBeNull();
+    }
   });
 });

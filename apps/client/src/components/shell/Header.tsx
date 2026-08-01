@@ -23,7 +23,19 @@ export interface HeaderProps {
    * player's money that looks authoritative — and the one number in this app
    * nobody would think to doubt. Absent is honest; wrong is not.
    */
-  readonly shards?: number;
+  /* `| undefined` is explicit because `exactOptionalPropertyTypes` is on: "absent" and
+     "passed as undefined" are different types, and the caller does the latter — it
+     always passes both, and holds `undefined` until the server has answered. */
+  readonly shards?: number | undefined;
+  /**
+   * **Roster power — the account's gear score** (Jon, 2026-08-01).
+   *
+   * Optional for the same reason `shards` is: absent means *not known*, and a `0` in
+   * this slot would read as "you have nothing" rather than "we did not ask". A new
+   * account's real floor is the 1,500 starter grant, so zero is not even a value the
+   * game produces.
+   */
+  readonly power?: number | undefined;
   readonly username: string;
   /**
    * The `ConnectionState` element, passed in rather than constructed here.
@@ -47,6 +59,7 @@ export interface HeaderProps {
 
 export function Header({
   shards,
+  power,
   username,
   connection,
   onProfile,
@@ -77,8 +90,33 @@ export function Header({
             <span aria-hidden="true" className="text-gold">
               ◈
             </span>
-            <span className="font-mono tabular-nums">{shards.toLocaleString('en-US')}</span>
+            <span className="font-mono tabular-nums" data-shards={shards}>
+              {shards.toLocaleString('en-US')}
+            </span>
             <span className="sr-only">shards</span>
+          </span>
+        )}
+
+        {/**
+         * **Roster power, immediately left of the name** (Jon, 2026-08-01).
+         *
+         * The same `tabular-nums` treatment as the balance, and for the same reason:
+         * these are the two numbers a player checks constantly, and digits that shift
+         * width as the value changes are digits nobody reads at a glance.
+         *
+         * Titled *gear score* rather than left bare — it is the number `leagueOf` uses
+         * to place the account, so a player who wonders why their opponents got harder
+         * can connect the two without leaving the header.
+         */}
+        {power !== undefined && (
+          <span className="flex items-center gap-1.5" title="Roster power — your gear score, which sets your league">
+            <span aria-hidden="true" className="text-decor">
+              ⌁
+            </span>
+            <span className="font-mono tabular-nums" data-power={power}>
+              {power.toLocaleString('en-US')}
+            </span>
+            <span className="sr-only">roster power</span>
           </span>
         )}
 

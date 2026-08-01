@@ -79,6 +79,20 @@ type Sort = 'force' | 'name' | 'power';
 type ReachFilter = 'any' | 1 | 2;
 
 /**
+ * The gear filter (Jon, 2026-08-01).
+ *
+ * **The two definitions are the Forge's, not new ones.** `ForgeScreen` already splits
+ * the roster this way — *open* is `placedStages > 0 && slots.some(s => s.stage < 4)` and
+ * complete is every slot at `MAX_STAGE`. Restating either here would let the two screens
+ * disagree about what "fully runed" means, and a player would find a champion the Forge
+ * calls finished sitting under Partial on the roster.
+ *
+ * `bare` is not offered as a filter: with nothing invested it is the state of all 27 on
+ * a new account, and "show me everything I have not touched" is the default view.
+ */
+type RuneFilter = 'any' | 'partial' | 'full';
+
+/**
  * Total power, for the third sort. **Not a rule and not shown as a number** —
  * it orders the grid and nothing else reads it, so it cannot leak into balance.
  */
@@ -110,6 +124,43 @@ export const STAT_LABEL: Readonly<Record<StatKey, string>> = {
  * exactly on the 75 cap is the most satisfying thing a rune does. Nothing here may
  * treat a slot as owning a stat.
  */
+/**
+ * A champion's three slots as stages `0..4`, in `primary · secondary · common` order.
+ *
+ * Always three, and `0` for a slot with no rune: `RunePips` draws the empty ones because
+ * *"a champion with none would show nothing at all — indistinguishable from a card that
+ * failed to load."* Returns `undefined` when the account's runes have not been read, so
+ * the card omits the block rather than claiming three empty slots.
+ */
+const stagesOf = (
+  runes: RunesResponse | null,
+  heroId: string,
+): readonly number[] | undefined => {
+  if (!runes) return undefined;
+
+  const owned = runes.heroes.find((h) => h.heroId === heroId);
+  return RUNE_SLOT_ORDER.map(
+    (slot) => owned?.slots.find((s) => s.slot === slot)?.stage ?? 0,
+  );
+};
+
+/** The wire order, and `RunePips` labels its three in the same sequence. */
+const RUNE_SLOT_ORDER = ['primary', 'secondary', 'common'] as const;
+
+/** Every stage at the cap — the Forge's own definition of a finished champion. */
+const FULLY_RUNED = (stages: readonly number[]): boolean =>
+  stages.length > 0 && stages.every((stage) => stage >= MAX_RUNE_STAGE);
+
+/** Something invested, but at least one slot still has room. */
+const PARTIALLY_RUNED = (stages: readonly number[]): boolean =>
+  stages.some((stage) => stage > 0) && stages.some((stage) => stage < MAX_RUNE_STAGE);
+
+/**
+ * Stage 4 is the last one. **Not re-typed as a literal** — the cap belongs to the
+ * server, and `RunePips` makes the same point about drawing a full pip.
+ */
+const MAX_RUNE_STAGE = 4;
+
 const boostsOf = (runes: RunesResponse | null, heroId: string): Partial<Record<StatKey, number>> => {
   const owned = runes?.heroes.find((h) => h.heroId === heroId);
   if (!owned) return {};
@@ -131,6 +182,7 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
   /** *Show champions whose Bane or Fault this Force opens* — the export's words. */
   const [weakTo, setWeakTo] = useState<DamageType | null>(null);
   const [reach, setReach] = useState<ReachFilter>('any');
+  const [runeFilter, setRuneFilter] = useState<RuneFilter>('any');
   const [sort, setSort] = useState<Sort>('force');
   const [selected, setSelected] = useState<Hero | null>(null);
   /** The power under the cursor in the drawer's list, for the flyout. */
@@ -215,6 +267,21 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
        */
       if (weakTo && hero.bane !== weakTo && hero.fault !== weakTo) return false;
       if (reach !== 'any' && hero.reach !== reach) return false;
+
+      /**
+       * **Both gear filters match nothing until the runes have loaded**, which is
+       * deliberate. `stagesOf` returns `undefined` before the request lands, and an
+       * unknown build must not be counted as *fully runed* — a filter that briefly
+       * showed every champion as finished would be a wrong answer that then corrects
+       * itself, which reads as a flicker rather than as a load.
+       */
+      if (runeFilter !== 'any') {
+        const stages = stagesOf(runes, hero.id);
+        if (!stages) return false;
+        if (runeFilter === 'full' && !FULLY_RUNED(stages)) return false;
+        if (runeFilter === 'partial' && !PARTIALLY_RUNED(stages)) return false;
+      }
+
       return true;
     });
 
@@ -229,15 +296,21 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
       );
     }
     return ordered;
-  }, [all, query, forces, weakTo, reach, sort]);
+  }, [all, query, forces, weakTo, reach, runeFilter, runes, sort]);
 
-  const filtered = query.trim() !== '' || forces.length > 0 || weakTo !== null || reach !== 'any';
+  const filtered =
+    query.trim() !== '' ||
+    forces.length > 0 ||
+    weakTo !== null ||
+    reach !== 'any' ||
+    runeFilter !== 'any';
 
   const clearAll = (): void => {
     setQuery('');
     setForces([]);
     setWeakTo(null);
     setReach('any');
+    setRuneFilter('any');
   };
 
   return (
@@ -323,6 +396,51 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
               ))}
             </div>
           </section>
+
+          {/**
+           * **Gear** (Jon, 2026-08-01) — the same radiogroup shape as Reach, because it
+           * is the same kind of control and a rail that invents a new one per filter is
+           * a rail a player has to re-learn on every section.
+           *
+           * Hidden entirely when the account has no runes read: with nothing invested,
+           * *Partial* and *Fully runed* both match zero champions, and offering two
+           * controls that can only empty the grid is offering a dead end.
+           */}
+          {runes !== null && (
+            <section aria-labelledby="gear-heading">
+              <h3
+                id="gear-heading"
+                className="text-caption mb-2 font-mono tracking-[0.2em] uppercase text-faint"
+              >
+                Gear
+              </h3>
+              <div className="flex gap-1" role="radiogroup" aria-label="Gear">
+                {(
+                  [
+                    ['any', 'Any'],
+                    ['partial', 'Partial'],
+                    ['full', 'Fully runed'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={runeFilter === value}
+                    onClick={() => setRuneFilter(value)}
+                    className={[
+                      'text-caption flex-1 rounded border py-1 font-mono uppercase',
+                      runeFilter === value
+                        ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
+                        : 'border-line text-faint',
+                    ].join(' ')}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* `Button` takes `state`, not `disabled` — the seven states are one
               closed union so a control cannot be half-disabled. */}
@@ -426,6 +544,9 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
               <li key={hero.id}>
                 <HeroCard
                   hero={hero}
+                  /* Undefined until the runes load, which draws no block rather than
+                     three empty pips claiming nothing is invested. */
+                  runeStages={stagesOf(runes, hero.id)}
                   scale="compact"
                   fill
                   onSelect={(picked) => {
