@@ -1,144 +1,107 @@
 /**
- * What one opponent's Visible squad looks like, and what it is weak to.
+ * What one opponent looks like from the outside, and what answers them (019).
  *
  * ### This is the screen the whole design is about
  *
  * *"The game is counter-building: read the enemy's weaknesses, don't stack your
  * own."* Every hero's Bane and Fault are a pure function of its two authored
- * types, so a scout can compute them from the Codex regardless — which is exactly
- * why disclosing them is safe, and why **counting** them is the useful thing this
- * panel does that a list of six names does not.
+ * types, so a scout can compute them from the Codex regardless — which is
+ * exactly why disclosing them is safe, and why **counting** them is the useful
+ * thing this panel does that a list of six names does not.
  *
- * ### What is deliberately absent
+ * ### Composition, not layout
+ *
+ * The panel itself now decides almost nothing. `ScoutedWall` draws the six
+ * standing champions, `SealedZone` draws the six you are not allowed to see,
+ * and `ScoutReadout` does the arithmetic across both against your own squad.
+ * Each of those is a separate claim with a separate disclosure rule, and they
+ * were previously interleaved in one function where the rules were comments.
+ *
+ * ### What is deliberately absent, still
  *
  * No stat values, base or runed. No indication of which stat a rune boosts. No
- * targeting rule and no power ranking, in either zone. And for the Hidden squad,
- * **the hold streak and nothing else** — there is no seats array to render,
- * because an empty one would still tell a scout the shape of what is missing.
- *
- * Rune pips show **commitment, never power**: at an identical spend the best
- * allocation scores ~3.35× the worst, so a full set of pips means a player
- * committed, not that they committed well. That gap is what makes bluffing real.
+ * targeting rule and no power ranking, in either zone. And for the Hidden
+ * squad, **the hold streak and nothing else** — `ScoutView.hidden` carries no
+ * seats array, and `SealedZone` draws a client-side constant rather than
+ * anything served (Constitution XVII).
  */
 
-import { useMemo } from 'react';
+import type { Hero } from '@lmntlz/content';
+import { ScoutedWall } from './ScoutedWall.js';
+import { SealedZone } from './SealedZone.js';
+import { ScoutReadout } from './ScoutReadout.js';
 import type { ScoutView } from './types.js';
 
 export interface ScoutPanelProps {
   readonly scout: ScoutView;
-  /** Rendered under the squad, so the choice sits beside what informed it. */
+  /** Their rating, from the candidate row that opened this panel. */
+  readonly rating?: number;
+  /** Percent, as served by `/matchmaking/candidates`. Never computed here. */
+  readonly ambushChance: number;
+  readonly consecutiveWins: number;
+  /** The squad you would send, resolved to champions. Empty until one is ready. */
+  readonly squad: readonly Hero[];
+  readonly squadName: string | null;
+  /** The attack control and the profile link, so the choice sits beside its reasons. */
   readonly children?: React.ReactNode;
 }
 
-const ROW_ORDER: Readonly<Record<string, number>> = { front: 0, middle: 1, back: 2 };
-
-export function ScoutPanel({ scout, children }: ScoutPanelProps) {
-  /**
-   * **The counting is the point.** Six names and their types are the raw data; the
-   * question a player is actually asking is *"what one damage type hurts the most
-   * of them?"* — and answering it by eye across six champions and nine types is
-   * the sort of arithmetic that makes people not bother.
-   *
-   * A Bane is super-effective (×1.50) and a Fault is minor (×1.25), so they are
-   * counted apart rather than summed. Ordered by Banes first, because that is the
-   * lever.
-   */
-  const answers = useMemo(() => {
-    const banes = new Map<string, number>();
-    const faults = new Map<string, number>();
-
-    for (const seat of scout.visible.seats) {
-      banes.set(seat.hero.bane, (banes.get(seat.hero.bane) ?? 0) + 1);
-      faults.set(seat.hero.fault, (faults.get(seat.hero.fault) ?? 0) + 1);
-    }
-
-    return [...new Set([...banes.keys(), ...faults.keys()])]
-      .map((type) => ({ type, banes: banes.get(type) ?? 0, faults: faults.get(type) ?? 0 }))
-      .sort((a, b) => b.banes - a.banes || b.faults - a.faults || a.type.localeCompare(b.type))
-      .slice(0, 4);
-  }, [scout.visible.seats]);
-
-  const seats = useMemo(
-    () =>
-      [...scout.visible.seats].sort(
-        (a, b) => (ROW_ORDER[a.row] ?? 9) - (ROW_ORDER[b.row] ?? 9) || a.index - b.index,
-      ),
-    [scout.visible.seats],
-  );
-
+export function ScoutPanel({
+  scout,
+  rating,
+  ambushChance,
+  consecutiveWins,
+  squad,
+  squadName,
+  children,
+}: ScoutPanelProps): React.JSX.Element {
   return (
-    <section
-      aria-label={`Scouting ${scout.username}`}
-      className="flex flex-col gap-4 lz-surface p-6"
-    >
-      <header className="flex items-baseline justify-between gap-4">
-        <h3 className="font-display text-h2 tracking-widest uppercase text-parchment">
-          {scout.username}
-        </h3>
-        <p className="font-mono text-caption text-faint">
-          {scout.league} · hold {scout.visible.holdStreak} visible ·{' '}
-          {/**
-           * **Both streaks are disclosed, and only the streaks for Hidden.** A
-           * player choosing a target is owed the fact that the Hidden squad they
-           * might be ambushed into has held for a long time.
-           */}
-          {scout.hidden.holdStreak} hidden
-        </p>
+    <section aria-label={`Scouting ${scout.username}`} className="flex flex-col gap-4">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-caption font-mono tracking-widest text-gold uppercase">
+            Scouting · {scout.league}
+          </p>
+          <h3 className="text-h1 font-display tracking-wide text-parchment uppercase">
+            {scout.username}
+          </h3>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-5">
+          {rating !== undefined && (
+            <div className="text-right">
+              <p className="text-caption font-mono tracking-widest text-faint uppercase">
+                Their rating
+              </p>
+              <p className="text-h2 font-mono tabular-nums text-parchment">{rating}</p>
+            </div>
+          )}
+          {children}
+        </div>
       </header>
 
-      {answers.length > 0 && (
-        <div>
-          <h4 className="font-display text-[11px] tracking-widest uppercase text-faint">
-            What answers this squad
-          </h4>
-          {/* Labelled, because the panel holds two lists and "the second one" is
-              not a thing a screen reader or a test can ask for. */}
-          <ul aria-label="What answers this squad" className="mt-2 flex flex-wrap gap-2">
-            {answers.map((answer) => (
-              <li
-                key={answer.type}
-                className="rounded border border-line px-2 py-1 font-mono text-[11px]"
-              >
-                <span className="text-parchment uppercase">{answer.type}</span>
-                {answer.banes > 0 && (
-                  <span className="ml-2 text-gold">
-                    {answer.banes} bane{answer.banes === 1 ? '' : 's'}
-                  </span>
-                )}
-                {answer.faults > 0 && (
-                  <span className="ml-2 text-faint">{answer.faults} fault</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/**
+       * **The two zones side by side, 60/40**, which is the export's
+       * `minmax(0,1.5fr) minmax(0,1fr)`. Drawing them together is the point:
+       * one wall is the fight you chose and the other is the fight that might
+       * happen instead, and a screen that showed only the first would make the
+       * ambush a surprise rather than a stated risk.
+       */}
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+        <ScoutedWall
+          seats={scout.visible.seats}
+          holdStreak={scout.visible.holdStreak}
+          canDefend={scout.visible.canDefend}
+          squad={squad}
+        />
+        <SealedZone
+          holdStreak={scout.hidden.holdStreak}
+          ambushChance={ambushChance}
+          consecutiveWins={consecutiveWins}
+        />
+      </div>
 
-      <ul aria-label="Visible squad" className="flex flex-col gap-2">
-        {seats.map((seat) => (
-          <li
-            key={`${seat.row}-${seat.index}`}
-            className="flex items-baseline justify-between gap-3 border-b border-line/40 pb-2 font-mono text-caption"
-          >
-            <span className="w-32 shrink-0 text-parchment">{seat.hero.name}</span>
-            <span className="w-20 shrink-0 text-faint uppercase">{seat.row}</span>
-            <span className="text-faint">
-              {seat.hero.primary} · {seat.hero.secondary} · reach {seat.hero.reach}
-            </span>
-            {/* Bane in gold: it is the ×1.50, and the only one worth building for. */}
-            <span className="text-gold">bane {seat.hero.bane}</span>
-            <span className="text-faint">fault {seat.hero.fault}</span>
-          </li>
-        ))}
-      </ul>
-
-      {!scout.visible.canDefend && (
-        <p role="status" className="font-mono text-caption text-slash-lit">
-          This squad is not at full strength.
-        </p>
-      )}
-
-      {children}
+      <ScoutReadout seats={scout.visible.seats} squad={squad} squadName={squadName} />
     </section>
   );
 }

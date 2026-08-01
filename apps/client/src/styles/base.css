@@ -347,6 +347,27 @@
   background-color: transparent;
 }
 
+/*
+ * **Sealed, which is not the same as empty.** An empty seat is one you could
+ * fill; a sealed one holds something you are not allowed to see. Matchmaking
+ * draws the Hidden Six as six of these — dashed like an empty slot, but hatched,
+ * because "there is nothing here" and "there are six champions here and you do
+ * not get to know which" are opposite facts and the screen has to say which one
+ * it means.
+ *
+ * The hatch is the export's own: `repeating-linear-gradient(135deg, …28 0 6px,
+ * transparent 6px 12px)`, six times on that screen.
+ */
+.lz-sealed {
+  border: 1px dashed var(--color-line);
+  border-radius: 8px;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(58 51 87 / 0.28) 0 6px,
+    transparent 6px 12px
+  );
+}
+
 .lz-shield {
   clip-path: var(--shape-shield);
 }

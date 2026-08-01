@@ -23,9 +23,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Hero } from '@lmntlz/content';
 import { Panel } from '../../components/index.js';
 import { api, ApiError } from '../../lib/api.js';
+import { CandidateRail } from './CandidateRail.js';
 import { ScoutPanel } from './ScoutPanel.js';
+import { StrikingSix } from './StrikingSix.js';
 import type { CandidateList, ScoutView, Standing } from './types.js';
 import type { StartedBattle } from '../battle/types.js';
 import type { RosterResponse } from '../squads/types.js';
@@ -45,6 +48,15 @@ export function AttackScreen({
   const [list, setList] = useState<CandidateList | null>(null);
   const [standing, setStanding] = useState<Standing | null>(null);
   const [squads, setSquads] = useState<RosterResponse['assignments']['offense']>([]);
+  /**
+   * The 27, for the squad thumbs and the fit reading.
+   *
+   * **Served, not imported from `@lmntlz/content` directly.** The roster route
+   * is what the rest of this app reads a champion through, and a screen that
+   * bypassed it would keep rendering after a content change the server had not
+   * shipped yet.
+   */
+  const [heroes, setHeroes] = useState<readonly Hero[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [target, setTarget] = useState<string | null>(null);
@@ -60,6 +72,37 @@ export function AttackScreen({
    * game.
    */
   const ready = useMemo(() => squads.filter((s) => s.complete && s.valid), [squads]);
+
+  const heroesById = useMemo(
+    () => new Map(heroes.map((hero) => [hero.id, hero])),
+    [heroes],
+  );
+
+  /** The chosen squad, resolved to champions. Empty until both halves arrive. */
+  const chosenSix = useMemo(() => {
+    const squad = ready.find((s) => s.slot === slot);
+    if (!squad) return [];
+    return squad.seats
+      .map((seat) => heroesById.get(seat.heroId))
+      .filter((hero): hero is Hero => hero !== undefined);
+  }, [ready, slot, heroesById]);
+
+  const chosenName = useMemo(
+    () => ready.find((s) => s.slot === slot)?.name ?? null,
+    [ready, slot],
+  );
+
+  /**
+   * Their rating, taken from the candidate row rather than the scout payload.
+   *
+   * `ScoutView` does not carry one and should not start: the scout route's job
+   * is the wall, and rating is a matchmaking fact the list already served. Two
+   * routes serving the same number is how they end up disagreeing.
+   */
+  const targetRating = useMemo(
+    () => list?.candidates.find((c) => c.playerId === target)?.rating,
+    [list, target],
+  );
 
   useEffect(() => {
     // The first ready squad, so a player with one squad never has to pick it.
@@ -87,6 +130,9 @@ export function AttackScreen({
       setList(candidates);
       setStanding(own);
       setSquads(roster.assignments.offense);
+      /* Absent is empty, never guessed — a squad card with no faces says the
+         roster has not arrived, which is true. */
+      setHeroes(roster.heroes ?? []);
       setError(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -240,118 +286,90 @@ export function AttackScreen({
         </div>
       </Panel>
 
-      <Panel span={7}>
-        <section aria-label="Opponents">
-          {list.candidates.length === 0 ? (
-            <p className="font-mono text-body text-faint">
-              Nobody in your league has a full Visible squad to attack yet.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {list.candidates.map((candidate) => (
-                <li key={candidate.playerId}>
-                  <button
-                    type="button"
-                    aria-pressed={target === candidate.playerId}
-                    onClick={() => void openScout(candidate.playerId)}
-                    className={[
-                      'w-full rounded border px-3 py-2 text-left transition-colors',
-                      target === candidate.playerId
-                        ? 'border-gold bg-raised shadow-(--shadow-glow-gold)'
-                        : 'border-line bg-surface hover:border-faint',
-                    ].join(' ')}
-                  >
-                    <span className="flex items-baseline justify-between gap-3">
-                      <span className="font-display text-body tracking-wide text-parchment">
-                        {candidate.username}
-                      </span>
-                      <span className="font-mono text-[11px] text-faint">
-                        rating {candidate.rating}
-                      </span>
-                    </span>
-                    <span className="mt-1 block font-mono text-[11px] text-faint">
-                      hold {candidate.visibleHoldStreak} visible · {candidate.hiddenHoldStreak}{' '}
-                      hidden
-                      {/* Disclosed rather than hidden: a hold against a bot and a
-                          hold against a person are different facts. */}
-                      {candidate.isBot && <span className="ml-2 text-dark-lit">bot</span>}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+      {/**
+       * **A narrow rail and a wide stage**, which is the export's 300px column
+       * against everything else. The choice of opponent is a short list of
+       * names; the reading of one is six portraits, two zones and a verdict, and
+       * the previous 7/5 split had them the wrong way round.
+       */}
+      <Panel span={3}>
+        <CandidateRail
+          candidates={list.candidates}
+          selected={target}
+          onSelect={(playerId) => void openScout(playerId)}
+        />
       </Panel>
 
-      <Panel span={5}>
+      <Panel span={9}>
         {scout ? (
-          <ScoutPanel scout={scout}>
-            <div className="flex flex-col gap-3 border-t border-line pt-4">
-              {ready.length > 1 && (
-                <div
-                  className="flex flex-wrap items-center gap-2"
-                  role="radiogroup"
-                  aria-label="Attack squad"
-                >
-                  {ready.map((squad) => (
-                    <button
-                      key={squad.slot}
-                      type="button"
-                      role="radio"
-                      aria-checked={slot === squad.slot}
-                      onClick={() => setSlot(squad.slot)}
-                      className={[
-                        'rounded border px-3 py-1 font-mono text-caption',
-                        slot === squad.slot
-                          ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
-                          : 'border-line text-faint',
-                      ].join(' ')}
-                    >
-                      {squad.name ?? `Attack ${squad.slot + 1}`}
-                    </button>
-                  ))}
-                </div>
-              )}
-
+          <div className="flex flex-col gap-4">
+            <ScoutPanel
+              scout={scout}
+              {...(targetRating !== undefined ? { rating: targetRating } : {})}
+              ambushChance={list.ambushChance}
+              consecutiveWins={list.consecutiveWins}
+              squad={chosenSix}
+              squadName={chosenName}
+            >
               <button
                 type="button"
                 disabled={slot === null || starting}
                 onClick={() => void attack()}
                 className={[
-                  'rounded border px-4 py-2 text-h3 font-display tracking-widest uppercase',
+                  'rounded-lg px-6 py-3 text-h3 font-display tracking-widest uppercase transition-shadow duration-(--duration-fast)',
                   slot !== null && !starting
-                    ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment hover:bg-gold/20'
-                    : 'border-line text-faint',
+                    ? 'bg-gold text-void shadow-(--shadow-glow-gold-strong) hover:brightness-110'
+                    : 'text-faint ring-1 ring-line ring-inset',
                 ].join(' ')}
               >
                 {starting ? 'Starting…' : `Attack ${scout.username}`}
               </button>
+            </ScoutPanel>
 
-              <p className="font-mono text-[11px] text-faint">
-                {/* Stated before the choice, never computed here. */}
-                {list.ambushChance}% chance this becomes a Hidden battle instead, which pays more.
-              </p>
+            {/**
+             * **The dock sits under the reading, not beside it.** Which squad to
+             * send is the last decision on the screen and it is the one the
+             * readout above is an argument about — putting it first would ask
+             * the question before showing the evidence.
+             */}
+            <div className="flex flex-col gap-3 border-t border-line pt-4">
+              {ready.length > 0 && (
+                <StrikingSix
+                  squads={ready}
+                  heroesById={heroesById}
+                  wall={scout.visible.seats}
+                  chosen={slot}
+                  onChoose={setSlot}
+                />
+              )}
 
-              {/**
-               * **The profile link, 012 T040.** Scouting shows the Visible
-               * squad; the profile shows the record. They are two routes with
-               * two disclosure rules and deliberately no shared serialiser, so
-               * this is a navigation, not an expansion of the panel.
-               */}
-              {onViewProfile && target ? (
-                <button
-                  type="button"
-                  onClick={() => onViewProfile(target)}
-                  className="self-start font-mono text-[11px] text-faint underline underline-offset-4"
-                >
-                  View {scout.username}&rsquo;s record
-                </button>
-              ) : null}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-caption font-mono text-faint">
+                  {/* Stated before the choice, never computed here. */}
+                  {list.ambushChance}% chance this becomes a Hidden battle instead, which pays
+                  more.
+                </p>
+
+                {/**
+                 * **The profile link, 012 T040.** Scouting shows the Visible
+                 * squad; the profile shows the record. They are two routes with
+                 * two disclosure rules and deliberately no shared serialiser, so
+                 * this is a navigation, not an expansion of the panel.
+                 */}
+                {onViewProfile && target ? (
+                  <button
+                    type="button"
+                    onClick={() => onViewProfile(target)}
+                    className="text-caption font-mono text-faint underline underline-offset-4 hover:text-parchment"
+                  >
+                    View {scout.username}&rsquo;s record
+                  </button>
+                ) : null}
+              </div>
             </div>
-          </ScoutPanel>
+          </div>
         ) : (
-          <p className="font-mono text-body text-faint">
+          <p className="text-body font-mono text-faint">
             {target ? 'Scouting…' : 'Choose somebody to scout their Visible squad.'}
           </p>
         )}

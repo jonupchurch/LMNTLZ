@@ -26,6 +26,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DAMAGE_TYPES, getAllHeroes } from '@lmntlz/content';
 import { AttackScreen } from '../../src/features/attack/AttackScreen.js';
+import { readWall } from '../../src/features/attack/analysis.js';
 
 const HEROES = getAllHeroes();
 
@@ -92,6 +93,25 @@ const scoutOf = (username: string, ids: readonly string[]) => ({
 
 const SIX = HEROES.slice(0, 6).map((h) => h.id);
 
+/**
+ * A real formation, 2 front · 3 middle · 1 back.
+ *
+ * **The old fixture sent `seats: []` for every attack squad and no `heroes` key
+ * at all**, which was fine while the chooser was three text radios and became a
+ * lie the moment the dock drew six faces and scored a fit: every new assertion
+ * would have run against an empty squad and passed. `/roster` serves both, so
+ * the fixture serves both.
+ */
+const formationOf = (ids: readonly string[]) =>
+  ids.map((heroId, i) => ({
+    row: i < 2 ? 'front' : i < 5 ? 'middle' : 'back',
+    index: i < 2 ? i : i < 5 ? i - 2 : 0,
+    heroId,
+  }));
+
+const MY_SIX = HEROES.slice(9, 15).map((h) => h.id);
+const MY_OTHER_SIX = HEROES.slice(15, 21).map((h) => h.id);
+
 beforeEach(() => {
   calls = [];
   candidateList = {
@@ -115,8 +135,14 @@ beforeEach(() => {
     starter: { active: false, reason: 'time' },
   };
   offense = [
-    { slot: 0, name: 'Vanguard', seats: [], complete: true, valid: true },
-    { slot: 1, name: 'Second Wind', seats: [], complete: true, valid: true },
+    { slot: 0, name: 'Vanguard', seats: formationOf(MY_SIX), complete: true, valid: true },
+    {
+      slot: 1,
+      name: 'Second Wind',
+      seats: formationOf(MY_OTHER_SIX),
+      complete: true,
+      valid: true,
+    },
     { slot: 2, name: null, seats: [], complete: false, valid: true },
   ];
   scoutResponse = { status: 200, body: scoutOf('Player1', SIX) };
@@ -140,7 +166,11 @@ beforeEach(() => {
 
       if (path.includes('/matchmaking/candidates')) return json(200, candidateList);
       if (path.includes('/me/standing')) return json(200, standing);
-      if (path.includes('/roster')) return json(200, { assignments: { offense } });
+      /* Heroes as well as assignments — the dock resolves a seat's `heroId`
+         through this list, and a roster without it draws six empty seats. */
+      if (path.includes('/roster')) {
+        return json(200, { heroes: HEROES, assignments: { offense } });
+      }
       if (path.includes('/scout')) return json(scoutResponse.status, scoutResponse.body);
       if (method === 'POST' && path.endsWith('/battles')) {
         return json(startResponse.status, startResponse.body);
@@ -235,7 +265,6 @@ describe('scouting an opponent', () => {
     );
 
     const panel = await screen.findByLabelText('Scouting Player1');
-    expect(within(panel).getByText(/What answers this squad/)).toBeInTheDocument();
 
     /**
      * **Compared against a tally computed from the payload, not against literals.**
@@ -249,11 +278,9 @@ describe('scouting an opponent', () => {
     }
 
     const chips = [
-      ...within(panel)
-        .getByRole('list', { name: 'What answers this squad' })
-        .querySelectorAll('li'),
+      ...within(panel).getByRole('list', { name: 'Doors in this wall' }).querySelectorAll('li'),
     ].map((li) => li.textContent ?? '');
-    expect(chips.length, 'no answers were offered for a full squad').toBeGreaterThan(0);
+    expect(chips.length, 'no doors were offered for a full squad').toBeGreaterThan(0);
 
     /**
      * ### The version of this that a mutant walked straight through
@@ -269,29 +296,130 @@ describe('scouting an opponent', () => {
      */
     for (const chip of chips) {
       // The type is uppercased in CSS, so the text node itself is lowercase.
-      const type = DAMAGE_TYPES.find((t) => chip.startsWith(t));
+      const type = DAMAGE_TYPES.find((t) => chip.includes(t));
       expect(type, `a chip named no damage type: "${chip}"`).toBeDefined();
 
       const baneCount = banes.get(type!) ?? 0;
       if (baneCount === 0) {
         expect(chip, `${type!} has no banes here but the chip claims some`).not.toMatch(/bane/);
       } else {
-        expect(chip, `${type!} was tallied wrong`).toContain(
-          `${baneCount} bane${baneCount === 1 ? '' : 's'}`,
-        );
+        expect(chip, `${type!} was tallied wrong`).toContain(`${baneCount}× bane`);
       }
     }
 
     // Banes first, because a Bane is the ×1.50 and the only one worth building for.
     const most = Math.max(...banes.values());
-    expect(chips[0]).toContain(`${most} bane`);
+    expect(chips[0]).toContain(`${most}× bane`);
+  });
+
+  /**
+   * **The wall is a picture now, not a table.** Six portraits in seat order —
+   * the shape of a formation is the thing a player reads here, and it was
+   * previously rendered as six rows of prose.
+   */
+  it('draws the six standing champions as their portraits, in seat order', async () => {
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+
+    const wall = within(await screen.findByLabelText('Standing six'));
+    const seats = [...wall.getByRole('list', { name: 'Visible squad' }).querySelectorAll('li')];
+    expect(seats).toHaveLength(6);
+
+    // Front, front, middle, middle, middle, back — the fixed 2 · 3 · 1.
+    expect(seats.map((li) => li.getAttribute('data-seat'))).toEqual([
+      'front-0',
+      'front-1',
+      'middle-0',
+      'middle-1',
+      'middle-2',
+      'back-0',
+    ]);
+
+    for (const id of SIX) {
+      expect(
+        wall.getByText(HEROES.find((h) => h.id === id)!.name),
+        `${id} is not named on the wall`,
+      ).toBeInTheDocument();
+      expect(
+        document.querySelector(`[data-hero-portrait="${id}"]`),
+        `${id} has no portrait`,
+      ).not.toBeNull();
+    }
+  });
+
+  /**
+   * **The seat says whether you have an answer for it.** A gold ring is one
+   * channel; the word changes too, so the mark survives for a player who cannot
+   * separate gold from the House colour behind it.
+   */
+  it('marks exactly the seats the chosen squad Banes', async () => {
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+
+    const wall = await screen.findByLabelText('Standing six');
+    const mine = new Set(
+      MY_SIX.flatMap((id) => {
+        const hero = HEROES.find((h) => h.id === id)!;
+        return [hero.primary, hero.secondary];
+      }),
+    );
+
+    for (const [i, id] of SIX.entries()) {
+      const hero = HEROES.find((h) => h.id === id)!;
+      const seat = wall.querySelectorAll('li')[i]!;
+      const answered = mine.has(hero.bane);
+
+      expect(seat.getAttribute('data-answered'), `${hero.name}`).toBe(String(answered));
+      expect(seat.getAttribute('data-bane'), `${hero.name}`).toBe(hero.bane);
+
+      /* The word changes as well as the ring, so the mark survives for a player
+         who cannot separate gold from the House colour behind it. */
+      expect(seat.textContent, `${hero.name}`).toContain(answered ? 'open' : 'bane');
+      expect(seat.textContent, `${hero.name}`).toContain(hero.bane);
+    }
+  });
+
+  /**
+   * The scout route has served real stages since it was fixed, and nothing on
+   * the client drew them — commitment was disclosed and thrown away.
+   */
+  it('draws the rune stages the payload sent, rather than three empty tracks', async () => {
+    const staged = scoutOf('Player1', SIX);
+    staged.visible.seats[0]!.runes = [
+      { element: 'earth', stages: 4 },
+      { element: 'fire', stages: 2 },
+      { element: 'common', stages: 0 },
+    ];
+    scoutResponse = { status: 200, body: staged };
+
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+
+    const wall = await screen.findByLabelText('Standing six');
+    const pips = wall.querySelectorAll('li')[0]!.querySelectorAll('[data-rune-slot]');
+    expect([...pips].map((p) => p.getAttribute('data-rune-stage'))).toEqual(['4', '2', '0']);
   });
 
   it('never renders the Hidden squad, only its streak', async () => {
     /**
-     * **The absence of the field is the disclosure rule.** The payload has no seats
-     * for the Hidden zone at all — an empty array would still tell a scout the shape
-     * of what is missing — so there is nothing here that could render one.
+     * **The absence of the field is the disclosure rule.** `ScoutView.hidden`
+     * carries a streak and nothing else — an empty seats array would still tell
+     * a scout the shape of what is missing — so there is nothing served here
+     * that could render one.
+     *
+     * ### Six sealed placeholders are not a disclosure
+     *
+     * They are a **client-side constant**: every squad in the game is six
+     * champions in 2 front · 3 middle · 1 back, which is on the squad screen and
+     * in every battle the player has fought. What this asserts is the thing that
+     * would be a leak — that no champion, from the sealed zone or anywhere else,
+     * is named or pictured inside it.
      */
     await ready();
     await userEvent.click(
@@ -299,13 +427,51 @@ describe('scouting an opponent', () => {
     );
 
     const panel = await screen.findByLabelText('Scouting Player1');
-    expect(within(panel).getByText(/9 hidden/)).toBeInTheDocument();
+    const sealed = within(panel).getByLabelText('Hidden six');
 
-    // The champions rendered are exactly the six Visible ones, and no more.
+    // The streak IS disclosed — it is the one fact the payload carries.
+    expect(within(sealed).getByText('×9')).toBeInTheDocument();
+
+    const seats = within(sealed).getByLabelText('Sealed seats').querySelectorAll('li');
+    expect(seats).toHaveLength(6);
+
+    /**
+     * **Nothing inside the sealed zone identifies anybody.** Checked against
+     * all 27 rather than against the six we happen to know, because the leak
+     * this guards against is a component reaching for a hero list it should not
+     * have — and it would not politely reach for the same six.
+     */
+    for (const hero of HEROES) {
+      expect(within(sealed).queryByText(hero.name), `${hero.name} leaked`).toBeNull();
+    }
+    expect(sealed.querySelector('[data-hero-portrait]'), 'a portrait leaked').toBeNull();
+    expect(sealed.querySelector('[data-hero-marks]'), 'an emblem leaked').toBeNull();
+    expect(sealed.querySelector('[data-rune-slot]'), 'a rune stage leaked').toBeNull();
+
+    // And the champions named in the panel are exactly the six Visible ones.
     for (const id of SIX) {
       expect(within(panel).getByText(HEROES.find((h) => h.id === id)!.name)).toBeInTheDocument();
     }
     expect(within(panel).queryByText(HEROES[6]!.name)).toBeNull();
+  });
+
+  it('states the ambush odds as served, and never multiplies the streak itself', async () => {
+    /**
+     * SC-008 greps this app for `2` and `90` as literals for the same reason:
+     * the odds are served precisely so a tuning change is not a Steam update.
+     * Here the streak is 7 and the chance is 14 — which *is* 7 × 2, so a client
+     * doing the arithmetic would look right. Changing the served chance to a
+     * number the streak cannot produce is what tells them apart.
+     */
+    candidateList = { ...(candidateList as object), ambushChance: 37, consecutiveWins: 7 };
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+
+    const sealed = within(await screen.findByLabelText('Hidden six'));
+    expect(sealed.getAllByText('37%').length).toBeGreaterThan(0);
+    expect(sealed.queryByText('14%'), 'the client computed the odds').toBeNull();
   });
 
   it('keeps the list usable when a scout fails', async () => {
@@ -351,6 +517,131 @@ describe('starting the battle', () => {
 
     await waitFor(() => expect(starts()).toHaveLength(1));
     expect((starts()[0]!.body as Record<string, unknown>)['attackSquadSlot']).toBe(1);
+  });
+
+  /**
+   * **The dock draws the squads rather than naming them.** Three attack squads
+   * named weeks ago are three strings a player no longer connects to six
+   * champions — so the choice was being made blind on the screen where it is
+   * the whole decision.
+   */
+  it('draws each ready squad as its six faces, scored against this wall', async () => {
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+    await screen.findByRole('button', { name: /Attack Player1/ });
+
+    const dock = within(screen.getByRole('radiogroup', { name: 'Attack squad' }));
+    const vanguard = dock.getByRole('radio', { name: 'Vanguard' });
+
+    // Six thumbs, and they are this squad's six.
+    const thumbs = [...vanguard.querySelectorAll('[data-thumb]')].map((t) =>
+      t.getAttribute('data-thumb'),
+    );
+    expect(thumbs).toEqual(MY_SIX);
+
+    /**
+     * The fit is computed from the wall on screen, so it must agree with
+     * `readWall` — asserted against the function rather than against a word,
+     * which would drift the moment either the thresholds or the roster moved.
+     */
+    const expected = readWall(
+      (scoutOf('Player1', SIX).visible.seats as unknown) as Parameters<typeof readWall>[0],
+      MY_SIX.map((id) => HEROES.find((h) => h.id === id)!),
+    );
+    expect(vanguard.querySelector('[data-fit]')?.getAttribute('data-fit')).toBe(expected.verdict);
+    expect(vanguard.textContent).toContain(`${expected.unanswered} unanswered`);
+  });
+
+  it('draws an empty seat for a squad short of six, rather than five thumbs', async () => {
+    /* A squad our own eviction rule emptied is the likeliest short one, and
+       "this squad is short" is exactly the fact that decides whether it can
+       attack — five thumbs and six thumbs differ only in width otherwise. */
+    offense = [
+      {
+        slot: 0,
+        name: 'Vanguard',
+        seats: formationOf(MY_SIX.slice(0, 5)),
+        complete: true,
+        valid: true,
+      },
+    ];
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+    await screen.findByRole('button', { name: /Attack Player1/ });
+
+    const card = screen.getByRole('radio', { name: 'Vanguard' });
+    const thumbs = [...card.querySelectorAll('[data-thumb]')];
+    expect(thumbs).toHaveLength(6);
+    expect(thumbs[5]!.getAttribute('data-thumb')).toBe('');
+  });
+
+  it('reads the wall against your six, and lists both halves', async () => {
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+
+    const readout = within(await screen.findByLabelText('Scout readout'));
+    const expected = readWall(
+      (scoutOf('Player1', SIX).visible.seats as unknown) as Parameters<typeof readWall>[0],
+      MY_SIX.map((id) => HEROES.find((h) => h.id === id)!),
+    );
+
+    const opens = [
+      ...readout.getByRole('list', { name: 'Doors you can open' }).querySelectorAll('[data-opens]'),
+    ].map((li) => li.getAttribute('data-opens'));
+    expect(opens).toEqual(expected.opens.map((o) => o.type));
+
+    const resisted = [
+      ...readout
+        .getByRole('list', { name: 'Walls you cannot move' })
+        .querySelectorAll('[data-resisted]'),
+    ].map((li) => li.getAttribute('data-resisted'));
+    expect(resisted).toEqual(expected.resisted.map((r) => r.type));
+
+    /* The second column is the one people skip, and it must not be empty just
+       because the first one is full. */
+    expect(
+      expected.opens.length + expected.resisted.length,
+      'the readout had nothing to say either way',
+    ).toBeGreaterThan(0);
+  });
+
+  it('re-reads the wall when the squad changes, not only when the opponent does', async () => {
+    await ready();
+    await userEvent.click(
+      within(screen.getByLabelText('Opponents')).getByRole('button', { name: /Player1/ }),
+    );
+    await screen.findByRole('button', { name: /Attack Player1/ });
+
+    const seats = (scoutOf('Player1', SIX).visible.seats as unknown) as Parameters<
+      typeof readWall
+    >[0];
+    const first = readWall(seats, MY_SIX.map((id) => HEROES.find((h) => h.id === id)!));
+    const second = readWall(seats, MY_OTHER_SIX.map((id) => HEROES.find((h) => h.id === id)!));
+
+    const doorsNow = () =>
+      [
+        ...within(screen.getByLabelText('Scout readout'))
+          .getByRole('list', { name: 'Doors you can open' })
+          .querySelectorAll('[data-opens]'),
+      ].map((li) => li.getAttribute('data-opens'));
+
+    expect(doorsNow()).toEqual(first.opens.map((o) => o.type));
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Second Wind' }));
+    expect(doorsNow()).toEqual(second.opens.map((o) => o.type));
+
+    /* If both squads happened to read identically the assertion above would
+       hold with the readout frozen. */
+    expect(
+      first.opens.map((o) => o.type).join() !== second.opens.map((o) => o.type).join(),
+      'both squads read identically, so switching proves nothing',
+    ).toBe(true);
   });
 
   it('offers only squads that are six and valid', async () => {
