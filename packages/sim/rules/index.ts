@@ -110,6 +110,14 @@ export type { FiringProfileEntry, PowerRanking } from './firingProfile.js';
  * builder called valid and the server refused.
  */
 export {
+  /**
+   * The 2/3/1 formation placed on the shared 1–6 axis, and the six rows in
+   * order. **`apps/api` held the only copy until 019** — the Codex draws the
+   * axis to teach reach, and a transcribed diagram would teach it backwards
+   * without anything failing.
+   */
+  AXIS,
+  AXIS_ROW_OF,
   ROW_CAPACITY,
   SQUAD_ROWS,
   SQUAD_SIZE,

@@ -296,8 +296,19 @@ def client_vocabulary(
         )
         v["inset-shadow"] += len(re.findall(r"inset_0|shadow-inner|inset-shadow", code))
         v["glow"] += len(re.findall(r"shadow-\[0_0_|shadow-\(--shadow-glow", code))
+        # `bg-gradient-to-b` is Tailwind **v3**. This repo is on v4, where the
+        # class was renamed `bg-linear-to-b` (plus `bg-radial`/`bg-conic`, and
+        # the arbitrary-angle `bg-linear-[140deg]`). Without the v4 names the
+        # scan could not see a single one of the client's gradients — `Button`,
+        # `Meter`, `HeroPortrait`, `ScoutedWall`, `BattleBoard` and
+        # `SquadBuilder` all spend one and all read as ABSENT. Fifth instance of
+        # the same defect: the scan was the wrong shape for what it measures.
         v["gradient"] += len(
-            re.findall(r"bg-gradient|bg-\[(?:linear|radial)|(?:linear|radial)-gradient", code)
+            re.findall(
+                r"bg-gradient|bg-(?:linear|radial|conic)|bg-\[(?:linear|radial)"
+                r"|(?:linear|radial)-gradient",
+                code,
+            )
         )
         v["dashed"] += len(re.findall(r"border-dashed", code))
         v["backdrop-filter"] += len(re.findall(r"backdrop-(?:blur|filter|saturate)", code))

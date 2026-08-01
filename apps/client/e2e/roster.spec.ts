@@ -76,6 +76,29 @@ test('every tile is portrait-led, and every portrait actually loads', async ({ p
     }
   });
 
+  /*
+   * **Wait for the decode, do not sleep through it.**
+   *
+   * The scroll walk above only guarantees every portrait has been *asked* for;
+   * it says nothing about any of them having arrived. Checking `complete`
+   * immediately after made this test a race against 27 image loads on a fixed
+   * 40ms-per-step budget — which it won alone and lost every time the whole
+   * suite ran, because ten spec files share one dev server. It read as a flake
+   * and was a real gap: the assertion could not distinguish "broken file" from
+   * "not finished yet", which are the two things it exists to tell apart.
+   *
+   * `waitForFunction` polls the actual condition, so a genuinely broken
+   * portrait still fails — it just fails after the load had a fair chance.
+   */
+  await page.waitForFunction(
+    () =>
+      [...document.querySelectorAll('[data-hero] img')].every(
+        (img) => (img as HTMLImageElement).complete,
+      ),
+    undefined,
+    { timeout: 15_000 },
+  );
+
   const broken = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('[data-hero]')]
       .map((card) => {

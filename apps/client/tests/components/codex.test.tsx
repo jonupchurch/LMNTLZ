@@ -25,6 +25,7 @@ import {
   RESISTED_PRIMARY,
   RESISTED_SECONDARY,
 } from '@lmntlz/content';
+import { AXIS, frontRowOf } from '@lmntlz/sim/rules';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CodexScreen } from '../../src/features/codex/CodexScreen.js';
@@ -138,5 +139,81 @@ describe('changing the generated source changes the screen', () => {
       expect(counter(counter(hero.primary))).toBe(hero.primary);
     }
     expect(body).toContain('The counter ring');
+  });
+});
+
+/**
+ * **The reach axis (019).**
+ *
+ * Same argument as the ladder, and it bites harder. The axis is the one diagram
+ * that can be *exactly backwards* and still look completely reasonable: the
+ * attacker's rows ascend toward the enemy and the defender's ascend away, so a
+ * mirrored transcription draws a tidy, symmetric, wrong board. Nothing throws,
+ * no battle breaks, and every player who reads it builds against a rule the
+ * engine does not have.
+ *
+ * So nothing below writes `3` or `4` down. Each assertion is derived from
+ * `AXIS` / `frontRowOf` in `@lmntlz/sim/rules` — the same table `board.ts`
+ * builds a real battle from — so a screen holding literals fails the moment the
+ * shared table changes.
+ */
+describe('the reach axis', () => {
+  it('draws all six rows, in axis order, on one shared axis', () => {
+    render(<CodexScreen />);
+    const drawn = [...document.querySelectorAll('[data-axis-row]')].map((el) =>
+      Number(el.getAttribute('data-axis-row')),
+    );
+
+    expect(drawn).toEqual(AXIS.map((a) => a.row));
+  });
+
+  it('puts each row on the side the engine puts it on', () => {
+    render(<CodexScreen />);
+
+    for (const entry of AXIS) {
+      const seat = document.querySelector(`[data-axis-row="${entry.row}"]`);
+      expect(seat, `row ${entry.row} is not drawn`).not.toBeNull();
+      expect(seat?.getAttribute('data-axis-side')).toBe(entry.side);
+    }
+  });
+
+  /**
+   * The inversion catcher. Marking contact on the wrong pair is the mistake
+   * that makes the whole picture wrong, and `frontRowOf` is written separately
+   * from `AXIS` — so agreeing with it is evidence rather than a restatement.
+   */
+  it('marks exactly the two front rows as in contact, and they are adjacent', () => {
+    render(<CodexScreen />);
+    const contact = [...document.querySelectorAll('[data-axis-contact="yes"]')].map((el) =>
+      Number(el.getAttribute('data-axis-row')),
+    );
+
+    expect(contact).toEqual([frontRowOf('attacker'), frontRowOf('defender')]);
+    expect(contact[1]! - contact[0]!).toBe(1);
+  });
+
+  /** Seat counts are the formation, and they are read, not typed. */
+  it('labels each row with the number of champions that stand in it', () => {
+    render(<CodexScreen />);
+
+    for (const entry of AXIS) {
+      const seat = document.querySelector(`[data-axis-row="${entry.row}"]`);
+      expect(seat?.textContent, `row ${entry.row} does not show its seat count`).toContain(
+        `${entry.squadRow} · ${entry.seats}`,
+      );
+    }
+  });
+
+  /**
+   * The rule the picture exists to teach. Reach opens up because distance
+   * counts *occupied* rows — a diagram without that sentence is a seating
+   * chart.
+   */
+  it('says that only occupied rows count', () => {
+    render(<CodexScreen />);
+    const body = document.body.textContent ?? '';
+
+    expect(body).toContain('Only occupied rows count');
+    expect(body.toLowerCase()).toContain('absolute, not per-side');
   });
 });

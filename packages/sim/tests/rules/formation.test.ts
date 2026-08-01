@@ -17,9 +17,13 @@
 import { describe, expect, it } from 'vitest';
 import { getAllHeroes } from '@lmntlz/content';
 import {
+  AXIS,
+  AXIS_ROW_OF,
   ROW_CAPACITY,
   SQUAD_ROWS,
   SQUAD_SIZE,
+  frontRowOf,
+  sideOfRow,
   validateFormation,
   validatePlacement,
   type Seat,
@@ -170,5 +174,70 @@ describe('a squad that may be stored', () => {
       ].slice(0, SQUAD_SIZE);
       expect(validatePlacement(padded)?.code).toBe(validateFormation(padded)?.code);
     }
+  });
+});
+
+/**
+ * The axis mapping — **the rule most able to be wrong while looking right.**
+ *
+ * `AXIS_ROW_OF` moved here from a private table in `apps/api` because 019's
+ * Codex draws the axis to teach the reach rule. Invert its direction and
+ * nothing throws: the board still builds, every battle still resolves, and the
+ * diagram confidently teaches players the opposite of what the engine does.
+ *
+ * So nothing below restates the table. Each assertion cross-checks it against
+ * `frontRowOf` and `sideOfRow`, which are **separately written** in `state.ts` —
+ * a copied typo has to be made twice, in two files, in two shapes, to survive.
+ */
+describe('the shared 1-6 axis', () => {
+  const SIDES = ['attacker', 'defender'] as const;
+
+  it('covers all six rows exactly once', () => {
+    const rows = SIDES.flatMap((side) => SQUAD_ROWS.map((r) => AXIS_ROW_OF[side][r]));
+    expect([...rows].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it('agrees with sideOfRow about whose row each one is', () => {
+    for (const side of SIDES) {
+      for (const squadRow of SQUAD_ROWS) {
+        expect(sideOfRow(AXIS_ROW_OF[side][squadRow])).toBe(side);
+      }
+    }
+  });
+
+  /** The one that catches an inversion: `front` is not the low row on both sides. */
+  it('agrees with frontRowOf, so the two front lines face each other', () => {
+    for (const side of SIDES) expect(AXIS_ROW_OF[side].front).toBe(frontRowOf(side));
+
+    const gap = AXIS_ROW_OF.defender.front - AXIS_ROW_OF.attacker.front;
+    expect(gap).toBe(1);
+  });
+
+  /** Back seats are the extremes — the pair furthest apart on the board. */
+  it('puts the two back rows at the ends', () => {
+    expect(AXIS_ROW_OF.attacker.back).toBe(1);
+    expect(AXIS_ROW_OF.defender.back).toBe(6);
+
+    const spread = AXIS_ROW_OF.defender.back - AXIS_ROW_OF.attacker.back;
+    expect(spread).toBeGreaterThan(AXIS_ROW_OF.defender.front - AXIS_ROW_OF.attacker.front);
+  });
+
+  /**
+   * `AXIS` is what the Codex renders, so its ORDER is load-bearing — a row list
+   * sorted any other way draws the board with the sides interleaved.
+   */
+  it('lists the six rows in axis order with their seat counts', () => {
+    expect(AXIS.map((a) => a.row)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(AXIS.map((a) => a.side)).toEqual([
+      'attacker',
+      'attacker',
+      'attacker',
+      'defender',
+      'defender',
+      'defender',
+    ]);
+
+    for (const entry of AXIS) expect(entry.seats).toBe(ROW_CAPACITY[entry.squadRow]);
+    expect(AXIS.reduce((sum, a) => sum + a.seats, 0)).toBe(SQUAD_SIZE * 2);
   });
 });

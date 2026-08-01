@@ -24,6 +24,7 @@
 
 import { getHero, UnknownHeroError } from '@lmntlz/content';
 import type { PowerRanking } from './firingProfile.js';
+import type { Row, Side } from './state.js';
 
 export const SQUAD_ROWS = ['front', 'middle', 'back'] as const;
 export type SquadRow = (typeof SQUAD_ROWS)[number];
@@ -36,6 +37,68 @@ export const ROW_CAPACITY: Readonly<Record<SquadRow, number>> = Object.freeze({
 });
 
 export const SQUAD_SIZE = 6;
+
+/**
+ * A squad row placed on the shared 1–6 axis (`state.ts`).
+ *
+ * ```
+ *   attacker                          defender
+ *   1        2        3     |     4        5        6
+ *   back    middle   front  |   front    middle    back
+ * ```
+ *
+ * ### Why this is here rather than in the server that used to own it
+ *
+ * It lived in `apps/api/src/battle/board.ts` as a private `ROW_OF`, which was
+ * fine while the board was the only thing that needed it. The Codex draws the
+ * axis to *teach* the reach rule, so a second reader arrived — and a diagram
+ * that transcribed the map would be **a second implementation of a rule that
+ * fails silently**: get the direction backwards and the picture still looks
+ * plausible, it just teaches every player the opposite of what the engine does.
+ *
+ * `state.ts` has described this mapping in prose since T006 while the only
+ * executable copy sat in another package. Now the prose and the code are the
+ * same thing.
+ *
+ * **`front` is the only row that does not ascend with its side.** The attacker
+ * counts up toward the enemy and the defender counts away from it, so rows 3
+ * and 4 meet in the middle and rows 1 and 6 are the two furthest apart.
+ */
+export const AXIS_ROW_OF: Readonly<Record<Side, Readonly<Record<SquadRow, Row>>>> = Object.freeze({
+  attacker: Object.freeze({ front: 3, middle: 2, back: 1 }),
+  defender: Object.freeze({ front: 4, middle: 5, back: 6 }),
+});
+
+/**
+ * The inverse — which squad row an axis row is, and whose.
+ *
+ * Derived from `AXIS_ROW_OF` rather than written out, so the two can never
+ * disagree: a typo in a second table is exactly the failure this move exists to
+ * prevent.
+ */
+const AXIS_SEATS: readonly { readonly row: Row; readonly side: Side; readonly squadRow: SquadRow }[] =
+  Object.freeze(
+    (Object.keys(AXIS_ROW_OF) as Side[])
+      .flatMap((side) =>
+        SQUAD_ROWS.map((squadRow) => ({ row: AXIS_ROW_OF[side][squadRow], side, squadRow })),
+      )
+      .sort((a, b) => a.row - b.row),
+  );
+
+/**
+ * The six axis rows in order, each with the side and squad row it belongs to
+ * and how many champions stand in it.
+ *
+ * The Codex renders this directly; nothing about the picture is authored.
+ */
+export const AXIS: readonly {
+  readonly row: Row;
+  readonly side: Side;
+  readonly squadRow: SquadRow;
+  readonly seats: number;
+}[] = Object.freeze(
+  AXIS_SEATS.map((seat) => Object.freeze({ ...seat, seats: ROW_CAPACITY[seat.squadRow] })),
+);
 
 export interface Seat {
   readonly row: SquadRow;

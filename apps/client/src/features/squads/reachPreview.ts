@@ -28,6 +28,8 @@
  */
 
 import {
+  AXIS,
+  AXIS_ROW_OF,
   DEFENDER_ROWS,
   distance,
   inReach,
@@ -44,20 +46,37 @@ import {
  * The axis is the export's own device: `ROW 1 · BACK`, `ROW 2 · MID`,
  * `ROW 3 · FRONT`, then `ENEMY ROWS 4–6` immediately to the right — so reach
  * becomes a direction you can see rather than a rule you have to hold.
+ *
+ * **Both of these were written out here**, and between them they restated the
+ * whole axis a third and fourth time — `apps/api` held one copy, `BattleBoard`
+ * a fifth, and every one of them could have inverted without a test noticing.
+ * They read from `AXIS_ROW_OF` now, which is the same table the engine builds
+ * its board from.
  */
-export const ROW_NUMBER: Readonly<Record<SquadRow, Row>> = Object.freeze({
-  back: 1,
-  middle: 2,
-  front: 3,
-});
+export const ROW_NUMBER: Readonly<Record<SquadRow, Row>> = AXIS_ROW_OF.attacker;
 
 /** The enemy's mirror: their front rank is the row nearest the contact line. */
 const ENEMY_ROW_LABEL: Readonly<Record<number, { readonly name: string; readonly seats: number }>> =
-  Object.freeze({
-    4: { name: 'front', seats: 2 },
-    5: { name: 'middle', seats: 3 },
-    6: { name: 'back', seats: 1 },
-  });
+  Object.freeze(
+    Object.fromEntries(
+      AXIS.filter((a) => a.side === 'defender').map((a) => [
+        a.row,
+        { name: a.squadRow, seats: a.seats },
+      ]),
+    ),
+  );
+
+/**
+ * The far side at full formation — 2 in row 4, 3 in row 5, 1 in row 6.
+ *
+ * Expanded from `AXIS` rather than written as `[4, 4, 5, 5, 5, 6]`, which is
+ * the formation and the axis restated together in one literal.
+ */
+const ENEMY_ROWS_AT_FULL: readonly Row[] = Object.freeze(
+  AXIS.filter((a) => a.side === 'defender').flatMap((a) =>
+    Array.from({ length: a.seats }, () => a.row),
+  ),
+);
 
 const stand = (heroId: string, instanceId: string, side: HeroState['side'], row: Row): HeroState => ({
   heroId,
@@ -91,7 +110,7 @@ function hypothetical(seats: readonly Seat[]): BattleState {
   const theirs: HeroState[] =
     filler === undefined
       ? []
-      : ([4, 4, 5, 5, 5, 6] as const).map((row, index) =>
+      : ENEMY_ROWS_AT_FULL.map((row, index) =>
           stand(filler, `b-${row}-${index}`, 'defender', row),
         );
 

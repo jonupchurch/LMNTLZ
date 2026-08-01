@@ -34,20 +34,24 @@
  * matter.
  */
 
+import { AXIS, frontRowOf } from '@lmntlz/sim/rules';
 import type { BattleState, Row } from '@lmntlz/sim/rules';
+import { ContactSeam } from '../../components/index.js';
 import { Combatant } from './Combatant.js';
 
-/** Left to right along the shared axis: the player's back seat to the enemy's. */
-const ROWS: readonly Row[] = [1, 2, 3, 4, 5, 6];
-
-const LABEL: Readonly<Record<Row, string>> = {
-  1: 'back',
-  2: 'middle',
-  3: 'front',
-  4: 'front',
-  5: 'middle',
-  6: 'back',
-};
+/**
+ * Left to right along the shared axis: the player's back seat to the enemy's.
+ *
+ * **This file used to spell all of it out** — a `ROWS` array of 1–6, a `LABEL`
+ * table mapping each row to `back`/`middle`/`front`, and `row >= 4` for whose
+ * side it is. Three restatements of a rule that lives in `AXIS_ROW_OF`, and the
+ * `LABEL` table in particular is the one that could invert without failing
+ * anything: the board would draw, the battle would resolve, and every column
+ * would be captioned with the wrong row name.
+ */
+const LABEL: Readonly<Record<Row, string>> = Object.freeze(
+  Object.fromEntries(AXIS.map((a) => [a.row, a.squadRow])) as Record<Row, string>,
+);
 
 export interface BattleBoardProps {
   readonly state: BattleState;
@@ -89,14 +93,14 @@ export function BattleBoard({
       </header>
 
       <div className="grid grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] gap-1.5">
-        {ROWS.map((row) => {
+        {AXIS.map(({ row, side }) => {
           const here = state.heroes.filter((h) => h.row === row);
-          const theirs = row >= 4;
+          const theirs = side === 'defender';
 
           return (
             <div key={row} className="contents">
-              {/* The seam, injected between the two halves. */}
-              {row === 4 && <ContactSeam />}
+              {/* The seam, injected where the sides change hands. */}
+              {row === frontRowOf('defender') && <ContactSeam outlined />}
 
               <div
                 data-row={row}
@@ -141,24 +145,3 @@ export function BattleBoard({
   );
 }
 
-/**
- * Where the two halves meet.
- *
- * Deliberately narrow and deliberately labelled: it is the only mark on screen
- * that says which way is toward the enemy.
- */
-function ContactSeam(): React.JSX.Element {
-  return (
-    <div
-      aria-hidden
-      data-seam
-      className="lz-empty mx-0.5 flex w-7 flex-col items-center justify-center gap-2 py-3"
-    >
-      <span className="w-px flex-1 bg-linear-to-b from-transparent via-gold to-transparent" />
-      <span className="text-caption font-mono tracking-widest text-gold uppercase [writing-mode:vertical-rl]">
-        contact
-      </span>
-      <span className="w-px flex-1 bg-linear-to-b from-transparent via-gold to-transparent" />
-    </div>
-  );
-}

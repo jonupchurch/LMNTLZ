@@ -26,7 +26,7 @@
 
 import type { Hero, HeroId } from '@lmntlz/content';
 import { ROW_CAPACITY, SQUAD_SIZE as ROW_TOTAL, type Seat, type SquadRow } from '@lmntlz/sim/rules';
-import { FORCE_RING, HeroMarks, HeroPortrait } from '../../components/index.js';
+import { ContactSeam, FORCE_RING, HeroMarks, HeroPortrait } from '../../components/index.js';
 import type { AllocationView } from './hooks/useAllocation.js';
 import { enemyReach, ROW_NUMBER, seatReach } from './reachPreview.js';
 
@@ -166,13 +166,7 @@ export function SquadBuilder({
         </div>
 
         {/* --- the contact line ------------------------------------------- */}
-        <div aria-hidden className="flex flex-col items-center justify-center self-stretch">
-          <span className="w-px flex-1 bg-linear-to-b from-transparent via-line to-transparent" />
-          <span className="text-caption my-2 font-mono tracking-widest text-decor uppercase [writing-mode:vertical-rl]">
-            Contact line
-          </span>
-          <span className="w-px flex-1 bg-linear-to-b from-transparent via-line to-transparent" />
-        </div>
+        <ContactSeam tone="line" label="Contact line" />
 
         {/* --- rows 4-6, theirs ------------------------------------------- */}
         <div className="flex min-w-0 flex-col">

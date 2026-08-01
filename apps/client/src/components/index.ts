@@ -77,6 +77,15 @@ export type { PowerSlotProps, PowerSlotState } from './hero/PowerSlot.js';
 export { CooldownRing } from './hero/CooldownRing.js';
 export type { CooldownRingProps } from './hero/CooldownRing.js';
 
+// --- the board -------------------------------------------------------------
+/**
+ * The 1–6 axis furniture. `ContactSeam` had three private copies before 019 —
+ * the battle board, the squad builder and the Codex's diagram of the rule —
+ * and they had already drifted in wording and colour.
+ */
+export { ContactSeam } from './board/ContactSeam.js';
+export type { ContactSeamProps, ContactSeamTone } from './board/ContactSeam.js';
+
 // --- readouts --------------------------------------------------------------
 export { Meter } from './readouts/Meter.js';
 export type { MeterProps, MeterTone } from './readouts/Meter.js';

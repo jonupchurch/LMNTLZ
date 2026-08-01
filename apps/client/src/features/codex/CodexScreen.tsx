@@ -39,6 +39,7 @@ import {
   type Effectiveness,
 } from '@lmntlz/content';
 import { HeroIcon, Panel, RelationshipStrip, TypeBadge } from '../../components/index.js';
+import { ReachAxis } from './ReachAxis.js';
 import type { HeroId } from '@lmntlz/content';
 
 /** `×1.50`, two decimals, so `0.80` reads as a tier rather than a rounding. */
@@ -125,6 +126,33 @@ export function CodexScreen(): React.JSX.Element {
         <p className="text-caption mt-3 text-muted">
           A dual-typed power takes the better of its two types, so no tier-4 or tier-5 power is
           ever resisted.
+        </p>
+      </Panel>
+
+      {/*
+       * **Reach, which the Codex did not explain until 019.**
+       *
+       * It is the rule that gates all targeting and the one a new player is
+       * most likely to get wrong, because it is counter-intuitive twice over:
+       * the axis is shared rather than per-side, and distance counts *occupied*
+       * rows, so a champion's range grows as the battle goes badly.
+       */}
+      <Panel span={12}>
+        <h2 className="text-h2 mb-1 font-display uppercase tracking-wide">Reach and the axis</h2>
+        <p className="text-body mb-4 max-w-3xl text-muted">
+          Both squads stand on <strong className="text-parchment">one shared axis of six rows</strong>,
+          numbered from the attackers&rsquo; rearmost seat to the defenders&rsquo;. Every champion has
+          a reach of 1 or 2, measured in rows crossed — and a champion&rsquo;s own row counts against
+          it, so the back seat starts the battle unable to touch anybody across the line.
+        </p>
+
+        <ReachAxis />
+
+        <p className="text-body mt-4 max-w-3xl text-muted">
+          <strong className="text-parchment">Only occupied rows count.</strong> A row holding
+          nothing but the fallen is skipped entirely, so range opens up as a battle wears on and
+          the seat that could do nothing on turn one decides it later. The same rule governs
+          healing: a heal is range-limited exactly as an attack is.
         </p>
       </Panel>
 

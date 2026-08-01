@@ -32,10 +32,15 @@
  */
 
 import { getHero, type StatKey } from '@lmntlz/content';
-import { HP_PER_TOUGHNESS, STAT_CAP } from '@lmntlz/sim/rules';
-import type { BattleState, HeroState, Row, Side } from '@lmntlz/sim/rules';
+import { AXIS_ROW_OF, HP_PER_TOUGHNESS, ROW_CAPACITY, STAT_CAP } from '@lmntlz/sim/rules';
+import type { BattleState, HeroState, Side, SquadRow } from '@lmntlz/sim/rules';
 
-export type SeatRow = 'front' | 'middle' | 'back';
+/**
+ * **The rows are `SquadRow`, not a local union.** Spelling the three names out
+ * here made `SeatRow` a structurally-identical twin that TypeScript accepted
+ * everywhere and that no rename would ever reach.
+ */
+export type SeatRow = SquadRow;
 
 export interface SnapshotSeat {
   readonly row: SeatRow;
@@ -90,17 +95,20 @@ const cappedStat = (base: number, points: number): number => {
   return raw < 0 ? 0 : raw > STAT_CAP ? STAT_CAP : raw;
 };
 
-/** 2 front · 3 middle · 1 back, mapped onto the shared axis. */
-const ROW_OF: Readonly<Record<Side, Readonly<Record<SeatRow, Row>>>> = Object.freeze({
-  attacker: { front: 3, middle: 2, back: 1 },
-  defender: { front: 4, middle: 5, back: 6 },
-});
-
-const SEAT_COUNT: Readonly<Record<SeatRow, number>> = Object.freeze({
-  front: 2,
-  middle: 3,
-  back: 1,
-});
+/**
+ * 2 front · 3 middle · 1 back, mapped onto the shared axis.
+ *
+ * **Both of these were local tables until 019, and both were copies.** The axis
+ * map is now `AXIS_ROW_OF` in `@lmntlz/sim/rules` — the Codex draws the same
+ * axis to teach the reach rule, and two tables that disagree about which
+ * direction the numbers run is a diagram that teaches the opposite of what the
+ * engine does, silently. `SEAT_COUNT` was a third copy of `ROW_CAPACITY`, which
+ * had been sitting in `formation.ts` the whole time; the file's own comment on
+ * `cappedStat` already records being caught holding a literal beside an
+ * imported constant.
+ */
+const ROW_OF = AXIS_ROW_OF;
+const SEAT_COUNT = ROW_CAPACITY;
 
 export class MalformedSquadError extends Error {
   constructor(side: Side, detail: string) {

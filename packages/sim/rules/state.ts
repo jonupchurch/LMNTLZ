@@ -34,6 +34,10 @@ import type { Hero } from '@lmntlz/content';
  * A squad's 2 front · 3 middle · 1 back formation maps as:
  *   attacker — 2 heroes in row 3, 3 in row 2, 1 in row 1
  *   defender — 2 heroes in row 4, 3 in row 5, 1 in row 6
+ *
+ * That last paragraph is **executable, in `formation.ts` as `AXIS_ROW_OF`**.
+ * It was prose here and a private table in `apps/api` until 019; anything that
+ * needs the mapping imports it rather than reading this comment.
  */
 export type Row = 1 | 2 | 3 | 4 | 5 | 6;
 
