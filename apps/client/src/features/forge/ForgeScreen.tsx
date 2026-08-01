@@ -141,6 +141,9 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
 
   const hero: Hero | undefined = roster.find((h) => h.id === heroId);
   const heroRunes = forHero(heroId);
+  /** Has anything to melt. Decides whether the control is *pressable*, never
+      whether it is drawn — see the melt button below for why that matters. */
+  const armed = heroRunes.slots.some((s) => s.stage > 0);
   const current = heroRunes.slots.find((s) => s.slot === slot)!;
   const nextBoost = shards?.config.stageBoosts[current.stage] ?? 0;
 
@@ -346,26 +349,43 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
              * every slot, so it belongs with "◈ N invested" rather than in the
              * per-slot ledger where it would read as acting on the open slot.
              *
-             * Hidden when there is nothing to melt: a disabled button on a bare
-             * champion invites a click that can only ever be refused.
+             * ### ⚠️ It used to be HIDDEN on a bare champion. That was the bug.
+             *
+             * The reasoning was *"a disabled button on a bare champion invites a
+             * click that can only ever be refused"* — and it is the same
+             * reasoning that made the ambush announcement invisible on the same
+             * day: suppress the control so nobody is confused, and the result is
+             * that nobody knows the feature exists.
+             *
+             * It failed exactly that way. A player with 27 bare champions has no
+             * melt button **anywhere in the application**, so the feature shipped,
+             * deployed, and was reported missing: *"I don't see the buttons."*
+             *
+             * A disabled control with its reason attached teaches; an absent one
+             * cannot. So it is always drawn, and `armed` decides whether it can
+             * be pressed rather than whether it exists.
              */}
-            {heroRunes.slots.some((s) => s.stage > 0) && (
-              <div className="flex flex-wrap items-baseline gap-3">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  state={busy ? 'disabled' : 'rest'}
-                  onClick={() => void askRefund()}
-                >
-                  Melt all runes
-                </Button>
-                {shards ? (
-                  <span className="text-caption font-mono text-faint">
-                    returns {Math.round(shards.config.refundRate * 100)}% of what is placed
-                  </span>
-                ) : null}
-              </div>
-            )}
+            <div className="flex flex-wrap items-baseline gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                state={busy || !armed ? 'disabled' : 'rest'}
+                onClick={() => void askRefund()}
+              >
+                Melt all runes
+              </Button>
+              <span className="text-caption font-mono text-faint">
+                {armed ? (
+                  shards ? (
+                    <>returns {Math.round(shards.config.refundRate * 100)}% of what is placed</>
+                  ) : null
+                ) : (
+                  /* The reason, not just the disabled state — "nothing to melt"
+                     is information; a greyed button on its own is a dead end. */
+                  <>{hero.name} has no runes to melt yet</>
+                )}
+              </span>
+            </div>
 
             {refunding ? (
               <RefundConfirm

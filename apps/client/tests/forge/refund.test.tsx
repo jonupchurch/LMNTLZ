@@ -61,10 +61,38 @@ describe('the control', () => {
     expect(screen.getByRole('button', { name: /melt all runes/i })).toBeTruthy();
   });
 
-  /** A disabled button on a bare champion invites a click that can only be refused. */
-  it('is absent on a champion with nothing placed', async () => {
+  /**
+   * ### ⚠️ This test used to require the OPPOSITE, and it was enforcing the bug
+   *
+   * It read *"is absent on a champion with nothing placed"*, justified by
+   * *"a disabled button on a bare champion invites a click that can only be
+   * refused."* Both the code and the test agreed, so the suite was green — and
+   * a player whose 27 champions are all bare had no melt button **anywhere in
+   * the application**. The feature shipped, deployed, and was reported missing:
+   * *"I don't see the buttons."*
+   *
+   * A green test asserting the absence of a control is how a feature stays
+   * invisible without anything failing. The control is now always drawn and
+   * `disabled` when there is nothing to melt, which teaches instead of hiding.
+   */
+  it('is still OFFERED on a bare champion, so the feature can be discovered', async () => {
     await open(BARE_RUNES());
-    expect(screen.queryByRole('button', { name: /melt all runes/i })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /melt all runes/i }),
+      'a bare champion showed no melt control at all — the reported bug',
+    ).not.toBeNull();
+  });
+
+  it('but cannot be pressed, and says why', async () => {
+    await open(BARE_RUNES());
+
+    const button = screen.getByRole('button', { name: /melt all runes/i });
+    expect(button.hasAttribute('disabled') || button.getAttribute('aria-disabled') === 'true').toBe(
+      true,
+    );
+    /* The reason, not just the greyed state. A dead control with no explanation
+       is the same dead end as no control. */
+    expect(document.body.textContent).toMatch(/no runes to melt/i);
   });
 
   it('says what the rate is, from the served config', async () => {
