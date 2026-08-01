@@ -145,7 +145,42 @@ been bought**, so the code path was never exercised even by hand.
 > **Now owned by 011 T045–T047.** It must land before the store screen does — a
 > store that sells a pass which pays nothing is worse than no store at all.
 
-## 2c · ⛔ A battle pays, and never says what it paid — found 2026-07-31
+## 2c · ✅ A battle pays, and never says what it paid — found 2026-07-31, **CLOSED 2026-07-31**
+
+> **Closed the same day it was filed.** `settle()` now returns a `SettlePayout`
+> per side — shards credited, what they were worth before the daily cap, the cap
+> that bit, and the rating before/delta/after. `settleAndRecord` projects it onto
+> whoever is asking and both the final `act` and the repair `GET` carry it as a
+> `settlement` field. `ResultScreen` draws it.
+>
+> Two things worth keeping from the fix:
+>
+> - **The reported rating had to match the DATABASE, not the formula.**
+>   `ratingDeltas` is deliberately fractional, but `applyRating` writes
+>   `round(rating + delta)::int`. Reporting the raw delta would have printed
+>   `1180 +17.7 → 1197.7` beside a profile showing 1198. `ratingAfter` reproduces
+>   the SQL and `ratingDelta` is derived back out of it, so the banner adds up.
+> - **A repair pass returns `null`, never zeroes.** The amounts are not
+>   persisted, so a later reader cannot know them — and `0 shards` is
+>   indistinguishable from a genuinely capped-out player who earned nothing. The
+>   screen says *"already settled"* instead of inventing a number.
+>
+> **What it left behind, in order of size:**
+>
+> 1. **Persist `shardsAwarded` and `ratingDelta` on `battle_records`.** Today a
+>    reload after the result loses the numbers for good. This is an **XVI-class
+>    column addition** — the same argument the file already makes for
+>    `attacker_rating`: *"the columns exist now because XVI means they cannot be
+>    added then."* Every battle fought before those columns exist is a battle
+>    whose payout is unrecoverable.
+> 2. **Per-champion damage, and the "your doors were read" nudge.** Both need the
+>    whole event history; the client sees one packet at a time and a resumed
+>    battle has none. Accumulate server-side or leave out — still true, still
+>    unowned.
+> 3. **The league progress bar**, which needs the band thresholds on this wire.
+>
+> The original finding is kept below, because the *shape* of it is the lesson:
+> a seam whose caller exists and discards the answer.
 
 **The server settles every battle and the client is never told the result.** Like
 2b this is not a route gap — the route is called, it answers, and the field simply
@@ -314,12 +349,25 @@ fully-checked list should not read as a delivered feature.
 
 ## Still genuinely open
 
-**⛔ A battle never tells the player what it paid — see 2c.** Found 2026-07-31
-while scoping the results screen. The shards and the rating change are real,
-banked and correct; the payload the screen reads carries none of them, so the
-result is the word `Victory` and nothing else. **Follow-up, not yet owned by a
-task.** It is the one thing blocking the results half of the Matchmaking and
-Results export.
+**⛔ A battle's payout is not persisted, so a reload loses it — the remainder of
+2c.** The settlement now reaches the player on the response that concludes the
+battle, and `ResultScreen` draws it. But the amounts live nowhere: a second read
+of the same finished battle returns no settlement, because there is nothing to
+read. **Adding `shards_awarded` and `rating_delta` to `battle_records` is an
+XVI-class change** — every battle fought before those columns exist has an
+unrecoverable payout, exactly the argument that file already makes for
+`attacker_rating`. Not yet owned by a task.
+
+Still unowned alongside it: **per-champion damage** and the *"your doors were
+read"* nudge, both of which need the whole event history rather than one packet.
+
+**⛔ A dead end on the resume path, fixed 2026-07-31 and worth remembering.**
+`BattleScreen` documents that a result screen with no exit leaves reloading the
+browser as the only way on — and the fix landed on one of the two call sites.
+`ResumeBattle` never forwarded `onLeave`, so a player who reloaded mid-battle and
+then finished it was stuck. **A fix applied to one caller of two is a fix that is
+half deployed**, and the test that caught it asserts the result offers *some*
+button rather than naming one.
 
 **⛔ The store has no design, and it is the only screen that takes money.** Twenty
 exports and not one is a store, shop, checkout or pricing screen. 018 US2 specifies

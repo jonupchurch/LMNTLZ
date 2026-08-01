@@ -47,8 +47,15 @@ import { SquadRail } from './SquadRail.js';
 import { TargetRead } from './TargetRead.js';
 import { TurnQueue } from './TurnQueue.js';
 import { readTarget } from './read.js';
+import { ResultScreen } from './ResultScreen.js';
 import { useIntent, type IntentPhase } from './useIntent.js';
-import type { ActionPacket, BattleView, StartedBattle, TurnEvent } from './types.js';
+import type {
+  ActionPacket,
+  BattleSettlement,
+  BattleView,
+  StartedBattle,
+  TurnEvent,
+} from './types.js';
 
 export interface BattleScreenProps {
   readonly started: StartedBattle;
@@ -90,6 +97,8 @@ export function BattleScreen({
   const [sequence, setSequence] = useState(started.sequence);
   const [events, setEvents] = useState(started.packet.events);
   const [conclusion, setConclusion] = useState(started.packet.conclusion);
+  /** What the battle paid. Arrives once, on the response that concluded it. */
+  const [settlement, setSettlement] = useState<BattleSettlement | undefined>(undefined);
   const [powerId, setPowerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** Whatever is under the cursor, for the read. Purely presentational. */
@@ -178,12 +187,20 @@ export function BattleScreen({
   );
 
   const apply = useCallback(
-    (packet: ActionPacket, next: number) => {
+    (packet: ActionPacket, next: number, paid?: BattleSettlement) => {
       setState(packet.state);
       setEvents(packet.events);
       setSequence(next);
       setPowerId(null);
       setConclusion(packet.conclusion);
+      /*
+       * **Held, because it can never be fetched again.** The amounts are not
+       * persisted, so this response is the only one that will ever carry them —
+       * see `BattleSettlement`. Losing it to a re-render would leave the results
+       * screen unable to say what the battle paid, which is the whole defect
+       * this closes.
+       */
+      if (paid) setSettlement(paid);
       if (packet.conclusion) onConcluded?.(packet.conclusion);
     },
     [onConcluded],
@@ -333,7 +350,12 @@ export function BattleScreen({
           />
 
           {conclusion ? (
-            <Outcome conclusion={conclusion} onLeave={onLeave} />
+            <ResultScreen
+              conclusion={conclusion}
+              state={state}
+              settlement={settlement}
+              onLeave={onLeave}
+            />
           ) : busy ? (
             /**
              * **The move panel is replaced, not disabled.** A greyed-out panel
@@ -419,37 +441,6 @@ const describe = (event: TurnEvent): string =>
         event.outcome.hit ? `${event.outcome.damage}${event.outcome.crit ? ' crit' : ''}` : 'miss'
       }`;
 
-function Outcome({
-  conclusion,
-  onLeave,
-}: {
-  readonly conclusion: Conclusion;
-  readonly onLeave?: (() => void) | undefined;
-}) {
-  const won = conclusion.winner === 'attacker';
-
-  return (
-    <section
-      aria-label="Result"
-      className={`rounded border p-6 ${won ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line bg-surface'}`}
-    >
-      <h3 className="font-display text-xl tracking-widest uppercase text-parchment">
-        {won ? 'Victory' : 'Defeat'}
-      </h3>
-      <p className="mt-1 font-mono text-caption text-faint">{conclusion.reason}</p>
-
-      {onLeave ? (
-        <button
-          type="button"
-          onClick={onLeave}
-          className="mt-4 rounded border border-gold bg-raised shadow-(--shadow-glow-gold) px-4 py-2 text-caption font-display tracking-widest uppercase text-parchment hover:bg-surface"
-        >
-          Choose another target
-        </button>
-      ) : null}
-    </section>
-  );
-}
 
 function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
   return (

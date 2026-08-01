@@ -60,11 +60,40 @@ import type { SquadZone } from '../db/schema/squads.js';
  * connection is completed by whatever request comes next, instead of leaving a
  * battle that finished and never paid.
  */
+/**
+ * What the requesting player walked away with, or `null` when this request did
+ * not settle the battle (`specs/GAPS.md` §2c).
+ *
+ * **Projected for the caller, never both sides.** A settlement moves two
+ * players' shards and two ratings; sending the defender's payout to the attacker
+ * would tell them exactly how much the person they just beat earns per hold,
+ * which is a fact about somebody else's account. Constitution XVII: storing is
+ * not exposing.
+ */
+export interface BattleSettlementWire {
+  readonly winner: 'attacker' | 'defender';
+  /** True when the requester is the one who won. */
+  readonly won: boolean;
+  readonly shards: number;
+  readonly shardsEarned: number;
+  readonly cappedAt: number | null;
+  readonly ratingDelta: number;
+  readonly ratingBefore: number;
+  readonly ratingAfter: number;
+  /** Consecutive attack wins after this battle — what drives the ambush odds. */
+  readonly attackStreak: number;
+  readonly holdStreak: number;
+  readonly turnCount: number;
+  readonly zone: SquadZone;
+}
+
 async function settleAndRecord(
   battle: LiveBattle,
   conclusion: Conclusion,
   turnCount: number,
-): Promise<void> {
+  /** Who is asking, so the payout can be projected onto their side. */
+  viewerId?: string,
+): Promise<BattleSettlementWire | null> {
   const result = await settle({
     battleId: battle.id,
     attackerId: battle.attackerId,
@@ -101,6 +130,40 @@ async function settleAndRecord(
       conclusion,
     });
   }
+
+  /**
+   * **The return value, which four features never read.**
+   *
+   * `settle` has always computed all of this; this function read `result.settled`
+   * to decide whether to write a replay blob and discarded the rest. So a player
+   * won, was paid, had their rating moved — and the screen said `Victory` and
+   * nothing else.
+   */
+  if (!viewerId) return null;
+
+  const side: 'attacker' | 'defender' | null =
+    battle.attackerId === viewerId ? 'attacker' : battle.defenderId === viewerId ? 'defender' : null;
+  if (!side) return null;
+
+  const payout = side === 'attacker' ? result.attacker : result.defender;
+  /* `null` on a repair pass — see `SettleResult`. Zeroes here would print
+     "0 shards" over a battle that paid 60. */
+  if (!payout) return null;
+
+  return {
+    winner: result.winner,
+    won: result.winner === side,
+    shards: payout.shards,
+    shardsEarned: payout.shardsEarned,
+    cappedAt: payout.cappedAt,
+    ratingDelta: payout.ratingDelta,
+    ratingBefore: payout.ratingBefore,
+    ratingAfter: payout.ratingAfter,
+    attackStreak: result.attackStreak,
+    holdStreak: result.holdStreak,
+    turnCount,
+    zone: battle.zone as SquadZone,
+  };
 }
 
 /**
@@ -118,9 +181,12 @@ async function settleAndRecord(
  * A second call site for an operation that keeps acquiring steps is a defect
  * waiting for the next step.
  */
-async function settleIfEnded(battle: LiveBattle): Promise<void> {
-  if (!battle.conclusion || battle.concludedAt) return;
-  await settleAndRecord(battle, battle.conclusion, battle.state.heroTurn);
+async function settleIfEnded(
+  battle: LiveBattle,
+  viewerId?: string,
+): Promise<BattleSettlementWire | null> {
+  if (!battle.conclusion || battle.concludedAt) return null;
+  return settleAndRecord(battle, battle.conclusion, battle.state.heroTurn, viewerId);
 }
 
 export const battleRoutes = new Hono<AuthedEnv>();
@@ -456,15 +522,27 @@ battleRoutes.post('/battles/:battleId/act', async (c) => {
      * here is a promise that may never finish — and the thing it was finishing
      * is the record every aggregate is computed from.
      */
-    if (result.packet.conclusion) {
-      await settleAndRecord(battle, result.packet.conclusion, result.packet.state.heroTurn);
-    }
+    const settlement = result.packet.conclusion
+      ? await settleAndRecord(
+          battle,
+          result.packet.conclusion,
+          result.packet.state.heroTurn,
+          accountId,
+        )
+      : null;
 
     return c.json(
       {
         sequence: intent.sequence,
         packet: result.packet satisfies ActionPacket,
         nextSequence: intent.sequence + 1,
+        /**
+         * **The one request that can ever say this.** The amounts are not
+         * persisted, so the final `act` is the only response that knows them —
+         * see `SettleResult`. Omitted rather than nulled on an ordinary turn, so
+         * the client's check is "is it here" rather than "is it truthy".
+         */
+        ...(settlement ? { settlement } : {}),
       },
       200,
     );
@@ -504,7 +582,7 @@ battleRoutes.get('/battles/:battleId', async (c) => {
    * payout. Guarded to a no-op when there is nothing to do, so a `GET` on an
    * ordinary battle in progress writes nothing.
    */
-  await settleIfEnded(battle);
+  const settlement = await settleIfEnded(battle, accountId);
 
   return c.json({
     battleId: battle.id,
@@ -514,5 +592,12 @@ battleRoutes.get('/battles/:battleId', async (c) => {
     conclusion: battle.conclusion,
     startedAt: battle.startedAt.toISOString(),
     concludedAt: battle.concludedAt?.toISOString() ?? null,
+    /**
+     * Present only when **this** request is what settled the battle — the repair
+     * case where the final `act` died between appending the action and paying.
+     * A `GET` on a battle somebody already settled omits it, because the amounts
+     * are gone; see `SettleResult`. That is the follow-up in `specs/GAPS.md`.
+     */
+    ...(settlement ? { settlement } : {}),
   });
 });

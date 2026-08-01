@@ -50,10 +50,41 @@ export interface StartedBattle {
   readonly packet: ActionPacket;
 }
 
+/**
+ * What the battle paid — present **only** on the response that concluded it
+ * (`specs/GAPS.md` §2c).
+ *
+ * The amounts are not persisted, so the final `act` is the one request that can
+ * ever report them. Absent on every ordinary turn, and absent again on a later
+ * `GET` of the same finished battle. The client must therefore treat this as
+ * *"the news, once"* rather than as state it can re-fetch — which is why
+ * `BattleScreen` holds it rather than deriving it.
+ *
+ * **Projected onto the requester.** `won` is about *this* player, not the
+ * attacker: a defender who holds their wall sees `won: true` against
+ * `winner: 'defender'`.
+ */
+export interface BattleSettlement {
+  readonly winner: 'attacker' | 'defender';
+  readonly won: boolean;
+  readonly shards: number;
+  /** What the win was worth before the daily cap. `>= shards`. */
+  readonly shardsEarned: number;
+  readonly cappedAt: number | null;
+  readonly ratingDelta: number;
+  readonly ratingBefore: number;
+  readonly ratingAfter: number;
+  readonly attackStreak: number;
+  readonly holdStreak: number;
+  readonly turnCount: number;
+  readonly zone: 'visible' | 'hidden';
+}
+
 export interface ActResponse {
   readonly sequence: number;
   readonly packet: ActionPacket;
   readonly nextSequence: number;
+  readonly settlement?: BattleSettlement;
 }
 
 /** `GET /v1/battles/:battleId` — the resynchronisation route after a `409`. */

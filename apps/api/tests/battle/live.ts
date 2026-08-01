@@ -241,12 +241,30 @@ export interface BattleShape {
   }[];
 }
 
+/** What a settled battle reports back — `specs/GAPS.md` §2c. */
+export interface SettlementShape {
+  readonly winner: 'attacker' | 'defender';
+  readonly won: boolean;
+  readonly shards: number;
+  readonly shardsEarned: number;
+  readonly cappedAt: number | null;
+  readonly ratingDelta: number;
+  readonly ratingBefore: number;
+  readonly ratingAfter: number;
+  readonly attackStreak: number;
+  readonly holdStreak: number;
+  readonly turnCount: number;
+  readonly zone: string;
+}
+
 export interface Acted {
   readonly status: number;
   readonly body: {
     readonly sequence: number;
     readonly packet: { events: unknown[]; state: BattleShape; conclusion: unknown };
     readonly nextSequence: number;
+    /** Present only on the response that concluded the battle. */
+    readonly settlement?: SettlementShape;
   };
   readonly text: string;
 }
@@ -300,6 +318,8 @@ export interface Fought {
    * would otherwise report.
    */
   readonly perAct: readonly number[];
+  /** What the concluding response reported it paid. `undefined` if none did. */
+  readonly settlement?: SettlementShape | undefined;
 }
 
 export async function fightToTheEnd(a: Arena, started: StartedBattle, cap = 250): Promise<Fought> {
@@ -311,6 +331,7 @@ export async function fightToTheEnd(a: Arena, started: StartedBattle, cap = 250)
   let conclusion = started.packet.conclusion;
   let sequence = started.sequence;
   let acts = 0;
+  let settlement: SettlementShape | undefined;
 
   while (!conclusion && acts < cap) {
     const at = Date.now();
@@ -323,10 +344,13 @@ export async function fightToTheEnd(a: Arena, started: StartedBattle, cap = 250)
     state = result.body.packet.state;
     conclusion = result.body.packet.conclusion;
     sequence = result.body.nextSequence;
+    /* Only the response that concludes carries one, so this holds the last —
+       which is that response, by construction of the loop. */
+    settlement = result.body.settlement ?? settlement;
     acts += 1;
   }
 
-  return { acts, bodies, conclusion, ms: Date.now() - began, perAct };
+  return { acts, bodies, conclusion, ms: Date.now() - began, perAct, settlement };
 }
 
 /**

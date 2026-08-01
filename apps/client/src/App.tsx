@@ -260,6 +260,10 @@ function GameApp(): JSX.Element {
            */
           <ResumeBattle
             onUnauthenticated={onUnauthenticated}
+            /* The same exit the started-from-matchmaking path already had. Without
+               it a player who reloads mid-battle and then finishes is stuck on the
+               result with the tab bar hidden — see `ResumeBattleProps.onLeave`. */
+            onLeave={() => setScreen({ kind: 'attack' })}
             fallback={
               screen.kind === 'battle' ? (
                 <BattleScreen

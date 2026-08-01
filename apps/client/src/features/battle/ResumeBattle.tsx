@@ -40,6 +40,21 @@ export interface ResumeBattleProps {
   readonly onUnauthenticated?: () => void;
   /** Rendered when there is no battle to resume — the ordinary case. */
   readonly fallback: React.ReactNode;
+  /**
+   * The way off the result screen — **and without it this path is a dead end.**
+   *
+   * `BattleScreen` documents at length that the shell hides the tab bar while a
+   * battle is open and that a result screen with no exit leaves reloading the
+   * browser as the only way on. The fix landed on the *other* call site: the one
+   * reached from matchmaking passes `onLeave`, and this one, the resume path,
+   * never forwarded it. So a player who reloaded mid-battle and then finished it
+   * was stuck — the same bug, surviving on the route nobody re-tested.
+   *
+   * Found by an e2e assertion that the result offers *some* button, which is the
+   * shape worth asserting: naming the button would have passed while the screen
+   * was still terminal on this path.
+   */
+  readonly onLeave?: () => void;
 }
 
 type Lookup =
@@ -47,7 +62,7 @@ type Lookup =
   | { readonly kind: 'none' }
   | { readonly kind: 'in-battle'; readonly started: StartedBattle };
 
-export function ResumeBattle({ onUnauthenticated, fallback }: ResumeBattleProps) {
+export function ResumeBattle({ onUnauthenticated, fallback, onLeave }: ResumeBattleProps) {
   const [lookup, setLookup] = useState<Lookup>({ kind: 'asking' });
 
   useEffect(() => {
@@ -133,6 +148,7 @@ export function ResumeBattle({ onUnauthenticated, fallback }: ResumeBattleProps)
     <BattleScreen
       started={lookup.started}
       onConcluded={onConcluded}
+      {...(onLeave ? { onLeave } : {})}
       {...(onUnauthenticated ? { onUnauthenticated } : {})}
     />
   );

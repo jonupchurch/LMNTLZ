@@ -61,12 +61,59 @@ export function reasonOf(conclusion: Conclusion): BattleReason {
   return conclusion.reason === 'wipe' ? 'elimination' : 'turn_cap';
 }
 
+/**
+ * What one side walked away with — **the thing this function computed and threw
+ * away for four features** (`specs/GAPS.md` §2c).
+ *
+ * A battle ended, `awardShards` credited the winner, `applyRating` moved both
+ * ratings, and the only field any caller read was `settled`. So the end of a
+ * fight said `Victory` and nothing else: no shards, no rating, no streak. The
+ * seam was not missing — it was **called, and its answer discarded**, which is
+ * why `rg settle` found a caller and the gap audit could not see it.
+ */
+export interface SettlePayout {
+  /** Shards actually credited, after the daily cap. */
+  readonly shards: number;
+  /**
+   * What the win was worth *before* the cap bit.
+   *
+   * Different from `shards` only when the player has hit their daily ceiling,
+   * and that difference is the whole point of showing it: "you earned 60, you
+   * banked 15" is information, while a silent 15 reads as a nerf.
+   */
+  readonly shardsEarned: number;
+  /** The cap that truncated the award, or `null` if it did not. */
+  readonly cappedAt: number | null;
+  /** Signed, one decimal, already carrying the ×2 Hidden bonus on a win. */
+  readonly ratingDelta: number;
+  readonly ratingBefore: number;
+  readonly ratingAfter: number;
+}
+
 export interface SettleResult {
   /** `false` when the battle was already settled. **Not an error** — see above. */
   readonly settled: boolean;
   readonly winner: 'attacker' | 'defender';
   readonly attackStreak: number;
   readonly holdStreak: number;
+  /**
+   * **`null` on a repair pass, and that is deliberate.**
+   *
+   * Settlement is called by every request that observes a conclusion — the final
+   * `act`, a retry of it, a later `GET` — and all but the first match zero rows.
+   * Only the request that actually settled knows what was paid, because the
+   * amounts are not persisted anywhere a later read could recover them.
+   *
+   * So a second reader gets `null`, never zeroes. **A zero would be a lie in the
+   * shape of an answer**: indistinguishable from a genuinely capped-out player
+   * who earned nothing, and the client would print "0 shards" over a battle that
+   * paid 60. `null` says *"this request did not settle it"*, which is true.
+   *
+   * Persisting the amounts on `battle_records` so a refresh can reconstruct them
+   * is a real follow-up and an XVI-class column addition — see `specs/GAPS.md`.
+   */
+  readonly attacker: SettlePayout | null;
+  readonly defender: SettlePayout | null;
 }
 
 export interface SettleInput {
@@ -144,6 +191,10 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
         winner: (already?.winner ?? conclusion.winner) as 'attacker' | 'defender',
         attackStreak: 0,
         holdStreak: 0,
+        /* Nothing was paid by *this* call, and nothing that was paid earlier is
+           recoverable from here. `null`, never zero — see `SettleResult`. */
+        attacker: null,
+        defender: null,
       };
     }
 
@@ -262,29 +313,38 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
      */
     const incomeZone = zone === 'hidden' ? 'hidden' : 'visible';
 
-    if (attackerId) {
-      await awardShards(
-        attackerId,
-        {
-          kind: attackerWon ? 'attack-victory' : 'loss',
-          /** An ambush pays as Hidden whichever zone the squad sits in. */
-          zone: wasAmbush ? 'hidden' : incomeZone,
-        },
-        battleId,
-        new Date(),
-        tx,
-      );
-    }
+    /*
+     * **These two were already being computed and dropped on the floor.** The
+     * only change below is that the awards are bound to names and the deltas are
+     * held rather than passed straight through — the arithmetic, the ordering and
+     * the transaction are untouched, so this cannot alter what any battle pays.
+     */
+    const attackerAward = attackerId
+      ? await awardShards(
+          attackerId,
+          {
+            kind: attackerWon ? 'attack-victory' : 'loss',
+            /** An ambush pays as Hidden whichever zone the squad sits in. */
+            zone: wasAmbush ? 'hidden' : incomeZone,
+          },
+          battleId,
+          new Date(),
+          tx,
+        )
+      : null;
 
-    if (defenderId) {
-      await awardShards(
-        defenderId,
-        { kind: attackerWon ? 'loss' : 'defense-hold', zone: incomeZone },
-        battleId,
-        new Date(),
-        tx,
-      );
-    }
+    const defenderAward = defenderId
+      ? await awardShards(
+          defenderId,
+          { kind: attackerWon ? 'loss' : 'defense-hold', zone: incomeZone },
+          battleId,
+          new Date(),
+          tx,
+        )
+      : null;
+
+    let deltas: { attacker: number; defender: number } | null = null;
+    let before: { attacker: number; defender: number } | null = null;
 
     if (attackerId && defenderId) {
       const [attackerStanding, defenderStanding] = await Promise.all([
@@ -292,22 +352,66 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
         standingFor(defenderId, tx),
       ]);
 
-      await applyRating(
-        attackerId,
-        defenderId,
-        ratingDeltas({
-          attacker: attackerStanding.rating,
-          defender: defenderStanding.rating,
-          attackerRatedBattles: attackerStanding.ratedBattles,
-          defenderRatedBattles: defenderStanding.ratedBattles,
-          attackerWon,
-          zone: incomeZone,
-        }),
-        tx,
-      );
+      /*
+       * **Captured before `applyRating`, because that is what "before" means.**
+       * Re-reading the standing afterwards to compute a delta would be a second
+       * observation of a row this transaction just wrote — the same mistake the
+       * `.returning()` clause above exists to avoid.
+       */
+      before = { attacker: attackerStanding.rating, defender: defenderStanding.rating };
+      deltas = ratingDeltas({
+        attacker: attackerStanding.rating,
+        defender: defenderStanding.rating,
+        attackerRatedBattles: attackerStanding.ratedBattles,
+        defenderRatedBattles: defenderStanding.ratedBattles,
+        attackerWon,
+        zone: incomeZone,
+      });
+
+      await applyRating(attackerId, defenderId, deltas, tx);
     }
 
-    return { settled: true, winner: conclusion.winner, attackStreak, holdStreak };
+    /**
+     * One side's slice of what just happened, or `null` if there is no account.
+     *
+     * ### ⚠️ The reported rating must match what the DATABASE stores, not what
+     * the formula produced
+     *
+     * `ratingDeltas` is deliberately fractional — *"integer rounding at K=10
+     * would quantise a near-even battle to ±5 and erase the gradient"* — but
+     * `applyRating` writes `round(rating + delta)::int`. So the stored rating is
+     * an **integer**, and a payout reporting `+17.7 → 1197.7` would print a
+     * number no row anywhere holds, against a rating the player's profile shows
+     * as 1198.
+     *
+     * So `ratingAfter` reproduces the SQL exactly, and `ratingDelta` is derived
+     * back out of it as the movement that *actually happened*. The banner then
+     * adds up — `1180 +18 → 1198` — which it would not if the fractional delta
+     * were shown beside the rounded rating.
+     */
+    const payoutFor = (side: 'attacker' | 'defender'): SettlePayout | null => {
+      const award = side === 'attacker' ? attackerAward : defenderAward;
+      if (!award) return null;
+      const ratingBefore = before?.[side] ?? 0;
+      const ratingAfter = Math.round(ratingBefore + (deltas?.[side] ?? 0));
+      return {
+        shards: award.credited,
+        shardsEarned: award.earned,
+        cappedAt: award.cappedAt,
+        ratingDelta: ratingAfter - ratingBefore,
+        ratingBefore,
+        ratingAfter,
+      };
+    };
+
+    return {
+      settled: true,
+      winner: conclusion.winner,
+      attackStreak,
+      holdStreak,
+      attacker: payoutFor('attacker'),
+      defender: payoutFor('defender'),
+    };
   });
 
   /**

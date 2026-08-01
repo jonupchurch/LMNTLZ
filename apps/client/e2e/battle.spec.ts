@@ -460,10 +460,24 @@ test.describe('a dropped connection does not double-advance', () => {
 });
 
 test.describe('the result', () => {
-  test('shows the outcome and stops asking for moves', async ({ page }) => {
-    await inBattle(page);
+  /** What the concluding response now carries — `specs/GAPS.md` §2c. */
+  const SETTLEMENT = {
+    winner: 'attacker',
+    won: true,
+    shards: 42,
+    shardsEarned: 42,
+    cappedAt: null,
+    ratingDelta: 18,
+    ratingBefore: 1180,
+    ratingAfter: 1198,
+    attackStreak: 7,
+    holdStreak: 0,
+    turnCount: 96,
+    zone: 'visible',
+  } as const;
 
-    await page.route(`**/v1/battles/${BATTLE_ID}/act`, (route) =>
+  const concludeWith = (page: Page, settlement?: typeof SETTLEMENT) =>
+    page.route(`**/v1/battles/${BATTLE_ID}/act`, (route) =>
       route.fulfill({
         json: {
           sequence: 4,
@@ -473,16 +487,85 @@ test.describe('the result', () => {
             conclusion: { winner: 'attacker', reason: 'wipe' },
           },
           nextSequence: 5,
+          ...(settlement ? { settlement } : {}),
         },
       }),
     );
 
+  const finish = async (page: Page) => {
     await page.goto('/');
     await page.getByRole('region', { name: 'Battle board' }).waitFor();
     await page.getByRole('button', { name: /, targetable$/ }).first().click();
-
     await expect(page.getByRole('region', { name: 'Result' })).toBeVisible();
-    await expect(page.getByText(/victory/i)).toBeVisible();
+  };
+
+  test('shows the outcome and stops asking for moves', async ({ page }) => {
+    await inBattle(page);
+    await concludeWith(page, SETTLEMENT);
+    await finish(page);
+
+    await expect(page.getByText(/victory/i).first()).toBeVisible();
     await expect(page.getByRole('region', { name: 'Your move' })).toHaveCount(0);
+  });
+
+  /**
+   * **The result screen must not be terminal**, and it has been once: the shell
+   * hides the tab bar while a battle is open and did not give it back when the
+   * battle ended, so the only way off this screen was reloading the browser.
+   * A screen that stops asking for moves and offers no exit is a dead end.
+   */
+  test('always offers a way off the screen', async ({ page }) => {
+    await inBattle(page);
+    await concludeWith(page, SETTLEMENT);
+    await finish(page);
+
+    const out = page.getByRole('region', { name: 'Result' }).getByRole('button');
+    await expect(out, 'the result screen has no way out of it').not.toHaveCount(0);
+  });
+
+  /**
+   * **The regression this locks down.** For four features a battle ended, paid
+   * shards, moved the rating — and the screen said `Victory` and nothing else,
+   * because `settleAndRecord` read one field of the settlement and discarded the
+   * rest. Asserting the word alone is what let that ship: `Victory` was present
+   * and correct the entire time.
+   */
+  test('says what the battle actually paid', async ({ page }) => {
+    await inBattle(page);
+    await concludeWith(page, SETTLEMENT);
+    await finish(page);
+
+    const result = page.getByRole('region', { name: 'Result' });
+    await expect(result).toContainText('+18');
+    await expect(result, 'the new rating is not shown').toContainText('1198');
+    await expect(result, 'the shards are not shown').toContainText('42');
+    await expect(result, 'the streak that drives ambush odds is not shown').toContainText('7');
+  });
+
+  test('shows the six who fought, and which of them fell', async ({ page }) => {
+    await inBattle(page);
+    await concludeWith(page, SETTLEMENT);
+    await finish(page);
+
+    // `state(null)` leaves the attacker's six on the board, so the recap has
+    // something real to draw. Without this the grid could be empty and every
+    // assertion above would still pass.
+    await expect(page.locator('[data-recap]')).toHaveCount(6);
+  });
+
+  /**
+   * A battle somebody else already settled — a reload, or a resumed fight that
+   * had finished. **The amounts are unknowable, and zeroes would be a lie**: a
+   * capped-out player genuinely earns 0, so `0 shards` cannot be distinguished
+   * from "we don't know".
+   */
+  test('a battle with no settlement says so rather than showing zeroes', async ({ page }) => {
+    await inBattle(page);
+    await concludeWith(page);
+    await finish(page);
+
+    const result = page.getByRole('region', { name: 'Result' });
+    await expect(result).toContainText(/already settled/i);
+    await expect(result, 'invented a zero payout').not.toContainText('+0');
   });
 });

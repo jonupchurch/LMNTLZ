@@ -35,7 +35,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/api.js';
-import type { ActResponse, ActionIntent, ActionPacket, TurnEvent } from './types.js';
+import type {
+  ActResponse,
+  ActionIntent,
+  ActionPacket,
+  BattleSettlement,
+  TurnEvent,
+} from './types.js';
 
 /**
  * **How long the wind-up runs before it wants an answer.**
@@ -65,8 +71,19 @@ export type IntentPhase =
 
 export interface UseIntentOptions {
   readonly battleId: string;
-  /** The packet, once it has finished playing. The board is drawn from this. */
-  readonly onResolved: (packet: ActionPacket, nextSequence: number) => void;
+  /**
+   * The packet, once it has finished playing. The board is drawn from this.
+   *
+   * `settlement` arrives on the **one** response that concluded the battle and
+   * never again — the amounts are not persisted, so it cannot be re-fetched.
+   * Passed straight through rather than stored here: this hook owns the
+   * animation, and the news of what a battle paid is not an animation concern.
+   */
+  readonly onResolved: (
+    packet: ActionPacket,
+    nextSequence: number,
+    settlement?: BattleSettlement,
+  ) => void;
   readonly onFailed: (err: unknown) => void;
   readonly windUpMs?: number;
   readonly beatMs?: number;
@@ -203,7 +220,7 @@ export function useIntent({
          * reconcile against — the server's version is the only version there
          * has ever been.
          */
-        onResolved(response.packet, response.nextSequence);
+        onResolved(response.packet, response.nextSequence, response.settlement);
       })();
     },
     [battleId, beatMs, onFailed, onResolved, windUpMs],
