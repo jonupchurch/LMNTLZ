@@ -112,3 +112,104 @@ test('the drawer opens on the champion clicked, and leads with her portrait', as
   await expect(drawer).toContainText(`counter(${nyxara.primary})`);
   await expect(drawer).toContainText(nyxara.bane);
 });
+
+test.describe('the power flyout', () => {
+  const BRAMWEN = HEROES.find((h) => h.name === 'Bramwen')!;
+
+  test.beforeEach(async ({ page }) => {
+    await page.locator(`[data-hero="${BRAMWEN.id}"]`).first().click();
+    await expect(page.getByRole('complementary', { name: /bramwen/i })).toBeVisible();
+  });
+
+  test('appears on hover and describes the power under the cursor', async ({ page }) => {
+    const flyout = page.locator('[data-power-flyout]');
+    await expect(flyout, 'the flyout is showing before anything is hovered').toBeHidden();
+
+    // The tier-4: gated, dual-typed and on a long cooldown, so its sentence
+    // exercises every clause the generator can produce.
+    const gated = BRAMWEN.powers.find((p) => p.gateTurn > 1)!;
+    await page.locator(`[data-power-row="${gated.id}"]`).hover();
+
+    await expect(flyout).toBeVisible();
+    await expect(flyout).toContainText(gated.name);
+    await expect(flyout).toContainText(`Might × ${gated.multiplier}`);
+    await expect(flyout).toContainText(`not before turn ${gated.gateTurn}`);
+  });
+
+  test('names whichever row is under the cursor', async ({ page }) => {
+    const rows = page.locator('[data-power-row]');
+    const flyout = page.locator('[data-power-flyout]');
+
+    for (const power of BRAMWEN.powers) {
+      await page.locator(`[data-power-row="${power.id}"]`).hover();
+      await expect(flyout).toBeVisible();
+      await expect(flyout, `hovering ${power.name} showed something else`).toContainText(power.name);
+    }
+
+    // Sanity: all six rows were real, so the loop above was not vacuous.
+    await expect(rows).toHaveCount(BRAMWEN.powers.length);
+  });
+
+  test('holds the read while the cursor is in the GAP between two rows', async ({ page }) => {
+    /*
+     * ### This is the stutter guard, and the obvious version of it cannot fail
+     *
+     * The first draft hovered each row in turn and asserted the flyout named it.
+     * That passed with the dismiss moved onto the row — the defect it exists to
+     * catch — because **`hover()` teleports the cursor**. It never traverses the
+     * space between two rows, so the leave/enter pair that causes the flicker
+     * never happens, and the only state ever sampled is the settled one.
+     *
+     * The cursor has to actually be *in the gap*: inside the list, over no row.
+     * With the dismiss on the row that is a blank flyout; with it on the list it
+     * is the last read, held. `page.mouse.move` is what puts it there — a
+     * locator-based API cannot address a 4px space that contains no element.
+     */
+    const first = BRAMWEN.powers[0]!;
+    const second = BRAMWEN.powers[1]!;
+
+    await page.locator(`[data-power-row="${first.id}"]`).hover();
+    await expect(page.locator('[data-power-flyout]')).toContainText(first.name);
+
+    const a = (await page.locator(`[data-power-row="${first.id}"]`).boundingBox())!;
+    const b = (await page.locator(`[data-power-row="${second.id}"]`).boundingBox())!;
+    const gapY = (a.y + a.height + b.y) / 2;
+    const x = a.x + a.width / 2;
+
+    // Prove the point really is in the gap before trusting what it shows. If
+    // the rows ever butt together this test would otherwise silently become a
+    // second copy of the one above.
+    const onRow = await page.evaluate(
+      ([px, py]) => !!document.elementFromPoint(px!, py!)?.closest('[data-power-row]'),
+      [x, gapY],
+    );
+    expect(onRow, 'the sampled point is on a row, not between two').toBe(false);
+
+    await page.mouse.move(x, gapY);
+    await expect(
+      page.locator('[data-power-flyout]'),
+      'the flyout emptied while crossing between two rows',
+    ).toContainText(first.name);
+  });
+
+  test('leaving the list dismisses it, so it never covers the grid for good', async ({ page }) => {
+    /*
+     * The other half of the rule. Holding the last read forever is right for a
+     * panel in a fixed column — the battle screen does exactly that — and wrong
+     * for an overlay lying on top of 27 champion cards.
+     */
+    await page.locator(`[data-power-row="${BRAMWEN.powers[0]!.id}"]`).hover();
+    await expect(page.locator('[data-power-flyout]')).toBeVisible();
+
+    await page.getByRole('heading', { name: 'The Roster' }).hover();
+    await expect(page.locator('[data-power-flyout]')).toBeHidden();
+  });
+
+  test('a keyboard reaches it too', async ({ page }) => {
+    // A flyout openable only by pointer is one a keyboard player cannot read,
+    // and it holds the only account of what each power does.
+    const first = BRAMWEN.powers[0]!;
+    await page.getByRole('button', { name: first.name }).focus();
+    await expect(page.locator('[data-power-flyout]')).toContainText(first.name);
+  });
+});

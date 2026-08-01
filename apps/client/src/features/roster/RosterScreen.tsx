@@ -47,6 +47,7 @@ import {
   type DamageType,
   type Hero,
   type HeroId,
+  type Power,
 } from '@lmntlz/content';
 import { useMemo, useState } from 'react';
 import {
@@ -55,6 +56,7 @@ import {
   HeroIcon,
   HeroPortrait,
   Panel,
+  PowerDetail,
   RelationshipStrip,
   TextField,
   TypeBadge,
@@ -86,6 +88,8 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
   const [reach, setReach] = useState<ReachFilter>('any');
   const [sort, setSort] = useState<Sort>('force');
   const [selected, setSelected] = useState<Hero | null>(null);
+  /** The power under the cursor in the drawer's list, for the flyout. */
+  const [peekedPower, setPeekedPower] = useState<Power | null>(null);
 
   const toggleForce = (type: DamageType): void =>
     setForces((current) =>
@@ -337,6 +341,10 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
                   fill
                   onSelect={(picked) => {
                     setSelected(picked);
+                    /* Or the flyout keeps showing the previous champion's power
+                       beside the new champion's card — a stale read that looks
+                       exactly like a correct one. */
+                    setPeekedPower(null);
                     onInspect?.(picked);
                   }}
                 />
@@ -432,19 +440,70 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
               <h3 className="text-caption mb-2 font-mono tracking-[0.2em] uppercase text-faint">
                 Powers
               </h3>
-              <ul className="flex flex-col gap-1">
+              {/**
+               * ### The flyout, and why leaving is handled on the LIST
+               *
+               * `onMouseLeave` sits on the `<ul>`, never on a row. Crossing the
+               * gap between two rows fires leave-then-enter, so a per-row
+               * handler would blank and refill the flyout on every crossing —
+               * which is precisely the stutter Jon caught on the battle screen
+               * (`a-panel-that-resizes-is-a-defect`). The list is one contiguous
+               * region: moving *within* it is never an exit, and moving out of
+               * it is a real one.
+               *
+               * Dismissing on exit is right *here* and wrong on the battle
+               * screen, and the difference is the geometry. That panel is a
+               * fixed region in a column, so clearing it leaves a hole and the
+               * player loses a reading they were looking away to think about.
+               * This is an overlay sitting on top of the champion grid; holding
+               * it forever would cover content nobody asked to hide.
+               */}
+              <ul
+                className="relative flex flex-col gap-1"
+                onMouseLeave={() => setPeekedPower(null)}
+              >
                 {selected.powers.map((power) => (
                   <li
                     key={power.id}
+                    data-power-row={power.id}
                     className="text-caption flex items-baseline justify-between gap-2 font-mono"
+                    onMouseEnter={() => setPeekedPower(power)}
                   >
-                    <span className="truncate text-parchment">{power.name}</span>
+                    {/* A `button`, not a bare row: a flyout reachable only by
+                        pointer is a flyout a keyboard player cannot open, and
+                        this is where the mechanics of all six powers live. */}
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 truncate text-left text-parchment hover:text-gold focus-visible:text-gold"
+                      onFocus={() => setPeekedPower(power)}
+                      /* Pressing it changes nothing — hover and focus already
+                         did the work — but a control that does nothing on click
+                         is confusing, so it pins the read instead. */
+                      onClick={() => setPeekedPower(power)}
+                    >
+                      {power.name}
+                    </button>
                     {/* Turns, never a clock (Constitution XIII). */}
                     <span className="shrink-0 text-faint">
                       T{power.tier} · {power.cooldown === 0 ? 'ready' : `${power.cooldown}t`}
                     </span>
                   </li>
                 ))}
+
+                {peekedPower ? (
+                  <div
+                    data-power-flyout
+                    role="tooltip"
+                    /*
+                     * Opens to the LEFT. The drawer is the rightmost column on a
+                     * 1600px window, so a flyout to the right would open off the
+                     * edge of the viewport — the one direction with no room.
+                     */
+                    className="lz-surface-raised absolute top-0 right-full z-20 mr-2 w-72 p-3 shadow-(--shadow-elev-3)"
+                  >
+                    <PowerDetail power={peekedPower} bare />
+                  </div>
+                ) : null}
               </ul>
             </section>
 

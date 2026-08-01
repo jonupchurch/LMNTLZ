@@ -64,6 +64,8 @@ export { HeroPortrait } from './hero/HeroPortrait.js';
 export type { HeroPortraitProps } from './hero/HeroPortrait.js';
 export { DoorCluster } from './hero/DoorCluster.js';
 export type { DoorClusterProps } from './hero/DoorCluster.js';
+export { PowerDetail, describePower } from './hero/PowerDetail.js';
+export type { PowerDetailProps } from './hero/PowerDetail.js';
 export { HeroMarks } from './hero/HeroMarks.js';
 export type { HeroMarksProps } from './hero/HeroMarks.js';
 export { RunePips } from './hero/RunePips.js';

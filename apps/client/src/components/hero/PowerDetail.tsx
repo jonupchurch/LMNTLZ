@@ -1,8 +1,30 @@
 /**
- * What the power you are holding actually does (019).
+ * What a power actually does (019).
  *
  * Jon, pointing at the empty column under the striking six: *"I want a hover
- * panel that shows the details of the selected power."*
+ * panel that shows the details of the selected power."* Then, on the roster:
+ * *"when you hover over the powers in the list I'd like a description and any
+ * mechanics of the power to be displayed in a flyout."*
+ *
+ * ### ⚠️ There is NO authored description of a power, anywhere
+ *
+ * A `Power` is `{id, name, tier, multiplier, cooldown, gateTurn, types, targets,
+ * friendly, reactive}` — the schema has no `description`, and no file in
+ * `resources/` carries prose for the 162 powers. So the sentence at the top of
+ * this panel is **generated from the mechanics**, not flavour text someone
+ * wrote: it says what the power does because it is assembled from what the
+ * power is.
+ *
+ * That is the honest option and it is also the durable one — invented flavour
+ * would be a second source of truth for behaviour, and the hero-numbers pass
+ * would silently falsify it. If authored voice lines arrive later they belong in
+ * `@lmntlz/content` beside `name`, and this panel would print both.
+ *
+ * ### It lives at the component layer because two screens explain a power
+ *
+ * It was `features/battle/PowerDetail.tsx` and the roster needed the same thing.
+ * A second copy is how *"cooldowns are turns"* ends up written two ways on two
+ * screens; there is one explanation of a power and both callers render it.
  *
  * ### The dock could never have said this
  *
@@ -27,11 +49,22 @@
 
 import type { DamageType, Power } from '@lmntlz/content';
 import { resistedBy } from '@lmntlz/sim/rules';
-import { FORCE_TEXT, TypeIcon } from '../../components/index.js';
+import { TypeIcon } from '../icons/TypeIcon.js';
+import { FORCE_TEXT } from '../type/forceClasses.js';
 
 export interface PowerDetailProps {
   /** The power under the cursor, else the one chosen. `null` before either. */
   readonly power: Power | null;
+  /**
+   * Drop the panel chrome — heading, surface, reserved height — because a
+   * flyout already provides all three.
+   *
+   * The battle screen renders this as a **fixed region** in a column, so it must
+   * hold its height whether or not a power is hovered; see
+   * `a-panel-that-resizes-is-a-defect`. A flyout is absolutely positioned and
+   * shifts nothing, so reserving space there would be a 240px hole in the air.
+   */
+  readonly bare?: boolean;
 }
 
 const RESISTED_LABEL: Readonly<Record<'armor' | 'magicResist' | 'mixed', string>> = {
@@ -49,12 +82,52 @@ const TARGETS_LABEL = (targets: Power['targets']): string => {
   return `${targets} champions`;
 };
 
-export function PowerDetail({ power }: PowerDetailProps): React.JSX.Element {
+/**
+ * One sentence saying what the power does, **assembled from the power**.
+ *
+ * Not flavour text — see the note at the top of this file. Every clause is a
+ * field, so this cannot go out of step with the mechanics printed underneath it
+ * the way a hand-written line would the first time a cooldown is retuned.
+ *
+ * The three shapes it has to cover, and each exists in the roster today:
+ * a damaging power, a friendly one (`multiplier` set, `friendly` true), and the
+ * three that deal neither damage nor healing (`multiplier === null`).
+ */
+export function describePower(power: Power): string {
+  const forces = (power.types as readonly DamageType[]).join('/');
+  const at = TARGETS_LABEL(power.targets);
+
+  const verb =
+    power.multiplier === null
+      ? `Acts on ${at}`
+      : power.friendly
+        ? `Heals ${at} for Might × ${power.multiplier}`
+        : `Deals ${forces} damage to ${at} for Might × ${power.multiplier}`;
+
+  const cadence =
+    power.cooldown === 0
+      ? 'every turn'
+      : `once every ${power.cooldown} ${power.cooldown === 1 ? 'turn' : 'turns'}`;
+
+  /* The gate is a *rule*, not a state — a tier-5 is unavailable on turn 1 for
+     everybody, forever — so it belongs in the sentence rather than being
+     discovered by the slot being greyed out. */
+  const gate = power.gateTurn > 1 ? `, and not before turn ${power.gateTurn}` : '';
+
+  return `${verb}, ${cadence}${gate}.`;
+}
+
+export function PowerDetail({ power, bare = false }: PowerDetailProps): React.JSX.Element {
   return (
-    <section aria-label="Power detail" className="lz-surface min-h-60 p-3">
-      <h3 className="text-caption mb-2 font-mono tracking-widest text-muted uppercase">
-        Power detail
-      </h3>
+    <section
+      aria-label="Power detail"
+      className={bare ? '' : 'lz-surface min-h-60 p-3'}
+    >
+      {!bare && (
+        <h3 className="text-caption mb-2 font-mono tracking-widest text-muted uppercase">
+          Power detail
+        </h3>
+      )}
 
       {power === null ? (
         <p className="text-caption leading-relaxed text-faint">
@@ -70,6 +143,12 @@ export function PowerDetail({ power }: PowerDetailProps): React.JSX.Element {
             </span>
             <p className="text-body font-display tracking-wide text-parchment">{power.name}</p>
           </div>
+
+          {/* The generated sentence. First, because it is the answer to "what
+              does this do?" and everything under it is the detail behind it. */}
+          <p data-power-summary className="text-caption leading-relaxed text-muted">
+            {describePower(power)}
+          </p>
 
           <p className="text-caption font-mono tracking-wider uppercase">
             {(power.types as readonly DamageType[]).map((type, i) => (

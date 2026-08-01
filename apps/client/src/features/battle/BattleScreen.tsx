@@ -41,7 +41,7 @@ import {
 } from '@lmntlz/sim/rules';
 import { api, ApiError } from '../../lib/api.js';
 import { BattleBoard } from './BattleBoard.js';
-import { PowerDetail } from './PowerDetail.js';
+import { PowerDetail } from '../../components/index.js';
 import { PowerDock } from './PowerDock.js';
 import { SquadRail } from './SquadRail.js';
 import { TargetRead } from './TargetRead.js';
