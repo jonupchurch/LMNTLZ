@@ -212,6 +212,83 @@ test.describe('a battle is reachable at all', () => {
     ).toEqual([]);
   });
 
+  /**
+   * **The target read must not resize, ever.**
+   *
+   * Jon, with the screen open: *"there's a client side stutter when the mouse
+   * goes in and out of the cards due to the flyout below appearing and
+   * disappearing"* — and then *"same with the hero cards"*.
+   *
+   * Two causes, one symptom. The read cleared on `mouseleave`, so crossing the
+   * 6px gap between two cards collapsed the panel and re-expanded it; and the
+   * panel sized to its content, so a priced read, an out-of-reach read and the
+   * placeholder were three different heights. Everything below it moved each
+   * time.
+   *
+   * This is invisible to jsdom twice over — it does no layout, and it has no
+   * cursor. Only a browser can hover six cards in a row and measure the box.
+   */
+  test('the target read never changes size as the cursor crosses the board', async ({ page }) => {
+    await inBattle(page);
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+
+    const panel = page.getByRole('region', { name: 'Target read' });
+    const heightNow = async () => Math.round((await panel.boundingBox())!.height);
+
+    const heights = [await heightNow()];
+    const cards = page.getByLabel('Battle board').locator('[data-combatant]');
+    const count = await cards.count();
+    expect(count).toBe(12);
+
+    for (let i = 0; i < count; i += 1) {
+      await cards.nth(i).hover();
+      heights.push(await heightNow());
+    }
+
+    /**
+     * And the read is **sticky** — moving off a card onto the panel between
+     * them must not empty it, which is what produced the flicker.
+     */
+    await panel.hover();
+    heights.push(await heightNow());
+
+    expect(new Set(heights).size, `the panel resized: ${heights.join(', ')}`).toBe(1);
+    await expect(panel.locator('[data-tier]')).toHaveCount(1);
+  });
+
+  /**
+   * The power detail sits under the striking six and has the identical failure
+   * mode — a panel fed by hover, with content of three different shapes. It was
+   * built after the target read was fixed, so it inherited the rule; this is
+   * what stops it drifting back.
+   */
+  test('the power detail never changes size as the cursor crosses the dock', async ({ page }) => {
+    await inBattle(page);
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+
+    const panel = page.getByRole('region', { name: 'Power detail' });
+    const heightNow = async () => Math.round((await panel.boundingBox())!.height);
+
+    const cards = page.getByRole('region', { name: 'Your move' }).locator('[data-power]');
+    const count = await cards.count();
+    expect(count, 'no powers were offered, so this asserts nothing').toBeGreaterThan(1);
+
+    const heights: number[] = [];
+    for (let i = 0; i < count; i += 1) {
+      await cards.nth(i).hover();
+      heights.push(await heightNow());
+    }
+
+    /* Sticky, like the target read: moving off the dock keeps the last power. */
+    await panel.hover();
+    heights.push(await heightNow());
+
+    expect(new Set(heights).size, `the panel resized: ${heights.join(', ')}`).toBe(1);
+    await expect(panel.locator('[data-power-detail]')).toHaveCount(1);
+  });
+
   test('a player with no battle still reaches their squads', async ({ page }) => {
     await signedIn(page);
     await page.route('**/v1/roster', (route) => route.fulfill({ status: 500, body: '{}' }));

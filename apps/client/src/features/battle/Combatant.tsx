@@ -62,7 +62,22 @@ export interface CombatantProps {
    * one.
    */
   readonly onSelect?: (() => void) | undefined;
-  readonly onHover?: ((instanceId: string | null) => void) | undefined;
+  /**
+   * Reports the champion under the cursor. **Enter and focus only — there is
+   * deliberately no "left" event.**
+   *
+   * Clearing on `mouseleave` made the target read collapse and re-expand every
+   * time the cursor crossed the 6px gap between two rail cards, and the panel
+   * resizing shook everything under it. Jon caught it immediately: *"there's a
+   * client side stutter when the mouse goes in and out of the cards due to the
+   * flyout below appearing and disappearing."*
+   *
+   * Holding the last read is also simply better. A player hovers a defender to
+   * think about it, and thinking means looking away from the card — a readout
+   * that erases itself the moment you stop pointing at it is one you have to
+   * keep re-summoning to use.
+   */
+  readonly onHover?: ((instanceId: string) => void) | undefined;
 }
 
 const pct = (hero: HeroState): number =>
@@ -119,9 +134,7 @@ export function Combatant({
           }
         : {})}
       onMouseEnter={() => onHover?.(hero.instanceId)}
-      onMouseLeave={() => onHover?.(null)}
       onFocus={() => onHover?.(hero.instanceId)}
-      onBlur={() => onHover?.(null)}
       data-combatant={hero.instanceId}
       data-down={down}
       data-targetable={targetable}

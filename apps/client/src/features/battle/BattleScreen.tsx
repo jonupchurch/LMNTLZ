@@ -41,6 +41,7 @@ import {
 } from '@lmntlz/sim/rules';
 import { api, ApiError } from '../../lib/api.js';
 import { BattleBoard } from './BattleBoard.js';
+import { PowerDetail } from './PowerDetail.js';
 import { PowerDock } from './PowerDock.js';
 import { SquadRail } from './SquadRail.js';
 import { TargetRead } from './TargetRead.js';
@@ -93,6 +94,8 @@ export function BattleScreen({
   const [error, setError] = useState<string | null>(null);
   /** Whatever is under the cursor, for the read. Purely presentational. */
   const [hovered, setHovered] = useState<string | null>(null);
+  /** Likewise for the power detail — the one being peeked at, not chosen. */
+  const [peeked, setPeeked] = useState<string | null>(null);
 
   const up = state.turnOfInstance;
   const actor = up === null ? undefined : state.heroes.find((h) => h.instanceId === up);
@@ -162,6 +165,16 @@ export function BattleScreen({
         ? null
         : readTarget(state, up, chosen, hovered),
     [state, up, chosen, hovered],
+  );
+
+  /**
+   * The power the detail panel describes: whichever is being peeked at, else
+   * the one actually chosen — so the panel is never empty once a turn starts,
+   * and pointing at an alternative shows it without committing to it.
+   */
+  const detailed = useMemo(
+    () => offered.find((p) => p.id === peeked) ?? offered.find((p) => p.id === chosen) ?? null,
+    [offered, peeked, chosen],
   );
 
   const apply = useCallback(
@@ -290,15 +303,23 @@ export function BattleScreen({
       {/* `items-start` so a short rail stays short. Stretching all three to the
           tallest left the squad rail as a 240×1000 box holding six 64px cards. */}
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_minmax(0,19rem)]">
-        <SquadRail
-          state={state}
-          side="attacker"
-          activeInstanceId={up}
-          targets={targets}
-          unreachable={unreachable}
-          onHover={setHovered}
-          busy={busy}
-        />
+        {/**
+         * The left column: your six, and under them the power you are holding.
+         * That space was empty, and the detail had nowhere else it could go —
+         * a power card is 180px wide and the Codex is a different screen.
+         */}
+        <div className="flex flex-col gap-3">
+          <SquadRail
+            state={state}
+            side="attacker"
+            activeInstanceId={up}
+            targets={targets}
+            unreachable={unreachable}
+            onHover={setHovered}
+            busy={busy}
+          />
+          <PowerDetail power={detailed} />
+        </div>
 
         <div className="flex min-w-0 flex-col gap-3">
           <BattleBoard
@@ -327,6 +348,7 @@ export function BattleScreen({
               offered={offered}
               chosen={chosen}
               onChoose={setPowerId}
+              onHoverPower={setPeeked}
               busy={busy}
             />
           )}

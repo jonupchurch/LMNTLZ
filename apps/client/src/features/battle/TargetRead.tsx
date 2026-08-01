@@ -31,8 +31,19 @@ export interface TargetReadProps {
 }
 
 export function TargetRead({ read, hasPower }: TargetReadProps): React.JSX.Element {
+  /**
+   * **The height is reserved, not discovered.**
+   *
+   * Three states live in this box — the placeholder, a priced read, and an
+   * out-of-reach read — and they are naturally different heights. Letting the
+   * panel size to its content meant everything below it jumped every time the
+   * cursor moved between two champions, which is the second half of the stutter
+   * Jon caught. `battle.spec.ts` measures the box across every defender and the
+   * placeholder and refuses any variation, so this number cannot quietly stop
+   * being enough.
+   */
   return (
-    <section aria-label="Target read" className="lz-surface p-3">
+    <section aria-label="Target read" className="lz-surface min-h-68 p-3">
       <h3 className="text-caption mb-2 font-mono tracking-widest text-muted uppercase">
         Target read
       </h3>
@@ -72,6 +83,17 @@ export function TargetRead({ read, hasPower }: TargetReadProps): React.JSX.Eleme
             tone={read.hp / read.maxHp > 0.5 ? 'success' : read.hp / read.maxHp > 0.2 ? 'strong' : 'danger'}
           />
 
+          {/**
+           * **The one part that varies, given a fixed block of its own.**
+           *
+           * The priced read is two or three lines depending on whether a crit
+           * is possible and how long the numbers are; the out-of-reach read is
+           * one. Reserving three lines here is what makes every read the same
+           * height, rather than tuning the panel's minimum until it happens to
+           * cover the tallest — which is a number that stops being right the
+           * first time a hero's damage gains a digit.
+           */}
+          <div className="min-h-14">
           {read.preview ? (
             <p className="text-caption leading-relaxed text-muted">
               {/* Rounded, because a fractional hit point is an engine detail. */}
@@ -93,6 +115,7 @@ export function TargetRead({ read, hasPower }: TargetReadProps): React.JSX.Eleme
               empty.
             </p>
           )}
+          </div>
 
           {/**
            * **The doors, always shown.** Derived from the two authored fields,

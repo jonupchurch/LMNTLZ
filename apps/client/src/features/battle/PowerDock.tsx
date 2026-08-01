@@ -31,6 +31,13 @@ export interface PowerDockProps {
   readonly offered: readonly Power[];
   readonly chosen: string | null;
   readonly onChoose: (powerId: string) => void;
+  /**
+   * Reports the power under the cursor to the detail panel. **Enter and focus
+   * only** — the same rule the combatants follow, and for the same reason: a
+   * panel that empties when the cursor crosses the gap between two cards
+   * flickers, and everything below it moves.
+   */
+  readonly onHoverPower?: ((powerId: string) => void) | undefined;
   readonly busy: boolean;
 }
 
@@ -39,6 +46,7 @@ export function PowerDock({
   offered,
   chosen,
   onChoose,
+  onHoverPower,
   busy,
 }: PowerDockProps): React.JSX.Element {
   const content = actor ? getHero(actor.heroId) : null;
@@ -76,6 +84,7 @@ export function PowerDock({
               chosen={power.id === chosen}
               busy={busy}
               onChoose={() => onChoose(power.id)}
+              onPeek={onHoverPower ? () => onHoverPower(power.id) : undefined}
             />
           ))}
         </div>
@@ -89,11 +98,13 @@ function PowerCard({
   chosen,
   busy,
   onChoose,
+  onPeek,
 }: {
   readonly power: Power;
   readonly chosen: boolean;
   readonly busy: boolean;
   readonly onChoose: () => void;
+  readonly onPeek?: (() => void) | undefined;
 }): React.JSX.Element {
   /* A dual-typed power takes the better of its two types, so both are shown —
      showing only the first would hide half of what it can open. */
@@ -107,6 +118,8 @@ function PowerCard({
       aria-label={power.name}
       disabled={busy}
       onClick={onChoose}
+      onMouseEnter={onPeek}
+      onFocus={onPeek}
       data-power={power.id}
       className={[
         'flex items-center gap-2.5 rounded-lg bg-raised p-2.5 text-left ring-inset',
