@@ -64,11 +64,63 @@ export function isRow(value: number): value is Row {
 // Heroes on the board
 // ---------------------------------------------------------------------------
 
+/**
+ * One effect sitting on one hero (020).
+ *
+ * **Widened from four fields to eight, and `kind` stopped being a `string`.** The
+ * original shape could say *that* something was there and nothing about what it
+ * did — no magnitude, no stat, no snapshot. An untyped `kind` also meant a typo
+ * produced a silently inert effect, which is the exact failure this feature exists
+ * to end.
+ *
+ * `potency` is gone: it is the *contest* value, spent deciding whether the effect
+ * lands, and carries no meaning afterwards. Keeping it on the landed instance
+ * invited reading it as a magnitude.
+ *
+ * The catalog, the magnitudes and the transitions live in `status.ts`. This is
+ * only the shape, because `state.ts` is what every other rule imports and a cycle
+ * through the catalog would be gratuitous.
+ */
 export interface StatusInstance {
-  readonly kind: string;
+  /** A `StatusKind` from `status.ts`. Typed there; kept structural here to avoid a cycle. */
+  readonly kind:
+    | 'burn'
+    | 'bleed'
+    | 'poison'
+    | 'buff'
+    | 'debuff'
+    | 'shred'
+    | 'shield'
+    | 'taunt'
+    | 'fade'
+    | 'stun'
+    | 'silence';
   readonly turnsRemaining: number;
-  readonly potency: number;
+  /**
+   * **Fixed at application and never recalculated.** Points for a stat change, a
+   * fraction for a shred, absorbed HP for a shield, per-tick damage for a
+   * damage-over-time effect.
+   *
+   * Snapshotting is what lets the applier die, be buffed or be debuffed without
+   * changing the effect — a damage-over-time effect is a packet that pays out
+   * across several turns, so it needs no fallback rule for a dead applier.
+   */
+  readonly magnitude: number;
+  /** Named for the stat-modifier and shred families; `null` for every other kind. */
+  readonly stat: keyof Hero['stats'] | null;
   readonly sourceInstanceId: string;
+  /**
+   * **Part of the identity, not provenance.** *The same source refreshes* is keyed
+   * on (instance, power, kind); the instance alone would make two different powers
+   * on one hero refresh each other.
+   */
+  readonly sourcePowerId: string;
+  /** `0` flat; `0.5` for a Fire-House burn, which grows 50% of base per tick. */
+  readonly escalation: number;
+  /** Ticks already dealt. Drives escalation, and survives a duration extension. */
+  readonly ticksDealt: number;
+  /** `false` for Ember Saelith's burns and Umbriel's debuffs. They still expire. */
+  readonly cleansable: boolean;
 }
 
 export interface HeroState {
@@ -168,7 +220,38 @@ export function effectiveStat(
   base: Readonly<Hero['stats']>,
   key: keyof Hero['stats'],
 ): number {
-  return cappedStat(base[key], hero.statMods[key] ?? 0);
+  return cappedStat(base[key], (hero.statMods[key] ?? 0) + statusPoints(hero, key));
+}
+
+/**
+ * **Why the status contribution is summed here and not stored in `statMods`.**
+ *
+ * `statMods` is the *permanent* layer: `board.ts` writes a player's rune
+ * allocations into it, and they last the whole battle. A buff written into the
+ * same record would be indistinguishable from a rune — so expiring a 2-turn
+ * `+10 Might` would subtract 10 from a bag that also holds a rune's 10, and the
+ * player would silently lose what they paid for. It would only ever affect
+ * players who own runes, and no test that existed before 020 would have seen it.
+ *
+ * Reading the temporary layer off `hero.statuses` instead makes expiry correct by
+ * construction: dropping the status *is* the whole operation. Two writers to one
+ * field is the failure mode being avoided.
+ *
+ * **Defined here rather than in `status.ts`, and re-exported from there.** This
+ * module is the one every other rule imports, so owning the function here avoids
+ * a value-level cycle. `status.ts` re-exports it so a reader finds it where they
+ * expect — one implementation, two names for the same thing.
+ */
+export function statusPoints(hero: HeroState, key: keyof Hero['stats']): number {
+  let total = 0;
+
+  for (const s of hero.statuses) {
+    if (s.stat !== key) continue;
+    if (s.kind === 'buff') total += s.magnitude;
+    else if (s.kind === 'debuff') total -= s.magnitude;
+  }
+
+  return total;
 }
 
 /**

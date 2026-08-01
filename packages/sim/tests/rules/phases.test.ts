@@ -9,14 +9,9 @@ import {
   isIncapacitated,
   phasesFor,
 } from '../../rules/phases.js';
-import { duel, stateOf, withHero } from './fixtures.js';
+import { duel, stateOf, status, withHero } from './fixtures.js';
 
-const stunned = (turns = 2) => ({
-  kind: 'stun',
-  turnsRemaining: turns,
-  potency: 10,
-  sourceInstanceId: 'd',
-});
+const stunned = (turns = 2) => status('stun', { turnsRemaining: turns, sourceInstanceId: 'd' });
 
 describe('the five-phase turn', () => {
   it('runs Upkeep, Attack, Defense, Additional effects, Resolution in that order', () => {

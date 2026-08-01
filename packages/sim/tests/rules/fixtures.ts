@@ -8,7 +8,7 @@
 
 import { getAllHeroes, getHero, type Hero } from '@lmntlz/content';
 import { HP_PER_TOUGHNESS } from '../../rules/damage.js';
-import type { BattleState, HeroState, Row, Side } from '../../rules/state.js';
+import type { BattleState, HeroState, Row, Side, StatusInstance } from '../../rules/state.js';
 
 export const ENGINE = 'e0.1.0-test';
 export const CONTENT = 'c-test';
@@ -39,6 +39,35 @@ export function heroStateFor(
     statuses: [],
     statMods: {},
     reachMod: 0,
+    ...patch,
+  };
+}
+
+/**
+ * One status instance, with every field defaulted.
+ *
+ * **A builder rather than object literals at each call site**, because
+ * `StatusInstance` gained four fields in 020 and will gain more. Every test that
+ * spelled the shape out by hand had to be edited when it widened; the ones that
+ * go through here did not.
+ *
+ * The defaults describe a **1-turn, non-escalating, cleansable** effect from an
+ * anonymous source — the boring case — so a test names only what it is about.
+ */
+export function status(
+  kind: StatusInstance['kind'],
+  patch: Partial<StatusInstance> = {},
+): StatusInstance {
+  return {
+    kind,
+    turnsRemaining: 1,
+    magnitude: 0,
+    stat: null,
+    sourceInstanceId: 'src',
+    sourcePowerId: 'src-power',
+    escalation: 0,
+    ticksDealt: 0,
+    cleansable: true,
     ...patch,
   };
 }

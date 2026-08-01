@@ -39,6 +39,44 @@ export {
 } from './state.js';
 export type { BattleState, HeroState, Row, Side, StatusInstance } from './state.js';
 
+/**
+ * **The status layer (020)** — the half of combat that was specified, typed, and
+ * never given an implementation.
+ *
+ * Everything here is pure. The *contest* that decides whether a hostile rider
+ * sticks consumes a draw and therefore lives in `resolver/`, beside hit and crit.
+ */
+export {
+  CONTROL_DURATION,
+  CROWD_CONTROL,
+  STATUS_CATALOG,
+  STATUS_KINDS,
+  afterUpkeep,
+  applyStatus,
+  cleanse,
+  definitionOf,
+  dotTickForTier,
+  durationForTier,
+  potencyForTier,
+  shieldForTier,
+  shieldOf,
+  shredFactor,
+  shredFraction,
+  statChangeForTier,
+  statusPoints,
+  tickDurations,
+  upkeepDamage,
+} from './status.js';
+export type {
+  ShredBand,
+  StackRule,
+  StatKey,
+  StatusDefinition,
+  StatusFamily,
+  StatusKind,
+  Tier,
+} from './status.js';
+
 export {
   ATTACKER_EDGE,
   LUCK_DIE_MULTIPLIER,

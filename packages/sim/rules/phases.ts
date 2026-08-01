@@ -10,6 +10,7 @@
 
 import { getHero, type Power } from '@lmntlz/content';
 import { heroStateOf, type BattleState, type HeroState } from './state.js';
+import { CROWD_CONTROL } from './status.js';
 
 export type Phase = 'upkeep' | 'attack' | 'defense' | 'effects' | 'resolution';
 
@@ -38,10 +39,23 @@ export const EFFECT_ORDER = Object.freeze([
 
 export type EffectStep = (typeof EFFECT_ORDER)[number];
 
-const CROWD_CONTROL = new Set(['stun', 'freeze', 'petrify', 'sleep']);
-
+/**
+ * **The set comes from the catalog now, and it used to name four kinds that do not
+ * exist.**
+ *
+ * `freeze`, `petrify` and `sleep` were never in `05-status.md` and no power has
+ * ever applied one — they were a guess made when nothing could write a status at
+ * all, so nothing could contradict them. Reading `CROWD_CONTROL` from
+ * `status.ts` means the list of things that cost a hero its turn has exactly one
+ * definition (Constitution XIII).
+ *
+ * **`silence` is deliberately not in it.** A silenced hero loses its *powers*, not
+ * its turn — the tier-0 auto-attack still works — so it must not skip phases 2–4.
+ */
 export function isIncapacitated(hero: HeroState): boolean {
-  return hero.statuses.some((s) => CROWD_CONTROL.has(s.kind) && s.turnsRemaining > 0);
+  return hero.statuses.some(
+    (s) => CROWD_CONTROL.has(s.kind) && s.turnsRemaining > 0,
+  );
 }
 
 /**
