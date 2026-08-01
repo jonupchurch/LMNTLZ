@@ -40,6 +40,7 @@ import {
 } from '../db/schema/squads.js';
 import { playerStreaks } from '../db/schema/streaks.js';
 import { ambushChance } from '../squads/ambush.js';
+import { runeLoadouts } from '../progression/read.js';
 import { STARTER_GRANT_SCORE, leagueOf } from '../matchmaking/league.js';
 import { buildInitialState } from './board.js';
 import { openingPacket } from './packet.js';
@@ -263,8 +264,35 @@ export async function createBattle(
 
   const configByHero = new Map(defense.configs.map((c) => [c.heroId, c]));
 
+  /**
+   * **Both sides' runes, frozen into the battle** (019).
+   *
+   * Until now `statMods` was `{}` for every hero in every battle ever fought, so
+   * a completed 650-shard rune changed nothing in combat — the whole progression
+   * system was inert at the only place it was supposed to matter. This is the
+   * line that connects it.
+   *
+   * **Read once, here, and stored.** Not looked up at resolution time: the
+   * defender is asleep, so a battle that consulted live runes would resolve
+   * differently depending on when each request arrived, and the same log would
+   * replay into a different battle tomorrow. Same reason the squads themselves
+   * are snapshotted (FR-001, Constitution XVI).
+   *
+   * Two queries rather than one per hero — `runeLoadouts` returns the whole
+   * account keyed by hero.
+   */
+  const [attackerRunes, defenderRunes] = await Promise.all([
+    runeLoadouts(attackerId),
+    runeLoadouts(opponentId),
+  ]);
+
   const attackerSnapshot: AttackerSnapshot = parseAttackerSnapshot({
-    seats: offense.seats.map((s) => ({ row: s.row, index: s.index, heroId: s.heroId })),
+    seats: offense.seats.map((s) => ({
+      row: s.row,
+      index: s.index,
+      heroId: s.heroId,
+      runes: attackerRunes.get(s.heroId),
+    })),
   });
 
   const defenderSnapshot: DefenderSnapshot = parseDefenderSnapshot({
@@ -274,6 +302,7 @@ export async function createBattle(
         row: s.row,
         index: s.index,
         heroId: s.heroId,
+        runes: defenderRunes.get(s.heroId),
         config: {
           targeting: [config?.targetPrimary, config?.targetFallback],
           ranking: config?.powerRanking.split('.').map(Number),

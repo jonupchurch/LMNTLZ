@@ -31,8 +31,8 @@
  * access to anything but the snapshot it is handed.
  */
 
-import { getHero } from '@lmntlz/content';
-import { HP_PER_TOUGHNESS } from '@lmntlz/sim/rules';
+import { getHero, type StatKey } from '@lmntlz/content';
+import { HP_PER_TOUGHNESS, STAT_CAP } from '@lmntlz/sim/rules';
 import type { BattleState, HeroState, Row, Side } from '@lmntlz/sim/rules';
 
 export type SeatRow = 'front' | 'middle' | 'back';
@@ -41,7 +41,54 @@ export interface SnapshotSeat {
   readonly row: SeatRow;
   readonly index: number;
   readonly heroId: string;
+  /**
+   * What this champion's runes are worth, **frozen into the battle**.
+   *
+   * ### Why it is in the snapshot rather than read at resolution time
+   *
+   * The defender is asleep. A battle that looked up live runes would resolve
+   * differently depending on when each request arrived, and the same log would
+   * replay into a different battle tomorrow — the exact reason the squads are
+   * snapshotted at all (Constitution XVI). Buying a rune mid-battle must change
+   * your *next* fight, never the one in progress.
+   *
+   * ### Absent means none, and that is honest for every battle already recorded
+   *
+   * Runes reached no battle before 019, so every stored snapshot was genuinely
+   * fought without them. Defaulting an absent field to `{}` re-derives those
+   * battles exactly as they were played rather than retroactively arming them —
+   * which a replay would otherwise do, silently, to every past battle at once.
+   */
+  readonly runes?: RuneLoadout;
 }
+
+/**
+ * One champion's rune contribution: flat stat points, plus whichever utility
+ * effects the player has unlocked across the three slots.
+ *
+ * **Points are summed across slots before they arrive.** A slot is a purchase
+ * boundary, not a combat one — the engine wants one number per stat, and the
+ * 75 cap is applied by `effectiveStat` at read time rather than here, so a
+ * buff on top of a capped stat behaves identically to one on a bare hero.
+ */
+export interface RuneLoadout {
+  readonly statPoints: Readonly<Partial<Record<StatKey, number>>>;
+  /** Utility effect ids, at most one per slot. Order is not significant. */
+  readonly utility: readonly string[];
+}
+
+/**
+ * A base stat plus flat rune points, clamped to the same ceiling
+ * `effectiveStat` clamps to.
+ *
+ * **The constant is imported, never retyped.** `board.ts` has been caught once
+ * already holding a literal `50` beside `HP_PER_TOUGHNESS`, where the two
+ * agreeing was a coincidence nothing checked — see `hp` below.
+ */
+const cappedStat = (base: number, points: number): number => {
+  const raw = base + points;
+  return raw < 0 ? 0 : raw > STAT_CAP ? STAT_CAP : raw;
+};
 
 /** 2 front · 3 middle · 1 back, mapped onto the shared axis. */
 const ROW_OF: Readonly<Record<Side, Readonly<Record<SeatRow, Row>>>> = Object.freeze({
@@ -101,8 +148,21 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
      * have started every hero at 6.25x the max HP the engine computed —
      * `pooledHpShare` above 1, healing capped at a negative headroom, and
      * battles *longer* rather than shorter. Nothing would have thrown.
+     *
+     * ### Toughness runes have to land BEFORE `maxHp`, not after
+     *
+     * `maxHp` is `Toughness × 50` and it is computed once, here — nothing
+     * downstream recomputes it. So a Toughness rune applied only through
+     * `statMods` would raise the stat everywhere it is *read* and leave the
+     * hero's health bar at the bare value: a champion with +35 Toughness
+     * fighting on 1,000 HP instead of 2,750, with nothing anywhere reporting a
+     * problem. It is the one stat whose rune has to be resolved eagerly.
+     *
+     * Capped exactly as `effectiveStat` caps, because the two must agree about
+     * what a 75 means.
      */
-    const hp = hero.stats.toughness * HP_PER_TOUGHNESS;
+    const toughness = cappedStat(hero.stats.toughness, seat.runes?.statPoints.toughness ?? 0);
+    const hp = toughness * HP_PER_TOUGHNESS;
 
     return {
       heroId: seat.heroId,
@@ -121,7 +181,20 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
       /** Every power available at turn 1 except those behind a tier gate. */
       cooldowns: {},
       statuses: [],
-      statMods: {},
+      /**
+       * **The rune points, as flat modifiers** — which is what `statMods` is
+       * for, and what `reachMod`'s own comment (*"e.g. +1 from a reach rune"*)
+       * has been waiting for since the engine was written. It was `{}` for
+       * every battle ever fought, so a completed 650-shard rune changed
+       * precisely nothing in combat.
+       *
+       * The 75 cap is **not** applied here on purpose: `effectiveStat` clamps
+       * at read time, so a champion at the cap and a champion pushed past it by
+       * a rune respond identically to a debuff — which is the behaviour
+       * `01-stats.md` describes ("anything past it is ignored", not "cannot be
+       * granted").
+       */
+      statMods: { ...(seat.runes?.statPoints ?? {}) },
       reachMod: 0,
     };
   });

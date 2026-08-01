@@ -25,6 +25,7 @@
  */
 
 import { isPowerRanking } from '@lmntlz/sim/rules';
+import { STAT_KEYS, type StatKey } from '@lmntlz/content';
 import type { SquadMemberConfig } from '@lmntlz/sim/ai';
 /**
  * **The same predicate the save route rejects with**, deliberately shared rather
@@ -34,7 +35,7 @@ import type { SquadMemberConfig } from '@lmntlz/sim/ai';
  * i.e. the error landed on whoever attacked you.
  */
 import { isTargetRule } from '../squads/allocation.js';
-import { instanceIdOf, type SeatRow, type SnapshotSeat } from './board.js';
+import { instanceIdOf, type RuneLoadout, type SeatRow, type SnapshotSeat } from './board.js';
 import type { DefenderConfigs } from './packet.js';
 
 /** A defending seat carries the configuration the engine plays it with. */
@@ -83,7 +84,53 @@ function baseSeat(side: 'attacker' | 'defender', raw: Record<string, unknown>, i
     throw new MalformedSnapshotError(side, `seat ${i} has no heroId`);
   }
 
-  return { row, index: index as number, heroId };
+  return { row, index: index as number, heroId, ...runesOf(raw['runes']) };
+}
+
+/**
+ * The seat's rune loadout, or nothing at all.
+ *
+ * ### Absent is legal and means "fought bare"
+ *
+ * Runes reached no battle before 019, so every snapshot already in the table
+ * genuinely has no `runes` key — and those battles were genuinely fought
+ * without them. **Throwing here would make every past battle unreplayable**,
+ * and defaulting to a full loadout would retroactively arm them, which is worse
+ * than either: a stored replay is a promise about what happened
+ * (Constitution XVI).
+ *
+ * ### Unknown stat keys are dropped, not rejected
+ *
+ * The other direction of the same rule. A snapshot is written once and read
+ * forever, so a stat renamed three versions from now must not turn a two-year-
+ * old battle into a `500`. Dropping is the only behaviour that keeps the past
+ * readable, and the write path is where a bad value is refused.
+ *
+ * `utility` is carried as opaque ids for the same reason: this is a reader of
+ * frozen history, and the catalog it would validate against is a *current*
+ * fact. The effect ids are checked against the catalog where they are chosen —
+ * before a shard is charged — which is the only place that check means
+ * anything.
+ */
+function runesOf(raw: unknown): { runes?: RuneLoadout } {
+  if (!raw || typeof raw !== 'object') return {};
+
+  const source = raw as { statPoints?: unknown; utility?: unknown };
+  const statPoints: Partial<Record<StatKey, number>> = {};
+
+  if (source.statPoints && typeof source.statPoints === 'object') {
+    for (const [key, value] of Object.entries(source.statPoints as Record<string, unknown>)) {
+      if (!STAT_KEYS.includes(key as StatKey)) continue;
+      if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+      statPoints[key as StatKey] = value;
+    }
+  }
+
+  const utility = Array.isArray(source.utility)
+    ? source.utility.filter((id): id is string => typeof id === 'string' && id !== '')
+    : [];
+
+  return { runes: { statPoints, utility } };
 }
 
 export function parseAttackerSnapshot(raw: unknown): AttackerSnapshot {

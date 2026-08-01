@@ -14,6 +14,13 @@ export {
   ALL_ROWS,
   ATTACKER_ROWS,
   DEFENDER_ROWS,
+  /**
+   * The 75 ceiling. **Exported because `apps/api` needs it too**: `maxHp` is
+   * computed once from Toughness at board-build time, so a Toughness rune has
+   * to be capped there by the same number `effectiveStat` caps by, or the two
+   * disagree about what a 75 means.
+   */
+  STAT_CAP,
   UnknownInstanceError,
   effectiveStat,
   frontRowOf,

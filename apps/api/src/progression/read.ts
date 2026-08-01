@@ -39,7 +39,7 @@
  */
 
 import { eq } from 'drizzle-orm';
-import { getAllHeroes } from '@lmntlz/content';
+import { getAllHeroes, type StatKey } from '@lmntlz/content';
 import { db } from '../db/client.js';
 import {
   RUNE_SLOTS,
@@ -49,6 +49,7 @@ import {
   type RuneSlot,
 } from '../db/schema/runes.js';
 import { slotAccepts } from './runes.js';
+import type { RuneLoadout } from '../battle/board.js';
 
 export interface OwnedRuneSlot {
   readonly slot: RuneSlot;
@@ -87,6 +88,52 @@ export function spentThroughStage(stage: number): number {
   let total = 0;
   for (let s = 1; s <= stage; s += 1) total += STAGE_COSTS[s - 1] ?? 0;
   return total;
+}
+
+/**
+ * What every champion's runes are worth in a **battle**, keyed by hero id.
+ *
+ * ### Why this is not `ownedRunes`
+ *
+ * `ownedRunes` answers the Forge's question — three slots, what is in each,
+ * what it cost. A battle asks a different one: *one number per stat, and which
+ * effects are live*. Slots are a purchase boundary, not a combat one, so the
+ * three are summed here and the engine never learns that a slot existed.
+ *
+ * Deriving it from `ownedRunes` rather than querying again keeps one read path
+ * for `stage` — the field that, when it had two, shipped `stages: 0` to every
+ * scouted opponent for two months.
+ *
+ * ### Only heroes with something to contribute appear
+ *
+ * A hero with three empty slots is absent rather than present-with-zeroes.
+ * `board.ts` treats an absent loadout as none, so the two agree, and a battle
+ * snapshot does not carry 27 empty objects into permanent storage.
+ *
+ * **Stage 4 grants no points and is not skipped**: it contributes the utility
+ * effect, which is the whole reason it costs 200 and grants nothing.
+ */
+export async function runeLoadouts(accountId: string): Promise<ReadonlyMap<string, RuneLoadout>> {
+  const owned = await ownedRunes(accountId);
+  const out = new Map<string, RuneLoadout>();
+
+  for (const hero of owned) {
+    const statPoints: Partial<Record<StatKey, number>> = {};
+    const utility: string[] = [];
+
+    for (const slot of hero.slots) {
+      for (const [stat, amount] of Object.entries(slot.allocations)) {
+        if (typeof amount !== 'number') continue;
+        statPoints[stat as StatKey] = (statPoints[stat as StatKey] ?? 0) + amount;
+      }
+      if (slot.utility) utility.push(slot.utility);
+    }
+
+    if (Object.keys(statPoints).length === 0 && utility.length === 0) continue;
+    out.set(hero.heroId, { statPoints, utility });
+  }
+
+  return out;
 }
 
 export async function ownedRunes(accountId: string): Promise<readonly OwnedHeroRunes[]> {
