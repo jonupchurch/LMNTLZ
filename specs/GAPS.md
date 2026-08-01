@@ -238,6 +238,33 @@ From 017's inventory. Five exports have no client surface:
 | News · Broadcast Messages | 016 | specified, unbuilt |
 | *(THE COURT)* | — | ⛔ **a rail entry with no design at all** |
 
+### 5b · The Onboarding export was never measured against anything — found 2026-07-31
+
+`tools/design-audit.py` mapped `LMNTLZ Onboarding Flows.dc.html` to
+`features/landing` + `features/auth` under the row name `landing`. **The name
+reads right and the mapping was wrong.** That export has three views and none of
+them is the front door: a guild **invitation**, a guild **application**, and a
+five-step **profile-setup wizard**, all behind sign-in. So the tool reported five
+absent treatments the marketing page's design never asked for, while the screens
+the export *does* govern went unmeasured entirely.
+
+Corrected in 019 — the row is now `onboarding → features/guilds +
+features/profile`, and the audit total fell **19 → 17** because two of those five
+were fiction. Two consequences worth owning separately:
+
+- **The marketing page has no design at all**, and now says so: `NO_EXPORT` in
+  the tool lists `features/landing`, `features/auth` and `features/gallery`, so
+  an unmeasured screen is visible rather than silently scoring zero.
+- **The export draws UI that does not exist.** Its invitation card carries the
+  guild's sigil, motto, league, guild power, last-event placement, languages and
+  a seat-map showing which Wing seat you are being offered. `InviteView` on the
+  wire is `{id, guildId, guildName, createdAt, expiresAt}` — a name and two
+  dates. `InviteList` renders that faithfully as a line of text and two buttons.
+  **Closing this is a server change, not a repaint**, which is why it is filed
+  here and not treated as a 019 fidelity item. The profile-setup wizard
+  (handle → sigil → language and hours → visibility → review) has no client
+  surface at all; `features/profile` is the *view* of a profile, not its setup.
+
 ## 6 · Features not yet built
 
 | Feature | Open / total |

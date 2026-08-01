@@ -228,7 +228,14 @@ function GameApp(): JSX.Element {
         {phase.kind === 'anonymous' ? (
           <>
             <LandingScreen />
-            <div className="mx-auto mt-10 max-w-3xl px-8 pb-4">
+            {/*
+             * `max-w-5xl px-8` matches `LandingScreen`'s column exactly, and it has
+             * to be said in both places because the panel is a sibling of the page
+             * rather than a child of it. At `max-w-3xl` it centred 128px inboard of
+             * everything above it — the door to the product sitting visibly out of
+             * line with the pitch for it.
+             */}
+            <div className="mx-auto -mt-6 max-w-5xl px-8 pb-4">
               <SignInPanel
                 onSignedIn={(account) => setPhase({ kind: 'signed-in', account })}
               />

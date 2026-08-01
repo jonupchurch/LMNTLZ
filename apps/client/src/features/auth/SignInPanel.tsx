@@ -11,16 +11,22 @@
  *
  * ### It does not promise more than the game delivers
  *
- * The landing page says LMNTLZ is not yet playable, and it is not. Signing in
- * reaches the squad builder — a real, working screen with the full roster — and
- * nothing beyond it. The note under the button says that, so nobody signs in
- * expecting a battle.
+ * The note under the button is a **claim about what is behind the door**, and
+ * it went stale the moment battles shipped: it still read *"signing in reaches
+ * the squad builder; battles are still being written"* on 2026-07-31, by which
+ * point a player could scout, fight, forge and join a guild.
+ *
+ * Understating is not the safe direction. This is the last sentence somebody
+ * reads before deciding whether to hand over a Google identity, and one that
+ * undersells the game costs exactly the sign-ins it was being cautious about.
+ * It now says what actually opens, and `LandingScreen` carries the full
+ * built/not-built list so there is one place to correct rather than two.
  */
 
 import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import { ApiError } from '../../lib/api.js';
 import { signInWithGoogle, type Account } from '../../lib/session.js';
-import { GOOGLE_CLIENT_ID, mountGoogleButton } from './googleIdentity.js';
+import { mountGoogleButton } from './googleIdentity.js';
 
 export interface SignInPanelProps {
   readonly onSignedIn: (account: Account) => void;
@@ -93,12 +99,12 @@ export function SignInPanel({ onSignedIn }: SignInPanelProps): JSX.Element {
      * Every size below is a scale token rather than a Tailwind step, so the
      * panel moves with the type ramp instead of drifting from it.
      */
-    <div className="rounded-lg bg-surface p-6 shadow-(--shadow-glow-1)">
+    <div className="lz-surface p-6">
       <h2 className="text-h3 font-display tracking-widest text-gold uppercase">Sign in</h2>
 
       <p className="text-body mt-3 text-muted">
-        All twenty-seven champions unlock immediately. Signing in reaches the squad builder;
-        battles are still being written.
+        All twenty-seven champions unlock immediately. Signing in opens the squad builder, scouting
+        and battles, the rune forge and guilds — nothing is charged for and nothing is for sale.
       </p>
 
       {/* The 44px floor stays: it is the Google button's own rendered height,
@@ -107,19 +113,24 @@ export function SignInPanel({ onSignedIn }: SignInPanelProps): JSX.Element {
 
       {busy ? <p className="text-body mt-3 text-muted">Signing you in…</p> : null}
 
+      {/*
+       * **One alert, not two.** A second block used to render whenever
+       * `GOOGLE_CLIENT_ID` was empty, as belt-and-braces — but that is exactly the
+       * case `loadGoogleIdentity` already rejects on, with the same sentence, so a
+       * build without the variable showed the visitor the identical complaint
+       * twice. Two `role="alert"` elements saying one thing also make a screen
+       * reader announce it twice.
+       *
+       * The dynamic path is the survivor because it is the one that covers
+       * everything else too: the script failing to load, GIS starting but not
+       * attaching, a credential that comes back empty. A static block can only
+       * ever know about the missing variable.
+       */}
       {error ? (
         <p role="alert" className="text-body mt-3 text-danger">
           {error}
         </p>
       ) : null}
-
-      {GOOGLE_CLIENT_ID ? null : (
-        <p role="alert" className="text-body mt-3 text-danger">
-          This build has no Google client ID, so sign-in cannot start. Set{' '}
-          <code className="font-mono">VITE_GOOGLE_CLIENT_ID</code> on the client project and
-          redeploy.
-        </p>
-      )}
     </div>
   );
 }

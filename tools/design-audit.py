@@ -49,7 +49,18 @@ CLIENT = ROOT / "apps" / "client" / "src"
 # ---------------------------------------------------------------------------
 
 SCREENS: dict[str, tuple[str, list[str]]] = {
-    "landing":   ("LMNTLZ Onboarding Flows.dc.html", ["features/landing", "features/auth"]),
+    # ⚠️ This row said `landing` until 019, and it was measuring the wrong two
+    # things against each other. `LMNTLZ Onboarding Flows.dc.html` sounds like
+    # the front door and is not: its three views are a guild INVITATION, a guild
+    # APPLICATION and a five-step PROFILE SETUP wizard, every one of them behind
+    # sign-in. Pointing it at `features/landing` + `features/auth` produced five
+    # confident ABSENT lines — gradient x10, portrait x3, inset-shadow, dashed,
+    # keyframes — for treatments the marketing page's design never asked for,
+    # because the marketing page has no design.
+    #
+    # The lesson generalises past this row: **a name that reads right is not a
+    # mapping that is right.** Open the export before trusting the row.
+    "onboarding": ("LMNTLZ Onboarding Flows.dc.html", ["features/guilds", "features/profile"]),
     "roster":    ("LMNTLZ Roster.dc.html",           ["features/roster"]),
     # This row was measured against the Design System's component gallery as a
     # stand-in, because the squad builder had no export — the design was a
@@ -70,6 +81,18 @@ SCREENS: dict[str, tuple[str, list[str]]] = {
     "store":     ("LMNTLZ Store.dc.html",            ["features/store"]),
     "herocard":  ("LMNTLZ Hero Card.dc.html",        ["components/hero", "components/type"]),
     "system":    ("LMNTLZ Design System.dc.html",    ["components"]),
+}
+
+# The other direction: **built screens with no export at all.**
+#
+# Recorded because an unmeasured screen is invisible to this tool, and invisible
+# reads as fine. These are not gaps in the port — there is nothing to port to —
+# but they are the surfaces where "does it match the design?" has no answer, so
+# they need a human eye instead of a number.
+NO_EXPORT = {
+    "features/landing": "the marketing front door — no design was ever authored for it",
+    "features/auth": "the sign-in panel, drawn to the same vocabulary as the landing page",
+    "features/gallery": "the internal component gallery, measured by `system` instead",
 }
 
 # Exports with no built screen — named so the absence is deliberate, not missed.
@@ -327,6 +350,12 @@ def main() -> int:
 
     print("\nExports with no built screen (deliberate):")
     for k, why in sorted(UNBUILT.items()):
+        print(f"    {k[:44]:<46} {why}")
+
+    # The count above cannot include these, and saying so is the point: a screen
+    # this tool does not measure contributes zero to the total either way.
+    print("\nBuilt screens with NO export (not counted above — judge by eye):")
+    for k, why in sorted(NO_EXPORT.items()):
         print(f"    {k[:44]:<46} {why}")
 
     return 0

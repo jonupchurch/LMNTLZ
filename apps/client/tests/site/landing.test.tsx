@@ -22,6 +22,8 @@
  * greets somebody.
  */
 
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { App } from '../../src/App.js';
@@ -203,31 +205,74 @@ describe('what the page claims', () => {
   });
 
   /**
-   * ### Inverted deliberately, and late
+   * ### Inverted deliberately, and late — then inverted again, for the same reason
    *
-   * This asserted `'not yet playable'` and kept passing for two features after the
-   * game became playable — the front door said battles, matchmaking and sign-in were
-   * "being written now" when all three had shipped. **A test pinning a status claim
-   * cannot tell you the claim went stale**; it can only tell you the words are still
-   * there, which is exactly what was wrong.
+   * The first version asserted `'not yet playable'` and kept passing for two
+   * features after the game became playable. The replacement asserted that the page
+   * still named `runes`, `guilds` and `rating ladder` as **missing** — and by
+   * 2026-07-31 all three had shipped, so the test was **enforcing the lie**: an
+   * honest page failed it, and the way to make the suite green was to put the false
+   * claim back.
    *
-   * So the assertion is now on the *shape* of the claim rather than the sentence:
-   * the page must say what is playable **and** what is missing. Both halves, because
-   * either alone is the dishonest version.
+   * Both versions made the same mistake at different levels. **A test that pins the
+   * words of a status claim cannot tell you the claim went stale** — the words are
+   * present whether or not they are true. So this one stops asserting contents and
+   * asserts the *relationship*: nothing may appear in the not-built clause that has
+   * a feature directory sitting in the tree.
+   *
+   * That is derived, so it moves when the code moves. Shipping a screen makes this
+   * fail until somebody edits the sentence — which is the whole point, and is
+   * exactly what neither earlier version could do.
    */
   it('says both what is playable and what is not', () => {
     render(<LandingScreen />);
     const text = document.body.textContent ?? '';
 
     expect(text).toContain('playable and unfinished');
-
-    // The missing half, named. Runes and the ladder are the two big ones, and a
-    // page claiming playability without them reads as a finished game.
-    for (const missing of ['runes', 'guilds', 'rating ladder']) {
-      expect(text, `the page does not admit ${missing} is missing`).toContain(missing);
-    }
+    expect(document.querySelector('[data-playable]')?.textContent ?? '').not.toHaveLength(0);
+    expect(document.querySelector('[data-not-built]')?.textContent ?? '').not.toHaveLength(0);
 
     // And it must not have gone back to promising rather than describing.
     expect(text).not.toContain('being written now');
+  });
+
+  /**
+   * ### The one assertion here that can notice reality moving
+   *
+   * A word on the left is what the copy would call the feature; the path on the
+   * right is what proves it exists. **`import.meta.dirname`, never
+   * `new URL(rel, import.meta.url)`** — under jsdom the latter resolves against
+   * `http://localhost:3000/` and `fileURLToPath` throws, which is a trap this repo
+   * has already paid for once.
+   */
+  const SHIPPED: ReadonlyArray<readonly [claim: string, proof: string]> = [
+    ['runes', 'forge'],
+    ['guilds', 'guilds'],
+    ['rating ladder', 'attack'],
+    ['battles', 'battle'],
+    ['replays', 'replays'],
+    ['squad', 'squads'],
+    ['codex', 'codex'],
+    ['store', 'store'],
+  ];
+
+  it('never lists something as missing that has already shipped', () => {
+    const features = join(import.meta.dirname, '..', '..', 'src', 'features');
+
+    render(<LandingScreen />);
+    const notBuilt = (document.querySelector('[data-not-built]')?.textContent ?? '').toLowerCase();
+
+    // Guard: an empty clause would pass every assertion below without reading a
+    // thing. This is the check that stops the test being vacuous.
+    expect(notBuilt.length, 'the page has no "what is not built" clause').toBeGreaterThan(20);
+
+    for (const [claim, proof] of SHIPPED) {
+      if (!existsSync(join(features, proof))) continue;
+      expect(
+        notBuilt,
+        `the page says "${claim}" is not built, but apps/client/src/features/${proof} exists — ` +
+          `either the feature shipped and this sentence is stale, or the directory is dead code`,
+      ).not.toContain(claim);
+    }
   });
 });

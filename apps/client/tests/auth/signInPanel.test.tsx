@@ -41,11 +41,40 @@ describe('a build with no Google client ID', () => {
     expect(text).toMatch(/sign-in cannot start|unavailable/i);
   });
 
-  it('still tells the player what signing in would get them', () => {
-    // The panel is on the landing page, which says the game is not yet
-    // playable. Promising a battle here would contradict the page it sits on.
+  /**
+   * **Once, not twice.** Two blocks used to render on this one condition — the
+   * rejection from `loadGoogleIdentity`, and a static paragraph that fired on the
+   * same empty variable — so the visitor read the same complaint back to back and
+   * a screen reader announced it twice. `getAllByRole` above cannot catch that; it
+   * is satisfied by "one or more", which is what let the duplicate ship.
+   */
+  it('complains exactly once, not once per code path', async () => {
     render(<SignInPanel onSignedIn={vi.fn()} />);
-    expect(document.body.textContent).toMatch(/squad builder/i);
-    expect(document.body.textContent).toMatch(/battles are still being written/i);
+    await waitFor(() => expect(screen.getAllByRole('alert')).toHaveLength(1));
+  });
+
+  /**
+   * ### This assertion pinned a claim that went stale — the third time on this page
+   *
+   * It required the panel to say *"battles are still being written"*, and battles
+   * shipped. The test then **enforced the lie**: an honest panel failed it, and the
+   * green fix was to put the false sentence back. `landing.test.tsx` carried the
+   * same defect twice over, in both directions.
+   *
+   * The lesson is not "update the string". It is that **a test cannot verify a
+   * claim about the product by checking the claim is present** — presence is true
+   * whether or not the claim is. So this checks only what is durable: the panel
+   * describes what is behind the door, and it does not contradict the page it sits
+   * on by calling the game unplayable. What is *accurate* is asserted one place
+   * only, by the derived check in `landing.test.tsx`, which reads the feature tree.
+   */
+  it('tells the player what signing in opens', () => {
+    render(<SignInPanel onSignedIn={vi.fn()} />);
+    const text = document.body.textContent ?? '';
+
+    expect(text).toMatch(/squad builder/i);
+    // The panel sits under a page that says the game is playable and unfinished.
+    // Reverting to "not yet playable" here would contradict it in one screenful.
+    expect(text).not.toMatch(/not yet playable|still being written|coming soon/i);
   });
 });
