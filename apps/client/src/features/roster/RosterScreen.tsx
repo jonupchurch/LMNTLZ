@@ -43,13 +43,19 @@ import {
   DAMAGE_TYPES,
   MAGIC_TYPES,
   MELEE_TYPES,
+  STAT_KEYS,
   getAllHeroes,
   type DamageType,
   type Hero,
   type HeroId,
   type Power,
+  type StatKey,
 } from '@lmntlz/content';
-import { useMemo, useState } from 'react';
+/* The clamp the engine builds a battle with — never a second copy of the 75 cap. */
+import { STAT_CAP, cappedStat } from '@lmntlz/sim/rules';
+import { useEffect, useMemo, useState } from 'react';
+import { api } from '../../lib/api.js';
+import type { RunesResponse } from '../forge/types.js';
 import {
   Button,
   HeroCard,
@@ -78,6 +84,44 @@ type ReachFilter = 'any' | 1 | 2;
 const totalStats = (hero: Hero): number =>
   Object.values(hero.stats).reduce((sum, value) => sum + value, 0);
 
+/**
+ * How a stat is spelled on screen. `magicResist` is the only one that needs saying —
+ * the rest are their own labels once uppercased.
+ */
+export const STAT_LABEL: Readonly<Record<StatKey, string>> = {
+  might: 'Might',
+  perception: 'Perception',
+  agility: 'Agility',
+  toughness: 'Toughness',
+  speed: 'Speed',
+  luck: 'Luck',
+  armor: 'Armor',
+  magicResist: 'Magic Resist',
+  resolve: 'Resolve',
+  penetration: 'Penetration',
+};
+
+/**
+ * Every point this account's runes have put into each stat, per hero.
+ *
+ * **Summed across all three slots**, because the boosts stack on whatever stat the
+ * player pointed them at — `+20 +10 +5` on one stat is 35 points, and hitting a stat
+ * exactly on the 75 cap is the most satisfying thing a rune does. Nothing here may
+ * treat a slot as owning a stat.
+ */
+const boostsOf = (runes: RunesResponse | null, heroId: string): Partial<Record<StatKey, number>> => {
+  const owned = runes?.heroes.find((h) => h.heroId === heroId);
+  if (!owned) return {};
+
+  const total: Partial<Record<StatKey, number>> = {};
+  for (const slot of owned.slots) {
+    for (const [stat, points] of Object.entries(slot.allocations)) {
+      total[stat as StatKey] = (total[stat as StatKey] ?? 0) + (points ?? 0);
+    }
+  }
+  return total;
+};
+
 export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Element {
   const all = useMemo(() => getAllHeroes(), []);
 
@@ -90,6 +134,41 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
   const [selected, setSelected] = useState<Hero | null>(null);
   /** The power under the cursor in the drawer's list, for the flyout. */
   const [peekedPower, setPeekedPower] = useState<Power | null>(null);
+
+  /**
+   * The account's runes, so the drawer can show **what a champion actually fights at**
+   * rather than what it was authored at (Jon, 2026-08-01).
+   *
+   * Fetched once for the whole screen rather than per selection: it is one small
+   * response covering all 27, and re-fetching on every card click would put a network
+   * round trip between a player and a number they are scanning.
+   *
+   * **A failure is swallowed and the base stats are shown.** The roster is the screen
+   * that teaches counter-building, and it must open with no account and no network —
+   * `getAllHeroes()` is bundled content. A missing rune response means the numbers are
+   * the authored ones, which is exactly what they were before this existed.
+   */
+  const [runes, setRunes] = useState<RunesResponse | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const owned = await api<RunesResponse>('/me/runes');
+        if (!cancelled) setRunes(owned);
+      } catch {
+        /* Signed out, or offline. The base stats are still the truth about the hero. */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /** The selected champion's rune points per stat. `{}` with nothing selected or owned. */
+  const boosts = useMemo(() => boostsOf(runes, selected?.id ?? ''), [runes, selected]);
 
   const toggleForce = (type: DamageType): void =>
     setForces((current) =>
@@ -512,20 +591,81 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
              * × 50`, and `maxHpOf` in the component layer is the one place it
              * is written down — this reads the same stats the card does.
              */}
+            {/**
+             * **The three passives** (Jon, 2026-08-01). Authored names only — the
+             * mechanics behind them are specified but run nowhere yet, so this states
+             * what a champion *has* and deliberately promises nothing about what it
+             * does. Naming them is still the point: they are the only part of a
+             * champion's kit the powers list does not already show.
+             */}
+            <section aria-label="Passives">
+              <h4 className="text-caption font-display mb-2 tracking-widest text-faint uppercase">
+                Passives
+              </h4>
+              <ul className="text-caption flex flex-col gap-1 font-mono text-parchment">
+                {selected.passives.map((passive) => (
+                  <li key={passive}>{passive}</li>
+                ))}
+              </ul>
+            </section>
+
+            {/**
+             * **All ten stats, at the value the champion actually fights at.**
+             *
+             * Four of them used to be here — Might, Speed, Toughness, Luck — which left
+             * a counter-building screen silent about Armor and Magic Resist, the two
+             * that decide whether a packet lands hard, and about Resolve, which is the
+             * whole rider contest.
+             *
+             * The number shown is **base + runes, clamped by `cappedStat`**, the same
+             * function `board.ts` builds a battle with. Showing the authored value on
+             * the screen a player checks before spending shards would misreport every
+             * geared champion, and the drift would look like a rune that did nothing.
+             * The delta is called out so the cap stays legible: a stat already at 75
+             * shows its boost and does not move, which is the design telling the player
+             * to spread gear rather than pile it.
+             */}
             <dl className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  ['Might', selected.stats.might],
-                  ['Speed', selected.stats.speed],
-                  ['Toughness', selected.stats.toughness],
-                  ['Luck', selected.stats.luck],
-                ] as const
-              ).map(([label, value]) => (
-                <div key={label} className="rounded bg-raised px-3 py-2">
-                  <dt className="text-caption font-mono uppercase text-faint">{label}</dt>
-                  <dd className="text-h3 font-mono text-parchment">{value}</dd>
-                </div>
-              ))}
+              {STAT_KEYS.map((key) => {
+                const boost = boosts[key] ?? 0;
+                const value = cappedStat(selected.stats[key], boost);
+                const gained = value - selected.stats[key];
+
+                return (
+                  <div key={key} className="rounded bg-raised px-3 py-2">
+                    <dt className="text-caption font-mono uppercase text-faint">
+                      {STAT_LABEL[key]}
+                    </dt>
+                    <dd className="text-h3 font-mono text-parchment">
+                      {value}
+                      {gained > 0 && (
+                        <span
+                          className="text-caption ml-1.5 text-gold"
+                          title={`${selected.stats[key]} base + ${gained} from runes`}
+                        >
+                          +{gained}
+                        </span>
+                      )}
+                      {/**
+                       * ⚠️ **Shown whenever the runes bought less than they spent**, not
+                       * only when the stat failed to move at all. A first version marked
+                       * this only at `gained === 0`, so 75 points of runes onto a base of
+                       * 45 displayed a cheerful `+30` and said nothing about the 45 that
+                       * were thrown away — hiding the exact lesson the cap exists to
+                       * teach, on the screen a player reads before spending shards.
+                       */}
+                      {boost > gained && (
+                        <span
+                          className="text-caption ml-1.5 text-faint"
+                          title={`${boost - gained} of ${boost} rune points wasted — this stat is at the ${STAT_CAP} cap`}
+                        >
+                          capped
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                );
+              })}
             </dl>
           </aside>
         </Panel>

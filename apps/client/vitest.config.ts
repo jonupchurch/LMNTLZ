@@ -219,6 +219,24 @@ export default defineConfig({
           setupFiles: ['./tests/setup.ts'],
         },
       },
+      {
+        /**
+         * The roster drawer — passives and the full rune-inclusive stat block.
+         *
+         * **Caught by the trap the comment above describes, again.** `tests/roster/`
+         * was a directory no project named, so the first run reported *"No test files
+         * found"* rather than a failure. That message is one character away from a
+         * clean pass in a CI log.
+         */
+        plugins: [react()],
+        test: {
+          name: 'roster',
+          include: ['tests/roster/**/*.test.{ts,tsx}'],
+          exclude: ['**/node_modules/**', '**/dist/**', '**/.turbo/**'],
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+        },
+      },
     ],
     // Repeated inside the project above on purpose: an `exclude` here does NOT
     // reach nested projects, and one `pnpm build` otherwise doubles the suite
