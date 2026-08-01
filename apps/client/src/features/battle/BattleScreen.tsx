@@ -42,6 +42,7 @@ import {
 import { api, ApiError } from '../../lib/api.js';
 import { AmbushBanner } from './AmbushBanner.js';
 import { BattleBoard } from './BattleBoard.js';
+import { BattleLog } from './BattleLog.js';
 import { PowerDetail } from '../../components/index.js';
 import { PowerDock } from './PowerDock.js';
 import { SquadRail } from './SquadRail.js';
@@ -98,6 +99,16 @@ export function BattleScreen({
   const [state, setState] = useState<BattleState>(started.packet.state);
   const [sequence, setSequence] = useState(started.sequence);
   const [events, setEvents] = useState(started.packet.events);
+  /**
+   * **Every event of the battle, oldest first — appended to and never replaced.**
+   *
+   * `events` is the *last exchange* only, which is what the right rail wants and is
+   * wrong for an account of the battle: each turn erased the one before it, so a player
+   * could not look back at the blow that killed a champion. Held here rather than
+   * re-derived, because the client is never sent the battle's whole action log — the
+   * server re-derives state from it and returns only what just happened.
+   */
+  const [transcript, setTranscript] = useState<readonly TurnEvent[]>(started.packet.events);
   const [conclusion, setConclusion] = useState(started.packet.conclusion);
   /** What the battle paid. Arrives once, on the response that concluded it. */
   const [settlement, setSettlement] = useState<BattleSettlement | undefined>(undefined);
@@ -224,10 +235,28 @@ export function BattleScreen({
     [offered, peeked, chosen],
   );
 
+  /**
+   * An instance id resolved to the champion standing in that seat.
+   *
+   * The log used to print `a-middle-1 → d-front-0`, which names a *seat* and asks the
+   * player to hold a mapping the screen already draws. Falls back to the raw id rather
+   * than throwing: a hero the client cannot resolve is a line worth still showing.
+   */
+  const nameOf = useCallback(
+    (instanceId: string): string => {
+      const hero = state.heroes.find((h) => h.instanceId === instanceId);
+      return hero ? heroName(hero.heroId) : instanceId;
+    },
+    [state.heroes],
+  );
+
+  const describe = useCallback((event: TurnEvent) => describeEvent(event, nameOf), [nameOf]);
+
   const apply = useCallback(
     (packet: ActionPacket, next: number, paid?: BattleSettlement) => {
       setState(packet.state);
       setEvents(packet.events);
+      setTranscript((so_far) => [...so_far, ...packet.events]);
       setSequence(next);
       setPowerId(null);
       setConclusion(packet.conclusion);
@@ -324,6 +353,14 @@ export function BattleScreen({
        */}
       {started.ambushed && <AmbushBanner rewards={ambushRewards} />}
 
+      {/**
+       * **The account of the battle, full width and above everything.** It is the one
+       * panel that answers *what just happened to me*, and the right rail's copy only
+       * ever held the last exchange — so a champion could die and the reason scrolled
+       * away before the player looked. Fixed height, so it cannot move the board.
+       */}
+      <BattleLog events={transcript} describe={describe} />
+
       <header className="lz-surface flex flex-wrap items-center justify-between gap-4 px-4 py-3">
         <div>
           <h2 className="text-h2 font-display tracking-widest text-parchment uppercase">
@@ -406,7 +443,7 @@ export function BattleScreen({
              * that will not answer; the resolution is what they should be
              * watching, so it is what occupies the space.
              */
-            <Resolving phase={phase} />
+            <Resolving phase={phase} describe={describe} />
           ) : (
             <PowerDock
               actor={actor}
@@ -437,7 +474,7 @@ export function BattleScreen({
           />
           <TargetRead read={read} hasPower={chosen !== null} />
           <TurnQueue state={state} heroName={heroName} />
-          <EventLog events={events} />
+          <EventLog events={events} describe={describe} />
         </aside>
       </div>
     </main>
@@ -453,7 +490,13 @@ export function BattleScreen({
  * as a stall, because it is a pose the animation was designed to reach.
  * `playing` walks the folded turns on the client's own clock, touching nothing.
  */
-function Resolving({ phase }: { readonly phase: IntentPhase }) {
+function Resolving({
+  phase,
+  describe,
+}: {
+  readonly phase: IntentPhase;
+  readonly describe: (event: TurnEvent) => string;
+}) {
   const label =
     phase.kind === 'holding'
       ? 'Held…'
@@ -471,7 +514,7 @@ function Resolving({ phase }: { readonly phase: IntentPhase }) {
       <p className="font-mono text-caption text-gold">{label}</p>
 
       {phase.kind === 'playing' && (
-        <p className="mt-2 font-mono text-[0.7rem] text-muted">{describeEvent(phase.event)}</p>
+        <p className="mt-2 font-mono text-[0.7rem] text-muted">{describe(phase.event)}</p>
       )}
     </section>
   );
@@ -506,31 +549,41 @@ function Resolving({ phase }: { readonly phase: IntentPhase }) {
  * only one of them so easy. This project has the scar: a fix applied to one
  * caller of two is half deployed.
  */
-export const describeEvent = (event: TurnEvent): string => {
-  if (event.powerId === null) return `${event.actorInstanceId} passed`;
+export const describeEvent = (event: TurnEvent, nameOf: (instanceId: string) => string): string => {
+  const actor = nameOf(event.actorInstanceId);
+
+  if (event.powerId === null) return `${actor} has no legal target. Passes.`;
 
   const { hit, damage, healing, overheal, crit } = event.outcome;
-  const at = `${event.actorInstanceId} → ${event.targetInstanceId ?? '—'}`;
+  const target = event.targetInstanceId === null ? null : nameOf(event.targetInstanceId);
 
-  if (!hit) return `${at}: miss`;
+  if (!hit) return `${actor} attacks ${target ?? 'nothing'}. Misses.`;
 
   /* A heal is `hit: true` with no damage — `resolve.ts` calls it "never dodged". */
-  if (healing > 0) return `${at}: +${healing} healed`;
+  if (healing > 0) return `${actor} mends ${target ?? 'the line'} for ${healing}.`;
 
   /*
    * **`?? 0` is reading an ABSENT field, not a zero one.** Replays recorded
    * before 2026-08-01 have no `overheal` and cannot be given one, so an old
-   * recording of a wasted heal still prints `0` here. That is the honest
-   * outcome: the information was never captured, and inventing it would be
-   * worse than showing what the log actually holds.
+   * recording of a wasted heal still reads as a hit for 0 here. That is the
+   * honest outcome: the information was never captured, and inventing it would
+   * be worse than showing what the log actually holds.
    */
-  if ((overheal ?? 0) > 0) return `${at}: already at full health`;
+  if ((overheal ?? 0) > 0) {
+    return `${actor} mends ${target ?? 'the line'}, already at full health.`;
+  }
 
-  return `${at}: ${damage}${crit ? ' crit' : ''}`;
+  return `${actor} attacks ${target ?? 'nothing'}. Hits for ${damage} damage${crit ? ', a critical' : ''}.`;
 };
 
 
-function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
+function EventLog({
+  events,
+  describe,
+}: {
+  readonly events: ActionPacket['events'];
+  readonly describe: (event: TurnEvent) => string;
+}) {
   return (
     <section aria-label="What just happened" className="lz-surface p-4">
       <h3 className="mb-3 text-caption font-display tracking-widest uppercase text-parchment">
@@ -539,7 +592,7 @@ function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
 
       <ol className="flex flex-col gap-1 font-mono text-[0.7rem] text-muted">
         {events.map((event, i) => (
-          <li key={`${i}-${event.actorInstanceId}`}>{describeEvent(event)}</li>
+          <li key={`${i}-${event.actorInstanceId}`}>{describe(event)}</li>
         ))}
       </ol>
 
