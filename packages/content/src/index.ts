@@ -63,6 +63,15 @@ export { STAT_CAP, STAT_KEYS, ROSTER_SIZE, LEGAL_PAIRING_COUNT } from './schema.
  */
 export type { StatKey } from './schema.js';
 
+/**
+ * The forty passives and what each does — `03-powers.md` brought into content.
+ *
+ * A hero's `passives` are three bare strings, so every surface that showed one showed a
+ * name and stopped. Twenty-two effects are deliberately `null`; see `passives.ts`.
+ */
+export { PASSIVES, PASSIVE_SCOPES, getPassive } from './passives.js';
+export type { Passive, PassiveScope } from './passives.js';
+
 // ---------------------------------------------------------------------------
 // The startup guard (T021, FR-015)
 // ---------------------------------------------------------------------------

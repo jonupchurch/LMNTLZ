@@ -45,6 +45,7 @@ import {
   MELEE_TYPES,
   STAT_KEYS,
   getAllHeroes,
+  getPassive,
   type DamageType,
   type Hero,
   type HeroId,
@@ -134,6 +135,15 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
   const [selected, setSelected] = useState<Hero | null>(null);
   /** The power under the cursor in the drawer's list, for the flyout. */
   const [peekedPower, setPeekedPower] = useState<Power | null>(null);
+  /**
+   * The passive under the cursor, by **name** rather than by object.
+   *
+   * The catalog is keyed by name and a hero carries only names, so holding the resolved
+   * `Passive` would mean two things that must agree about which one is open. The lookup
+   * is a `Map` hit.
+   */
+  const [peeked, setPeeked] = useState<string | null>(null);
+  const peekedPassive = peeked === null ? undefined : getPassive(peeked);
 
   /**
    * The account's runes, so the drawer can show **what a champion actually fights at**
@@ -602,10 +612,70 @@ export function RosterScreen({ onInspect }: RosterScreenProps): React.JSX.Elemen
               <h4 className="text-caption font-display mb-2 tracking-widest text-faint uppercase">
                 Passives
               </h4>
-              <ul className="text-caption flex flex-col gap-1 font-mono text-parchment">
-                {selected.passives.map((passive) => (
-                  <li key={passive}>{passive}</li>
-                ))}
+
+              {/* Same treatment as the powers above, deliberately: one interaction to
+                  learn for the drawer, and the same reason for it — the mechanics are
+                  what a player came here to read. Cleared on leave for the same reason
+                  too, since this flyout also overlays the champion grid. */}
+              <ul className="relative flex flex-col gap-1" onMouseLeave={() => setPeeked(null)}>
+                {selected.passives.map((name) => {
+                  const passive = getPassive(name);
+
+                  return (
+                    <li
+                      key={name}
+                      data-passive-row={name}
+                      className="text-caption flex items-baseline justify-between gap-2 font-mono"
+                      onMouseEnter={() => setPeeked(name)}
+                    >
+                      <button
+                        type="button"
+                        className="min-w-0 flex-1 truncate text-left text-parchment hover:text-gold focus-visible:text-gold"
+                        onFocus={() => setPeeked(name)}
+                        onClick={() => setPeeked(name)}
+                      >
+                        {name}
+                      </button>
+                      {/* Role · House · Unique — the three scopes, which is the fact
+                          that makes forty passives learnable as four plus nine plus one. */}
+                      <span className="shrink-0 text-faint uppercase">{passive?.scope ?? '—'}</span>
+                    </li>
+                  );
+                })}
+
+                {peekedPassive ? (
+                  <div
+                    data-passive-flyout
+                    role="tooltip"
+                    /* Left, for the same reason the power flyout opens left. */
+                    className="lz-surface-raised absolute top-0 right-full z-20 mr-2 w-72 p-3 shadow-(--shadow-elev-3)"
+                  >
+                    <p className="text-caption font-display tracking-widest text-gold uppercase">
+                      {peekedPassive.scope}
+                      {peekedPassive.belongsTo ? ` · ${peekedPassive.belongsTo}` : ''}
+                    </p>
+                    <p className="text-body mt-1 font-display text-parchment">
+                      {peekedPassive.name}
+                    </p>
+
+                    {peekedPassive.effect ? (
+                      <p className="text-caption mt-2 text-muted">{peekedPassive.effect}</p>
+                    ) : (
+                      /**
+                       * ⚠️ **Said plainly rather than filled in.** Twenty-two of the 27
+                       * unique passives have no authored effect anywhere in the project.
+                       * Inventing text here would make this screen a second source for
+                       * unmade design decisions — `CLAUDE.md` puts the rules in
+                       * `resources/mechanics/` and nowhere else. Every passive is also
+                       * inert in play today, so a confident description would be a
+                       * promise the engine does not keep.
+                       */
+                      <p className="text-caption mt-2 text-faint italic">
+                        Effect not yet specified.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
               </ul>
             </section>
 

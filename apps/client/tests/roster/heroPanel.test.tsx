@@ -21,7 +21,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { STAT_CAP, STAT_KEYS, getAllHeroes } from '@lmntlz/content';
+import { STAT_CAP, STAT_KEYS, getAllHeroes, getPassive } from '@lmntlz/content';
 import { RosterScreen, STAT_LABEL } from '../../src/features/roster/RosterScreen.js';
 
 /** The champion the drawer is opened on throughout. */
@@ -86,9 +86,104 @@ describe('the hero panel', () => {
     await openDrawer();
 
     const panel = screen.getByLabelText('Passives');
-    const named = within(panel).getAllByRole('listitem').map((li) => li.textContent);
+    const named = within(panel)
+      .getAllByRole('button')
+      .map((b) => b.textContent);
 
     expect(named).toEqual([...hero.passives]);
+  });
+});
+
+/**
+ * The passive flyout — *"I do want the same hover treatment that the powers have for
+ * the passives"* (Jon, 2026-08-01).
+ *
+ * The passives were names on a list with nothing behind them, because a hero carries
+ * three bare strings and the meanings had never left `03-powers.md`. `getPassive` is
+ * the catalog that fixes that; this is the reading of it.
+ */
+describe('the passive flyout', () => {
+  const roleOf = (h: typeof hero) => h.passives[0];
+
+  it('opens on hover, the way the power rows do', async () => {
+    serve({ heroes: [] });
+    render(<RosterScreen />);
+    const drawer = await openDrawer();
+
+    expect(within(drawer).queryByRole('tooltip')).toBeNull();
+
+    await userEvent.hover(within(drawer).getByText(roleOf(hero)));
+
+    const flyout = await within(drawer).findByRole('tooltip');
+    expect(flyout).toHaveTextContent(roleOf(hero));
+    expect(flyout, 'the scope is what makes forty passives learnable').toHaveTextContent(/role/i);
+  });
+
+  /**
+   * **A flyout reachable only by pointer is one a keyboard player cannot open**, which
+   * is the reason the power rows are buttons rather than bare list items. The passives
+   * inherit that or they inherit half the treatment.
+   */
+  it('opens on keyboard focus too', async () => {
+    serve({ heroes: [] });
+    render(<RosterScreen />);
+    const drawer = await openDrawer();
+
+    within(drawer).getByText(roleOf(hero)).focus();
+
+    expect(await within(drawer).findByRole('tooltip')).toHaveTextContent(roleOf(hero));
+  });
+
+  it('shows the authored effect where the design has written one', async () => {
+    serve({ heroes: [] });
+    render(<RosterScreen />);
+    const drawer = await openDrawer();
+
+    /* Every hero's slots 0 and 1 are a role and a house passive, and all thirteen of
+       those have authored effects — so this holds for any champion the fixture picks. */
+    await userEvent.hover(within(drawer).getByText(roleOf(hero)));
+
+    const flyout = await within(drawer).findByRole('tooltip');
+    expect(flyout).toHaveTextContent(getPassive(roleOf(hero))!.effect!);
+    expect(flyout).not.toHaveTextContent(/not yet specified/i);
+  });
+
+  /**
+   * ⚠️ **Twenty-two of the 27 uniques have no authored effect**, and the panel says so
+   * rather than inventing one. Text written here to fill the space would make a screen
+   * a second source for unmade design decisions, and every passive is inert in play
+   * today — a confident description would be a promise the engine does not keep.
+   */
+  it('says so plainly when the effect is unwritten, rather than inventing one', async () => {
+    const unwritten = getAllHeroes()
+      .map((h) => h.passives[2])
+      .find((name) => getPassive(name)?.effect === null)!;
+    const owner = getAllHeroes().find((h) => h.passives[2] === unwritten)!;
+
+    serve({ heroes: [] });
+    render(<RosterScreen />);
+
+    const cards = await screen.findAllByRole('button', { name: new RegExp(owner.name, 'i') });
+    await userEvent.click(cards[0]!);
+    const drawer = (await screen.findByLabelText('Passives')).closest('aside')!;
+
+    await userEvent.hover(within(drawer).getByText(unwritten));
+
+    expect(await within(drawer).findByRole('tooltip')).toHaveTextContent(/not yet specified/i);
+  });
+
+  /** Held on hover, cleared on leave — this flyout overlays the champion grid. */
+  it('closes when the pointer leaves the list', async () => {
+    serve({ heroes: [] });
+    render(<RosterScreen />);
+    const drawer = await openDrawer();
+
+    const list = within(drawer).getByText(roleOf(hero)).closest('ul')!;
+    await userEvent.hover(within(drawer).getByText(roleOf(hero)));
+    expect(await within(drawer).findByRole('tooltip')).toBeInTheDocument();
+
+    await userEvent.unhover(list);
+    await vi.waitFor(() => expect(within(drawer).queryByRole('tooltip')).toBeNull());
   });
 
   /**
