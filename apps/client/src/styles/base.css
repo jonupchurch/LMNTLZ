@@ -348,6 +348,23 @@
 }
 
 /*
+ * **Forfeit, which is not the same as empty either.** `.lz-empty` says *a thing
+ * could go here*; this says *a thing is here and is about to stop being*.
+ *
+ * The Rune Forge is where the distinction has teeth. Replacing a rune destroys
+ * it — a full rune is 1.7 days of typical income and there is no undo anywhere
+ * in the system — so the confirm dialog lists what is going, line by line, in
+ * the export's own treatment: `border:1px dashed #C0313A` over a red wash. It
+ * borrows the dash from `.lz-empty` deliberately, because in a moment that is
+ * exactly what each of these lines will be.
+ */
+.lz-forfeit {
+  border: 1px dashed var(--color-danger);
+  border-radius: 7px;
+  background-color: rgb(192 49 58 / 0.09);
+}
+
+/*
  * **Sealed, which is not the same as empty.** An empty seat is one you could
  * fill; a sealed one holds something you are not allowed to see. Matchmaking
  * draws the Hidden Six as six of these — dashed like an empty slot, but hatched,

@@ -116,9 +116,26 @@ export function SlotPlanner({
                 onClick={() => onSelect(slot)}
                 data-slot={slot}
                 data-stage={state.stage}
+                /*
+                 * **An empty slot is drawn as empty.** The export's rule for
+                 * every line in this screen is `style: placed ? solid : dashed`,
+                 * and until 019 a slot with nothing in it had the same solid
+                 * border as a complete one — so the only thing separating "no
+                 * rune" from "four stages and a utility effect" was reading the
+                 * word `empty` in the corner. Three slots per champion, 27
+                 * champions, and the shape said nothing.
+                 *
+                 * `lz-empty` sets its own border, so it must not be paired with
+                 * a `border-*` utility — the two are the same property and which
+                 * one wins is Tailwind's emit order rather than this list's.
+                 */
                 className={[
-                  'flex flex-col gap-2 rounded-lg border-2 p-3 text-left transition-colors',
-                  isSelected ? 'border-gold bg-raised shadow-(--shadow-glow-gold)' : 'border-line bg-surface hover:border-faint',
+                  'flex flex-col gap-2 rounded-lg p-3 text-left transition-colors',
+                  isSelected
+                    ? 'border-2 border-gold bg-raised shadow-(--shadow-glow-gold)'
+                    : state.stage === 0
+                      ? 'lz-empty bg-surface/40 hover:border-faint'
+                      : 'border-2 border-line bg-surface hover:border-faint',
                 ].join(' ')}
               >
                 <span className="flex items-baseline justify-between gap-2">

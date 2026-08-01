@@ -26,6 +26,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getAllHeroes } from '@lmntlz/content';
+import { DestroyConfirm } from '../../src/features/forge/DestroyConfirm.js';
 import { ForgeScreen } from '../../src/features/forge/ForgeScreen.js';
 import { FULL_RUNE_COST, RUNES_WITH, SHARDS, requested, stubForge } from './fixtures.js';
 
@@ -144,5 +145,107 @@ describe('it is not the default action', () => {
       expect(posts).toHaveLength(1);
       expect(posts[0]).toContain(`/heroes/${HERO.id}/runes/primary`);
     });
+  });
+});
+
+/**
+ * **It shows what is going, rather than what it cost** (019).
+ *
+ * The dialog used to say *"◈ 450 has gone into it"* and stop there. That is the
+ * wrong unit for the decision: nobody is attached to 450 shards, they are
+ * attached to `+20 Might`, and a player who cannot see the allocation cannot
+ * tell whether this is the rune they meant to rebuild. It is the one
+ * irreversible spend in the game and there is no undo anywhere in the system.
+ *
+ * Nothing below is written down — every expectation is built from the same
+ * fixture the screen is served, so a manifest showing a *different* rune's
+ * contents fails just as loudly as one showing none.
+ */
+describe('it shows what is destroyed with it', () => {
+  const ALLOCATED = { might: 20, speed: 10, luck: 5 } as const;
+  const UTILITY = 'steady-hand';
+
+  const openConfirm = async () => {
+    const user = userEvent.setup();
+    stubForge({
+      '/me/runes': RUNES_WITH(HERO.id, 4, { ...ALLOCATED }, UTILITY),
+      '/me/shards': SHARDS,
+      '/heroes/': { ok: true },
+    });
+    render(<ForgeScreen onUnauthenticated={() => {}} />);
+    await screen.findByRole('radio', { name: /all 27/i });
+    await user.click(screen.getByRole('button', { name: new RegExp(HERO.name, 'i') }));
+    await user.click(screen.getByRole('button', { name: /rebuild this rune/i }));
+    return user;
+  };
+
+  it('lists every stat on the rune, with the amount it grants', async () => {
+    await openConfirm();
+
+    for (const [stat, amount] of Object.entries(ALLOCATED)) {
+      const line = document.querySelector(`[data-forfeit="${stat}"]`);
+      expect(line, `${stat} is not named among the losses`).not.toBeNull();
+      expect(line?.textContent).toContain(`+${amount}`);
+      expect(line?.textContent?.toLowerCase()).toContain(stat);
+    }
+  });
+
+  it('names the utility effect, which is the part that is not a number', async () => {
+    await openConfirm();
+
+    const line = document.querySelector('[data-forfeit="utility"]');
+    expect(line, 'the utility effect is destroyed silently').not.toBeNull();
+    expect(line?.textContent).toContain(UTILITY);
+  });
+
+  /**
+   * One line per thing, and no extras. A manifest that quietly dropped a line
+   * would still satisfy every `toContain` above.
+   */
+  it('lists exactly what is on the rune and nothing else', async () => {
+    await openConfirm();
+
+    const lines = [...document.querySelectorAll('[data-forfeit]')];
+    expect(lines).toHaveLength(Object.keys(ALLOCATED).length + 1);
+  });
+
+  /**
+   * **The treatment is the message.** The export draws these dashed in danger
+   * because the dash is the same mark an empty slot carries — which is exactly
+   * what each of these lines is about to become.
+   */
+  it('draws each loss in the forfeit treatment', async () => {
+    await openConfirm();
+
+    for (const line of document.querySelectorAll('[data-forfeit]')) {
+      expect(line.className, `${line.getAttribute('data-forfeit')} is not drawn as a loss`).toContain(
+        'lz-forfeit',
+      );
+    }
+  });
+
+  /**
+   * The component's own contract, exercised directly: the screen only offers a
+   * rebuild on a complete rune, so this input never arrives from `ForgeScreen`.
+   * It is still the honest answer to "nothing is on it" — a heading over an
+   * empty list would imply a loss that is not happening.
+   */
+  it('says nothing at all when there is nothing on the rune', () => {
+    render(
+      <DestroyConfirm
+        heroName={HERO.name}
+        slotLabel="Primary"
+        currentStage={0}
+        fullRuneCost={FULL_RUNE_COST}
+        spent={0}
+        allocations={{}}
+        utility={null}
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    expect(document.querySelectorAll('[data-forfeit]')).toHaveLength(0);
+    expect(screen.queryByText(/destroyed with it/i)).toBeNull();
   });
 });

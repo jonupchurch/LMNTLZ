@@ -117,3 +117,83 @@ describe('planning charges nothing and stores nothing', () => {
     );
   });
 });
+
+/**
+ * **Absence is drawn as absence** (019).
+ *
+ * The export's rule for every line on this screen is `style: placed ? "solid" :
+ * "dashed"`, and until 019 the client drew all of them solid. A slot holding
+ * nothing had the same border as one holding four stages and a utility effect,
+ * so the only thing separating them was the word `empty` in a corner — three
+ * slots per champion, twenty-seven champions, and the shape said nothing.
+ *
+ * These assert the *class*, which is what jsdom can hold an opinion about. That
+ * the dash is then visible at the rendered size is a browser question, and the
+ * treatment is shared with `lz-empty` precisely so it is answered once.
+ */
+describe('an empty slot looks empty', () => {
+  it('draws every unfilled slot dashed, and a selected one not', async () => {
+    const user = userEvent.setup();
+    forge();
+    await screen.findByRole('radio', { name: /all 27/i });
+    await user.click(screen.getByRole('button', { name: new RegExp(getAllHeroes()[0]!.name, 'i') }));
+
+    /* `BARE_RUNES` is every slot at stage 0 — so every tile that is not the
+       selected one must carry the empty treatment. Derived from the rendered
+       stage, never from a list of slot names. */
+    const tiles = [...document.querySelectorAll('[data-slot]')];
+    expect(tiles.length, 'no slot tiles rendered').toBeGreaterThan(0);
+
+    for (const tile of tiles) {
+      const empty = tile.getAttribute('data-stage') === '0';
+      const selected = tile.getAttribute('aria-pressed') === 'true';
+      if (empty && !selected) {
+        expect(
+          tile.className,
+          `${tile.getAttribute('data-slot')} is empty but drawn as though it holds something`,
+        ).toContain('lz-empty');
+      }
+    }
+  });
+
+  /**
+   * The companion that stops the above passing on a screen that dashes
+   * everything: a slot the player has selected is a slot they are working on,
+   * and it gets the gold treatment instead.
+   */
+  it('does not dash the slot being worked on', async () => {
+    const user = userEvent.setup();
+    forge();
+    await screen.findByRole('radio', { name: /all 27/i });
+    await user.click(screen.getByRole('button', { name: new RegExp(getAllHeroes()[0]!.name, 'i') }));
+
+    const selected = [...document.querySelectorAll('[data-slot]')].find(
+      (t) => t.getAttribute('aria-pressed') === 'true',
+    );
+    expect(selected, 'nothing is selected, so the contrast is untested').toBeTruthy();
+    expect(selected?.className).not.toContain('lz-empty');
+    expect(selected?.className).toContain('border-gold');
+  });
+
+  /**
+   * The stage ladder, same rule. A stage not yet reached is a place a stage
+   * will go; `done` and `next` are things that exist.
+   */
+  it('dashes the stages not yet reached, and only those', async () => {
+    const user = userEvent.setup();
+    forge();
+    await screen.findByRole('radio', { name: /all 27/i });
+    await user.click(screen.getByRole('button', { name: new RegExp(getAllHeroes()[0]!.name, 'i') }));
+
+    const rungs = [...document.querySelectorAll('[data-stage][data-state]')];
+    expect(rungs.length, 'the stage ladder did not render').toBeGreaterThan(0);
+
+    for (const rung of rungs) {
+      const state = rung.getAttribute('data-state');
+      const dashed = rung.className.includes('lz-empty');
+      expect(dashed, `stage ${rung.getAttribute('data-stage')} (${state}) is dashed: ${dashed}`).toBe(
+        state === 'later',
+      );
+    }
+  });
+});

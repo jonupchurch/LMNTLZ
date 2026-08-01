@@ -92,13 +92,24 @@ export function StageLadder({
               key={i}
               data-stage={i + 1}
               data-state={done ? 'placed' : next ? 'next' : 'later'}
+              /*
+               * **A stage not yet reached is dashed** — the export's
+               * `style: stat ? "solid" : "dashed"`, applied to the ladder it
+               * came from. `done` and `next` are things that exist; `later` is
+               * a place a stage will go, and drawing all three solid made the
+               * ladder read as four equal rows in different colours.
+               *
+               * `lz-empty` owns the border, so the `later` branch carries no
+               * `border-*` of its own — see `SlotPlanner` for why that pairing
+               * is a coin flip rather than an override.
+               */
               className={[
-                'text-caption flex items-center gap-3 rounded border px-3 py-2 font-mono',
+                'text-caption flex items-center gap-3 rounded px-3 py-2 font-mono',
                 done
-                  ? 'border-earth bg-earth-deep/20 text-parchment'
+                  ? 'border border-earth bg-earth-deep/20 text-parchment'
                   : next
-                    ? 'border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
-                    : 'border-line text-faint',
+                    ? 'border border-gold bg-raised shadow-(--shadow-glow-gold) text-parchment'
+                    : 'lz-empty text-faint',
               ].join(' ')}
             >
               <span className="w-16 shrink-0 uppercase tracking-wide">

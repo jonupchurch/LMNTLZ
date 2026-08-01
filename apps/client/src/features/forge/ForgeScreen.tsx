@@ -322,6 +322,8 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
               currentStage={current.stage}
               fullRuneCost={shards.config.fullRuneCost}
               spent={current.spent}
+              allocations={current.allocations}
+              utility={current.utility}
               onConfirm={() => void commit(true)}
               onCancel={() => {
                 setConfirming(false);

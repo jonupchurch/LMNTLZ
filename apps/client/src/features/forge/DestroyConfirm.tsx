@@ -22,6 +22,7 @@
 
 import { useEffect, useRef, type JSX } from 'react';
 import { Button } from '../../components/index.js';
+import type { RuneAllocations } from './types.js';
 
 export interface DestroyConfirmProps {
   readonly heroName: string;
@@ -31,6 +32,13 @@ export interface DestroyConfirmProps {
   /** `config.fullRuneCost` from `GET /v1/me/shards`. */
   readonly fullRuneCost: number;
   readonly spent: number;
+  /**
+   * What is actually on the rune. **Itemized rather than summarized** — see the
+   * manifest below.
+   */
+  readonly allocations: RuneAllocations;
+  /** The stage-4 effect, if this rune got that far. */
+  readonly utility: string | null;
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
 }
@@ -41,9 +49,31 @@ export function DestroyConfirm({
   currentStage,
   fullRuneCost,
   spent,
+  allocations,
+  utility,
   onConfirm,
   onCancel,
 }: DestroyConfirmProps): JSX.Element {
+  /**
+   * **What is going, line by line.**
+   *
+   * The dialog used to say *"◈ 450 has gone into it"* and leave the player to
+   * remember what that bought. A shard total is the wrong unit for this
+   * decision: nobody is attached to 450 shards, they are attached to `+20
+   * Might`. The export draws each line in `border:1px dashed #C0313A` over a red
+   * wash — the empty-slot dash, because that is precisely what each of these is
+   * about to become.
+   *
+   * Built from the rune the caller holds, so it cannot describe a rune that is
+   * not the one being destroyed.
+   */
+  const losing: readonly { readonly key: string; readonly value: string; readonly label: string }[] =
+    [
+      ...Object.entries(allocations)
+        .filter(([, amount]) => (amount ?? 0) > 0)
+        .map(([stat, amount]) => ({ key: stat, value: `+${amount}`, label: stat })),
+      ...(utility ? [{ key: 'utility', value: '◈', label: utility }] : []),
+    ];
   const cancel = useRef<HTMLButtonElement>(null);
 
   /**
@@ -83,6 +113,31 @@ export function DestroyConfirm({
           {fullRuneCost}.
         </p>
       </div>
+
+      {/*
+       * The manifest. Rendered only when there is something on the rune — an
+       * empty heading over an empty list would imply nothing is lost, which is
+       * true and is better said by the list simply not being there.
+       */}
+      {losing.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-caption mb-2 font-mono tracking-[0.2em] text-slash-lit uppercase">
+            Destroyed with it
+          </h4>
+          <ul className="flex flex-col gap-1.5" data-testid="forfeit-list">
+            {losing.map((line) => (
+              <li
+                key={line.key}
+                data-forfeit={line.key}
+                className="lz-forfeit text-caption flex items-center gap-3 px-3 py-1.5 font-mono"
+              >
+                <span className="w-10 shrink-0 text-slash-lit">{line.value}</span>
+                <span className="truncate text-muted uppercase">{line.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-3">
         {/* Cancel first in the DOM as well as focused: it is also the first tab stop. */}
