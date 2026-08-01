@@ -22,6 +22,25 @@ export interface TurnEvent {
     readonly crit: boolean;
     readonly damage: number;
     readonly healing: number;
+    /**
+     * Healing the target had no room for. **`healing: 0` with `overheal > 0` is
+     * a heal that worked perfectly on an ally who was already full** — which is
+     * the difference between a bug and a wasted turn, and the screen had no way
+     * to tell them apart until this field existed.
+     *
+     * ### ⚠️ Optional, and that is Constitution XVI rather than laziness
+     *
+     * The engine emits it on every packet from 2026-08-01 onward, so a *live*
+     * battle always carries it. `ReplayViewer` reads this same type out of
+     * **stored JSON event logs**, and every replay recorded before that date was
+     * written without the field. Those recordings are immutable and cannot be
+     * backfilled — a replay is replayed verbatim, never re-simulated.
+     *
+     * So a required `number` here would be the type asserting something false
+     * about most of the archive. Optional is the truth: present going forward,
+     * absent behind. Readers must treat absent as "unknown", not as zero.
+     */
+    readonly overheal?: number;
     readonly ridersLanded: readonly string[];
     readonly ridersResisted: readonly string[];
     readonly deaths: readonly string[];

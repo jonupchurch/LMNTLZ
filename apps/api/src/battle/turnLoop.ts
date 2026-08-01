@@ -235,6 +235,7 @@ function passOutcome(state: BattleState): ResolvedPacket {
     crit: false,
     damage: 0,
     healing: 0,
+    overheal: 0,
     ridersLanded: [],
     ridersResisted: [],
     deaths: [],

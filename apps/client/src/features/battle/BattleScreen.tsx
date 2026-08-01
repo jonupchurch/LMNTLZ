@@ -471,18 +471,63 @@ function Resolving({ phase }: { readonly phase: IntentPhase }) {
       <p className="font-mono text-caption text-gold">{label}</p>
 
       {phase.kind === 'playing' && (
-        <p className="mt-2 font-mono text-[0.7rem] text-muted">{describe(phase.event)}</p>
+        <p className="mt-2 font-mono text-[0.7rem] text-muted">{describeEvent(phase.event)}</p>
       )}
     </section>
   );
 }
 
-const describe = (event: TurnEvent): string =>
-  event.powerId === null
-    ? `${event.actorInstanceId} passed`
-    : `${event.actorInstanceId} → ${event.targetInstanceId ?? '—'}: ${
-        event.outcome.hit ? `${event.outcome.damage}${event.outcome.crit ? ' crit' : ''}` : 'miss'
-      }`;
+/**
+ * **One formatter, and it used to be two** (2026-08-01, reported from play).
+ *
+ * ### Every heal in the game read as `0`
+ *
+ * *"I'm noticing healing doesn't always work."* It always worked. The line
+ * printed `outcome.damage` for anything that landed, and a heal lands with
+ * `hit: true, damage: 0, healing: N` — so a heal that restored 240 HP and a
+ * heal that did nothing produced the identical line:
+ *
+ *     a-middle-1 → a-front-0: 0
+ *
+ * The health bar moved, because the server was right the whole time. The only
+ * account of what happened said zero.
+ *
+ * ### And the two cases a player cannot otherwise tell apart
+ *
+ * A heal on an ally who is already at full health genuinely restores nothing.
+ * That is correct, it is a wasted turn rather than a defect, and *"doesn't
+ * ALWAYS work"* is exactly what it looks like from the outside. `overheal` is
+ * carried from the engine so this can say which one happened.
+ *
+ * ### Why it is one function now
+ *
+ * There were two copies of this expression — this one and an inline duplicate
+ * in `EventLog` — and they were already identical, which is what made fixing
+ * only one of them so easy. This project has the scar: a fix applied to one
+ * caller of two is half deployed.
+ */
+export const describeEvent = (event: TurnEvent): string => {
+  if (event.powerId === null) return `${event.actorInstanceId} passed`;
+
+  const { hit, damage, healing, overheal, crit } = event.outcome;
+  const at = `${event.actorInstanceId} → ${event.targetInstanceId ?? '—'}`;
+
+  if (!hit) return `${at}: miss`;
+
+  /* A heal is `hit: true` with no damage — `resolve.ts` calls it "never dodged". */
+  if (healing > 0) return `${at}: +${healing} healed`;
+
+  /*
+   * **`?? 0` is reading an ABSENT field, not a zero one.** Replays recorded
+   * before 2026-08-01 have no `overheal` and cannot be given one, so an old
+   * recording of a wasted heal still prints `0` here. That is the honest
+   * outcome: the information was never captured, and inventing it would be
+   * worse than showing what the log actually holds.
+   */
+  if ((overheal ?? 0) > 0) return `${at}: already at full health`;
+
+  return `${at}: ${damage}${crit ? ' crit' : ''}`;
+};
 
 
 function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
@@ -494,13 +539,7 @@ function EventLog({ events }: { readonly events: ActionPacket['events'] }) {
 
       <ol className="flex flex-col gap-1 font-mono text-[0.7rem] text-muted">
         {events.map((event, i) => (
-          <li key={`${i}-${event.actorInstanceId}`}>
-            {event.powerId === null
-              ? `${event.actorInstanceId} passed`
-              : `${event.actorInstanceId} → ${event.targetInstanceId ?? '—'}: ${
-                  event.outcome.hit ? `${event.outcome.damage}${event.outcome.crit ? ' crit' : ''}` : 'miss'
-                }`}
-          </li>
+          <li key={`${i}-${event.actorInstanceId}`}>{describeEvent(event)}</li>
         ))}
       </ol>
 

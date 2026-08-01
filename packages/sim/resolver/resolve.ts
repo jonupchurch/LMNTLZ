@@ -40,6 +40,20 @@ export interface ResolvedPacket {
   readonly crit: boolean;
   readonly damage: number;
   readonly healing: number;
+  /**
+   * **Healing the target had no room for** (2026-08-01, reported from play).
+   *
+   * `healPreview` has always computed this and the resolver threw it away, so a
+   * heal on a full-health ally and a broken heal were the same event on the
+   * wire: `healing: 0`, with nothing to say which. That is half of *"healing
+   * doesn't always work"* — the half where it genuinely did nothing, correctly,
+   * and the screen could not say so.
+   *
+   * Reported rather than prevented. Overhealing is a legitimate play — topping
+   * up a nearly-full tank before a burst — and refusing the cast would be worse
+   * than wasting it.
+   */
+  readonly overheal: number;
   readonly ridersLanded: readonly string[];
   readonly ridersResisted: readonly string[];
   readonly deaths: readonly string[];
@@ -148,6 +162,7 @@ export function resolveOne(
         crit: false,
         damage: 0,
         healing: 0,
+        overheal: 0,
         ridersLanded: [],
         ridersResisted: [],
         deaths: [],
@@ -182,12 +197,21 @@ export function resolveOne(
   if (power.friendly) {
     let next = state;
     let healed = 0;
+    let wasted = 0;
 
     for (const target of targetsOf(state, power, primary)) {
       const preview = healPreview(next, actor.instanceId, power.id, target.instanceId);
       const current = heroStateOf(next, target.instanceId);
       const restored = Math.min(preview.amount, maxHp(current) - current.hp);
       healed += restored;
+      /**
+       * **Kept rather than discarded**, which is the whole of the reported bug.
+       * `healPreview` computes it and this loop used to drop it on the floor, so
+       * a heal on a full-health ally left the engine as `healing: 0` — the same
+       * event a broken heal would produce. Summed across targets like `healed`,
+       * so a party heal reports the total waste rather than the last target's.
+       */
+      wasted += preview.overheal;
       next = replaceHero(next, { ...current, hp: current.hp + restored });
     }
 
@@ -198,6 +222,7 @@ export function resolveOne(
         crit: false,
         damage: 0,
         healing: healed,
+        overheal: wasted,
         ridersLanded: [],
         ridersResisted: [],
         deaths: [],
@@ -223,6 +248,7 @@ export function resolveOne(
         crit: false,
         damage: 0,
         healing: 0,
+        overheal: 0,
         ridersLanded: [],
         ridersResisted: [],
         deaths: [],
@@ -270,6 +296,7 @@ export function resolveOne(
       crit,
       damage: total,
       healing: 0,
+      overheal: 0,
       ridersLanded,
       ridersResisted,
       deaths,
