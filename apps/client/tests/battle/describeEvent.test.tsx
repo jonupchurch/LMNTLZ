@@ -29,7 +29,7 @@
 import { describe, expect, it } from 'vitest';
 import { RUNE_EFFECTS } from '@lmntlz/sim/rules';
 import { describeEvent } from '../../src/features/battle/BattleScreen.js';
-import type { TurnEvent } from '../../src/features/battle/types.js';
+import type { ReactionEvent, TurnEvent } from '../../src/features/battle/types.js';
 
 /** The seats this fixture uses, named. Anything else falls through as its raw id. */
 const NAMES: Record<string, string> = {
@@ -240,5 +240,111 @@ describe('naming the rune that fired', () => {
     const rendered = describeEvent(struck(['no-such-rune:d-front-1']), nameOf);
 
     expect(rendered).toContain('no-such-rune on Seraphel');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reactions (2026-08-02)
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **The counter is the only event the log cannot infer from the action.**
+ *
+ * Every other line describes what the player did. A reaction is a second attack,
+ * thrown by the hero that was just hit, resolved inside the first one — so with
+ * no sentence of its own, health comes off the player's own champion between one
+ * entry and the next for no stated reason. That is the complaint riders and runes
+ * each had, and it is sharper here because the damage lands on the attacker.
+ */
+describe('a counter says so', () => {
+  const counter = (over: Partial<ReactionEvent> = {}): ReactionEvent => ({
+    actorInstanceId: 'd-front-1',
+    powerId: 'Redouble',
+    targetInstanceId: 'a-middle-1',
+    hit: true,
+    crit: false,
+    damage: 33,
+    ridersLanded: [],
+    ridersResisted: [],
+    runesFired: [],
+    deaths: [],
+    ...over,
+  });
+
+  const swung = (reactions?: readonly ReactionEvent[]): TurnEvent =>
+    event(
+      {
+        hit: true,
+        damage: 41,
+        ...(reactions ? { reactions } : {}),
+      },
+      { powerId: 'strike', targetInstanceId: 'd-front-1' },
+    );
+
+  it('🔴 names who countered, whom, and for how much', () => {
+    expect(describeEvent(swung([counter()]), nameOf)).toBe(
+      'Corvane attacks Seraphel. Hits for 41 damage. Seraphel counters Corvane for 33 damage.',
+    );
+  });
+
+  it('🔴 says so when the counter itself missed', () => {
+    expect(describeEvent(swung([counter({ hit: false, damage: 0 })]), nameOf)).toBe(
+      'Corvane attacks Seraphel. Hits for 41 damage. Seraphel counters Corvane — misses.',
+    );
+  });
+
+  it('🔴 calls a critical counter a critical', () => {
+    expect(describeEvent(swung([counter({ crit: true })]), nameOf)).toContain(
+      'for 33 damage, a critical',
+    );
+  });
+
+  /** A counter that kills is the most consequential line the log can print. */
+  it('🔴 reports the attacker falling to the counter', () => {
+    expect(describeEvent(swung([counter({ deaths: ['a-middle-1'] })]), nameOf)).toContain(
+      'Corvane falls.',
+    );
+  });
+
+  /**
+   * 🔴 **The evade case, which is the whole 2026-07-27 ruling.** A reaction fires
+   * on a dodged attack, and a log that stopped at "Misses." would show health
+   * coming off the attacker with nothing attached to it.
+   */
+  it('🔴 carries the counter onto a miss line', () => {
+    const missed = event(
+      { hit: false, damage: 0, reactions: [counter()] },
+      { powerId: 'strike', targetInstanceId: 'd-front-1' },
+    );
+
+    expect(describeEvent(missed, nameOf)).toBe(
+      'Corvane attacks Seraphel. Misses. Seraphel counters Corvane for 33 damage.',
+    );
+  });
+
+  /** Several defenders can answer one blow; each gets a sentence. */
+  it('reports every counter, in the order they resolved', () => {
+    const rendered = describeEvent(
+      swung([counter(), counter({ actorInstanceId: 'a-front-0', damage: 12 })]),
+      nameOf,
+    );
+
+    expect(rendered).toContain('Seraphel counters Corvane for 33 damage.');
+    expect(rendered).toContain('Marisel counters Corvane for 12 damage.');
+  });
+
+  /** 🔴 The control: an ordinary turn provokes nothing and says nothing. */
+  it('🔴 adds nothing when nobody countered', () => {
+    expect(describeEvent(swung(), nameOf)).toBe('Corvane attacks Seraphel. Hits for 41 damage.');
+  });
+
+  /**
+   * ⚠️ **An absent field is not an empty one** (Constitution XVI). Nothing
+   * recorded before the reaction system existed carries `reactions`.
+   */
+  it('🔴 survives a replay recorded before reactions existed', () => {
+    const rendered = describeEvent(swung(undefined), nameOf);
+
+    expect(rendered).not.toMatch(/undefined|NaN|counters/);
   });
 });

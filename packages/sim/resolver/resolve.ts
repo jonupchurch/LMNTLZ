@@ -50,7 +50,10 @@ import {
   struckChancesOf,
   turnStartChancesOf,
   applyPassiveEffects,
+  chargeReaction,
+  inReactionOrder,
   potencyForTier,
+  reactionFor,
   SURVIVAL_HP,
   riderLandProbability,
   shapeIncoming,
@@ -64,6 +67,7 @@ import {
   type HeroState,
   type ChanceHook,
   type PassiveEffect,
+  type ReactionCandidate,
   type StatusInstance,
   type StrikeContext,
   type Tier,
@@ -109,8 +113,62 @@ export interface ResolvedPacket {
    * reasoning `overheal` carries.
    */
   readonly runesFired?: readonly string[];
+  /**
+   * **Counters this action provoked**, in the order they resolved (2026-08-02).
+   *
+   * A reaction is the only thing in the game that happens on somebody else's
+   * turn, so it is the only event a log line cannot infer from the action it was
+   * given — the attacker swung, and a second attack appeared inside it.
+   *
+   * **Absent rather than empty when nothing countered.** Most actions provoke
+   * nothing, and a replay recorded before the reaction system existed cannot be
+   * given a list it never had; both read the same through `?? []`.
+   */
+  readonly reactions?: readonly ReactionEvent[];
   readonly deaths: readonly string[];
   readonly conclusion: Conclusion | null;
+}
+
+/**
+ * One counter, as the wire sees it.
+ *
+ * Deliberately the same shape as the outcome half of {@link ResolvedPacket} —
+ * a reaction *is* an attack, resolved by the same pipeline, and giving it a
+ * different vocabulary would invite a second set of log rules for the same
+ * events. It carries no `conclusion`: the action reports one, once, after every
+ * counter has resolved.
+ */
+export interface ReactionEvent {
+  readonly actorInstanceId: string;
+  readonly powerId: string;
+  readonly targetInstanceId: string;
+  readonly hit: boolean;
+  readonly crit: boolean;
+  readonly damage: number;
+  readonly ridersLanded: readonly string[];
+  readonly ridersResisted: readonly string[];
+  readonly runesFired: readonly string[];
+  readonly deaths: readonly string[];
+}
+
+/**
+ * What {@link resolveOne} and a counter both get back from one payload.
+ *
+ * `touched` is the reaction candidate list — everybody the payload reached who
+ * is still standing, carrying whether it actually connected. It is the one field
+ * that exists purely for the caller: the strike itself has no use for it.
+ */
+interface StrikeOutcome {
+  readonly state: BattleState;
+  readonly hit: boolean;
+  readonly crit: boolean;
+  readonly damage: number;
+  readonly ridersLanded: readonly string[];
+  readonly ridersResisted: readonly string[];
+  readonly runesFired: readonly string[];
+  readonly deaths: readonly string[];
+  readonly touched: readonly ReactionCandidate[];
+  readonly drawsConsumed: bigint;
 }
 
 export interface ActionIntent {
@@ -593,14 +651,21 @@ export interface Resolution {
  *   3. **riders** — one contest each, and only if the payload connected
  *   4. **targeting tiebreak** — only if the earlier tiebreaks left a choice
  *   5. **rune chances** (021 US3) — the attacker's, then each struck defender's
+ *   6. **reactions** (2026-08-02) — each counter's own 1–5 in turn, last of all
  *
  * "Lazy" is not an order. Each step is skipped rather than drawn-and-discarded,
  * which is why a miss consumes one index and a landed hit consumes two.
  *
- * **Step 5 draws nothing for a board with no runes on it**, which is what keeps
- * every fixture written before 021 — and every battle fought before it — resolving
- * to the same outcome from the same seed. Turn start has a sixth draw of its own
- * that belongs to the turn loop rather than to an action; see {@link rollTurnStart}.
+ * **Steps 5 and 6 draw nothing for a board with no runes and no reactive power on
+ * it**, which is what keeps every fixture written before 021 — and every battle
+ * fought before it — resolving to the same outcome from the same seed. Turn start
+ * has a draw of its own that belongs to the turn loop rather than to an action;
+ * see {@link rollTurnStart}.
+ *
+ * **Step 6 is recursive in shape and bounded to one layer by construction.** A
+ * counter runs steps 1–5 itself and then stops: `resolveStrike` cannot reach
+ * `enactReactions`. So the draws an action consumes are bounded by the number of
+ * heroes its payload touched, never by a chain.
  */
 export function resolveOne(
   seed: Seed,
@@ -719,6 +784,101 @@ export function resolveOne(
     };
   }
 
+  const strike = resolveStrike(seed, state, actor, power, primary, at());
+  consumed += strike.drawsConsumed;
+  let next = strike.state;
+
+  /**
+   * ---- `EFFECT_ORDER` step 3: reactions ------------------------------------
+   *
+   * **The only way a hero acts outside its own turn**, and the last thing in the
+   * action to draw. Placed after the strike has fully resolved — riders, rune
+   * chances, triggers, the death sweep — so a counter answers the board the blow
+   * actually left behind, and a defender the payload killed is already at 0 HP
+   * and gates itself out.
+   *
+   * **It runs on a miss as well**, which is the whole of the 2026-07-27 ruling:
+   * otherwise `Agility` — the defender's own defensive stat — suppresses the
+   * defender's own counter, so the better your defense the less you retaliate.
+   */
+  const answered = enactReactions(seed, next, actor.instanceId, strike.touched, at());
+  consumed += answered.drawsUsed;
+  next = answered.state;
+
+  /**
+   * **A counter's kills are the action's kills too.** The client removes a
+   * champion from the board off `deaths`, so a reaction that fells the attacker
+   * has to appear there or the body stays standing until the next request. The
+   * event keeps its own copy for the log line; this is the board's copy.
+   *
+   * De-duplicated through a `Set` rather than concatenated: nothing today can
+   * report one death twice, and a duplicate would be a hero that fell twice in
+   * one action on the wire.
+   */
+  const deaths =
+    answered.events.length === 0
+      ? strike.deaths
+      : [...new Set([...strike.deaths, ...answered.events.flatMap((e) => e.deaths)])];
+
+  return {
+    state: next,
+    packet: {
+      hit: strike.hit,
+      crit: strike.crit,
+      damage: strike.damage,
+      healing: 0,
+      overheal: 0,
+      ridersLanded: strike.ridersLanded,
+      ridersResisted: strike.ridersResisted,
+      /**
+       * **Collected from the effect lists, not from the board** (021 US4).
+       *
+       * Diffing before and after would miss every effect whose consequence is not
+       * a status — `Too Close` reflects damage, `Take It Back` removes something —
+       * and those are precisely the ones a player cannot otherwise tell fired.
+       * `runeFirings` reads the effects themselves, so the answer does not depend
+       * on the effect leaving a mark.
+       */
+      runesFired: strike.runesFired,
+      ...(answered.events.length > 0 ? { reactions: answered.events } : {}),
+      deaths,
+      conclusion: battleEnded(next),
+    },
+    drawsConsumed: consumed,
+  };
+}
+
+/**
+ * What a payload does when it lands — **one pipeline, called from two places.**
+ *
+ * An ordinary action calls it once. A reaction calls it once more, at the
+ * attacker, and that is the entire reason it is a function rather than the body
+ * of {@link resolveOne}: hit, crit, absorb, the lethal guard, riders, rune
+ * chances, triggers and the death sweep are *the* damage rules, and a counter
+ * that carried a second copy of them would drift from the first the moment
+ * either changed (Constitution XIII).
+ *
+ * **It never fires a reaction itself, and that is the fence.** `04-turns.md`
+ * bounds phase 4 at exactly one layer deep, because both squads are counter-built
+ * by design and two reactive squads would otherwise ping-pong forever on a single
+ * strike. Expressed as a call graph rather than a depth counter — `resolveOne` →
+ * `enactReactions` → `resolveStrike` → nothing — so a second layer would need
+ * somebody to add an edge, not to mis-set a number.
+ *
+ * Draws run from `drawIndex` in the order documented on {@link resolveOne}; the
+ * count is returned rather than assumed.
+ */
+function resolveStrike(
+  seed: Seed,
+  state: BattleState,
+  actor: HeroState,
+  power: Power,
+  primary: HeroState,
+  drawIndex: bigint,
+): StrikeOutcome {
+  let consumed = 0n;
+  const at = (): bigint => drawIndex + consumed;
+
   // ---- 1. hit — exactly one draw -----------------------------------------
   const preview = damagePreview(state, actor.instanceId, power.id, primary.instanceId);
   const hit = drawBelow(seed, at(), preview.hitProbability);
@@ -735,30 +895,30 @@ export function resolveOne(
      * them.
      */
     const evaded = targetsOf(state, power, primary);
-    const dodged = applyPassiveEffects(
-      state,
-      evaded.flatMap((defender) =>
-        onMissed({ state, attacker: actor, defender, power, defenderHpFraction: 1 }),
-      ),
-      maxHp,
+    const missEffects = evaded.flatMap((defender) =>
+      onMissed({ state, attacker: actor, defender, power, defenderHpFraction: 1 }),
     );
+    const dodged = applyPassiveEffects(state, missEffects, maxHp);
 
-    // A miss is NOT the end of a turn's draws in general — a reaction can fire
-    // on an evaded attack — but no reactive power is authored yet, so nothing
-    // draws here today. When one is, its contest goes at step 3.
+    /**
+     * **A miss is not the end of the action's draws.** The counter still fires —
+     * `resolveOne` runs `enactReactions` on this outcome exactly as it does on a
+     * landed one, and everybody who dodged is a candidate.
+     *
+     * `connected: false` is the word *damages* in `Nothing to Discuss`: a hero
+     * that was swung at and missed was not damaged, so that passive silences
+     * nobody here while `Already Gone` still refuses the counter outright.
+     */
     return {
       state: dodged,
-      packet: {
-        hit: false,
-        crit: false,
-        damage: 0,
-        healing: 0,
-        overheal: 0,
-        ridersLanded: [],
-        ridersResisted: [],
-        deaths: [],
-        conclusion: battleEnded(dodged),
-      },
+      hit: false,
+      crit: false,
+      damage: 0,
+      ridersLanded: [],
+      ridersResisted: [],
+      runesFired: runeFirings(missEffects),
+      deaths: [],
+      touched: evaded.map((h) => ({ instanceId: h.instanceId, connected: false })),
       drawsConsumed: consumed,
     };
   }
@@ -972,34 +1132,99 @@ export function resolveOne(
   const deathEffects = fallen.flatMap((f) => onDeath(next, f));
   next = applyPassiveEffects(next, deathEffects, maxHp);
 
-  const ridersLanded = landed;
-  const ridersResisted = resisted;
-
   return {
     state: next,
-    packet: {
-      hit: true,
-      crit,
-      damage: total,
-      healing: 0,
-      overheal: 0,
-      ridersLanded,
-      ridersResisted,
-      /**
-       * **Collected from the effect lists, not from the board** (021 US4).
-       *
-       * Diffing before and after would miss every effect whose consequence is not
-       * a status — `Too Close` reflects damage, `Take It Back` removes something —
-       * and those are precisely the ones a player cannot otherwise tell fired.
-       * `runeFirings` reads the effects themselves, so the answer does not depend
-       * on the effect leaving a mark.
-       */
-      runesFired: runeFirings([...folded, ...deathEffects]),
-      deaths,
-      conclusion: battleEnded(next),
-    },
+    hit: true,
+    crit,
+    damage: total,
+    ridersLanded: landed,
+    ridersResisted: resisted,
+    runesFired: runeFirings([...folded, ...deathEffects]),
+    deaths,
+    /**
+     * **Everybody the payload reached — not everybody who may counter.**
+     *
+     * This list deliberately does *not* filter the fallen, though a trigger
+     * folded above can kill one. Standing is a clause of the reaction gate and
+     * `reactionFor` owns it; a second copy here passed every test with the first
+     * one deleted, which is what a redundant guard looks like from the outside
+     * and how two readings of one rule start to disagree.
+     */
+    touched: struck.map((id) => ({ instanceId: id, connected: true })),
     drawsConsumed: consumed,
   };
+}
+
+/**
+ * Every counter one action provokes, resolved in order.
+ *
+ * **Re-asked per candidate against the live board**, never against a list
+ * computed up front: the first counter can fell the attacker, and the second
+ * must then find nothing to swing at. `reactionFor` answers that; this loop only
+ * decides who is asked and in what order.
+ *
+ * **The cooldown is charged before the counter resolves**, and it is charged
+ * whether or not the blow lands — a reaction that missed was still spent, the
+ * same as any power. See `reactionCharge` for why a cooldown-0 power is charged
+ * here when `resolveClocks` leaves one free.
+ */
+function enactReactions(
+  seed: Seed,
+  state: BattleState,
+  attackerInstanceId: string,
+  touched: readonly ReactionCandidate[],
+  drawIndex: bigint,
+): {
+  readonly state: BattleState;
+  readonly events: readonly ReactionEvent[];
+  readonly drawsUsed: bigint;
+} {
+  if (touched.length === 0) return { state, events: [], drawsUsed: 0n };
+
+  let next = state;
+  let used = 0n;
+  const events: ReactionEvent[] = [];
+
+  for (const candidate of inReactionOrder(next, touched)) {
+    const opportunity = reactionFor(
+      next,
+      candidate.instanceId,
+      attackerInstanceId,
+      candidate.connected,
+    );
+    if (opportunity === null) continue;
+
+    const reactor = heroStateOf(next, opportunity.reactorInstanceId);
+    const counter = powerOf(reactor.heroId, opportunity.powerId);
+
+    next = replaceHero(next, chargeReaction(reactor, counter.id, counter.cooldown));
+
+    const outcome = resolveStrike(
+      seed,
+      next,
+      heroStateOf(next, reactor.instanceId),
+      counter,
+      heroStateOf(next, attackerInstanceId),
+      drawIndex + used,
+    );
+    used += outcome.drawsConsumed;
+    next = outcome.state;
+
+    events.push({
+      actorInstanceId: reactor.instanceId,
+      powerId: counter.id,
+      targetInstanceId: attackerInstanceId,
+      hit: outcome.hit,
+      crit: outcome.crit,
+      damage: outcome.damage,
+      ridersLanded: outcome.ridersLanded,
+      ridersResisted: outcome.ridersResisted,
+      runesFired: outcome.runesFired,
+      deaths: outcome.deaths,
+    });
+  }
+
+  return { state: next, events, drawsUsed: used };
 }
 
 /**

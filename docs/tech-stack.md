@@ -232,7 +232,7 @@ Skipping it is not a corruption risk — `act.ts` compares the stamp and answers
 whoever was mid-fight, and *the game refused my move* is a support ticket where a
 15-minute window is not.
 
-**It has fired three times, for three unrelated reasons**, which is the point
+**It has fired six times, for five unrelated reasons**, which is the point
 worth remembering: the stamp answers *"would this log produce this state
 again"*, not *"did the RNG change"*.
 
@@ -243,11 +243,22 @@ again"*, not *"did the RNG change"*.
 | `e0.4.0` / `e0.5.0` | the passive layer — **no draw moves at all**, but the same draws now produce different outcomes, and `Still Burning` changes whether a champion is standing |
 | `e0.6.0` | the four probabilistic rune effects — draws move again, and for the first time **the number of them depends on what a player bought** rather than on what a power does. A squad fielding none of the four spends the identical indices it always did |
 | `e0.7.0` | **Reckoning runs** — `It All Comes Back` left the held list, so Marisel's tier-4 reads banked stacks and her tier-5 spends them. No draw moves; the same log replays into a world where her finisher hits for up to twice what it did |
+| `e0.8.0` | **reactions** — a counter is an attack resolved *inside* another attack, so it spends a hit draw, a crit draw and a rider contest each at indices no earlier engine reached. It also fires on a **miss**, so an action that consumed exactly one index can now consume a dozen. A board with no reactive power on it draws nothing new |
 
 **Stored replays are never at risk and it is worth being exact about why.** A
 replay is a stored event log and is played back verbatim, never re-simulated
 (Constitution XVI) — so a balance patch cannot reach backwards. Only *open*
 battles have a boundary to cross.
+
+**`CONTENT_VERSION` is the other half of that gate, and it had a hole until
+2026-08-02.** It hashed the workbook alone, so the two authored JSON overlays —
+which decide `targets`, `friendly`, `reactive` and every rider — could change the
+roster without moving it. `reDerive` compares exactly that string, so an edit to
+either file would have let an old battle re-derive against a changed world and
+report `ok`. The build now hashes all three, **line-ending-normalized**: the two
+overlays are text, `core.autocrlf` gives them CRLF on Windows and LF on Linux, and
+a raw-byte digest would have made the stamp a property of the checkout rather than
+of the content.
 
 ### The API is versioned because the client can be stale
 

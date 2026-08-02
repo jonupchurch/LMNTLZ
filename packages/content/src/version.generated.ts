@@ -6,4 +6,4 @@
 // source disagree, and CI diffs it against a fresh build precisely to catch that.
 
 /** `"c" + sha256(workbook bytes)[0:12]`. Distinct from engineVersion. */
-export const CONTENT_VERSION = 'c96b13279a47d';
+export const CONTENT_VERSION = 'c05386de2155d';

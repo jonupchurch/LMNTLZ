@@ -536,6 +536,16 @@ export function takeTurn(
       runesFired: [
         ...upkeep.runesFired,
         ...(resolved.packet.runesFired ?? []),
+        /**
+         * **A rune that fired inside a counter still fired** (2026-08-02).
+         *
+         * A reaction runs the whole damage pipeline, so the reactor's own rune
+         * effects answer it exactly as they answer a blow on its own turn — and
+         * the reactor is a hero this player may well own. Dropping these would
+         * leave `Too Close` and `Both Ways` silently inert on precisely the turns
+         * their bearer was retaliating.
+         */
+        ...(resolved.packet.reactions ?? []).flatMap((r) => r.runesFired),
         ...clocks.runesFired,
       ],
     },

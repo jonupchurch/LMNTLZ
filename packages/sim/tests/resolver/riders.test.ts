@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { getAllHeroes, getHero, type Power } from '@lmntlz/content';
 import { resolveOne } from '../../resolver/resolve.js';
 import { heroStateOf, type BattleState } from '../../rules/state.js';
-import { battle, fixedSeed } from './fixtures.js';
+import { battle, fixedSeed, INERT_DEFENDER } from './fixtures.js';
 
 /** The first hero on the roster owning a power whose rider matches a predicate. */
 function findPower(
@@ -54,7 +54,7 @@ function fire(
 }
 
 /** A board of one champion per side, so nothing else can be the cause. */
-function duel(attackerId: string, defenderId = 'h19'): BattleState {
+function duel(attackerId: string, defenderId = INERT_DEFENDER): BattleState {
   const full = battle(attackerId, defenderId);
   return {
     ...full,

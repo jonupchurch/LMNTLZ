@@ -55,6 +55,8 @@ interface Hero {
   statuses: unknown[];
   statMods: Record<string, number>;
   reachMod: number;
+  runeEffects: string[];
+  hasActed: boolean;
 }
 
 function squad(side: 'attacker' | 'defender', ids: readonly string[]): Hero[] {
@@ -71,6 +73,19 @@ function squad(side: 'attacker' | 'defender', ids: readonly string[]): Hero[] {
     statuses: [],
     statMods: {},
     reachMod: 0,
+    /**
+     * ⚠️ **Both of these were missing, and the omission broke eleven tests in
+     * this file** — every one that took a turn or reached the result screen.
+     *
+     * `HeroState` gained `runeEffects` in 021 and `hasActed` with it. The server
+     * sends both on every hero of every state; this fixture did not, so
+     * `hooksOf` read `undefined.length` inside the battle screen's `useMemo` and
+     * the component threw during render. **A fixture that omits a field the real
+     * path always writes is a state production never produces**, and the tests
+     * built on it were failing against a game nobody plays.
+     */
+    runeEffects: [],
+    hasActed: false,
   }));
 }
 
@@ -911,5 +926,160 @@ test.describe('a rune effect on the board', () => {
     const close = testInfo.outputPath('rune-effect-card.png');
     await card.screenshot({ path: close });
     await testInfo.attach('rune-effect-card.png', { path: close, contentType: 'image/png' });
+  });
+});
+
+/**
+ * 🔴 **A counter, in the transcript, in a browser** (2026-08-02).
+ *
+ * ### TL;DR
+ *
+ * When a hero you attack swings back, health comes off *your* champion. Until
+ * today nothing on screen said why. This checks the log says it, in a real
+ * browser, and takes a picture.
+ *
+ * ### Why this needs an e2e at all
+ *
+ * `describeEvent.test.tsx` asserts the exact sentence and is the right place for
+ * that. What it cannot see is whether the sentence *arrives* — the log is a
+ * fixed-height strip that scrolls inside itself and pins to the newest line, and
+ * a reaction makes lines longer than anything before it. jsdom does no layout, so
+ * "in the DOM" and "readable" are the same thing to it and different things to a
+ * player. That distinction has already cost this project a whole feature once:
+ * an indicator carried only in `title` and `data-*` passed 1,034 unit tests and
+ * was invisible on screen.
+ */
+test.describe('a counter in the battle log', () => {
+  /** The packet shape the server sends when a defender answers a landed blow. */
+  const counteredTurn = (over: Record<string, unknown> = {}) => ({
+    actorInstanceId: 'a-front-0',
+    powerId: 'strike',
+    targetInstanceId: 'd-front-0',
+    source: 'player',
+    outcome: {
+      hit: true,
+      crit: false,
+      damage: 214,
+      healing: 0,
+      overheal: 0,
+      ridersLanded: [],
+      ridersResisted: [],
+      deaths: [],
+      reactions: [
+        {
+          actorInstanceId: 'd-front-0',
+          powerId: 'Redouble',
+          targetInstanceId: 'a-front-0',
+          hit: true,
+          crit: false,
+          damage: 96,
+          ridersLanded: [],
+          ridersResisted: [],
+          runesFired: [],
+          deaths: [],
+        },
+      ],
+      ...over,
+    },
+  });
+
+  const actReturning = async (page: Page, events: readonly unknown[]) => {
+    await page.route(`**/v1/battles/${BATTLE_ID}/act`, (route) =>
+      route.fulfill({
+        json: {
+          sequence: 4,
+          packet: { events, state: state('a-front-1', 1154), conclusion: null },
+          nextSequence: 5,
+        },
+      }),
+    );
+  };
+
+  const swing = async (page: Page) => {
+    await page.goto('/');
+    await page.getByRole('region', { name: 'Battle board' }).waitFor();
+    await page.getByRole('button', { name: /, targetable$/ }).first().click();
+  };
+
+  test('🔴 says who countered, whom, and for how much', async ({ page }) => {
+    await inBattle(page);
+    await actReturning(page, [counteredTurn()]);
+    await swing(page);
+
+    const log = page.getByTestId('battle-log');
+    await expect(log).toBeVisible();
+
+    /* Count before indexing: one turn in, one line out. */
+    const lines = log.locator('li');
+    await expect(lines).toHaveCount(1);
+    await expect(lines).toContainText('counters');
+    await expect(lines).toContainText('96 damage');
+  });
+
+  /**
+   * 🔴 **The 2026-07-27 ruling, on screen.** A reaction fires on a dodged attack,
+   * so the miss line has to carry it — otherwise the player watches their own
+   * champion lose health on a turn the log calls a miss.
+   */
+  test('🔴 carries the counter onto a line that says "Misses"', async ({ page }) => {
+    await inBattle(page);
+    await actReturning(page, [counteredTurn({ hit: false, damage: 0 })]);
+    await swing(page);
+
+    const line = page.getByTestId('battle-log').locator('li');
+    await expect(line).toHaveCount(1);
+    await expect(line).toContainText('Misses.');
+    await expect(line).toContainText('counters');
+  });
+
+  /**
+   * 🔴 **The control.** An ordinary turn provokes nothing and says nothing — an
+   * implementation that printed a counter on every line would pass both tests
+   * above and be wrong about every turn in the game.
+   */
+  test('🔴 says nothing about a counter on a turn that provoked none', async ({ page }) => {
+    await inBattle(page);
+    const { reactions: _dropped, ...quiet } = counteredTurn().outcome;
+    await actReturning(page, [{ ...counteredTurn(), outcome: quiet }]);
+    await swing(page);
+
+    const line = page.getByTestId('battle-log').locator('li');
+    await expect(line).toHaveCount(1);
+    await expect(line).not.toContainText('counters');
+    await expect(line).not.toContainText(/undefined|NaN/);
+  });
+
+  /**
+   * **The screenshot, taken and looked at.**
+   *
+   * The strip reserves four lines and scrolls inside itself. A reaction sentence
+   * is appended to an already-full line, so the question a picture answers and an
+   * assertion cannot is whether the counter is still *on screen* rather than
+   * clipped past the right edge of a fixed-height panel.
+   *
+   * Written to a path as well as attached: an attachment lives inside the HTML
+   * report, and a screenshot nobody opens is a screenshot nobody looked at.
+   */
+  test('screenshot — the log with a counter in it', async ({ page }, testInfo) => {
+    await inBattle(page);
+    await actReturning(page, [
+      counteredTurn(),
+      counteredTurn({ hit: false, damage: 0 }),
+      counteredTurn({ crit: true, damage: 402 }),
+    ]);
+    await swing(page);
+
+    const log = page.getByTestId('battle-log');
+    await expect(log.locator('li')).toHaveCount(3);
+
+    const path = testInfo.outputPath('counter-in-battle-log.png');
+    await page.screenshot({ path });
+    await testInfo.attach('counter-in-battle-log.png', { path, contentType: 'image/png' });
+
+    /* And the panel on its own — a 1280px board is not the frame that answers
+       "can somebody actually read this". */
+    const close = testInfo.outputPath('counter-log-panel.png');
+    await log.screenshot({ path: close });
+    await testInfo.attach('counter-log-panel.png', { path: close, contentType: 'image/png' });
   });
 });

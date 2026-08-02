@@ -53,8 +53,40 @@ export interface TurnEvent {
      * replay in the archive. Absent means unknown, not empty.
      */
     readonly runesFired?: readonly string[];
+    /**
+     * Counters this turn provoked, in the order they resolved (2026-08-02).
+     *
+     * **Optional for the third time on this type, and for the same reason.** A
+     * reaction is the only thing a hero does outside its own turn, so it is the
+     * one event the log cannot infer from the action it was given — and nothing
+     * recorded before the reaction system existed carries the field. Absent means
+     * unknown; most turns provoke nothing and say so by omission.
+     */
+    readonly reactions?: readonly ReactionEvent[];
     readonly deaths: readonly string[];
   };
+}
+
+/**
+ * One counter, as it arrives on the wire.
+ *
+ * **The same vocabulary the outcome above uses**, because a reaction *is* an
+ * attack — resolved by the same pipeline, on the same board, with the same
+ * contest. A second set of field names would invite a second set of log rules for
+ * the same events. It carries no `conclusion`: the turn reports one, once, after
+ * every counter has resolved.
+ */
+export interface ReactionEvent {
+  readonly actorInstanceId: string;
+  readonly powerId: string;
+  readonly targetInstanceId: string;
+  readonly hit: boolean;
+  readonly crit: boolean;
+  readonly damage: number;
+  readonly ridersLanded: readonly string[];
+  readonly ridersResisted: readonly string[];
+  readonly runesFired: readonly string[];
+  readonly deaths: readonly string[];
 }
 
 /**

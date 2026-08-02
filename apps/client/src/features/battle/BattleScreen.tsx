@@ -558,7 +558,15 @@ export const describeEvent = (event: TurnEvent, nameOf: (instanceId: string) => 
   const { hit, damage, healing, overheal, crit } = event.outcome;
   const target = event.targetInstanceId === null ? null : nameOf(event.targetInstanceId);
 
-  if (!hit) return `${actor} attacks ${target ?? 'nothing'}. Misses.`;
+  if (!hit) {
+    /*
+     * **A dodge is answered too**, so the miss line carries the counter with it.
+     * A reaction fires on an evaded attack — otherwise `Agility` would suppress
+     * the defender's own retaliation — and a log that stopped at "Misses." would
+     * show health coming off the attacker with no sentence attached to it.
+     */
+    return `${actor} attacks ${target ?? 'nothing'}. Misses.` + describeReactions(event, nameOf);
+  }
 
   /* A heal is `hit: true` with no damage — `resolve.ts` calls it "never dodged". */
   if (healing > 0) return `${actor} mends ${target ?? 'the line'} for ${healing}.`;
@@ -577,8 +585,51 @@ export const describeEvent = (event: TurnEvent, nameOf: (instanceId: string) => 
   return (
     `${actor} attacks ${target ?? 'nothing'}. Hits for ${damage} damage${crit ? ', a critical' : ''}.` +
     describeRiders(event, nameOf) +
-    describeRunes(event, nameOf)
+    describeRunes(event, nameOf) +
+    describeReactions(event, nameOf)
   );
+};
+
+/**
+ * **The counter — the only thing in the game that happens on somebody else's
+ * turn** (2026-08-02).
+ *
+ * ### Why it needs its own sentence
+ *
+ * Every other line in this log describes the action a player took. A reaction is
+ * a *second* attack, thrown by the hero that was just hit, resolved inside the
+ * first one — so without a line of its own, health simply comes off the attacker
+ * between one entry and the next with nothing to explain it. That is the same
+ * complaint riders and runes each had, and it is worse here: the damage lands on
+ * the champion the player was commanding.
+ *
+ * ### It reports a miss as well as a hit
+ *
+ * A counter is a contested blow like any other and can be dodged. *"Kaellis
+ * counters — misses"* is the sentence that tells a player the retaliation
+ * happened and cost them nothing, which is otherwise indistinguishable from a
+ * defender that had no counter at all.
+ *
+ * ⚠️ **`?? []` reads an ABSENT field**, exactly as `describeRunes` does one
+ * function up. Nothing recorded before today has `reactions`, and most turns will
+ * never have one; both say nothing here rather than claiming a quiet turn.
+ */
+const describeReactions = (event: TurnEvent, nameOf: (instanceId: string) => string): string => {
+  const reactions = event.outcome.reactions ?? [];
+  if (reactions.length === 0) return '';
+
+  return reactions
+    .map((reaction) => {
+      const who = nameOf(reaction.actorInstanceId);
+      const at = nameOf(reaction.targetInstanceId);
+
+      if (!reaction.hit) return ` ${who} counters ${at} — misses.`;
+
+      const crit = reaction.crit ? ', a critical' : '';
+      const fell = reaction.deaths.includes(reaction.targetInstanceId) ? ` ${at} falls.` : '';
+      return ` ${who} counters ${at} for ${reaction.damage} damage${crit}.${fell}`;
+    })
+    .join('');
 };
 
 /**

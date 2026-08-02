@@ -766,7 +766,45 @@ async function main(): Promise<void> {
   // T034 — the stamp tracks the AUTHORED SOURCE, not the emitted output. Hashing
   // the output would move the stamp when the emitter's formatting changed and
   // hold it still when a designer edited a number, which is backwards.
-  const stamp = `c${createHash('sha256').update(bytes).digest('hex').slice(0, 12)}`;
+  //
+  /**
+   * ⚠️ **All three authored files, not just the workbook** (2026-08-02).
+   *
+   * The stamp hashed the workbook alone, and the two JSON overlays are authored
+   * source by the same definition — `power-targeting.json` decides `targets`,
+   * `friendly` and `reactive`, `power-riders.json` decides what a power applies.
+   * Neither has a workbook column, which is the whole reason the files exist.
+   *
+   * So marking `Redouble` reactive changed 27 heroes' generated powers and left
+   * `CONTENT_VERSION` byte-identical — and `reDerive` compares exactly that
+   * string. A battle stored before the edit would have re-derived against an
+   * engine where its Slash champions suddenly counter, reported `ok`, and
+   * returned a different past. That is the one thing Constitution XVI forbids,
+   * reachable by editing a file the stamp could not see.
+   *
+   * Order is fixed rather than globbed: a hash over a directory listing is a
+   * hash over whatever order the filesystem returned.
+   *
+   * ⚠️ **The two text files are hashed line-ending-normalized, and the workbook
+   * is not.** `core.autocrlf=true` checks the JSON out as CRLF on Windows and as
+   * LF on Linux, so hashing their raw bytes would give this repo **two different
+   * content versions depending on which machine ran the build** — a stamp that
+   * tracks the checkout rather than the content, which is the one thing it must
+   * not do. Caught within an hour of widening the digest, by a `git stash` round
+   * trip changing the stamp without changing a character.
+   *
+   * The workbook is binary and gets no normalization: it is never touched by
+   * autocrlf, and stripping `\r` from a zip would corrupt the hash's subject.
+   */
+  const normalized = (path: string): Buffer =>
+    Buffer.from(readFileSync(path, 'utf8').replace(/\r\n/g, '\n'), 'utf8');
+
+  const stamp = `c${createHash('sha256')
+    .update(bytes)
+    .update(normalized(OVERLAY))
+    .update(normalized(RIDERS))
+    .digest('hex')
+    .slice(0, 12)}`;
 
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(bytes as unknown as ArrayBuffer);

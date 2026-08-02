@@ -5,7 +5,15 @@ import { describe, expect, it } from 'vitest';
 import { SeedLeakError, createSeed, persistSeed, restoreSeed } from '../../resolver/seed.js';
 import { replay, replayEvents, resolveAction, resolveDefenderTurn } from '../../resolver/resolve.js';
 import { toReplayLog } from '../../resolver/replay.js';
-import { action, battle, bytes, BATTLE_ID, fixedSeed } from './fixtures.js';
+import {
+  action,
+  autoPower,
+  battle,
+  bytes,
+  BATTLE_ID,
+  fixedSeed,
+  INERT_DEFENDER,
+} from './fixtures.js';
 
 /**
  * T019/T020 — **Constitution XII, by construction.**
@@ -101,12 +109,25 @@ describe('no returned value carries seed material', () => {
     expect(containsSeed(result)).toBeNull();
   });
 
+  /**
+   * The defender's power is **derived from the defender**, not written out.
+   *
+   * It was the literal `'Open Line'` — Kaellis's tier 0, correct only for as long
+   * as the fixture's default defender happened to be Kaellis. Changing that
+   * default threw `hero "h22" has no power "Open Line"` from a test about seed
+   * custody, which is a failure that says nothing about what it was testing.
+   */
   it('is clean for resolveDefenderTurn', () => {
     const result = resolveDefenderTurn(
       seed,
       initial,
       log,
-      () => ({ sequence: 4, actorInstanceId: 'd0', powerId: action(1, { powerId: 'Open Line' }).powerId, targetInstanceId: 'a0' }),
+      () => ({
+        sequence: 4,
+        actorInstanceId: 'd0',
+        powerId: autoPower(INERT_DEFENDER),
+        targetInstanceId: 'a0',
+      }),
       BATTLE_ID,
     );
     expect(containsSeed(result)).toBeNull();

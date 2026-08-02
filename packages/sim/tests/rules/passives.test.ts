@@ -130,12 +130,30 @@ describe('the registry', () => {
    * the registry and quietly added here would keep the count above green while a
    * champion lost its passive.
    */
-  it('holds exactly two, both of them real and neither running', () => {
+  it('holds nothing, and anything it did hold would have to be real', () => {
     for (const name of HELD_UNIQUES) {
       expect(getPassive(name), `${name} is held but is not a passive`).toBeDefined();
       expect(IMPLEMENTED_PASSIVES, `${name} is held and implemented`).not.toContain(name);
     }
-    expect(HELD_UNIQUES).toHaveLength(2);
+    expect(HELD_UNIQUES).toHaveLength(0);
+  });
+
+  /**
+   * 🔴 **All 40, and the number is the point.**
+   *
+   * `HELD_UNIQUES` being empty proves nothing on its own — a name deleted from
+   * both the registry and the held list would leave it empty too, with a champion
+   * quietly missing a passive. This asks the roster instead: every passive any
+   * champion carries has an implementation.
+   */
+  it('leaves no passive on the roster without an implementation', () => {
+    const missing = new Set<string>();
+    for (const hero of getAllHeroes()) {
+      for (const name of hero.passives) {
+        if (!IMPLEMENTED_PASSIVES.includes(name)) missing.add(name);
+      }
+    }
+    expect([...missing], 'a champion carries a passive nothing implements').toEqual([]);
   });
 
   /**
@@ -160,16 +178,21 @@ describe('the registry', () => {
   });
 
   /**
-   * Three uniques are still names. A battle must not fail because of it.
+   * **The skip is still the behaviour, even with nothing left to skip.**
    *
-   * Silka Pinquick carries `Already Gone`, which needs a reactive power to have
-   * anything to refuse — so she runs with her Role and her House and nothing else,
-   * rather than throwing on a lookup.
+   * Silka Pinquick was the standing example: `Already Gone` needed a reactive
+   * power to have anything to refuse, so she ran with her Role and her House and
+   * nothing else. She carries all three as of 2026-08-02, which is what this now
+   * asserts — and the lookup is still asked to be total, because a roster edit
+   * that adds an unimplemented passive must not take a battle down.
    */
-  it('skips a passive with no implementation instead of throwing', () => {
+  it('runs a full three on Silka, and does not throw on an unknown name', () => {
     expect(() => hooksFor('h23')).not.toThrow();
-    expect(hooksFor('h23').map((h) => h.name)).not.toContain('Already Gone');
-    expect(hooksFor('h23')).toHaveLength(2);
+    expect(hooksFor('h23').map((h) => h.name)).toContain('Already Gone');
+    expect(hooksFor('h23')).toHaveLength(3);
+
+    // The registry is asked by name, so an absent one is skipped rather than thrown on.
+    expect(hooksFor('h26').map((h) => h.name)).toContain('Nothing to Discuss');
   });
 });
 
@@ -735,8 +758,19 @@ describe('🔴 every implemented passive has a reachable hook', () => {
    * five.
    *
    * So this reads `passives.ts` itself and demands that every field name any
-   * passive actually uses appears as `hooks.<field>` in a collector. A new hook
+   * passive actually uses is **read off something** somewhere in it. A new hook
    * with no collector fails here rather than in a battle nobody is watching.
+   *
+   * ⚠️ **It matched the literal string `hooks.<field>` until 2026-08-02, which
+   * made it a check on a variable name.** Two new hooks were read by a collector
+   * that had spelled its parameter `h` — every field genuinely consumed, and the
+   * guard reported both as dead seams. A guard that fails on a rename teaches
+   * people to satisfy the guard rather than the invariant, and the next author
+   * would have renamed the variable without ever learning what the rule was.
+   *
+   * The property access itself is what the invariant is about, so that is what
+   * is matched. A field name appearing only in its own definition is `field:`,
+   * never `.field`, so a declared-and-unread hook still fails.
    */
   it('collects every hook any passive declares', () => {
     const source = readFileSync(new URL('../../rules/passives.ts', import.meta.url), 'utf8');
@@ -750,7 +784,9 @@ describe('🔴 every implemented passive has a reachable hook', () => {
       }
     }
 
-    const uncollected = [...declared].filter((field) => !source.includes(`hooks.${field}`));
+    const uncollected = [...declared].filter(
+      (field) => !new RegExp(`[\\w\\])]\\s*\\??\\.${field}\\b`).test(source),
+    );
     expect(uncollected, 'a hook nobody reads is a seam with no caller').toEqual([]);
   });
 });

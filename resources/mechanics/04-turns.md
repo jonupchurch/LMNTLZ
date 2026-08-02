@@ -327,17 +327,30 @@ Two more, **settled 2026-07-27**:
   be a third configuration layer on every squad row. It stays available as a
   config field once `packages/sim` can price one.
 
-> **Both rules currently govern nothing — there is not a single reactive power in
-> the roster.** Searching all 127 powers returns four reaction-flavored entries
-> and none of them is one: `Redouble` is a plain tier-1 strike *renamed from
-> "Riposte"* for exactly this reason, `One Clean Stroke` references it in flavor
-> only, and the other two are **Silka's `Already Gone`** (immunity to being
-> targeted by a reactive power) and **Hettamar's `Nothing to Discuss`** (denies
-> reactions to anyone he damages).
+> **Built 2026-08-02.** Everything above this line was specified in full and ran
+> nowhere — there was not a single reactive power in the roster, so both rules
+> governed nothing and **two of the 27 unique passives were dead**: `Already Gone`
+> granted immunity to nothing and `Nothing to Discuss` denied nothing.
 >
-> **So two of the 27 unique passives are dead** — one grants immunity to nothing,
-> the other denies nothing. `03-powers.md` makes the unique layer the carrier of
-> hero identity, so this is a real gap rather than a curiosity.
+> `Redouble` is now reactive. It is the power the paragraph below names — *"a
+> plain tier-1 strike renamed from 'Riposte' for exactly this reason"* — and
+> renaming it back was the one-line repair. It lands on all three Slash champions
+> at once (**Kaellis, Reyna Two-Rivers, Grieve**), since the three share a power
+> list, which is **a reactive defender in ~53% of squads** rather than the ~22%
+> one hero would give.
+>
+> **Tier 1 is why it works.** All four role defaults rank tier 1 fifth of six, so
+> the engine spends it only when tiers 5, 4, 3 and 2 are all on cooldown — it is
+> nearly always in hand to counter with. A reactive power ranked first would be
+> burned on its owner's own turn every time and the mechanic would stay dead.
+>
+> A reactive power is **still an ordinary power on its owner's turn.** Nothing
+> removes it from the rotation: the cooldown is the shared budget, so spending it
+> on your own turn is what it costs to not have it when you are hit. That keeps
+> `reactive` purely additive — no lost button for the player, no change to the
+> ranking machinery, no third configuration layer.
+>
+> Engine `e0.7.0` → **`e0.8.0`**: a counter draws.
 
 **Resolved 2026-07-28: author the reactive powers, do not replace the passives.**
 The choice was between authoring the powers those two passives answer and
@@ -361,6 +374,13 @@ assignment is downstream of the stat pass and should not be guessed before it.
 One sizing note for whoever does it: at 6 heroes drawn from 27, **a single
 reactive hero already appears in ~22% of enemy squads**, so this does not need
 many to stop being dead.
+
+> ⚠️ **`Redouble` is therefore an assumption, not a decision.** It was authored
+> in `tools/power-targeting.json` on 2026-08-02 so the mechanic and the two
+> passives could exist, and it is **one JSON line the numbers pass may move, add
+> to, or replace.** Nothing in the engine knows which power is reactive: it reads
+> the flag. Whoever does the stat pass should re-pick from `Agility` and treat
+> the three Slash champions as a starting position rather than a settled one.
 
 ### 5 · Resolution — the clocks move
 

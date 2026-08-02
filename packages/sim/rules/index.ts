@@ -105,6 +105,7 @@ export {
   critMultiplierFor,
   critRefusal,
   damageMultiplierFor,
+  deniesReactions,
   fallenBetween,
   healMultiplierFor,
   hitFloorFor,
@@ -124,6 +125,7 @@ export {
   onStruck,
   onUpkeep,
   penetrationBonusFor,
+  refusesReactions,
   runeBehind,
   runeFirings,
   shapeIncoming,
@@ -208,6 +210,15 @@ export type { AbsorbResult, DamagePreview } from './damage.js';
 
 export { legalTargets, mustPass, poolFor } from './targeting.js';
 export type { Compulsion, TargetFilter, TargetingResult, TargetingStage } from './targeting.js';
+
+export {
+  chargeReaction,
+  inReactionOrder,
+  reactionCharge,
+  reactionFor,
+  reactivePowerOf,
+} from './reactions.js';
+export type { ReactionCandidate, ReactionOpportunity } from './reactions.js';
 
 export {
   EFFECT_ORDER,
@@ -399,4 +410,33 @@ export const ENGINE_RNG = 'splitmix64';
  * "would this log produce this state again", not "did the RNG change"* — five
  * bumps now, four unrelated causes, one question.
  */
-export const engineVersion = (): string => `e0.7.0-${ENGINE_RNG}`;
+/**
+ * ---
+ *
+ * **`e0.7.0` → `e0.8.0` for reactions — the largest draw-order change since
+ * `e0.3.0`.**
+ *
+ * A counter is an attack resolved *inside* another attack, so it spends a hit
+ * draw, a crit draw, a rider contest each and whatever rune chances its owner
+ * bought — at indices no earlier engine ever reached. Every index after the
+ * first counter in a battle is shifted.
+ *
+ * **It also fires on a miss**, which is the part that surprises: an action that
+ * consumed exactly one index under `e0.7.0` — the failed hit roll, and nothing
+ * else — can now consume a dozen, because a dodged blow is still answered.
+ *
+ * Two things bound the blast radius, and both are asserted rather than believed:
+ *
+ * - **A board with no reactive power on it draws nothing here**, so every fixture
+ *   and every determinism suite written before today reconstructs its sequence
+ *   exactly. `tests/resolver/reactions.test.ts` measures a reaction-less control
+ *   on the same seed and demands the same indices.
+ * - **`CONTENT_VERSION` moved with it.** Marking `Redouble` reactive is a content
+ *   edit, and until today the stamp hashed only the workbook — so the two JSON
+ *   overlays could change the roster without moving it. `build-content.ts` now
+ *   hashes all three authored files, which is what makes `reDerive` refuse an old
+ *   battle on either axis rather than silently returning a different past.
+ *
+ * Six bumps now, five unrelated causes, one question.
+ */
+export const engineVersion = (): string => `e0.8.0-${ENGINE_RNG}`;

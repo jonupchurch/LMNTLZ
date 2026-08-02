@@ -38,7 +38,33 @@ function heroState(heroId: string, side: Side, row: Row, instanceId: string): He
   };
 }
 
-export function battle(attackerId = 'h01', defenderId = 'h19'): BattleState {
+/**
+ * The three champions that **counter** — Kaellis, Reyna and Grieve, who share
+ * `Redouble` (2026-08-02).
+ *
+ * Named because the default board must not field one by accident. Until today
+ * `h19` was an arbitrary defender; the moment a reactive power existed it stopped
+ * being arbitrary, and every draw-accounting assertion in this suite silently
+ * became a measurement of six defenders swinging back.
+ */
+export const REACTIVE_HEROES: readonly string[] = Object.freeze(['h19', 'h20', 'h21']);
+
+/**
+ * The default defender: **`h22` Vantric, chosen because it cannot counter.**
+ *
+ * The nearest analog of the `h19` this replaced — Pierce rather than Slash, but
+ * the same Role, the same reach and the same tier ladder — so the boards these
+ * fixtures build are as close to the old ones as a non-reactive champion gets.
+ *
+ * **A control has to be inert.** A fixture that fields the game's only reactive
+ * power makes every test built on it a reaction test whether its author meant one
+ * or not, and the failure mode is silent: the numbers simply come out different
+ * and somebody adjusts the expectation. A test that *wants* a counter says so,
+ * with {@link REACTIVE_HEROES}.
+ */
+export const INERT_DEFENDER = 'h22';
+
+export function battle(attackerId = 'h01', defenderId = INERT_DEFENDER): BattleState {
   const heroes = [
     ...FORMATION.attacker.map((row, i) => heroState(attackerId, 'attacker', row, `a${i}`)),
     ...FORMATION.defender.map((row, i) => heroState(defenderId, 'defender', row, `d${i}`)),

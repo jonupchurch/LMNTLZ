@@ -55,4 +55,10 @@ export {
    */
   rollTurnStart,
 } from './resolve.js';
-export type { ActionIntent, DefenderChooser, ResolvedPacket, Resolution } from './resolve.js';
+export type {
+  ActionIntent,
+  DefenderChooser,
+  ReactionEvent,
+  ResolvedPacket,
+  Resolution,
+} from './resolve.js';

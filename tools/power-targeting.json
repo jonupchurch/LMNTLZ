@@ -53,7 +53,34 @@
     "Whisper from the High Reach"
   ],
 
-  "reactive": [],
+  "$reactiveComment": [
+    "`Redouble` is the roster's first and only reactive power (2026-08-02).",
+    "",
+    "04-turns.md specifies the whole reaction system and then records that it",
+    "'currently governs nothing -- there is not a single reactive power in the",
+    "roster', which leaves two unique passives pointed at nothing: Silka's",
+    "`Already Gone` and Hettamar's `Nothing to Discuss`. That document resolved on",
+    "2026-07-28 to AUTHOR the powers rather than replace the passives.",
+    "",
+    "Redouble is the power the design itself names: 'a plain tier-1 strike RENAMED",
+    "FROM \"Riposte\" for exactly this reason'. Renaming it back is the one-line",
+    "repair, and it lands on all three Slash champions at once -- Kaellis (h19),",
+    "Reyna Two-Rivers (h20) and Grieve (h21) -- because the three share a power",
+    "list. At 6 heroes drawn from 27 that is a reactive defender in ~53% of",
+    "squads, comfortably past the ~22% one hero would give.",
+    "",
+    "IT IS TIER 1 AND THAT IS WHY IT WORKS. All four role defaults rank tier 1",
+    "fifth of six, so the engine spends it only when tiers 5, 4, 3 and 2 are all",
+    "on cooldown -- it is nearly always in hand to counter with. A reactive power",
+    "ranked first would be burned on its owner's own turn every time.",
+    "",
+    "FLAG, carried from 04-turns.md: 'How many, and on whom, belongs to the",
+    "hero-numbers pass... A reaction wants high Agility to fire at all, so the",
+    "assignment is downstream of the stat pass and should not be guessed before",
+    "it.' This entry is therefore an ASSUMPTION, not a decision -- one JSON line",
+    "that the numbers pass may move, add to, or replace."
+  ],
+  "reactive": ["Redouble"],
 
   "$noDamageComment": [
     "03-powers.md: 'Three powers deal neither damage nor healing -- Whisper from",

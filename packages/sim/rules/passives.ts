@@ -795,6 +795,25 @@ export interface PassiveHooks {
    * the resolver runs, the target list the player picked from is already history.
    */
   readonly turnStartChance?: ChanceHook<StatContext>;
+  /**
+   * This hero **cannot be the target of a reactive power** (`Already Gone`).
+   *
+   * Read on the *attacker*, because a reaction has exactly one possible target —
+   * whoever swung. Silka strikes and nobody counters her, **including on a blow
+   * she missed with**: the immunity is about being aimed at, and an evaded swing
+   * is still a swing that would be answered.
+   */
+  readonly reactionImmune?: boolean;
+  /**
+   * Heroes this one **damages** cannot react to the blow (`Nothing to Discuss`).
+   *
+   * Also read on the attacker, and deliberately *narrower* than
+   * {@link reactionImmune}: the passive says *damages*, so a swing Hettamar
+   * missed with denies nothing and the defender counters normally. That gap is
+   * the whole difference between the two passives — one refuses to be answered,
+   * the other silences whoever it actually hurt.
+   */
+  readonly deniesReactions?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -1610,6 +1629,43 @@ const NO_WARNING: PassiveHooks = {
 };
 
 // ---------------------------------------------------------------------------
+// The last two — both answer the reaction system, and both were dead until it
+// existed (2026-08-02)
+// ---------------------------------------------------------------------------
+
+/**
+ * *"Cannot be the target of a reactive power"* — Silka Pinquick.
+ *
+ * **A flag rather than a hook, because a reaction is refused before it is
+ * resolved.** There is no context to give a function: the question is asked
+ * about the attacker alone, before any draw, and the answer cannot depend on the
+ * board without changing what a reaction costs to decide.
+ *
+ * Silka is a Buffer with the roster's fastest cooldown ladder — she is in the
+ * enemy's face often, and this is the passive that stops that being a liability.
+ */
+const ALREADY_GONE: PassiveHooks = {
+  name: 'Already Gone',
+  reactionImmune: true,
+};
+
+/**
+ * *"Denies reactions to anyone this hero damages"* — Hettamar Ironfall.
+ *
+ * Sits one step short of {@link ALREADY_GONE} on purpose, and the step is the
+ * word *damages*: a blow Hettamar **missed** with denies nothing, so a defender
+ * that dodged him counters freely. Silka's is unconditional.
+ *
+ * The resolver supplies that distinction — it knows whether the payload
+ * connected and this module may not — which is why the two flags read the same
+ * and are consumed differently.
+ */
+const NOTHING_TO_DISCUSS: PassiveHooks = {
+  name: 'Nothing to Discuss',
+  deniesReactions: true,
+};
+
+// ---------------------------------------------------------------------------
 // The registry
 // ---------------------------------------------------------------------------
 
@@ -1657,29 +1713,33 @@ const REGISTRY: Readonly<Record<string, PassiveHooks>> = Object.freeze({
   [ROOM_TO_SWING.name]: ROOM_TO_SWING,
   [FIRST_GUARD.name]: FIRST_GUARD,
   [NO_WARNING.name]: NO_WARNING,
+  [ALREADY_GONE.name]: ALREADY_GONE,
+  [NOTHING_TO_DISCUSS.name]: NOTHING_TO_DISCUSS,
 });
 
 /**
- * The four uniques that are still names, and **why each one is held rather than
- * overlooked** (T039).
+ * The uniques that are still names — **and as of 2026-08-02 there are none.**
  *
- * | Held | Why |
+ * The list is kept rather than deleted because it is the *shape* of the answer:
+ * a future roster edit that adds a passive nobody has implemented has somewhere
+ * honest to record it, and `passives.test.ts` reads this against the registry so
+ * a unique that quietly stops being implemented cannot pass as one that was
+ * never approved.
+ *
+ * The four that were once here, and what each was actually waiting on:
+ *
+ * | Was held | What unblocked it |
  * |---|---|
- * | `Already Gone`, `Nothing to Discuss` | both concern **reactive powers**, of which the overlay authors zero — a 020 non-goal, and `04-turns.md` resolved to author the powers rather than replace the passives |
- * | `It All Comes Back` | the passive banks Reckoning; tier 4 **reads** it and tier 5 **spends** it, and no power can yet. Building the bank alone would be a seam with no caller |
+ * | `The Duelist's Habit` | authored with no magnitude; went to the approval table with the nineteen (2026-08-01) |
+ * | `It All Comes Back` | needed no new power — the bank, the tier-4 reader and the tier-5 spender were one missing **rule**, not a missing power (2026-08-02) |
+ * | `Already Gone`, `Nothing to Discuss` | needed the **reaction system** and a reactive power to point at; `04-turns.md` specified the first fully and resolved on 2026-07-28 to author the second (2026-08-02) |
  *
- * `The Duelist's Habit` was in this list until 2026-08-01: it was authored with
- * no magnitude, which is why it went to the approval table with the nineteen
- * rather than shipping with the eight.
- *
- * **Three of twenty-seven, and the number is asserted** — `passives.test.ts`
- * reads this list against the registry, so a unique that quietly stops being
- * implemented cannot pass as one that was never approved.
+ * ⚠️ Two of those four were held on a *diagnosis*, and one diagnosis was wrong —
+ * `It All Comes Back` was recorded as waiting on a power for two features and
+ * was waiting on nothing of the sort. A note here is a reading of the gap, not
+ * the gap; re-derive it before trusting it.
  */
-export const HELD_UNIQUES: readonly string[] = Object.freeze([
-  'Already Gone',
-  'Nothing to Discuss',
-]);
+export const HELD_UNIQUES: readonly string[] = Object.freeze([]);
 
 /** Every passive with an implementation, by name. */
 export const IMPLEMENTED_PASSIVES: readonly string[] = Object.freeze(Object.keys(REGISTRY));
@@ -1721,10 +1781,26 @@ export function hooksFor(heroId: string): readonly PassiveHooks[] {
  * are keyed off the *instance*, because runes are per account: an attacker and a
  * defender fielding the same champion carry different ones.
  */
-const hooksOf = (hero: HeroState): readonly PassiveHooks[] =>
-  hero.runeEffects.length === 0
+/**
+ * ⚠️ **`?? []` reads a field that a state written before 021 does not have.**
+ *
+ * `runeEffects` is required on `HeroState` and the server has always sent it —
+ * but the type is a claim about states this build produces, not about every
+ * state this build is handed. A stored replay recorded before the field existed
+ * carries hero states without it, and this expression runs inside a `useMemo`
+ * during the battle screen's render, so the failure mode is not a wrong number:
+ * it is `Cannot read properties of undefined (reading 'length')` and a white
+ * screen where the board was.
+ *
+ * Absent and empty mean the same thing here — *this champion carries no runes* —
+ * which is exactly what `board.ts` already takes an absent loadout to mean.
+ */
+const hooksOf = (hero: HeroState): readonly PassiveHooks[] => {
+  const runes = hero.runeEffects ?? [];
+  return runes.length === 0
     ? hooksFor(hero.heroId)
-    : [...hooksFor(hero.heroId), ...runeHooksFor(hero.runeEffects)];
+    : [...hooksFor(hero.heroId), ...runeHooksFor(runes)];
+};
 
 // ---------------------------------------------------------------------------
 // Readers — what the damage pipeline asks
@@ -1904,6 +1980,28 @@ export function critRefusal(
 /** Whether this hero's attacks pass through shields rather than spending them. */
 export function ignoresShields(hero: HeroState): boolean {
   return hooksOf(hero).some((h) => h.ignoresShields === true);
+}
+
+/**
+ * Whether a reactive power may be aimed at this hero at all (`Already Gone`).
+ *
+ * Asked of the **attacker**, since the only target a reaction has is whoever
+ * swung. Independent of whether the blow landed.
+ */
+export function refusesReactions(hero: HeroState): boolean {
+  return hooksOf(hero).some((hooks) => hooks.reactionImmune === true);
+}
+
+/**
+ * Whether heroes this one **damaged** are silenced for the blow (`Nothing to
+ * Discuss`).
+ *
+ * Also asked of the attacker, and the caller supplies the *damages* half — this
+ * module cannot know whether a payload connected, and inventing a reading of it
+ * here would be a second answer to a question the resolver already holds.
+ */
+export function deniesReactions(hero: HeroState): boolean {
+  return hooksOf(hero).some((hooks) => hooks.deniesReactions === true);
 }
 
 /**

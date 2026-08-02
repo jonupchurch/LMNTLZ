@@ -334,12 +334,12 @@ that exists only in TypeScript is not canon.
 | Kaellis | **The Duelist's Habit** | a target she has not yet struck | **+25% damage** | authored with no magnitude; the exact inverse of Reckoning |
 | Reyna Two-Rivers | **Confluence** | both her Forces have landed this battle | **+20% damage** for the rest of it | a payoff for using her whole kit, not a stat — and below a ladder step because it never turns off |
 | Vantric | **Seams Everywhere** | *(already balanced)* | **×0.70** mitigation, before Penetration | unchanged — the anchor everything else is priced from |
-| Silka Pinquick | **Already Gone** | *(authored)* | cannot be the target of a reactive power | blocked: **no reactive power exists** |
+| Silka Pinquick | **Already Gone** | *(authored)* | cannot be the target of a reactive power | **live 2026-08-02** — holds on a blow she missed with too, which is what separates it from Hettamar's |
 | Corvane | **The Ledger Kept** | an ally falls, **anywhere** | **+10 Might** per fallen ally, permanent, cap **+50** | caps at a full wipe, by which point the battle is lost |
 | Grieve | **Room to Swing** | *(already balanced)* | **+5 Armor** per enemy in reach, cap **+30** | unchanged |
 | Lord Aiguille | **First Guard** | the first time **each** enemy lands a blow on him | that blow deals **25% less** | once per enemy, so a full squad spends it six times and never again |
 | Boldrek | **No Warning** | a critical hit | crits land at **×2.5** rather than ×2 | crit chance is `Luck × 0.5%`, so this is a lottery ticket by design |
-| Hettamar Ironfall | **Nothing to Discuss** | *(authored)* | denies reactions to anyone he damages | blocked: no reactive power exists |
+| Hettamar Ironfall | **Nothing to Discuss** | *(authored)* | denies reactions to anyone he damages | **live 2026-08-02** — *damages*, so a blow he missed with denies nothing |
 | Mauless | **Immovable** | *(authored)* | cannot be compelled by taunt | — |
 | Ember Saelith | **Never Quite Out** | *(authored, `05-status.md`)* | her burns cannot be cleansed | — |
 | Cindara | **Banked Coals** | *(authored, `05-status.md`)* | her effects last **+1 turn** | — |
@@ -365,11 +365,20 @@ that exists only in TypeScript is not canon.
 - **`The Duelist's Habit` set a new overkill ceiling**: Kaellis' tier-5 into
   Nyxara now lands at **2.095×** a full health bar, up from just under 2×.
 
-**Three of the 27 are written and do not run.** `Already Gone` and `Nothing to
-Discuss` both concern reactive powers, of which the roster authors zero;
-`It All Comes Back` banks a resource no power can spend. All three are named in
-`HELD_UNIQUES` in `packages/sim/rules/passives.ts`, and a test reads that list, so
-the count cannot drift.
+**All 27 run, as of 2026-08-02.** The last three closed within two days of each
+other, and what each was actually waiting on is worth recording because two of
+the three diagnoses were wrong:
+
+- `It All Comes Back` was held for "a power that can spend Reckoning" through two
+  features. Both of Marisel's powers already existed; the gap was a missing
+  **rule**, not a missing power.
+- `Already Gone` and `Nothing to Discuss` were held for a reactive power, and that
+  diagnosis *was* right — `Redouble` is now one.
+
+`HELD_UNIQUES` in `packages/sim/rules/passives.ts` is empty, and it is kept rather
+than deleted so a future roster edit has somewhere honest to record a passive
+nobody has implemented. A test reads the roster against the registry as well, so
+an empty list cannot pass for a complete one.
 
 ---
 
@@ -447,15 +456,21 @@ rules that already exist rather than by numbers chosen for the purpose.
 
 A reaction **fires on an evaded attack**, and **"reactive" is a property of the
 power, not a stance a champion adopts**. Full reasoning in `04-turns.md` →
-*Reactions*, along with the finding that **no reactive power exists in the
-roster**, which leaves Silka's `Already Gone` and Hettamar's `Nothing to Discuss`
-as two dead unique passives.
+*Reactions*.
+
+> **Built 2026-08-02 — `Redouble` is reactive.** It was authored as the resolution
+> of the 2026-07-28 decision below, and it is the power `04-turns.md` itself
+> named: *a plain tier-1 strike renamed from "Riposte" for exactly this reason*.
+> All three Slash champions share it, so **the 127 has no known gap left** and
+> Silka's `Already Gone` and Hettamar's `Nothing to Discuss` both run.
+>
+> ⚠️ **How many and on whom still goes with the hero-numbers pass**, since a
+> reaction needs `Agility` to fire at all. `Redouble` is one line in
+> `tools/power-targeting.json` and is a starting position, not a settled one.
 
 > **Resolved 2026-07-28 — the reactive powers get authored.** Replacing the two
 > passives was the alternative and it costs the same effort while retiring a
-> fully-specified system. **How many and on whom goes with the hero-numbers
-> pass**, since a reaction needs `Agility` to fire at all. This is the one known
-> gap in the 127; everything else in this file is authored and costed.
+> fully-specified system.
 
 ### Silka's bonus action — bounded by reach
 
