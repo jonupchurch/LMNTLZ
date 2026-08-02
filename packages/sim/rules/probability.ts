@@ -13,7 +13,7 @@
 
 import { getHero } from '@lmntlz/content';
 import { cappedStat, effectiveStat, heroStateOf, type BattleState, type HeroState } from './state.js';
-import { statBonusFor } from './passives.js';
+import { hitFloorFor, statBonusFor } from './passives.js';
 
 /** FR-020. Applied **after** the fold — see `hitProbability`. */
 export const MIN_HIT_PROBABILITY = 0.65;
@@ -111,13 +111,39 @@ export function unclampedHitProbability(
  * Reducing `Luck`'s die multiplier is explicitly the **wrong** lever: it
  * compresses rather than shifts, and at ×0.5 it creates 158 pairs that can never
  * hit each other at all.
+ *
+ * ### ⚠️ The one thing that goes above `MAX_HIT_PROBABILITY` (021, spec A-02)
+ *
+ * `Held in the Light` reads *"enemies below half HP **cannot dodge** your
+ * attacks"*, and 95% is not *cannot*. A floor is therefore applied **after** the
+ * clamp, and it is the only route past it.
+ *
+ * **Why an exception is safe here and an uncapped stat would not be**: the clamp
+ * exists because `Agility` + `Luck` at the 75 cap is a 98.2% miss rate — an
+ * invincibility build assembled out of stats a player buys. This is a single
+ * authored effect with a stated condition, and it moves the number in the
+ * direction the clamp already prefers. Nothing a player can stack reaches it.
+ *
+ * It is also why the catalog's rule is *capability, never magnitude*: "cannot
+ * dodge" is a rule about what is possible, and expressing it as +40 `Perception`
+ * would be a number that a bigger `Agility` simply out-buys.
  */
 export function hitProbability(
   state: BattleState,
   attackerInstanceId: string,
   defenderInstanceId: string,
 ): number {
-  return clampProbability(unclampedHitProbability(state, attackerInstanceId, defenderInstanceId));
+  const clamped = clampProbability(
+    unclampedHitProbability(state, attackerInstanceId, defenderInstanceId),
+  );
+
+  const floor = hitFloorFor(
+    state,
+    heroStateOf(state, attackerInstanceId),
+    heroStateOf(state, defenderInstanceId),
+  );
+
+  return floor === null ? clamped : Math.max(clamped, floor);
 }
 
 /**

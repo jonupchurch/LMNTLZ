@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 import { DAMAGE_TYPES, PASSIVES, getAllHeroes } from '@lmntlz/content';
 import {
   POOL_KEYS,
+  RESOLVED_AT_BOARD_BUILD,
   RUNE_EFFECTS,
   RUNE_MAGNITUDES,
   RUNE_SLOTS,
@@ -30,6 +31,20 @@ const ALL = Object.values(RUNE_EFFECTS);
 
 /** What `06-progression.md` § *The utility catalog* specifies. */
 const DESIGNED = { common: 6, perElement: 3 } as const;
+
+/**
+ * Which pool the design puts each not-yet-built effect in.
+ *
+ * **Transcribed from `06-progression.md`'s table**, which is the only place these
+ * four exist until US3 builds them — so they cannot be looked up from the catalog
+ * without making the completeness test assert whatever is there.
+ */
+const DESIGNED_POOL_OF: Readonly<Record<string, string>> = {
+  'take-it-back': 'common',
+  'further-than-it-looks': 'air',
+  'both-ways': 'slash',
+  'knocked-loose': 'crush',
+};
 
 // ---------------------------------------------------------------------------
 // Shape of the catalog
@@ -74,7 +89,40 @@ describe('the catalog', () => {
     }
   });
 
-  it.todo('offers all 33 — the total-count assertion lands with US3 (tasks.md T046)');
+  /**
+   * 🔴 **Every pool is full, minus a declared remainder that US3 must empty.**
+   *
+   * This is the assertion that would have caught the US1-only state, where Water
+   * held **zero** and seven of the ten pools held exactly one — the *"fixed single
+   * effect per pool"* outcome `06-progression.md` names as the one to avoid,
+   * because it strands half the elemental shard sink.
+   *
+   * The four names below are the probabilistic effects, which land in US3 behind
+   * an `engineVersion` bump because they add RNG draws. **They are a countdown, not
+   * an allowance**: US3 deletes them from this list and the arithmetic then demands
+   * all 33. Written as ids rather than a bare number so that implementing the wrong
+   * four fails here instead of passing on a count.
+   */
+  const PENDING_US3 = ['take-it-back', 'further-than-it-looks', 'both-ways', 'knocked-loose'];
+
+  it('offers every effect its pool is designed for, less the four US3 owes', () => {
+    const owed = (pool: string): number =>
+      PENDING_US3.filter((id) => DESIGNED_POOL_OF[id] === pool).length;
+
+    for (const pool of POOL_KEYS) {
+      const designed = pool === 'common' ? DESIGNED.common : DESIGNED.perElement;
+      expect(effectsInPool(pool).length, `${pool} is short`).toBe(designed - owed(pool));
+    }
+
+    expect(ALL.length, 'the catalog is 33 once US3 lands').toBe(
+      DESIGNED.common + DAMAGE_TYPES.length * DESIGNED.perElement - PENDING_US3.length,
+    );
+  });
+
+  it('declares no pending effect that is already in the catalog', () => {
+    const arrived = PENDING_US3.filter((id) => id in RUNE_EFFECTS);
+    expect(arrived, 'US3 landed this — take it out of PENDING_US3').toEqual([]);
+  });
 
   /**
    * 🔴 **No name may collide with a power or a passive.**
@@ -99,9 +147,31 @@ describe('the catalog', () => {
     expect(mismatched, 'the hook name is what the battle log prints').toEqual([]);
   });
 
-  it('leaves no entry whose hooks do nothing', () => {
-    const inert = ALL.filter((e) => Object.keys(e.hooks).filter((k) => k !== 'name').length === 0);
-    expect(inert.map((e) => e.id), 'a catalog entry that hooks nothing is decoration').toEqual([]);
+  /**
+   * **The exemption is declared, and declaring it is only half the guard.**
+   *
+   * `Before the First Blow` legitimately hooks nothing — its shield is placed at
+   * board construction, where `maxHp` is known and no turn has been taken. Every
+   * other empty entry is decoration a player paid 200 shards for.
+   *
+   * A list in the source could be extended to excuse anything, so the other half
+   * lives in `apps/api/tests/battle/runeEffectsInBattle.test.ts`: each declared id
+   * must be named in `board.ts` **and** show up on a real board. Both halves have
+   * to be satisfied for an effect to be missing and green.
+   */
+  it('leaves no entry whose hooks do nothing, except the one that is resolved elsewhere', () => {
+    const inert = ALL.filter(
+      (e) => Object.keys(e.hooks).filter((k) => k !== 'name').length === 0,
+    ).map((e) => e.id);
+
+    expect(inert, 'a catalog entry that hooks nothing is decoration').toEqual([
+      ...RESOLVED_AT_BOARD_BUILD,
+    ]);
+  });
+
+  it('declares no exemption for an id that is not in the catalog', () => {
+    const unknown = RESOLVED_AT_BOARD_BUILD.filter((id) => !(id in RUNE_EFFECTS));
+    expect(unknown, 'an exemption naming nothing exempts nothing').toEqual([]);
   });
 });
 

@@ -20,12 +20,22 @@
  * silently, and this field spent a whole feature being dropped somewhere else.
  */
 
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { getAllHeroes } from '@lmntlz/content';
 import {
+  RESOLVED_AT_BOARD_BUILD,
   RUNE_MAGNITUDES,
+  absorb,
+  actsAgainAfter,
+  critRefusal,
   effectsInPool,
+  fallenBetween,
+  healMultiplierFor,
   heroStateOf,
+  hitFloorFor,
+  ignoresShields,
+  onHealed,
   onStruck,
   poolOf,
   statBonusFor,
@@ -157,5 +167,155 @@ describe('and the engine reads it', () => {
       .reduce((sum, s) => sum + s.magnitude, 0);
 
     expect(might).toBe(M.corneredMight);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US2 — the effect that hooks nothing, and the readers apps/api owns
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **The other half of the anti-vacuity guard** (021 US2).
+ *
+ * `packages/sim` asserts that the only catalog entry with no hooks is the one
+ * `RESOLVED_AT_BOARD_BUILD` declares. On its own that is a list in the source, and
+ * a list in the source can be extended to excuse anything — an effect that quietly
+ * lost its hooks could be added there and would go green.
+ *
+ * This is the half that stops it. Every declared id must be **named in `board.ts`**
+ * and must **do something on a real board**. Both halves have to be satisfied
+ * before a 200-shard purchase can be missing and green.
+ */
+describe('effects resolved at board build', () => {
+  const BOARD_SOURCE = readFileSync(
+    new URL('../../src/battle/board.ts', import.meta.url),
+    'utf8',
+  );
+
+  /**
+   * ⚠️ **The first version of this scanned `board.ts` for each declared id and
+   * failed — correctly, and it found a real hole rather than a typo.**
+   *
+   * `board.ts` reads the id out of `RESOLVED_AT_BOARD_BUILD` instead of retyping
+   * it, which is right: a literal there would be a second copy free to drift from
+   * the declaration. But it reads **`[0]`**, so a second declared id would be
+   * accepted by the catalog, exempted from the anti-vacuity guard, and quietly
+   * never implemented — the exemption becoming the escape hatch it exists to
+   * prevent.
+   *
+   * So the guard is the pair of facts that actually hold: the declaration is read
+   * here, and it names exactly one effect. Declaring a second fails this
+   * immediately, which forces a decision in `board.ts` rather than allowing a
+   * silent pass.
+   */
+  it('is read by board.ts rather than retyped there', () => {
+    expect(
+      BOARD_SOURCE.includes('RESOLVED_AT_BOARD_BUILD'),
+      'board.ts must read the declaration, or the two can drift',
+    ).toBe(true);
+  });
+
+  it('names exactly one effect, which is all board.ts handles', () => {
+    expect(
+      RESOLVED_AT_BOARD_BUILD.length,
+      'board.ts resolves RESOLVED_AT_BOARD_BUILD[0] only — a second entry needs code here',
+    ).toBe(1);
+  });
+
+  /** 🔴 The proof: the shield is really there, at the size the design names. */
+  it('places Before the First Blow’s shield, sized off the pool it is a fraction of', () => {
+    const armed = battle({ statPoints: {}, utility: ['before-the-first-blow'] });
+    const hero = heroStateOf(armed, 'a-front-0');
+    const shields = hero.statuses.filter((s) => s.kind === 'shield');
+
+    expect(shields, 'exactly one shield, not a stack').toHaveLength(1);
+    expect(shields[0]!.magnitude).toBe(
+      Math.round(maxHp(hero) * M.firstBlowShieldFraction),
+    );
+    expect(shields[0]!.magnitude, 'a zero shield would make this vacuous').toBeGreaterThan(0);
+  });
+
+  it('🔴 sizes it off the pool *after* Toughness runes, not the bare stat', () => {
+    const bare = battle({ statPoints: {}, utility: ['before-the-first-blow'] });
+    const tough = battle({ statPoints: { toughness: 20 }, utility: ['before-the-first-blow'] });
+
+    const shieldOf = (state: ReturnType<typeof battle>): number =>
+      heroStateOf(state, 'a-front-0').statuses.find((s) => s.kind === 'shield')!.magnitude;
+
+    expect(shieldOf(tough)).toBeGreaterThan(shieldOf(bare));
+  });
+
+  it('🔴 gives a champion without it no shield at all — the control', () => {
+    const state = battle();
+    expect(heroStateOf(state, 'a-front-0').statuses.filter((s) => s.kind === 'shield')).toEqual([]);
+  });
+
+  /** 🔴 The counter-pair (spec A-05): Pierce's answer, end to end on a real board. */
+  it('🔴 is walked straight past by Straight Past', () => {
+    const shielded = battle({ statPoints: {}, utility: ['before-the-first-blow'] });
+    const defender = heroStateOf(shielded, 'a-front-0');
+
+    const armed = battle({ statPoints: {}, utility: ['straight-past'] });
+    const piercer = heroStateOf(armed, 'a-front-0');
+
+    const through = absorb(defender, 40, ignoresShields(piercer));
+    const blocked = absorb(defender, 40, ignoresShields(heroStateOf(battle(), 'a-front-0')));
+
+    expect(through.throughput, 'the shield is walked past').toBe(40);
+    expect(blocked.throughput, 'the control: an ordinary attacker is stopped').toBe(0);
+  });
+});
+
+/**
+ * 🔴 **A reader with no caller is the defect this project keeps shipping.**
+ *
+ * US2 added six reader functions to `passives.ts`. Each one is correct, tested, and
+ * worth nothing until something in the pipeline calls it — which is exactly how
+ * `legalTargets` accepted taunt and fade filters for four features while the
+ * resolver passed three of its five arguments.
+ *
+ * This test lives here rather than in `packages/sim` because the callers are split
+ * across both trees: the resolver reads four, and the turn loop in this package
+ * reads the other two. A guard confined to one package could not see the halves it
+ * most needs to check.
+ */
+describe('every US2 reader has a caller', () => {
+  const CONSUMERS = [
+    '../../../../packages/sim/resolver/resolve.ts',
+    '../../src/battle/turnLoop.ts',
+    '../../../../packages/sim/rules/damage.ts',
+    '../../../../packages/sim/rules/probability.ts',
+  ].map((rel) => readFileSync(new URL(rel, import.meta.url), 'utf8')).join('\n');
+
+  /**
+   * Named explicitly, because a reader is only discoverable by name and there is
+   * no interface to parse — but each name is a symbol the compiler checks, so a
+   * rename cannot leave a stale string behind.
+   */
+  const READERS = {
+    critRefusal,
+    ignoresShields,
+    hitFloorFor,
+    healMultiplierFor,
+    onHealed,
+    actsAgainAfter,
+    fallenBetween,
+  };
+
+  it('is called from the resolver, the turn loop or the damage pipeline', () => {
+    const uncalled = Object.keys(READERS).filter(
+      (name) => !new RegExp(`\\b${name}\\(`).test(CONSUMERS),
+    );
+
+    expect(
+      uncalled,
+      'a reader nothing calls is a hook surface with no consumer — 020 shipped five of these',
+    ).toEqual([]);
+  });
+
+  it('names readers that actually exist', () => {
+    for (const [name, fn] of Object.entries(READERS)) {
+      expect(typeof fn, `${name} is not a function`).toBe('function');
+    }
   });
 });

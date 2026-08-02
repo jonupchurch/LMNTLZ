@@ -17,6 +17,7 @@ import {
   effectiveStat,
   heroStateOf,
   maxHp,
+  packetOf,
   type BattleState,
   type HeroState,
   type StatusInstance,
@@ -26,6 +27,7 @@ import { shieldOf, shredFactor } from './status.js';
 import {
   critMultiplierFor,
   damageMultiplierFor,
+  healMultiplierFor,
   incomingMultiplierFor,
   mitigationMultiplierFor,
   penetrationBonusFor,
@@ -46,16 +48,13 @@ export const CRIT_MULTIPLIER = 2;
 /**
  * `packet = Might × power.multiplier` (FR-017).
  *
- * **`Luck` is not in this.** Luck buys accuracy and crit chance; letting it also
- * scale the packet would make it the only stat worth buying.
- *
- * A power with no multiplier at all deals no damage — that is different from
- * dealing zero, and the null is what says so.
+ * **Defined in `state.ts` and re-exported here**, the same arrangement
+ * `statusPoints` already uses: `runeEffects.ts` needs the packet for `Too Close`
+ * and cannot import a value from this module, because this one reads `passives.ts`
+ * and `passives.ts` reads the rune catalog. One implementation, found where a
+ * reader expects it.
  */
-export function packetOf(hero: HeroState, power: Power): number {
-  if (power.multiplier === null) return 0;
-  return effectiveStat(hero, getHero(hero.heroId).stats, 'might') * power.multiplier;
-}
+export { packetOf } from './state.js';
 
 const isMartial = (type: string): boolean =>
   type === 'slash' || type === 'pierce' || type === 'crush';
@@ -327,9 +326,22 @@ export interface AbsorbResult {
 export function absorb(
   hero: HeroState,
   incoming: number,
+  /**
+   * **Required, not defaulted** (021). `Straight Past` passes an attack through a
+   * shield without spending it, and a parameter with a default nobody overrides is
+   * exactly how this project has shipped inert seams before — the one call site
+   * that forgot would compile, pass, and quietly never grant the effect.
+   *
+   * *Through*, not *around*: the shield keeps its magnitude and the whole packet
+   * reaches HP. Consuming it as well would make the rune strictly better than
+   * simply removing the shield, which is not what the design bought.
+   */
+  attackerIgnoresShields: boolean,
 ): AbsorbResult {
   const pool = shieldOf(hero);
-  if (pool <= 0) return { absorbed: 0, throughput: incoming, statuses: hero.statuses };
+  if (attackerIgnoresShields || pool <= 0) {
+    return { absorbed: 0, throughput: incoming, statuses: hero.statuses };
+  }
 
   const absorbed = Math.min(pool, incoming);
   let left = absorbed;
@@ -376,7 +388,16 @@ export function healPreview(
   const target = heroStateOf(state, targetInstanceId);
   const power = powerOf(healer, powerId);
 
-  const raw = packetOf(healer, power);
+  /**
+   * **The one place a heal's size can be changed** (021 US2).
+   *
+   * This function read no hooks at all until now, so the insertion is a new step
+   * rather than a re-ordering of existing ones. It multiplies the *raw* heal
+   * before the room clamp, which is what makes `Draws It Up` worth something to a
+   * champion that is badly hurt and worth nothing to one that is nearly full —
+   * clamping first and multiplying after would let it exceed the pool.
+   */
+  const raw = packetOf(healer, power) * healMultiplierFor(state, healer, target);
   const room = maxHp(target) - target.hp;
 
   const amount = Math.round(Math.min(raw, room));

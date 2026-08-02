@@ -51,10 +51,25 @@ import {
   type StrikeContext,
 } from '../../rules/passives.js';
 import { maxHp } from '../../rules/damage.js';
-import { heroStateOf, type BattleState, type HeroState } from '../../rules/state.js';
+import { heroStateOf, type BattleState, type HeroState, type StatusInstance } from '../../rules/state.js';
 import { heroStateFor, stateOf, status, withHero } from './fixtures.js';
 
 const M = PASSIVE_MAGNITUDES;
+
+/**
+ * **The shaping wrappers take the board now** (021).
+ *
+ * Both callbacks gained a `StatContext`, so a rule can depend on the hero's own
+ * state — `Not This Time` refuses a Stun only while its one charge is unspent.
+ * These two wrappers keep the assertions below about the passive rather than
+ * about the plumbing, and `.instance` is the effect as it lands; `.paid` is what a
+ * ward spent, which none of the thirteen ever does.
+ */
+const shapedIn = (bearer: HeroState, instance: StatusInstance): StatusInstance | null =>
+  shapeIncoming(stateOf([bearer]), bearer, instance).instance;
+
+const shapedOut = (applier: HeroState, instance: StatusInstance): StatusInstance =>
+  shapeOutgoing(stateOf([applier]), applier, instance);
 
 const tier0Of = (heroId: string): string => getHero(heroId).powers[0]!.id;
 
@@ -332,18 +347,18 @@ describe('The Deep Holds — Earth shortens control on itself', () => {
    * loud so nobody rediscovers it as a bug report.
    */
   it('refuses a one-turn stun outright', () => {
-    expect(shapeIncoming(earth, status('stun', { turnsRemaining: 1 }))).toBeNull();
-    expect(shapeIncoming(slash, status('stun', { turnsRemaining: 1 }))).not.toBeNull();
+    expect(shapedIn(earth, status('stun', { turnsRemaining: 1 }))).toBeNull();
+    expect(shapedIn(slash, status('stun', { turnsRemaining: 1 }))).not.toBeNull();
   });
 
   /** Not absolute: `Banked Coals` puts control at two turns, and one gets through. */
   it('shortens an extended control rather than refusing it', () => {
-    expect(shapeIncoming(earth, status('stun', { turnsRemaining: 2 }))?.turnsRemaining).toBe(1);
+    expect(shapedIn(earth, status('stun', { turnsRemaining: 2 }))?.turnsRemaining).toBe(1);
   });
 
   it('leaves everything that is not control alone', () => {
     const burn = status('burn', { turnsRemaining: 2, magnitude: 9 });
-    expect(shapeIncoming(earth, burn)).toEqual(burn);
+    expect(shapedIn(earth, burn)).toEqual(burn);
   });
 });
 
@@ -374,17 +389,17 @@ describe('It Catches — a Fire burn escalates', () => {
   const kaellis = heroStateFor(getHero('h19'), 'attacker', 3, 'a');
 
   it('sets the escalation `upkeepDamage` already reads', () => {
-    const shaped = shapeOutgoing(ember, status('burn', { magnitude: 10, turnsRemaining: 3 }));
+    const shaped = shapedOut(ember, status('burn', { magnitude: 10, turnsRemaining: 3 }));
     expect(shaped.escalation).toBe(M.itCatchesEscalation);
   });
 
   it('leaves a non-Fire champion’s burn flat', () => {
-    expect(shapeOutgoing(kaellis, status('burn', { magnitude: 10 })).escalation).toBe(0);
+    expect(shapedOut(kaellis, status('burn', { magnitude: 10 })).escalation).toBe(0);
   });
 
   /** `05-status.md` says *a burn*, and widening it later is the cheap direction. */
   it('does not touch bleed or poison', () => {
-    expect(shapeOutgoing(ember, status('bleed', { magnitude: 10 })).escalation).toBe(0);
+    expect(shapedOut(ember, status('bleed', { magnitude: 10 })).escalation).toBe(0);
   });
 });
 
@@ -393,7 +408,7 @@ describe('Wears Through — a Water shred persists', () => {
   const kaellis = heroStateFor(getHero('h19'), 'attacker', 3, 'a');
 
   it('survives every countdown it is put through', () => {
-    const shaped = shapeOutgoing(marisel, status('shred', { stat: 'armor', magnitude: 0.3 }));
+    const shaped = shapedOut(marisel, status('shred', { stat: 'armor', magnitude: 0.3 }));
 
     let alive = [shaped];
     for (let turn = 0; turn < 20; turn++) alive = [...tickDurations(alive)];
@@ -403,7 +418,7 @@ describe('Wears Through — a Water shred persists', () => {
   });
 
   it('leaves another House’s shred on its ordinary clock', () => {
-    const shaped = shapeOutgoing(kaellis, status('shred', { stat: 'armor', magnitude: 0.3 }));
+    const shaped = shapedOut(kaellis, status('shred', { stat: 'armor', magnitude: 0.3 }));
     expect(tickDurations([shaped])).toHaveLength(0);
   });
 });
@@ -633,20 +648,20 @@ describe('the uniques whose effect was already authored', () => {
   });
 
   it('Never Quite Out — her burns cannot be cleansed, and still expire', () => {
-    const sealed = shapeOutgoing(ember, status('burn', { magnitude: 9, turnsRemaining: 2 }));
+    const sealed = shapedOut(ember, status('burn', { magnitude: 9, turnsRemaining: 2 }));
     expect(sealed.cleansable).toBe(false);
     // The whole of the passive: removal is refused, the clock is not.
     expect(tickDurations([sealed])[0]?.turnsRemaining).toBe(1);
-    expect(shapeOutgoing(kaellis, status('burn')).cleansable).toBe(true);
+    expect(shapedOut(kaellis, status('burn')).cleansable).toBe(true);
   });
 
   it('Written in Pencil — her debuffs, and only her debuffs', () => {
-    expect(shapeOutgoing(umbriel, status('debuff', { stat: 'might' })).cleansable).toBe(false);
-    expect(shapeOutgoing(umbriel, status('burn')).cleansable).toBe(true);
+    expect(shapedOut(umbriel, status('debuff', { stat: 'might' })).cleansable).toBe(false);
+    expect(shapedOut(umbriel, status('burn')).cleansable).toBe(true);
   });
 
   it('Banked Coals — one turn longer, and no more magnitude', () => {
-    const longer = shapeOutgoing(cindara, status('burn', { magnitude: 9, turnsRemaining: 2 }));
+    const longer = shapedOut(cindara, status('burn', { magnitude: 9, turnsRemaining: 2 }));
     expect(longer.turnsRemaining).toBe(3);
     expect(longer.magnitude).toBe(9);
   });
@@ -657,11 +672,11 @@ describe('the uniques whose effect was already authored', () => {
    * so a two-turn stun meets `−1` and lands for one.
    */
   it('Banked Coals is what lets Cindara stun an Earth champion', () => {
-    const hers = shapeOutgoing(cindara, status('stun', { turnsRemaining: 1 }));
-    expect(shapeIncoming(earth, hers)?.turnsRemaining).toBe(1);
+    const hers = shapedOut(cindara, status('stun', { turnsRemaining: 1 }));
+    expect(shapedIn(earth, hers)?.turnsRemaining).toBe(1);
 
     // Anybody else's one-turn stun is still refused outright.
-    expect(shapeIncoming(earth, shapeOutgoing(kaellis, status('stun', { turnsRemaining: 1 })))).toBeNull();
+    expect(shapedIn(earth, shapedOut(kaellis, status('stun', { turnsRemaining: 1 })))).toBeNull();
   });
 });
 

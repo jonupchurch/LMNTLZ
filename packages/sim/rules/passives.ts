@@ -44,6 +44,7 @@ import {
   effectiveStat,
   heroStateOf,
   maxHp,
+  mightOf,
   type BattleState,
   type HeroState,
   type StatusInstance,
@@ -58,6 +59,7 @@ import {
   definitionOf,
   dotTickForTier,
   durationForTier,
+  cleanse,
   markCount,
   shieldForTier,
   statChangeForTier,
@@ -365,6 +367,35 @@ export type PassiveEffect =
       readonly bearerInstanceId: string;
       readonly sourceInstanceId: string;
       readonly sourcePowerId: string;
+    }
+  /**
+   * **Damage with no attack behind it** (021 US2) — `Too Close` reflects a
+   * fraction of the packet back at whoever swung.
+   *
+   * It is a `PassiveEffect` rather than a second call into the damage pipeline
+   * because it is not an attack: no accuracy contest, no mitigation, no type
+   * multiplier, no crit. The fraction is taken off the packet that already landed
+   * and delivered. Anything else would make a defensive rune a second attack the
+   * defender never aimed.
+   *
+   * **It can kill**, which is why it is ordered by `EFFECT_ORDER` with the rest —
+   * and why `fold` runs it through `lethalGuard`, the same doorway a killing blow
+   * and a burn tick already use.
+   */
+  | { readonly kind: 'damage'; readonly bearerInstanceId: string; readonly amount: number }
+  /**
+   * **Strip every effect of one polarity**, which is what a cleanse is.
+   *
+   * `negative` is the cleanse a player recognises; `positive` is a strip. One kind
+   * with a parameter rather than two, because `cleanse` in `status.ts` is already
+   * the single implementation and it takes the polarity. `cleansable: false` is
+   * honoured there, so an uncleansable effect survives this exactly as it survives
+   * a rider-borne cleanse.
+   */
+  | {
+      readonly kind: 'cleanse';
+      readonly bearerInstanceId: string;
+      readonly polarity: 'negative' | 'positive';
     };
 
 export interface DeathContext {
@@ -408,6 +439,93 @@ export interface ApplyContext {
 export interface StatContext {
   readonly state: BattleState;
   readonly hero: HeroState;
+}
+
+/**
+ * An accuracy contest, with no power behind it.
+ *
+ * Narrower than {@link StrikeContext} deliberately — `hitProbability` is asked
+ * *"can this hero hit that one"* long before a power is chosen, by the turn packet
+ * and by every projection the client draws. A hook needing the power could not be
+ * read there.
+ */
+export interface ContestContext {
+  readonly state: BattleState;
+  /** The hero whose hook is being asked — not necessarily either combatant. */
+  readonly holder: HeroState;
+  readonly attacker: HeroState;
+  readonly defender: HeroState;
+}
+
+/**
+ * A heal about to land, or one that just has.
+ *
+ * `holder` is the hero whose hook is being asked and is **neither** the healer nor
+ * the target in the case this exists for: `Runs Dry` belongs to the enemy who
+ * marked the target, and is watching somebody else's heal.
+ */
+export interface HealContext {
+  readonly state: BattleState;
+  readonly holder: HeroState;
+  readonly healer: HeroState;
+  readonly target: HeroState;
+}
+
+/**
+ * A turn that has just finished, offered to the champion that took it.
+ *
+ * `killed` is *"did anything fall during that turn"*, which is as much as the
+ * board can honestly say — a payload death and a reflected death are both the
+ * champion's doing, and there is no third party who could have caused one during
+ * somebody else's turn.
+ */
+export interface TurnEndContext {
+  readonly state: BattleState;
+  readonly hero: HeroState;
+  readonly killed: boolean;
+}
+
+/** Permanent taunt, permanent fade, and who sees through them. */
+export interface TargetingFlags {
+  readonly taunts?: boolean;
+  readonly fades?: boolean;
+  readonly ignoresFade?: boolean;
+  readonly immuneToTaunt?: boolean;
+}
+
+/**
+ * What a bearer's incoming shaping produced.
+ *
+ * `instance` is the effect as it will land, and `null` means **it does not land at
+ * all**. `paid` is what refusing it cost — the channel `lethalGuard` already uses,
+ * and the reason `Not This Time`'s single charge needs no field on `HeroState`.
+ *
+ * **The two travel together because one decision produces both.** A ward that
+ * decided "refused" in one function and "spent" in another would be two answers to
+ * one question, free to disagree — and the disagreement here is a charge that
+ * refuses every stun for the whole battle.
+ */
+export interface ShapedIncoming {
+  readonly instance: StatusInstance | null;
+  readonly paid: readonly PassiveEffect[];
+}
+
+/** An effect passing through unchanged, which is what almost every shaping does. */
+export const shapedAs = (instance: StatusInstance | null): ShapedIncoming => ({
+  instance,
+  paid: [],
+});
+
+/**
+ * The flags a hook grants **on this board**, collapsing the static and predicate
+ * forms into one answer.
+ *
+ * Every reader goes through here, so a hook that became conditional cannot be read
+ * as an object by something that has not been updated — the compiler refuses it.
+ */
+export function targetingFlagsOf(hooks: PassiveHooks, ctx: StatContext): TargetingFlags {
+  if (!hooks.targeting) return {};
+  return typeof hooks.targeting === 'function' ? hooks.targeting(ctx) : hooks.targeting;
 }
 
 /**
@@ -489,17 +607,81 @@ export interface PassiveHooks {
    * `HeroState`.
    */
   readonly lethalGuard?: (ctx: StatContext) => readonly PassiveEffect[] | null;
-  /** Reshapes an effect this hero is **applying**, before it lands. */
-  readonly shapeOutgoing?: (instance: StatusInstance) => StatusInstance;
-  /** Reshapes an effect landing **on** this hero. `null` refuses it outright. */
-  readonly shapeIncoming?: (instance: StatusInstance) => StatusInstance | null;
-  /** Permanent taunt, permanent fade, and who sees through them. */
-  readonly targeting?: {
-    readonly taunts?: boolean;
-    readonly fades?: boolean;
-    readonly ignoresFade?: boolean;
-    readonly immuneToTaunt?: boolean;
-  };
+  /**
+   * Reshapes an effect this hero is **applying**, before it lands.
+   *
+   * The `StatContext` arrived in 021: the wrapper has always held the hero and
+   * simply did not pass it down, so a rule that depended on the applier's own
+   * state could not be written at all.
+   */
+  readonly shapeOutgoing?: (instance: StatusInstance, ctx: StatContext) => StatusInstance;
+  /**
+   * Reshapes an effect landing **on** this hero.
+   *
+   * Returns {@link ShapedIncoming} rather than a bare instance, because a ward has
+   * to be able to say *"refused, and here is what that cost"* — see the type.
+   */
+  readonly shapeIncoming?: (instance: StatusInstance, ctx: StatContext) => ShapedIncoming;
+  /**
+   * Permanent taunt, permanent fade, and who sees through them.
+   *
+   * **Either a fixed set of flags or a function of the board** (021). The nine
+   * House passives are unconditional and stay written as objects; `No One Saw`
+   * fades its bearer only below half health, and a static object cannot say that.
+   * Read through {@link targetingFlagsOf}, never destructured directly — reading a
+   * function as an object takes it as truthy and fades its bearer forever.
+   */
+  readonly targeting?: TargetingFlags | ((ctx: StatContext) => TargetingFlags);
+  /**
+   * Multiplies a heal, wherever this hero stands in relation to it.
+   *
+   * **Consulted on every standing hero, not only on the target** — the same scan
+   * `cooldownExtensionFor` already does — because the two effects that need it sit
+   * on opposite sides: `Draws It Up` raises healing its own bearer receives, and
+   * `Runs Dry` halves a heal on somebody the bearer marked. A hook read only on
+   * the target could express the first and never the second.
+   */
+  readonly healMultiplier?: (ctx: HealContext) => number;
+  /** Fires on any standing hero after a heal has landed. What `Runs Dry` spends. */
+  readonly onHealed?: (ctx: HealContext) => readonly PassiveEffect[];
+  /**
+   * This hero cannot be critically hit.
+   *
+   * The crit is still **rolled** — one draw per packet, unconditionally — and then
+   * not applied to this defender. Cancelling the draw would make a defender's rune
+   * change the attacker's draw sequence, which is an `engineVersion` concern for
+   * everybody else on the board.
+   */
+  readonly critImmune?: boolean;
+  /**
+   * Refuses a **critical** blow, which then lands as a normal hit.
+   *
+   * Exactly `lethalGuard`'s shape and for the same reason: `null` means the charge
+   * is not available, and a non-null result is the effects that **pay for it**, so
+   * *once per battle* needs no field on `HeroState`.
+   */
+  readonly critDowngrade?: (ctx: StatContext) => readonly PassiveEffect[] | null;
+  /** This hero's attacks pass through shields rather than spending them. */
+  readonly ignoresShields?: boolean;
+  /**
+   * A floor on this hero's chance to hit a given defender, or `null` for none.
+   *
+   * ⚠️ **The one exception to the 65–95% clamp** (`probability.ts`), and it is
+   * deliberate: `Held in the Light` reads *"enemies below half HP cannot dodge
+   * your attacks"*, which is a capability rather than a magnitude — the shape the
+   * catalog requires of anything conditional. Documented at the clamp itself,
+   * where a reader will look.
+   */
+  readonly hitFloor?: (ctx: ContestContext) => number | null;
+  /**
+   * Whether this champion takes another turn straight away, and what that costs.
+   *
+   * `lethalGuard`'s shape a third time: `null` is *"not this turn"*, and a
+   * non-null result is the effects that **pay for it** — which is where the chain
+   * bound lives (spec A-04). An extra turn that could grant another extra turn is
+   * a champion that never stops while it keeps killing.
+   */
+  readonly actsAgain?: (ctx: TurnEndContext) => readonly PassiveEffect[] | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -543,9 +725,6 @@ function fromPassive(
  * `instanceFor` in the resolver already reads it this way, so a rider-applied
  * bleed and a passive-applied one would otherwise disagree about the same hero.
  */
-const mightOf = (hero: HeroState): number =>
-  effectiveStat(hero, getHero(hero.heroId).stats, 'might');
-
 // ---------------------------------------------------------------------------
 // The four Role passives
 // ---------------------------------------------------------------------------
@@ -605,9 +784,19 @@ const BEHIND_THE_LINE: PassiveHooks = {
 const THE_DEEP_HOLDS: PassiveHooks = {
   name: 'The Deep Holds',
   shapeIncoming: (instance) => {
-    if (definitionOf(instance.kind).family !== 'control') return instance;
+    if (definitionOf(instance.kind).family !== 'control') return shapedAs(instance);
+    /**
+     * **An uncleansable effect cannot be shortened either** (021).
+     *
+     * `cleansable: false` reads as *"nothing may end this early"*, and clipping a
+     * turn off it is ending it early by another route. Slash's `It Stays Open`
+     * says *"cannot be cleansed **or reduced**"* in one breath, which is the same
+     * rule — so it is written once, here, rather than as a second flag that would
+     * have to be checked in both places and eventually would not be.
+     */
+    if (!instance.cleansable) return shapedAs(instance);
     const turns = instance.turnsRemaining - M.controlShortening;
-    return turns > 0 ? { ...instance, turnsRemaining: turns } : null;
+    return shapedAs(turns > 0 ? { ...instance, turnsRemaining: turns } : null);
   },
 };
 
@@ -1481,6 +1670,134 @@ export function lethalGuard(state: BattleState, hero: HeroState): readonly Passi
 /** What a passive is worth to a hero that survived a lethal blow. */
 export const SURVIVAL_HP = PASSIVE_MAGNITUDES.stillBurningHp;
 
+/**
+ * **Whether this crit lands as a crit, and what refusing it cost** (021).
+ *
+ * Two effects answer, and only one of them is a charge: `All One Piece` is
+ * unconditional immunity, `Turned Aside` spends a single use. Both are read here
+ * so a caller asks *"does this crit apply"* once rather than checking a flag and
+ * then, separately, a guard.
+ *
+ * The crit **draw still happens** either way. It is one draw per packet, shared by
+ * every target the payload reaches, so a defender's rune cancelling it would
+ * change the draw sequence for the rest of the board — an `engineVersion` concern
+ * for a rule that is supposed to be one champion's business.
+ */
+export function critRefusal(
+  state: BattleState,
+  defender: HeroState,
+): { readonly refused: boolean; readonly paid: readonly PassiveEffect[] } {
+  for (const hooks of hooksOf(defender)) {
+    if (hooks.critImmune) return { refused: true, paid: [] };
+  }
+
+  for (const hooks of hooksOf(defender)) {
+    if (!hooks.critDowngrade) continue;
+    const paid = hooks.critDowngrade({ state, hero: defender });
+    if (paid !== null) return { refused: true, paid };
+  }
+
+  return { refused: false, paid: [] };
+}
+
+/** Whether this hero's attacks pass through shields rather than spending them. */
+export function ignoresShields(hero: HeroState): boolean {
+  return hooksOf(hero).some((h) => h.ignoresShields === true);
+}
+
+/**
+ * The highest floor any effect on the board puts under this pairing, or `null`.
+ *
+ * Scanned across every standing hero rather than only the attacker, because a
+ * floor is as legitimately a defender's business as an attacker's — nothing
+ * authored uses that today, and a reader written to the attacker alone would have
+ * to be found and widened when something does.
+ */
+export function hitFloorFor(
+  state: BattleState,
+  attacker: HeroState,
+  defender: HeroState,
+): number | null {
+  let floor: number | null = null;
+
+  for (const hero of state.heroes) {
+    if (hero.hp <= 0) continue;
+    for (const hooks of hooksOf(hero)) {
+      if (!hooks.hitFloor) continue;
+      const value = hooks.hitFloor({ state, holder: hero, attacker, defender });
+      if (value !== null && (floor === null || value > floor)) floor = value;
+    }
+  }
+
+  return floor;
+}
+
+/**
+ * Everything the board says about the size of a heal, multiplied together.
+ *
+ * **Every standing hero is asked**, the same scan `cooldownExtensionFor` runs,
+ * because the two effects that need it stand on opposite sides of the heal:
+ * `Draws It Up` on the target, `Runs Dry` on an enemy who marked the target. A
+ * reader written to the target alone could not express the second at all.
+ */
+export function healMultiplierFor(
+  state: BattleState,
+  healer: HeroState,
+  target: HeroState,
+): number {
+  let multiplier = 1;
+
+  for (const hero of state.heroes) {
+    if (hero.hp <= 0) continue;
+    for (const hooks of hooksOf(hero)) {
+      if (hooks.healMultiplier) {
+        multiplier *= hooks.healMultiplier({ state, holder: hero, healer, target });
+      }
+    }
+  }
+
+  return multiplier;
+}
+
+/** What a landed heal set off, board-wide. `Runs Dry` spends its mark here. */
+export function onHealed(
+  state: BattleState,
+  healer: HeroState,
+  target: HeroState,
+): readonly PassiveEffect[] {
+  const effects: PassiveEffect[] = [];
+
+  for (const hero of state.heroes) {
+    if (hero.hp <= 0) continue;
+    for (const hooks of hooksOf(hero)) {
+      if (hooks.onHealed) effects.push(...hooks.onHealed({ state, holder: hero, healer, target }));
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * Whether the champion that just finished a turn takes another, and what it pays.
+ *
+ * `null` — the overwhelming case — means the turn order proceeds as it would have.
+ * A non-null result means the caller grants the extra turn and folds the effects,
+ * which are what stop the extra from granting another.
+ */
+export function actsAgainAfter(
+  state: BattleState,
+  hero: HeroState,
+  killed: boolean,
+): readonly PassiveEffect[] | null {
+  if (hero.hp <= 0) return null;
+  for (const hooks of hooksOf(hero)) {
+    if (!hooks.actsAgain) continue;
+    const paid = hooks.actsAgain({ state, hero, killed });
+    if (paid !== null) return paid;
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Targeting — the passive half of taunt and fade
 // ---------------------------------------------------------------------------
@@ -1505,8 +1822,16 @@ export function targetingFor(
   for (const hero of state.heroes) {
     if (hero.hp <= 0) continue;
     for (const hooks of hooksOf(hero)) {
-      if (hooks.targeting?.taunts) taunting.push(hero.instanceId);
-      if (hooks.targeting?.fades) faded.push(hero.instanceId);
+      /**
+       * **Evaluated per hero, against this board** (021). `No One Saw` fades its
+       * bearer only below half health, so the answer is a function of the state
+       * rather than a property of the champion — and reading `hooks.targeting`
+       * as an object here would have silently taken the *function* as truthy and
+       * faded its bearer for the whole battle.
+       */
+      const flags = targetingFlagsOf(hooks, { state, hero });
+      if (flags.taunts) taunting.push(hero.instanceId);
+      if (flags.fades) faded.push(hero.instanceId);
     }
   }
 
@@ -1522,13 +1847,14 @@ export function targetingFor(
    * Nothing would have failed. The loop above already used `hooksOf`, so the
    * targeting scan looked complete.
    */
-  const actorHooks = hooksOf(heroStateOf(state, actorInstanceId));
+  const actor = heroStateOf(state, actorInstanceId);
+  const actorFlags = hooksOf(actor).map((h) => targetingFlagsOf(h, { state, hero: actor }));
 
   return composeTargeting(state, actorInstanceId, {
     taunting,
     faded,
-    ignoresFade: actorHooks.some((h) => h.targeting?.ignoresFade === true),
-    immuneToTaunt: actorHooks.some((h) => h.targeting?.immuneToTaunt === true),
+    ignoresFade: actorFlags.some((f) => f.ignoresFade === true),
+    immuneToTaunt: actorFlags.some((f) => f.immuneToTaunt === true),
   });
 }
 
@@ -1537,25 +1863,42 @@ export function targetingFor(
 // ---------------------------------------------------------------------------
 
 /** Every `shapeOutgoing` the applier carries, applied in `hero.passives` order. */
-export function shapeOutgoing(applier: HeroState, instance: StatusInstance): StatusInstance {
+export function shapeOutgoing(
+  state: BattleState,
+  applier: HeroState,
+  instance: StatusInstance,
+): StatusInstance {
   let shaped = instance;
   for (const hooks of hooksOf(applier)) {
-    if (hooks.shapeOutgoing) shaped = hooks.shapeOutgoing(shaped);
+    if (hooks.shapeOutgoing) shaped = hooks.shapeOutgoing(shaped, { state, hero: applier });
   }
   return shaped;
 }
 
 /**
- * Every `shapeIncoming` the bearer carries. **`null` means the effect does not
- * land at all** — `The Deep Holds` against a one-turn stun.
+ * Every `shapeIncoming` the bearer carries. **A `null` instance means the effect
+ * does not land at all** — `The Deep Holds` against a one-turn stun.
+ *
+ * `paid` accumulates across hooks: two wards refusing the same effect both spend,
+ * which is correct and is also unreachable today, since a champion carries at most
+ * one of them.
  */
-export function shapeIncoming(bearer: HeroState, instance: StatusInstance): StatusInstance | null {
+export function shapeIncoming(
+  state: BattleState,
+  bearer: HeroState,
+  instance: StatusInstance,
+): ShapedIncoming {
   let shaped: StatusInstance | null = instance;
+  const paid: PassiveEffect[] = [];
+
   for (const hooks of hooksOf(bearer)) {
     if (!shaped || !hooks.shapeIncoming) continue;
-    shaped = hooks.shapeIncoming(shaped);
+    const result = hooks.shapeIncoming(shaped, { state, hero: bearer });
+    shaped = result.instance;
+    paid.push(...result.paid);
   }
-  return shaped;
+
+  return { instance: shaped, paid };
 }
 
 // ---------------------------------------------------------------------------
@@ -1583,6 +1926,34 @@ function fold(
 
   if (effect.kind === 'heal') {
     next = { ...hero, hp: Math.min(hero.hp + effect.amount, poolOf(hero)) };
+  } else if (effect.kind === 'damage') {
+    /**
+     * **A third doorway to a death, and it goes through the same guard** (021).
+     *
+     * A blow in `resolveOne` and a burn tick in the Upkeep are the other two, and
+     * `Still Burning` watching only some of them would make survival silently
+     * conditional on *how* a champion was killed. `Too Close` reflecting into a
+     * 1-HP attacker is the case the spec names (FR-019).
+     *
+     * What fires **because** of the death is the caller's job: `resolveOne` and
+     * the API's Upkeep both sweep for whoever fell during a fold, so a
+     * reflect-kill is a death like any other rather than a body appearing on the
+     * board with no event.
+     */
+    const hp = Math.max(0, hero.hp - effect.amount);
+    if (hp === 0) {
+      const paid = lethalGuard(state, hero);
+      if (paid !== null) {
+        const survived = {
+          ...state,
+          heroes: state.heroes.map((h) => (h.instanceId === id ? { ...h, hp: SURVIVAL_HP } : h)),
+        };
+        return applyPassiveEffects(survived, paid, poolOf);
+      }
+    }
+    next = { ...hero, hp };
+  } else if (effect.kind === 'cleanse') {
+    next = { ...hero, statuses: cleanse(hero.statuses, effect.polarity) };
   } else if (effect.kind === 'accumulate') {
     next = {
       ...hero,
@@ -1594,9 +1965,17 @@ function fold(
       statuses: clearFromSource(hero.statuses, effect.sourceInstanceId, effect.sourcePowerId),
     };
   } else {
-    const shaped = shapeIncoming(hero, effect.status);
-    if (shaped === null) return state;
-    next = { ...hero, statuses: applyStatus(hero.statuses, shaped) };
+    /**
+     * **A ward refuses a passive-placed effect too**, and it has to pay for it
+     * here as much as in the resolver — `The Floor Comes Up` stuns through this
+     * path, not through a rider, so a ward that only watched the rider path would
+     * be silently conditional on which rule stunned you.
+     */
+    const shaped = shapeIncoming(state, hero, effect.status);
+    if (shaped.instance === null) {
+      return shaped.paid.length > 0 ? applyPassiveEffects(state, shaped.paid, poolOf) : state;
+    }
+    next = { ...hero, statuses: applyStatus(hero.statuses, shaped.instance) };
   }
 
   /**
@@ -1637,6 +2016,25 @@ export function applyPassiveEffects(
   let next = state;
   for (const effect of effects) next = fold(next, effect, poolOf);
   return next;
+}
+
+/**
+ * **Who was standing before a fold and is not after it** (021 US2).
+ *
+ * Until `Too Close`, nothing but the payload and a burn tick could take a champion
+ * off the board, so every caller knew its own deaths. A reflect can kill during an
+ * effect fold, and a death that nothing reports is a body on the board with no log
+ * line, no `The Veil Closes`, and a conclusion that arrives without explanation.
+ *
+ * **One implementation, two callers** — `resolveOne` and the API's Upkeep — because
+ * *"who fell just now"* asked twice is two answers free to disagree. Returns the
+ * heroes **as they stood**: reach needs the row, which a post-death read still
+ * carries only by the accident of leaving a body at 0 HP.
+ */
+export function fallenBetween(before: BattleState, after: BattleState): readonly HeroState[] {
+  return before.heroes.filter(
+    (h) => h.hp > 0 && (after.heroes.find((x) => x.instanceId === h.instanceId)?.hp ?? 1) <= 0,
+  );
 }
 
 /**

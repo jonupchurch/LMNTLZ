@@ -111,36 +111,54 @@ the authored consequence is observable.
 
 ### Hook-surface changes
 
-- [ ] **T029** [US2] Give the `shapeIncoming` and `shapeOutgoing` **callbacks** a `StatContext` second argument in `packages/sim/rules/passives.ts`. The exported wrappers already hold the hero (`:1513`, `:1525`) and simply do not pass it down. Unblocks both wards and both cleanse-immunity effects.
-- [ ] **T030** [P] [US2] Allow `PassiveHooks.targeting` to take a predicate form `(ctx: StatContext) => TargetingFlags` alongside today's static object, in `packages/sim/rules/passives.ts`. Needed by `No One Saw`, which is gated below 50% HP.
-- [ ] **T031** [P] [US2] Add the `'damage'` and `'cleanse'` kinds to `PassiveEffect` in `packages/sim/rules/passives.ts` and fold them in `applyPassiveEffects`. Both are ordered by the existing `EFFECT_ORDER` because **each can kill** (FR-019).
-- [ ] **T032** [P] [US2] Add `healMultiplier?: (ctx) => number` to `PassiveHooks` and read it in `healPreview` in `packages/sim/rules/damage.ts:369` — which reads no hooks today, so this is an insertion rather than a refactor. Both directions: healing *received* and a reduction placed by an attacker.
-- [ ] **T033** [P] [US2] Add `critImmune` and `critDowngrade` to `PassiveHooks` and read them in the crit path in `packages/sim/rules/damage.ts`.
-- [ ] **T034** [P] [US2] Add `ignoresShields?: boolean` to `PassiveHooks` and read it in `spendShield` in `packages/sim/rules/damage.ts:312`.
-- [ ] **T035** [P] [US2] Add `hitFloor?: (ctx: StrikeContext) => number | null` to `PassiveHooks` and read it in `packages/sim/rules/probability.ts`. **This is the one narrow exception to the 65–95% clamp** (spec A-02) — document it at the clamp, where a reader will look.
-- [ ] **T036** [US2] Set `HeroState.hasActed` when a hero takes its first turn, in `packages/sim/resolver/resolve.ts`. Needed only by `Before It Knew`.
-- [ ] **T037** [US2] Add the **bounded** extra action in `packages/sim/resolver/resolve.ts` — one extra, and an extra cannot itself grant another (spec A-04, FR-020). Add the re-tick pass for damage-over-time on the acting hero's upkeep.
+- [X] **T029** [US2] Give the `shapeIncoming` and `shapeOutgoing` **callbacks** a `StatContext` second argument in `packages/sim/rules/passives.ts`. The exported wrappers already hold the hero (`:1513`, `:1525`) and simply do not pass it down. Unblocks both wards and both cleanse-immunity effects.
+- [X] **T030** [P] [US2] Allow `PassiveHooks.targeting` to take a predicate form `(ctx: StatContext) => TargetingFlags` alongside today's static object, in `packages/sim/rules/passives.ts`. Needed by `No One Saw`, which is gated below 50% HP.
+- [X] **T031** [P] [US2] Add the `'damage'` and `'cleanse'` kinds to `PassiveEffect` in `packages/sim/rules/passives.ts` and fold them in `applyPassiveEffects`. Both are ordered by the existing `EFFECT_ORDER` because **each can kill** (FR-019).
+- [X] **T032** [P] [US2] Add `healMultiplier?: (ctx) => number` to `PassiveHooks` and read it in `healPreview` in `packages/sim/rules/damage.ts:369` — which reads no hooks today, so this is an insertion rather than a refactor. Both directions: healing *received* and a reduction placed by an attacker.
+- [X] **T033** [P] [US2] Add `critImmune` and `critDowngrade` to `PassiveHooks` and read them in the crit path in `packages/sim/rules/damage.ts`.
+- [X] **T034** [P] [US2] Add `ignoresShields?: boolean` to `PassiveHooks` and read it in `spendShield` in `packages/sim/rules/damage.ts:312`.
+- [X] **T035** [P] [US2] Add `hitFloor?: (ctx: StrikeContext) => number | null` to `PassiveHooks` and read it in `packages/sim/rules/probability.ts`. **This is the one narrow exception to the 65–95% clamp** (spec A-02) — document it at the clamp, where a reader will look.
+- [X] **T036** [US2] Set `HeroState.hasActed` when a hero takes its first turn, in `packages/sim/resolver/resolve.ts`. Needed only by `Before It Knew`.
+- [X] **T037** [US2] Add the **bounded** extra action in `packages/sim/resolver/resolve.ts` — one extra, and an extra cannot itself grant another (spec A-04, FR-020). Add the re-tick pass for damage-over-time on the acting hero's upkeep.
 
 ### The 17 effects
 
-- [ ] **T038** [US2] Implement `Before the First Blow` — the battle-start shield resolves in `apps/api/src/battle/board.ts`, beside where Toughness runes already resolve eagerly before `maxHp`. **No `onBattleStart` hook is needed** ([research.md](./research.md) Decision 2).
-- [ ] **T039** [US2] Implement the two wards in `packages/sim/rules/runeEffects.ts`: `Not This Time` (ignore the first Stun **or Silence** — a named class, not whatever lands first) and `Turned Aside` (first crit lands as a normal hit). Both express *once per battle* by returning the effects that pay for it, as `lethalGuard` already does — **no new field on `HeroState`**.
-- [ ] **T040** [US2] Implement the **Water pool** in `packages/sim/rules/runeEffects.ts` — `Runs Dry`, `It Passes Through`, `Draws It Up`. This is the pool that is empty without US2.
-- [ ] **T041** [US2] Implement `All One Piece` (Earth), `On the Same Breath` (Air), `Too Close` and `The Draft` (Fire) in `packages/sim/rules/runeEffects.ts`.
-- [ ] **T042** [US2] Implement `Held in the Light` and `The Lamp Lifted` (Light), `Before It Knew` and `No One Saw` (Dark) in `packages/sim/rules/runeEffects.ts`.
-- [ ] **T043** [US2] Implement `It Stays Open` (Slash), `Straight Past` (Pierce), `Stays Broken` (Crush) in `packages/sim/rules/runeEffects.ts`.
+- [X] **T038** [US2] Implement `Before the First Blow` — the battle-start shield resolves in `apps/api/src/battle/board.ts`, beside where Toughness runes already resolve eagerly before `maxHp`. **No `onBattleStart` hook is needed** ([research.md](./research.md) Decision 2).
+- [X] **T039** [US2] Implement the two wards in `packages/sim/rules/runeEffects.ts`: `Not This Time` (ignore the first Stun **or Silence** — a named class, not whatever lands first) and `Turned Aside` (first crit lands as a normal hit). Both express *once per battle* by returning the effects that pay for it, as `lethalGuard` already does — **no new field on `HeroState`**.
+- [X] **T040** [US2] Implement the **Water pool** in `packages/sim/rules/runeEffects.ts` — `Runs Dry`, `It Passes Through`, `Draws It Up`. This is the pool that is empty without US2.
+- [X] **T041** [US2] Implement `All One Piece` (Earth), `On the Same Breath` (Air), `Too Close` and `The Draft` (Fire) in `packages/sim/rules/runeEffects.ts`.
+- [X] **T042** [US2] Implement `Held in the Light` and `The Lamp Lifted` (Light), `Before It Knew` and `No One Saw` (Dark) in `packages/sim/rules/runeEffects.ts`.
+- [X] **T043** [US2] Implement `It Stays Open` (Slash), `Straight Past` (Pierce), `Stays Broken` (Crush) in `packages/sim/rules/runeEffects.ts`.
 
 ### Tests
 
-- [ ] **T044** [P] [US2] Extend `packages/sim/tests/rules/runeEffects.test.ts` with behaviour cases for all 17, including the ward spent-then-second-lands case (FR-015) and `Too Close` reflecting into a 1-HP attacker (ordering, FR-019).
-- [ ] **T045** [P] [US2] Add the counter-pair precedence cases — `Nowhere to Stand` versus `No One Saw`, and `Straight Past` versus `Before the First Blow`. Assert the negating effect wins (spec A-05) so the order is a rule rather than an accident of evaluation.
-- [ ] **T046** [P] [US2] Add the pool-completeness assertion to `packages/sim/tests/rules/runeEffects.test.ts`: **every pool offers its designed count**, with Water explicitly at 3. This is the test that would have caught the US1-only state.
+- [X] **T044** [P] [US2] Extend `packages/sim/tests/rules/runeEffects.test.ts` with behaviour cases for all 17, including the ward spent-then-second-lands case (FR-015) and `Too Close` reflecting into a 1-HP attacker (ordering, FR-019).
+- [X] **T045** [P] [US2] Add the counter-pair precedence cases — `Nowhere to Stand` versus `No One Saw`, and `Straight Past` versus `Before the First Blow`. Assert the negating effect wins (spec A-05) so the order is a rule rather than an accident of evaluation.
+- [X] **T046** [P] [US2] Add the pool-completeness assertion to `packages/sim/tests/rules/runeEffects.test.ts`: **every pool offers its designed count**, with Water explicitly at 3. This is the test that would have caught the US1-only state.
 
 ### Wiring
 
-- [ ] **T047** [US2] **WIRING** — confirm every new hook is actually read: for each of the 9 surface changes, `rg` its symbol in `packages/sim` and assert a non-test, non-export call site. Add this as a source-scanning test in `packages/sim/tests/rules/hookReach.test.ts`, **derived from `Object.keys` of the hook interface**, not a hand-written list. *A declared hook with no collector is exactly how 14 passives read as inert in 020.*
+- [X] **T047** [US2] **WIRING** — confirm every new hook is actually read: for each of the 9 surface changes, `rg` its symbol in `packages/sim` and assert a non-test, non-export call site. Add this as a source-scanning test in `packages/sim/tests/rules/hookReach.test.ts`, **derived from `Object.keys` of the hook interface**, not a hand-written list. *A declared hook with no collector is exactly how 14 passives read as inert in 020.*
 
-**Checkpoint**: all 33 exist except the four that roll dice. No `engineVersion` change yet.
+**Corrections found while building, recorded rather than silently absorbed:**
+
+| Task | Said | Is |
+|---|---|---|
+| T032 | one hook, `healMultiplier` | **two** — `Runs Dry` says *"next heal"*, and spending a charge needs `onHealed` as well. `healMultiplierFor` scans every standing hero, like `cooldownExtensionFor`, because the two effects sit on opposite sides of the heal |
+| T034 | `spendShield` at `damage.ts:312` | the function is `absorb`. The flag is a **required** third parameter, not a defaulted one — a default nobody overrides is how this repo has shipped inert seams before |
+| T035 | `hitFloor?: (ctx: StrikeContext)` | `ContestContext` — `hitProbability` is asked long before a power is chosen, so a hook needing `power` could not be read there |
+| T036/T037 | `packages/sim/resolver/resolve.ts` | **`apps/api/src/battle/turnLoop.ts`.** `resolveOne` touches only HP; the turn loop owns Resolution, the accumulator and the Upkeep, and it lives in `apps/api` |
+| T037 | *"re-tick pass for damage-over-time on the acting hero's upkeep"* | needed **no new hook** — `The Draft` returns `damage` effects from the existing `onUpkeep`, restricted to its own source by `upkeepDamageFrom` |
+| T047 | scan for each hook's symbol in `packages/sim` | split in two: the sim half parses the hook names **out of the interface** and proves each is read; the API half proves each *reader* has a caller, because the callers are split across both trees |
+
+**Three things this phase moved to keep one implementation of a rule:**
+`mightOf` and `packetOf` into `state.ts` (`runeEffects.ts` cannot import a value from
+`damage.ts` or `passives.ts` without a module cycle) · `upkeepDamage` now delegates to
+`upkeepDamageFrom` · `slotAccepts` already delegated to `poolOf` in US1.
+
+**Checkpoint**: ✅ 29 of 33 effects live and every pool is full but the four US3 owes.
+sim + content **646** · apps/api battle **15** on the rune guards · client typecheck and
+build clean. `engineVersion` **unchanged at e0.5.0** — US2 adds no draws.
 
 ---
 

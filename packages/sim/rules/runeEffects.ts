@@ -46,8 +46,15 @@
 import { DAMAGE_TYPES, getHero, type DamageType } from '@lmntlz/content';
 import type { PassiveEffect, PassiveHooks } from './passives.js';
 import { inReach } from './reach.js';
-import { maxHp, type HeroState, type StatusInstance } from './state.js';
-import { PERMANENT, definitionOf, markCount, statusFrom, type StatKey } from './status.js';
+import { maxHp, packetOf, type HeroState, type StatusInstance } from './state.js';
+import {
+  PERMANENT,
+  definitionOf,
+  markCount,
+  statusFrom,
+  upkeepDamageFrom,
+  type StatKey,
+} from './status.js';
 
 // ---------------------------------------------------------------------------
 // Slots and pools
@@ -130,6 +137,16 @@ export const RUNE_MAGNITUDES = Object.freeze({
   // -- Air -----------------------------------------------------------------
   /** `Harder to Follow` — `Agility` on the first Bane hit taken. */
   harderToFollowAgility: 20,
+  /**
+   * `On the Same Breath` — turns the chain guard stands for.
+   *
+   * **The bound, not a flavour number** (spec A-04). One turn is exactly long
+   * enough to cover the extra turn it granted: the guard is placed *after*
+   * Resolution has already ticked durations, so it survives into the extra turn
+   * and is dropped by that turn's own Resolution. A champion that keeps killing
+   * therefore gets one extra turn, not an unbounded run of them.
+   */
+  sameBreathGuardTurns: 1,
   /** `Further Than It Looks` — chance at turn start. */
   furtherThanItLooksChance: 0.25,
   /** `Further Than It Looks` — rows of reach granted for that turn. */
@@ -160,6 +177,16 @@ export const RUNE_MAGNITUDES = Object.freeze({
   // -- Light ---------------------------------------------------------------
   /** `Nowhere to Stand` — flat `Perception`. */
   nowhereToStandPerception: 10,
+  /**
+   * `Held in the Light` — the chance to hit a target below half, as a fraction.
+   *
+   * **Certainty, and it is the only thing in the game that passes
+   * `MAX_HIT_PROBABILITY`** (spec A-02). The design says *"cannot dodge"*, and
+   * 95% is not *cannot*; expressing it as a large `Perception` bonus instead would
+   * be a number a bigger `Agility` simply out-buys, which is precisely what the
+   * catalog's *capability, never magnitude* rule forbids.
+   */
+  heldInTheLightFloor: 1,
 
   // -- Dark ----------------------------------------------------------------
   /** `Before It Knew` — multiplier against a target that has not yet acted. */
@@ -332,6 +359,46 @@ const isBaneHit = (types: readonly DamageType[], defender: HeroState): boolean =
 // Common pool — one of six, every champion, the `common` slot
 // ---------------------------------------------------------------------------
 
+/**
+ * *"battle start: gain a shield worth 30% of max HP"*
+ *
+ * **The only effect in the catalog with no hooks at all, and that is correct.**
+ * It resolves in `apps/api/src/battle/board.ts` at board construction, beside
+ * where a player's `Toughness` runes are already folded in before `maxHp` is
+ * computed — a shield sized as a fraction of the pool has to be placed after the
+ * pool is known and before the first turn, and that is the only place which is
+ * both. An `onBattleStart` hook would be a seam with exactly one caller, in the
+ * one module that does not need it.
+ *
+ * A test asserts this entry's inertness is *deliberate* rather than an unwritten
+ * effect, by proving the shield exists on a real board.
+ */
+const BEFORE_THE_FIRST_BLOW: PassiveHooks = {
+  name: 'Before the First Blow',
+};
+
+/** *"ward, one charge: ignore the first Stun **or Silence** applied to you"* */
+const NOT_THIS_TIME: PassiveHooks = {
+  name: 'Not This Time',
+  /**
+   * **A named class, never whatever lands first**, and `06-progression.md` argues
+   * the case: magnitudes run 1–5, so an untargeted *"ignore the first debuff"* is
+   * spent on a minor tick roughly 60% of the time and the Stun three turns later
+   * lands anyway. Stun and Silence are the two that cost an entire action.
+   *
+   * The charge is spent by **returning what pays for it** — the same channel
+   * `lethalGuard` uses — so *one charge* needs no field on `HeroState`, nothing to
+   * snapshot and nothing to disclose. The refusal and the payment are one return
+   * value because they are one decision; deciding them separately is how a ward
+   * ends up refusing every Stun in the battle.
+   */
+  shapeIncoming: (instance, ctx) => {
+    if (instance.kind !== 'stun' && instance.kind !== 'silence') return { instance, paid: [] };
+    if (spent('not-this-time', ctx.hero)) return { instance, paid: [] };
+    return { instance: null, paid: [latch('not-this-time', ctx.hero)] };
+  },
+};
+
 /** *"first time below 50% HP: +20 `Might`, rest of battle"* */
 const CORNERED: PassiveHooks = {
   name: 'Cornered',
@@ -464,9 +531,54 @@ const WEIGHT_TELLS: PassiveHooks = {
   },
 };
 
+/** *"you cannot be critically hit"* */
+const ALL_ONE_PIECE: PassiveHooks = {
+  name: 'All One Piece',
+  /**
+   * **The crit is still rolled; it simply does not apply here.** One draw per
+   * packet is shared by every target the payload reaches, so a defender's rune
+   * cancelling the draw would shift the draw sequence for the whole board — an
+   * `engineVersion` concern arising from one champion's private business.
+   */
+  critImmune: true,
+};
+
 // ---------------------------------------------------------------------------
 // Air
 // ---------------------------------------------------------------------------
+
+/** *"on a killing blow, act again immediately"* */
+const ON_THE_SAME_BREATH: PassiveHooks = {
+  name: 'On the Same Breath',
+  /**
+   * **Bounded to one extra, and the bound is the payment** (spec A-04).
+   *
+   * The guard is a one-turn mark placed *after* Resolution has already ticked
+   * durations, so it stands through the extra turn and is dropped by that turn's
+   * own Resolution. An extra turn therefore cannot grant another, and a champion
+   * clearing a squad does not take six turns in a row.
+   *
+   * Uncleansable, because a cleanse that unlocked a second extra turn would make
+   * an enemy's helpful effect the strongest thing on the board.
+   */
+  actsAgain: (ctx) => {
+    if (!ctx.killed || spent('on-the-same-breath', ctx.hero)) return null;
+
+    return [
+      {
+        kind: 'accumulate',
+        bearerInstanceId: ctx.hero.instanceId,
+        status: fromRune('on-the-same-breath', ctx.hero, 'mark', {
+          magnitude: 0,
+          turnsRemaining: M.sameBreathGuardTurns,
+          cleansable: false,
+        }),
+        step: 1,
+        cap: 1,
+      },
+    ];
+  },
+};
 
 /** *"first Bane hit taken: +20 `Agility`"* */
 const HARDER_TO_FOLLOW: PassiveHooks = {
@@ -528,9 +640,190 @@ const IT_SPREADS: PassiveHooks = {
   },
 };
 
+/** *"when struck, the attacker takes 15% of the packet"* */
+const TOO_CLOSE: PassiveHooks = {
+  name: 'Too Close',
+  /**
+   * **Of the packet, not of the damage that landed.** `packet = Might ×
+   * power.multiplier` (`CLAUDE.md`) — before mitigation, before the type
+   * multiplier, before the floor. A fraction of the *landed* number would make the
+   * rune worth less exactly against the attackers it is meant to punish, since a
+   * well-mitigated blow would reflect almost nothing.
+   *
+   * It is not an attack: no accuracy contest, no crit, no mitigation on the way
+   * back. A defensive rune that swung would be a second attack the defender never
+   * aimed, and would need a whole pipeline behind it.
+   *
+   * **It can kill** (FR-019), and the resolver treats that as a death like any
+   * other — `lethalGuard` runs inside the fold and the caller sweeps for whoever
+   * fell.
+   */
+  onStruck: (ctx) => [
+    {
+      kind: 'damage',
+      bearerInstanceId: ctx.attacker.instanceId,
+      amount: Math.round(packetOf(ctx.attacker, ctx.power) * M.tooCloseFraction),
+    },
+  ],
+};
+
+/** *"your damage-over-time effects tick again when you act"* */
+const THE_DRAFT: PassiveHooks = {
+  name: 'The Draft',
+  /**
+   * **Your effects on other champions, not the ones burning you.**
+   *
+   * `onUpkeep` fires at the top of the bearer's own turn, which is when *"when you
+   * act"* begins. Every standing enemy carrying a damage-over-time effect this
+   * champion applied takes its tick a second time, through `upkeepDamageFrom` —
+   * the same arithmetic the ordinary Upkeep uses, restricted to a source, so
+   * escalation and `Banked Coals` extensions are handled once rather than twice.
+   *
+   * Returned as `damage` effects rather than applied here, so `lethalGuard` and
+   * the caller's death sweep both see it. A re-tick can finish somebody.
+   */
+  onUpkeep: (ctx) =>
+    ctx.state.heroes
+      .filter((h) => h.hp > 0 && h.instanceId !== ctx.hero.instanceId)
+      .map((h) => ({ hero: h, extra: upkeepDamageFrom(h, ctx.hero.instanceId) }))
+      .filter(({ extra }) => extra > 0)
+      .map(({ hero, extra }) => ({
+        kind: 'damage' as const,
+        bearerInstanceId: hero.instanceId,
+        amount: extra,
+      })),
+};
+
+// ---------------------------------------------------------------------------
+// Water
+// ---------------------------------------------------------------------------
+
+/** *"Bane hits you land halve the target's next heal"* */
+const RUNS_DRY: PassiveHooks = {
+  name: 'Runs Dry',
+  onStrike: (ctx) => {
+    if (!isBaneHit(ctx.power.types, ctx.defender)) return [];
+
+    return [
+      {
+        kind: 'accumulate',
+        bearerInstanceId: ctx.defender.instanceId,
+        status: fromRune('runs-dry', ctx.attacker, 'mark', {
+          magnitude: 0,
+          turnsRemaining: PERMANENT,
+          cleansable: false,
+        }),
+        step: 1,
+        cap: 1,
+      },
+    ];
+  },
+  /**
+   * **Read on the enemy who placed the mark, not on the champion being healed.**
+   * That is why `healMultiplierFor` scans the whole board: a hook consulted only
+   * on the target could express `Draws It Up` and could not express this at all.
+   */
+  healMultiplier: (ctx) =>
+    markCount(ctx.target, ctx.holder.instanceId, runePowerId('runs-dry')) > 0
+      ? M.runsDryHealMultiplier
+      : 1,
+  /** *"next heal"* — so the mark is spent the moment one lands, not on a clock. */
+  onHealed: (ctx) =>
+    markCount(ctx.target, ctx.holder.instanceId, runePowerId('runs-dry')) > 0
+      ? [
+          {
+            kind: 'clear',
+            bearerInstanceId: ctx.target.instanceId,
+            sourceInstanceId: ctx.holder.instanceId,
+            sourcePowerId: runePowerId('runs-dry'),
+          },
+        ]
+      : [],
+};
+
+/** *"the first debuff applied is cleansed at end of turn, +20 `Resolve`"* */
+const IT_PASSES_THROUGH: PassiveHooks = {
+  name: 'It Passes Through',
+  statBonus: (_ctx, stat) => (stat === 'resolve' ? M.passesThroughResolve : 0),
+  /**
+   * **`onAct` is *"at end of turn"*, and it runs after durations have ticked** —
+   * so a one-turn debuff that was going to expire anyway is already gone and the
+   * charge is not wasted on it.
+   *
+   * ⚠️ **A reading recorded rather than assumed.** The design says *"the first
+   * debuff"*, singular; a status carries no arrival order, so *which* one is not
+   * answerable from the board. This clears **every** negative effect standing at
+   * the end of that turn, once per battle. It differs from the authored text only
+   * when two or more debuffs are carried at that moment, and it differs in the
+   * generous direction — which is the cheap one to correct under the
+   * balance-upward rule, where a nerf writes off a player's spend.
+   */
+  onAct: (ctx) => {
+    if (spent('it-passes-through', ctx.hero)) return [];
+    if (!ctx.hero.statuses.some((s) => definitionOf(s.kind).polarity === 'negative')) return [];
+
+    return [
+      latch('it-passes-through', ctx.hero),
+      { kind: 'cleanse', bearerInstanceId: ctx.hero.instanceId, polarity: 'negative' },
+    ];
+  },
+};
+
+/** *"healing you receive is increased by 40%"* */
+const DRAWS_IT_UP: PassiveHooks = {
+  name: 'Draws It Up',
+  healMultiplier: (ctx) =>
+    ctx.holder.instanceId === ctx.target.instanceId ? M.drawsItUpHealMultiplier : 1,
+};
+
 // ---------------------------------------------------------------------------
 // Light
 // ---------------------------------------------------------------------------
+
+/** *"enemies below half HP cannot dodge your attacks"* */
+const HELD_IN_THE_LIGHT: PassiveHooks = {
+  name: 'Held in the Light',
+  /**
+   * ⚠️ **The one thing in the game that goes above the 95% accuracy clamp** (spec
+   * A-02). The clamp is documented at `hitProbability` and so is this exception;
+   * *"cannot dodge"* is a statement about what is possible, and 95% is not it.
+   *
+   * Only when the bearer is the attacker. A floor read for the whole board would
+   * make a Light champion standing behind you improve your accuracy, which is a
+   * different effect nobody bought.
+   */
+  hitFloor: (ctx) =>
+    ctx.holder.instanceId === ctx.attacker.instanceId && belowHalf(ctx.defender)
+      ? M.heldInTheLightFloor
+      : null,
+};
+
+/** *"the first ally to fall cleanses all debuffs from every survivor"* */
+const THE_LAMP_LIFTED: PassiveHooks = {
+  name: 'The Lamp Lifted',
+  /**
+   * **`onAnyDeath`, so reach never gates it** — the squad has lost somebody
+   * whether or not the bearer could have reached them, exactly as
+   * `The Line Shortens` reads it.
+   *
+   * Every *survivor* on the bearer's side, the bearer included. The fallen hero is
+   * already at 0 HP and `fold` refuses to touch a hero that is down, so nothing has
+   * to remember to exclude them.
+   */
+  onAnyDeath: (ctx) => {
+    if (ctx.fallen.side !== ctx.witness.side) return [];
+    if (spent('the-lamp-lifted', ctx.witness)) return [];
+
+    const effects: PassiveEffect[] = [latch('the-lamp-lifted', ctx.witness)];
+
+    for (const ally of ctx.state.heroes) {
+      if (ally.side !== ctx.witness.side || ally.hp <= 0) continue;
+      effects.push({ kind: 'cleanse', bearerInstanceId: ally.instanceId, polarity: 'negative' });
+    }
+
+    return effects;
+  },
+};
 
 /** *"enemies cannot conceal or become untargetable against you; +10 `Perception`"* */
 const NOWHERE_TO_STAND: PassiveHooks = {
@@ -549,6 +842,61 @@ const NOWHERE_TO_STAND: PassiveHooks = {
 // ---------------------------------------------------------------------------
 // Dark
 // ---------------------------------------------------------------------------
+
+/** *"your first attack against a target that has not yet acted deals double"* */
+const BEFORE_IT_KNEW: PassiveHooks = {
+  name: 'Before It Knew',
+  /**
+   * Two conditions, and both are needed: the target has never taken a turn, and
+   * **this** attacker has not hit it before. `hasActed` is written once, at
+   * Resolution, so it means *"has had a turn"* rather than *"did something"* — a
+   * chain-stunned defender is not permanently unaware.
+   *
+   * The mark is read here and placed in `onStrike`, so a swing is worth double
+   * only when the count *before* it is zero — the same ordering `Again, There`
+   * uses in the opposite direction.
+   */
+  damageMultiplier: (ctx) =>
+    !ctx.defender.hasActed &&
+    markCount(ctx.defender, ctx.attacker.instanceId, runePowerId('before-it-knew')) === 0
+      ? M.beforeItKnewMultiplier
+      : 1,
+  onStrike: (ctx) => [
+    {
+      kind: 'accumulate',
+      bearerInstanceId: ctx.defender.instanceId,
+      status: fromRune('before-it-knew', ctx.attacker, 'mark', {
+        magnitude: 0,
+        turnsRemaining: PERMANENT,
+        cleansable: false,
+      }),
+      step: 1,
+      cap: 1,
+    },
+  ],
+};
+
+/** *"below 50%: untargetable until your next turn"* */
+const NO_ONE_SAW: PassiveHooks = {
+  name: 'No One Saw',
+  /**
+   * **The predicate form of `targeting`, which is what it was added for** (021).
+   * A static object cannot say *"below half"*, and reading a function as an object
+   * would take it as truthy and fade its bearer for the whole battle.
+   *
+   * *"Until your next turn"* is the load-bearing half and is honoured by the latch
+   * below: without it, a champion below half could never be finished off, which is
+   * a different and much larger effect than the one that was priced. So the fade
+   * covers the window between dropping low and getting to act — the escape the
+   * design describes — and then it is done for the battle.
+   *
+   * One half of a deliberate counter-pair: Light's `Nowhere to Stand` sees through
+   * it, and `composeTargeting` gives the negation precedence (spec A-05).
+   */
+  targeting: (ctx) => ({ fades: belowHalf(ctx.hero) && !spent('no-one-saw', ctx.hero) }),
+  onUpkeep: (ctx) =>
+    belowHalf(ctx.hero) && !spent('no-one-saw', ctx.hero) ? [latch('no-one-saw', ctx.hero)] : [],
+};
 
 /** *"debuffs you apply last one turn longer"* */
 const IT_LINGERS: PassiveHooks = {
@@ -608,9 +956,53 @@ const AGAIN_THERE: PassiveHooks = {
   },
 };
 
+/** *"damage-over-time you apply cannot be cleansed or reduced"* */
+const IT_STAYS_OPEN: PassiveHooks = {
+  name: 'It Stays Open',
+  /**
+   * **`cleansable: false` says both halves of it.** *"Cannot be cleansed"* is what
+   * the flag has always meant; *"or reduced"* is the rule 021 wrote down at
+   * `The Deep Holds` — an effect nothing may end early is also an effect nothing
+   * may clip a turn off. One flag, one rule, checked in one place.
+   *
+   * The whole damage-over-time family, because the design says *"damage-over-time
+   * you apply"* rather than naming a kind — unlike Fire's `It Catches`, which
+   * `05-status.md` restricts to burns specifically.
+   */
+  shapeOutgoing: (instance) =>
+    definitionOf(instance.kind).ticksDamage ? { ...instance, cleansable: false } : instance,
+};
+
 // ---------------------------------------------------------------------------
 // Pierce
 // ---------------------------------------------------------------------------
+
+/** *"the first critical hit against you lands as a normal hit"* */
+const TURNED_ASIDE: PassiveHooks = {
+  name: 'Turned Aside',
+  /**
+   * A ward, and it pays the same way `Not This Time` and `lethalGuard` do —
+   * `null` means the charge is gone, and a non-null result is what spending it
+   * costs. The crit **draw** is untouched; only its application to this defender
+   * is refused.
+   */
+  critDowngrade: (ctx) =>
+    spent('turned-aside', ctx.hero) ? null : [latch('turned-aside', ctx.hero)],
+};
+
+/** *"your attacks ignore shields"* */
+const STRAIGHT_PAST: PassiveHooks = {
+  name: 'Straight Past',
+  /**
+   * **Through, not around.** The shield keeps its magnitude and the whole packet
+   * reaches HP — consuming it as well would make this strictly better than simply
+   * removing the shield, which is more than 200 shards bought.
+   *
+   * The deliberate answer to `Before the First Blow`, which the design expects to
+   * be the most-taken effect in the common pool.
+   */
+  ignoresShields: true,
+};
 
 /** *"+15 `Penetration` against any enemy you have already struck"* */
 const THE_WAY_IN: PassiveHooks = {
@@ -637,6 +1029,21 @@ const THE_WAY_IN: PassiveHooks = {
 // ---------------------------------------------------------------------------
 // Crush
 // ---------------------------------------------------------------------------
+
+/** *"mitigation shred you apply cannot be cleansed and lasts the battle"* */
+const STAYS_BROKEN: PassiveHooks = {
+  name: 'Stays Broken',
+  /**
+   * Two clauses, two fields, and they are **independent** (`05-status.md`):
+   * `PERMANENT` says when it ends, `cleansable` says whether anything may end it
+   * early. Water's `Wears Through` sets only the first, which is why a Water shred
+   * still washes off under a cleanse and this one does not.
+   */
+  shapeOutgoing: (instance) =>
+    instance.kind === 'shred'
+      ? { ...instance, turnsRemaining: PERMANENT, cleansable: false }
+      : instance,
+};
 
 /** *"below 50%: Stun every enemy in reach for 1 turn"* */
 const THE_FLOOR_COMES_UP: PassiveHooks = {
@@ -704,6 +1111,25 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     hooks: THE_LINE_SHORTENS,
   },
 
+  'before-the-first-blow': {
+    id: 'before-the-first-blow',
+    name: 'Before the First Blow',
+    description: `Begin every battle with a shield worth ${pct(M.firstBlowShieldFraction)} of your maximum health.`,
+    pool: 'common',
+    role: 'defense',
+    shape: 'trigger',
+    hooks: BEFORE_THE_FIRST_BLOW,
+  },
+  'not-this-time': {
+    id: 'not-this-time',
+    name: 'Not This Time',
+    description: 'Ignore the first Stun or Silence applied to you.',
+    pool: 'common',
+    role: 'defense',
+    shape: 'ward',
+    hooks: NOT_THIS_TIME,
+  },
+
   // -- Earth ---------------------------------------------------------------
   'made-heavy': {
     id: 'made-heavy',
@@ -724,7 +1150,26 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     hooks: WEIGHT_TELLS,
   },
 
+  'all-one-piece': {
+    id: 'all-one-piece',
+    name: 'All One Piece',
+    description: 'You cannot be critically hit.',
+    pool: 'earth',
+    role: 'tempo',
+    shape: 'ward',
+    hooks: ALL_ONE_PIECE,
+  },
+
   // -- Air -----------------------------------------------------------------
+  'on-the-same-breath': {
+    id: 'on-the-same-breath',
+    name: 'On the Same Breath',
+    description: 'Land a killing blow and take another turn immediately. Once per battle.',
+    pool: 'air',
+    role: 'offense',
+    shape: 'trigger',
+    hooks: ON_THE_SAME_BREATH,
+  },
   'harder-to-follow': {
     id: 'harder-to-follow',
     name: 'Harder to Follow',
@@ -746,7 +1191,73 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     hooks: IT_SPREADS,
   },
 
+  'too-close': {
+    id: 'too-close',
+    name: 'Too Close',
+    description: `When you are struck, the attacker takes ${pct(M.tooCloseFraction)} of the packet.`,
+    pool: 'fire',
+    role: 'defense',
+    shape: 'trigger',
+    hooks: TOO_CLOSE,
+  },
+  'the-draft': {
+    id: 'the-draft',
+    name: 'The Draft',
+    description: 'Damage-over-time effects you applied tick again when you act.',
+    pool: 'fire',
+    role: 'tempo',
+    shape: 'trigger',
+    hooks: THE_DRAFT,
+  },
+
+  // -- Water ---------------------------------------------------------------
+  'runs-dry': {
+    id: 'runs-dry',
+    name: 'Runs Dry',
+    description: `Bane hits you land cut the target's next heal to ${pct(M.runsDryHealMultiplier)}.`,
+    pool: 'water',
+    role: 'offense',
+    shape: 'trigger',
+    hooks: RUNS_DRY,
+  },
+  'it-passes-through': {
+    id: 'it-passes-through',
+    name: 'It Passes Through',
+    description: `Gain ${M.passesThroughResolve} Resolve, and shed the debuffs on you at the end of your turn. Once per battle.`,
+    pool: 'water',
+    role: 'defense',
+    shape: 'ward',
+    hooks: IT_PASSES_THROUGH,
+  },
+  'draws-it-up': {
+    id: 'draws-it-up',
+    name: 'Draws It Up',
+    description: `Healing you receive is increased by ${pct(M.drawsItUpHealMultiplier - 1)}.`,
+    pool: 'water',
+    role: 'tempo',
+    shape: 'trigger',
+    hooks: DRAWS_IT_UP,
+  },
+
   // -- Light ---------------------------------------------------------------
+  'held-in-the-light': {
+    id: 'held-in-the-light',
+    name: 'Held in the Light',
+    description: 'Enemies below half health cannot dodge your attacks.',
+    pool: 'light',
+    role: 'offense',
+    shape: 'trigger',
+    hooks: HELD_IN_THE_LIGHT,
+  },
+  'the-lamp-lifted': {
+    id: 'the-lamp-lifted',
+    name: 'The Lamp Lifted',
+    description: 'The first ally to fall clears every debuff from the survivors.',
+    pool: 'light',
+    role: 'tempo',
+    shape: 'trigger',
+    hooks: THE_LAMP_LIFTED,
+  },
   'nowhere-to-stand': {
     id: 'nowhere-to-stand',
     name: 'Nowhere to Stand',
@@ -758,6 +1269,24 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   },
 
   // -- Dark ----------------------------------------------------------------
+  'before-it-knew': {
+    id: 'before-it-knew',
+    name: 'Before It Knew',
+    description: `Your first attack on a target that has not yet taken a turn deals ${M.beforeItKnewMultiplier}× damage.`,
+    pool: 'dark',
+    role: 'offense',
+    shape: 'trigger',
+    hooks: BEFORE_IT_KNEW,
+  },
+  'no-one-saw': {
+    id: 'no-one-saw',
+    name: 'No One Saw',
+    description: 'Drop below half health and nothing can target you until your next turn. Once per battle.',
+    pool: 'dark',
+    role: 'defense',
+    shape: 'ward',
+    hooks: NO_ONE_SAW,
+  },
   'it-lingers': {
     id: 'it-lingers',
     name: 'It Lingers',
@@ -779,7 +1308,35 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     hooks: AGAIN_THERE,
   },
 
+  'it-stays-open': {
+    id: 'it-stays-open',
+    name: 'It Stays Open',
+    description: 'Damage-over-time you apply cannot be cleansed or shortened.',
+    pool: 'slash',
+    role: 'tempo',
+    shape: 'trigger',
+    hooks: IT_STAYS_OPEN,
+  },
+
   // -- Pierce --------------------------------------------------------------
+  'turned-aside': {
+    id: 'turned-aside',
+    name: 'Turned Aside',
+    description: 'The first critical hit against you lands as an ordinary one.',
+    pool: 'pierce',
+    role: 'defense',
+    shape: 'ward',
+    hooks: TURNED_ASIDE,
+  },
+  'straight-past': {
+    id: 'straight-past',
+    name: 'Straight Past',
+    description: 'Your attacks pass through shields without spending them.',
+    pool: 'pierce',
+    role: 'tempo',
+    shape: 'trigger',
+    hooks: STRAIGHT_PAST,
+  },
   'the-way-in': {
     id: 'the-way-in',
     name: 'The Way In',
@@ -791,6 +1348,15 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   },
 
   // -- Crush ---------------------------------------------------------------
+  'stays-broken': {
+    id: 'stays-broken',
+    name: 'Stays Broken',
+    description: 'Mitigation shred you apply cannot be cleansed and lasts the whole battle.',
+    pool: 'crush',
+    role: 'tempo',
+    shape: 'trigger',
+    hooks: STAYS_BROKEN,
+  },
   'the-floor-comes-up': {
     id: 'the-floor-comes-up',
     name: 'The Floor Comes Up',
@@ -805,6 +1371,25 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
 // ---------------------------------------------------------------------------
 // Readers
 // ---------------------------------------------------------------------------
+
+/**
+ * The effects whose implementation is **not a hook**, declared so the
+ * anti-vacuity guard can tell a deliberate exception from a forgotten one.
+ *
+ * A catalog entry with no hooks is normally decoration — a name a player pays 200
+ * shards for and nothing runs. Exactly one is legitimately empty:
+ * `Before the First Blow` places its shield at board construction, where `maxHp`
+ * is already known and no turn has been taken.
+ *
+ * **Declaring it is only half the guard.** A list in the source can be extended to
+ * excuse anything, so `apps/api` holds the other half: a test there asserts every
+ * id named here is mentioned in `board.ts` *and* that the shield is really on a
+ * built board. An effect that quietly lost its hooks would have to be added here
+ * and implemented there before the suite goes green again.
+ */
+export const RESOLVED_AT_BOARD_BUILD: readonly string[] = Object.freeze([
+  'before-the-first-blow',
+]);
 
 /** Every effect a pool offers, in catalog order. */
 export function effectsInPool(pool: PoolKey): readonly RuneEffect[] {

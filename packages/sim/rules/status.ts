@@ -634,10 +634,30 @@ export function shieldOf(hero: HeroState): number {
  * ticks actually dealt is the only quantity that survives an extension.
  */
 export function upkeepDamage(hero: HeroState): number {
+  return upkeepDamageFrom(hero, null);
+}
+
+/**
+ * The same tick, restricted to effects **one champion applied** (021 US2).
+ *
+ * Fire's `The Draft` re-ticks its bearer's own damage-over-time effects when the
+ * bearer acts, which means asking a hero *"what do the effects that came from him
+ * deal?"* — the same arithmetic as above, restricted to a source. Written as one
+ * function with the filter as a parameter rather than two, because escalation is
+ * subtle enough that a second copy would be the one that forgets `ticksDealt`.
+ *
+ * `null` means every source, which is what an ordinary Upkeep asks.
+ *
+ * **`ticksDealt` is deliberately not advanced by a re-tick.** It is a repeat of
+ * *this* tick, not an extra turn of the effect — advancing it would let `The
+ * Draft` compound an `It Catches` burn twice as fast as the burn's own clock.
+ */
+export function upkeepDamageFrom(hero: HeroState, sourceInstanceId: string | null): number {
   let total = 0;
 
   for (const s of hero.statuses) {
     if (!definitionOf(s.kind).ticksDamage) continue;
+    if (sourceInstanceId !== null && s.sourceInstanceId !== sourceInstanceId) continue;
     total += Math.round(s.magnitude * (1 + s.escalation * s.ticksDealt));
   }
 

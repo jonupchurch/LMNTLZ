@@ -106,3 +106,59 @@ describe('runeHooksFor', () => {
     expect(runeHooksFor(ids)).toHaveLength(ids.length);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Every declared hook has a collector (021 US2, T047)
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **A declared hook with nothing reading it is how fourteen passives read as
+ * inert for a whole feature.**
+ *
+ * US2 added nine hooks to `PassiveHooks` at once. Each one is a field an effect
+ * can set and a player can pay 200 shards for, and each is worth exactly nothing
+ * until some function in this file asks for it — a failure with no error, no
+ * failing test and no symptom other than a rune that does not work.
+ *
+ * **The subject list is parsed out of the interface**, never typed here. 020's
+ * anti-vacuity check named its nine hooks by hand and went stale the moment US3
+ * added eleven; a guard that lists what it checks stops checking the moment the
+ * thing it guards grows.
+ */
+const HOOK_BLOCK = (() => {
+  const start = SOURCE.indexOf('export interface PassiveHooks {');
+  expect(start, 'PassiveHooks moved or was renamed').toBeGreaterThan(0);
+
+  /* The first line that closes a block at column 0 ends the interface. */
+  const rest = SOURCE.slice(start);
+  const end = rest.indexOf('\n}\n');
+  expect(end, 'PassiveHooks is not closed at column 0').toBeGreaterThan(0);
+  return rest.slice(0, end);
+})();
+
+/** Every optional member of the interface, in declaration order. */
+const HOOK_NAMES = [...HOOK_BLOCK.matchAll(/^\s*readonly (\w+)\??:/gm)]
+  .map((m) => m[1]!)
+  .filter((name) => name !== 'name');
+
+describe('every declared hook is collected', () => {
+  it('finds the hooks by parsing the interface, not by listing them', () => {
+    expect(HOOK_NAMES.length, 'the parse found nothing — the regex or the style moved').
+      toBeGreaterThan(15);
+    expect(new Set(HOOK_NAMES).size, 'a duplicated member name').toBe(HOOK_NAMES.length);
+  });
+
+  /**
+   * The read has to be somewhere other than the declaration. `hooks.onStrike` and
+   * `h.critImmune` are both reads; the `readonly onStrike?:` line is not.
+   */
+  it('reads every one of them somewhere outside the interface', () => {
+    const body = SOURCE.replace(HOOK_BLOCK, '');
+    const unread = HOOK_NAMES.filter((name) => !new RegExp(`\\.${name}\\b`).test(body));
+
+    expect(
+      unread,
+      'a hook nothing asks for is a field an effect can set and no battle can feel',
+    ).toEqual([]);
+  });
+});

@@ -368,6 +368,27 @@ applied during this turn is applied in phase 4, survives this turn's Resolution
 at full duration, and only starts counting on its bearer's next turn. **A
 1-turn buff is always usable once.**
 
+### An extra turn, and why it is an accumulator rather than a queue jump (021 US2)
+
+Air's `On the Same Breath` — *"on a killing blow, act again immediately"* — is the
+only thing in the game that gives a champion a second turn. It is granted by
+**adding a full `ACT_THRESHOLD` to that champion's own accumulator**, not by
+forcing `turnOfInstance`.
+
+That is deliberate, and it is the same reasoning as everywhere else here: **who
+acts next is a rule with exactly one implementation**, and a second path that
+jumped the queue would be a second answer to it — the one thing the accumulator
+model exists to keep honest. A champion holding a full accumulator *is* what "next"
+means, and it can still be beaten by somebody already further along. So *"act again
+immediately"* reads as *"act again at the front of the queue"* rather than *"act
+again before the queue is consulted"*.
+
+**The grant is applied after Resolution, and that ordering is the chain bound.**
+The effect pays for the extra turn with a one-turn guard placed once durations have
+already ticked, so the guard stands through the extra turn and is dropped by that
+turn's own Resolution. An extra turn therefore cannot grant another, and a champion
+clearing a squad takes one extra turn rather than six in a row.
+
 ### Powers that skip Defense
 
 A power that deals no direct damage and no healing — a pure buff, a pure

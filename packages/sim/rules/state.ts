@@ -8,7 +8,7 @@
  * a thousand times and demand byte-identical answers.
  */
 
-import { getHero, type Hero } from '@lmntlz/content';
+import { getHero, type Hero, type Power } from '@lmntlz/content';
 
 // ---------------------------------------------------------------------------
 // The absolute row axis  (T006)
@@ -248,6 +248,37 @@ export function effectiveStat(
   key: keyof Hero['stats'],
 ): number {
   return cappedStat(base[key], (hero.statMods[key] ?? 0) + statusPoints(hero, key));
+}
+
+/**
+ * A champion's `Might` as everything else in the engine reads it.
+ *
+ * **Here rather than in `passives.ts`**, where it lived as a private helper until
+ * 021, because `runeEffects.ts` needs the same reading for `Too Close` and cannot
+ * import a value from `passives.ts` — that file imports the rune catalog, so a
+ * value import back would be a real module cycle. This module has no such
+ * problem: it is the one every other rule already depends on.
+ */
+export function mightOf(hero: HeroState): number {
+  return effectiveStat(hero, getHero(hero.heroId).stats, 'might');
+}
+
+/**
+ * `packet = Might × power.multiplier` (FR-017).
+ *
+ * **`Luck` is not in this.** Luck buys accuracy and crit chance; letting it also
+ * scale the packet would make it the only stat worth buying.
+ *
+ * A power with no multiplier at all deals no damage — that is different from
+ * dealing zero, and the null is what says so.
+ *
+ * Moved here from `damage.ts` in 021 and re-exported from there. `Too Close`
+ * reflects a fraction of *the packet*, and a second `Might × multiplier` written
+ * beside it would be the copy that forgets the null.
+ */
+export function packetOf(hero: HeroState, power: Power): number {
+  if (power.multiplier === null) return 0;
+  return mightOf(hero) * power.multiplier;
 }
 
 /**

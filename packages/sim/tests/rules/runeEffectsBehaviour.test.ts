@@ -19,21 +19,31 @@ import { describe, expect, it } from 'vitest';
 import { getAllHeroes, getHero } from '@lmntlz/content';
 import { RUNE_MAGNITUDES } from '../../rules/runeEffects.js';
 import {
+  actsAgainAfter,
   applyPassiveEffects,
+  critRefusal,
   damageMultiplierFor,
+  healMultiplierFor,
+  hitFloorFor,
+  ignoresShields,
+  onAct,
   onDeath,
+  onHealed,
   onStrike,
   onStruck,
+  onUpkeep,
   penetrationBonusFor,
+  shapeIncoming,
   shapeOutgoing,
   statBonusFor,
   targetingFor,
   type StrikeContext,
 } from '../../rules/passives.js';
 import { legalTargets } from '../../rules/targeting.js';
-import { maxHp } from '../../rules/damage.js';
-import { PERMANENT, markCount } from '../../rules/status.js';
-import { heroStateOf, type BattleState, type HeroState } from '../../rules/state.js';
+import { MAX_HIT_PROBABILITY, hitProbability } from '../../rules/probability.js';
+import { absorb, maxHp } from '../../rules/damage.js';
+import { PERMANENT, markCount, upkeepDamageFrom } from '../../rules/status.js';
+import { heroStateOf, packetOf, type BattleState, type HeroState } from '../../rules/state.js';
 import { heroStateFor, stateOf, status, withHero } from './fixtures.js';
 
 const M = RUNE_MAGNITUDES;
@@ -108,7 +118,14 @@ const runeOnly = (
 ): ReturnType<typeof onStrike> =>
   effects.filter((e) => {
     if (e.kind === 'clear') return e.sourcePowerId.startsWith('rune:');
-    if (e.kind === 'heal') return false;
+    /**
+     * **`damage` and `cleanse` carry no source at all** (021 US2), so this filter
+     * cannot see whose they are — `Too Close` and `The Lamp Lifted` are asserted
+     * against a with/without control on the board instead, which is the stronger
+     * form anyway. Listed by name rather than swept into a default so that a
+     * future kind fails the compiler here rather than being silently dropped.
+     */
+    if (e.kind === 'heal' || e.kind === 'damage' || e.kind === 'cleanse') return false;
     return e.status.sourcePowerId.startsWith('rune:');
   });
 
@@ -377,17 +394,18 @@ describe('It Lingers — debuffs you apply last longer', () => {
     heroStateOf(board({ heroId: 'h19', runes }, [{ heroId: 'h01', row: 4, id: 'd' }]), 'a');
 
   it('adds a turn to a debuff', () => {
-    const shaped = shapeOutgoing(applier(['it-lingers']), status('burn', { turnsRemaining: 2 }));
+    const shaped = shapeOutgoing(stateOf([]), applier(['it-lingers']), status('burn', { turnsRemaining: 2 }));
     expect(shaped.turnsRemaining).toBe(2 + M.itLingersExtraTurns);
   });
 
   it('🔴 leaves a positive effect alone — it is not "everything you apply"', () => {
-    const shaped = shapeOutgoing(applier(['it-lingers']), status('shield', { turnsRemaining: 2 }));
+    const shaped = shapeOutgoing(stateOf([]), applier(['it-lingers']), status('shield', { turnsRemaining: 2 }));
     expect(shaped.turnsRemaining).toBe(2);
   });
 
   it('🔴 leaves a permanent effect permanent rather than making it finite', () => {
     const shaped = shapeOutgoing(
+      stateOf([]),
       applier(['it-lingers']),
       status('debuff', { turnsRemaining: PERMANENT }),
     );
@@ -395,7 +413,7 @@ describe('It Lingers — debuffs you apply last longer', () => {
   });
 
   it('🔴 does nothing without the rune — the control', () => {
-    const shaped = shapeOutgoing(applier([]), status('burn', { turnsRemaining: 2 }));
+    const shaped = shapeOutgoing(stateOf([]), applier([]), status('burn', { turnsRemaining: 2 }));
     expect(shaped.turnsRemaining).toBe(2);
   });
 });
@@ -500,5 +518,597 @@ describe('The Floor Comes Up — stuns the reachable when it drops', () => {
     const state = hurt(0.3, ['the-floor-comes-up']);
     const once = fold(state, onStruck(strike(state, 'a', 'd')));
     expect(runeOnly(onStruck(strike(once, 'a', 'd')))).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US2 — the seventeen that needed a new engine capability
+// ---------------------------------------------------------------------------
+
+/** A board with one runed defender, at a chosen fraction of its pool. */
+const at = (fraction: number, runes: readonly string[], attackerRunes: readonly string[] = []) => {
+  const state = board({ heroId: 'h19', runes: attackerRunes }, [
+    { heroId: 'h01', row: 4, id: 'd', runes },
+    { heroId: 'h04', row: 5, id: 'd2' },
+  ]);
+  const d = heroStateOf(state, 'd');
+  return withHero(state, 'd', { hp: Math.max(1, Math.round(maxHp(d) * fraction)) });
+};
+
+describe('Not This Time — a ward with one charge', () => {
+  const stun = () => status('stun', { turnsRemaining: 1, sourceInstanceId: 'a' });
+
+  /**
+   * ⚠️ **The bearer must not be an Earth champion, and the first draft of this
+   * file made it one.**
+   *
+   * h01 Bramwen carries `The Deep Holds`, which refuses a one-turn Stun outright
+   * — control is priced at exactly one turn, so "one turn shorter" is immunity for
+   * the three Earth champions. Every assertion here passed on a board where the
+   * *House passive* was doing the refusing and the rune contributed nothing: the
+   * refusal looked right and `paid` was empty, which is the ward never spending.
+   *
+   * h19 Kaellis is Slash and refuses nothing, so what is measured below is the
+   * rune.
+   */
+  const warded = (runes: readonly string[]) => {
+    const state = board({ heroId: 'h01' }, [{ heroId: 'h19', row: 4, id: 'd', runes }]);
+    return state;
+  };
+
+  it('refuses the first Stun and pays a latch for it', () => {
+    const state = warded(['not-this-time']);
+    const result = shapeIncoming(state, heroStateOf(state, 'd'), stun());
+
+    expect(result.instance, 'the Stun does not land').toBeNull();
+    expect(result.paid, 'a ward that refuses without paying refuses forever').not.toEqual([]);
+  });
+
+  it('🔴 lets the second one through once the charge is spent', () => {
+    const state = warded(['not-this-time']);
+    const first = shapeIncoming(state, heroStateOf(state, 'd'), stun());
+    const spentBoard = fold(state, first.paid);
+
+    expect(shapeIncoming(spentBoard, heroStateOf(spentBoard, 'd'), stun()).instance).not.toBeNull();
+  });
+
+  it('🔴 names a class — a burn is not what the charge is for', () => {
+    const state = warded(['not-this-time']);
+    const burn = status('burn', { turnsRemaining: 3, magnitude: 9, sourceInstanceId: 'a' });
+    const result = shapeIncoming(state, heroStateOf(state, 'd'), burn);
+
+    expect(result.instance, 'a minor tick must not spend the charge').not.toBeNull();
+    expect(result.paid).toEqual([]);
+  });
+
+  it('🔴 spends on a Silence as readily as a Stun', () => {
+    const state = warded(['not-this-time']);
+    const silence = status('silence', { turnsRemaining: 1, sourceInstanceId: 'a' });
+    expect(shapeIncoming(state, heroStateOf(state, 'd'), silence).instance).toBeNull();
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = warded([]);
+    const result = shapeIncoming(state, heroStateOf(state, 'd'), stun());
+    expect(result.instance, 'a Slash champion refuses nothing on its own').not.toBeNull();
+    expect(result.paid).toEqual([]);
+  });
+});
+
+describe('All One Piece — crit immunity', () => {
+  it('refuses a crit, and pays nothing because it is not a charge', () => {
+    const state = at(1, ['all-one-piece']);
+    const refusal = critRefusal(state, heroStateOf(state, 'd'));
+
+    expect(refusal.refused).toBe(true);
+    expect(refusal.paid, 'immunity is permanent; a payment would make it a ward').toEqual([]);
+  });
+
+  it('🔴 keeps refusing — it is not spent by use', () => {
+    const state = at(1, ['all-one-piece']);
+    const after = fold(state, critRefusal(state, heroStateOf(state, 'd')).paid);
+    expect(critRefusal(after, heroStateOf(after, 'd')).refused).toBe(true);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = at(1, []);
+    expect(critRefusal(state, heroStateOf(state, 'd')).refused).toBe(false);
+  });
+});
+
+describe('Turned Aside — the first crit lands as an ordinary hit', () => {
+  it('refuses the first crit and pays for it', () => {
+    const state = at(1, ['turned-aside']);
+    const refusal = critRefusal(state, heroStateOf(state, 'd'));
+
+    expect(refusal.refused).toBe(true);
+    expect(refusal.paid).not.toEqual([]);
+  });
+
+  it('🔴 lets the second crit land — the ward is spent', () => {
+    const state = at(1, ['turned-aside']);
+    const spentBoard = fold(state, critRefusal(state, heroStateOf(state, 'd')).paid);
+    expect(critRefusal(spentBoard, heroStateOf(spentBoard, 'd')).refused).toBe(false);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = at(1, []);
+    expect(critRefusal(state, heroStateOf(state, 'd')).refused).toBe(false);
+  });
+});
+
+describe('On the Same Breath — one extra turn on a killing blow', () => {
+  const boardWith = (runes: readonly string[]) =>
+    board({ heroId: 'h19', runes }, [{ heroId: 'h01', row: 4, id: 'd' }]);
+
+  it('grants an extra turn when the turn killed somebody', () => {
+    const state = boardWith(['on-the-same-breath']);
+    expect(actsAgainAfter(state, heroStateOf(state, 'a'), true)).not.toBeNull();
+  });
+
+  it('🔴 grants nothing on a turn that killed nobody', () => {
+    const state = boardWith(['on-the-same-breath']);
+    expect(actsAgainAfter(state, heroStateOf(state, 'a'), false)).toBeNull();
+  });
+
+  /** The chain bound (spec A-04): the guard it paid with refuses the next grant. */
+  it('🔴 an extra turn cannot itself grant another', () => {
+    const state = boardWith(['on-the-same-breath']);
+    const paid = actsAgainAfter(state, heroStateOf(state, 'a'), true);
+    expect(paid).not.toBeNull();
+    const guarded = fold(state, paid ?? []);
+
+    expect(actsAgainAfter(guarded, heroStateOf(guarded, 'a'), true)).toBeNull();
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = boardWith([]);
+    expect(actsAgainAfter(state, heroStateOf(state, 'a'), true)).toBeNull();
+  });
+});
+
+describe('Too Close — the attacker takes a share of the packet', () => {
+  const reflected = (effects: ReturnType<typeof onStruck>): number =>
+    effects.reduce((sum, e) => sum + (e.kind === 'damage' ? e.amount : 0), 0);
+
+  it('reflects a fraction of the packet at whoever swung', () => {
+    const state = at(1, ['too-close']);
+    const ctx = strike(state, 'a', 'd');
+    const expected = Math.round(packetOf(ctx.attacker, ctx.power) * M.tooCloseFraction);
+
+    expect(expected, 'a zero packet would make this test vacuous').toBeGreaterThan(0);
+    expect(reflected(onStruck(ctx))).toBe(expected);
+  });
+
+  it('🔴 aims at the attacker, never at the bearer', () => {
+    const state = at(1, ['too-close']);
+    const hits = onStruck(strike(state, 'a', 'd')).filter((e) => e.kind === 'damage');
+    expect(hits.map((e) => (e.kind === 'damage' ? e.bearerInstanceId : ''))).toEqual(['a']);
+  });
+
+  /** FR-019 — a reflect can finish somebody, and `fold` runs it through the guard. */
+  it('🔴 can take the attacker off the board', () => {
+    const state = withHero(at(1, ['too-close']), 'a', { hp: 1 });
+    const after = fold(state, onStruck(strike(state, 'a', 'd')));
+    expect(heroStateOf(after, 'a').hp).toBe(0);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = at(1, []);
+    expect(reflected(onStruck(strike(state, 'a', 'd')))).toBe(0);
+  });
+});
+
+describe('The Draft — your damage-over-time ticks again when you act', () => {
+  const burning = (runes: readonly string[], sourceInstanceId: string) => {
+    const state = board({ heroId: 'h19', runes }, [{ heroId: 'h01', row: 4, id: 'd' }]);
+    return withHero(state, 'd', {
+      statuses: [status('burn', { magnitude: 11, turnsRemaining: 3, sourceInstanceId })],
+    });
+  };
+
+  const dealt = (state: BattleState): number =>
+    onUpkeep(state, heroStateOf(state, 'a')).reduce(
+      (sum, e) => sum + (e.kind === 'damage' ? e.amount : 0),
+      0,
+    );
+
+  it('re-ticks a burn it applied, for what that burn deals', () => {
+    const state = burning(['the-draft'], 'a');
+    expect(dealt(state)).toBe(upkeepDamageFrom(heroStateOf(state, 'd'), 'a'));
+    expect(dealt(state), 'a zero tick would make this vacuous').toBeGreaterThan(0);
+  });
+
+  it('🔴 leaves another champion’s burn alone — it is *your* effects', () => {
+    const state = burning(['the-draft'], 'someone-else');
+    expect(dealt(state)).toBe(0);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(dealt(burning([], 'a'))).toBe(0);
+  });
+});
+
+describe('Runs Dry — a Bane hit halves the target’s next heal', () => {
+  const boardFor = (runes: readonly string[]) =>
+    board({ heroId: PAIR.attacker, runes }, [
+      { heroId: PAIR.bane, row: 4, id: 'd' },
+      { heroId: PAIR.neutral, row: 5, id: 'n' },
+    ]);
+
+  const marked = (runes: readonly string[], defenderId: string) => {
+    const state = boardFor(runes);
+    return fold(state, onStrike(strike(state, 'a', defenderId)));
+  };
+
+  it('halves a heal on somebody it marked with a Bane hit', () => {
+    const after = marked(['runs-dry'], 'd');
+    expect(healMultiplierFor(after, heroStateOf(after, 'a'), heroStateOf(after, 'd'))).toBe(
+      M.runsDryHealMultiplier,
+    );
+  });
+
+  it('🔴 marks nobody on a hit that is not a Bane hit', () => {
+    const after = marked(['runs-dry'], 'n');
+    expect(healMultiplierFor(after, heroStateOf(after, 'a'), heroStateOf(after, 'n'))).toBe(1);
+  });
+
+  it('🔴 is spent by the next heal — "next", not "every"', () => {
+    const after = marked(['runs-dry'], 'd');
+    const healed = fold(after, onHealed(after, heroStateOf(after, 'a'), heroStateOf(after, 'd')));
+
+    expect(healMultiplierFor(healed, heroStateOf(healed, 'a'), heroStateOf(healed, 'd'))).toBe(1);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const after = marked([], 'd');
+    expect(healMultiplierFor(after, heroStateOf(after, 'a'), heroStateOf(after, 'd'))).toBe(1);
+  });
+});
+
+describe('Draws It Up — healing you receive is increased', () => {
+  it('raises a heal landing on its own bearer', () => {
+    const state = at(0.5, ['draws-it-up']);
+    expect(healMultiplierFor(state, heroStateOf(state, 'a'), heroStateOf(state, 'd'))).toBe(
+      M.drawsItUpHealMultiplier,
+    );
+  });
+
+  it('🔴 leaves a heal on somebody else alone — it is healing *you* receive', () => {
+    const state = at(0.5, ['draws-it-up']);
+    expect(healMultiplierFor(state, heroStateOf(state, 'a'), heroStateOf(state, 'd2'))).toBe(1);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = at(0.5, []);
+    expect(healMultiplierFor(state, heroStateOf(state, 'a'), heroStateOf(state, 'd'))).toBe(1);
+  });
+});
+
+describe('It Passes Through — Resolve, and one shed of debuffs', () => {
+  const debuffed = (runes: readonly string[]) => {
+    const state = at(1, runes);
+    return withHero(state, 'd', {
+      statuses: [status('debuff', { stat: 'might', magnitude: -8, turnsRemaining: 3 })],
+    });
+  };
+
+  const debuffsOn = (state: BattleState, id: string): number =>
+    heroStateOf(state, id).statuses.filter((s) => s.kind === 'debuff').length;
+
+  it('grants Resolve unconditionally', () => {
+    const state = at(1, ['it-passes-through']);
+    const control = at(1, []);
+
+    expect(
+      statBonusFor(state, heroStateOf(state, 'd'), 'resolve') -
+        statBonusFor(control, heroStateOf(control, 'd'), 'resolve'),
+    ).toBe(M.passesThroughResolve);
+  });
+
+  it('sheds the debuffs standing at the end of its turn', () => {
+    const state = debuffed(['it-passes-through']);
+    const after = fold(state, onAct(state, heroStateOf(state, 'd')));
+    expect(debuffsOn(after, 'd')).toBe(0);
+  });
+
+  it('🔴 does nothing on a turn with nothing to shed — the charge is not wasted', () => {
+    const state = at(1, ['it-passes-through']);
+    expect(runeOnly(onAct(state, heroStateOf(state, 'd')))).toEqual([]);
+  });
+
+  it('🔴 sheds once per battle', () => {
+    const first = debuffed(['it-passes-through']);
+    const after = fold(first, onAct(first, heroStateOf(first, 'd')));
+    const again = withHero(after, 'd', {
+      statuses: [
+        ...heroStateOf(after, 'd').statuses,
+        status('debuff', { stat: 'might', magnitude: -8, turnsRemaining: 3 }),
+      ],
+    });
+
+    expect(debuffsOn(fold(again, onAct(again, heroStateOf(again, 'd'))), 'd')).toBe(1);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = debuffed([]);
+    expect(debuffsOn(fold(state, onAct(state, heroStateOf(state, 'd'))), 'd')).toBe(1);
+  });
+});
+
+describe('Held in the Light — enemies below half cannot dodge you', () => {
+  const floorFor = (state: BattleState): number | null =>
+    hitFloorFor(state, heroStateOf(state, 'a'), heroStateOf(state, 'd'));
+
+  it('puts certainty under an attack on a target below half', () => {
+    expect(floorFor(at(0.3, [], ['held-in-the-light']))).toBe(M.heldInTheLightFloor);
+  });
+
+  it('🔴 does nothing against a target above half — the threshold', () => {
+    expect(floorFor(at(0.8, [], ['held-in-the-light']))).toBeNull();
+  });
+
+  /** ⚠️ A-02: this is the only thing in the game that passes `MAX_HIT_PROBABILITY`. */
+  it('🔴 raises the clamped probability itself, not merely a flag', () => {
+    const armed = at(0.3, [], ['held-in-the-light']);
+    const control = at(0.3, [], []);
+
+    expect(hitProbability(armed, 'a', 'd')).toBe(M.heldInTheLightFloor);
+    expect(hitProbability(control, 'a', 'd')).toBeLessThanOrEqual(MAX_HIT_PROBABILITY);
+  });
+
+  it('🔴 belongs to the attacker — a bystander carrying it helps nobody', () => {
+    expect(floorFor(at(0.3, ['held-in-the-light'])), 'the bearer is the defender here').toBeNull();
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(floorFor(at(0.3, [], []))).toBeNull();
+  });
+});
+
+describe('The Lamp Lifted — the first ally to fall clears the survivors', () => {
+  const squad = (runes: readonly string[]) =>
+    board(
+      { heroId: 'h19', runes },
+      [{ heroId: 'h01', row: 4, id: 'd' }],
+      [{ heroId: 'h04', row: 2, id: 'ally', runes: [] }],
+    );
+
+  /**
+   * ⚠️ **Appends rather than replaces**, and the first draft replaced.
+   *
+   * The once-per-battle latch is a mark on the champion's own `statuses`, so
+   * assigning a fresh array to re-debuff it also erased the latch — and the
+   * "fires once" test then watched the effect fire a second time and called that
+   * the bug. The fixture was wiping the very thing under test.
+   */
+  const withDebuff = (state: BattleState, id: string) =>
+    withHero(state, id, {
+      statuses: [
+        ...heroStateOf(state, id).statuses,
+        status('debuff', { stat: 'might', magnitude: -8, turnsRemaining: 3 }),
+      ],
+    });
+
+  const debuffsOn = (state: BattleState, id: string): number =>
+    heroStateOf(state, id).statuses.filter((s) => s.kind === 'debuff').length;
+
+  it('clears every survivor on its own side when an ally falls', () => {
+    const state = withDebuff(squad(['the-lamp-lifted']), 'a');
+    const after = fold(withHero(state, 'ally', { hp: 0 }), onDeath(state, heroStateOf(state, 'ally')));
+
+    expect(debuffsOn(after, 'a')).toBe(0);
+  });
+
+  it('🔴 does not fire when an enemy falls — it is *an ally*', () => {
+    const state = withDebuff(squad(['the-lamp-lifted']), 'a');
+    const after = fold(withHero(state, 'd', { hp: 0 }), onDeath(state, heroStateOf(state, 'd')));
+
+    expect(debuffsOn(after, 'a')).toBe(1);
+  });
+
+  it('🔴 fires once — the *first* ally to fall', () => {
+    const state = squad(['the-lamp-lifted']);
+    const once = fold(
+      withHero(state, 'ally', { hp: 0 }),
+      onDeath(state, heroStateOf(state, 'ally')),
+    );
+    const relapsed = withDebuff(once, 'a');
+
+    expect(debuffsOn(fold(relapsed, onDeath(relapsed, heroStateOf(relapsed, 'ally'))), 'a')).toBe(1);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = withDebuff(squad([]), 'a');
+    const after = fold(withHero(state, 'ally', { hp: 0 }), onDeath(state, heroStateOf(state, 'ally')));
+    expect(debuffsOn(after, 'a')).toBe(1);
+  });
+});
+
+describe('Before It Knew — double against a target that has not moved', () => {
+  const facing = (runes: readonly string[], hasActed: boolean) => {
+    const state = board({ heroId: 'h19', runes }, [{ heroId: 'h01', row: 4, id: 'd' }]);
+    return withHero(state, 'd', { hasActed });
+  };
+
+  const multiplier = (state: BattleState): number => damageMultiplierFor(strike(state, 'a', 'd'));
+
+  /**
+   * ⚠️ **A ratio against the control, never an absolute.** h19 Kaellis carries
+   * `The Duelist's Habit`, worth +25% against a target he has not yet struck, so
+   * the total here is never the rune's number on its own — and "fixing" the rune
+   * until the total read 2 would have deleted a passive to satisfy a test about
+   * something else.
+   */
+  it('doubles the blow, on top of whatever else the champion carries', () => {
+    const armed = multiplier(facing(['before-it-knew'], false));
+    const control = multiplier(facing([], false));
+
+    expect(armed / control).toBeCloseTo(M.beforeItKnewMultiplier);
+  });
+
+  it('🔴 does nothing to a target that has already had a turn', () => {
+    const armed = multiplier(facing(['before-it-knew'], true));
+    const control = multiplier(facing([], true));
+    expect(armed / control).toBeCloseTo(1);
+  });
+
+  it('🔴 is worth double only on the *first* attack against that target', () => {
+    const state = facing(['before-it-knew'], false);
+    const struck = fold(state, onStrike(strike(state, 'a', 'd')));
+
+    const armedAgain = multiplier(struck);
+    const control = multiplier(fold(facing([], false), onStrike(strike(facing([], false), 'a', 'd'))));
+
+    expect(armedAgain / control).toBeCloseTo(1);
+  });
+});
+
+describe('No One Saw — untargetable below half, until your next turn', () => {
+  /**
+   * ⚠️ **Two reachable defenders, because a fade that would empty the candidate
+   * set is ignored** — an invariant that predates this rune by four features and
+   * is what stops a Buffer fading itself into invulnerability.
+   *
+   * The first draft put the second defender in row 5, out of the attacker's
+   * reach, so hiding the one in row 4 left nothing legal and `legalTargets`
+   * correctly dropped the filter. The rune was working; the board could not show
+   * it.
+   */
+  const hidden = (fraction: number, runes: readonly string[], attackerRunes: string[] = []) => {
+    const state = board({ heroId: 'h19', runes: attackerRunes }, [
+      { heroId: 'h01', row: 4, id: 'd', runes },
+      { heroId: 'h04', row: 4, id: 'd2' },
+    ]);
+    const d = heroStateOf(state, 'd');
+    return withHero(state, 'd', { hp: Math.max(1, Math.round(maxHp(d) * fraction)) });
+  };
+
+  const canBeSeen = (state: BattleState): boolean => {
+    const { filters, compulsion } = targetingFor(state, 'a');
+    return legalTargets(state, 'a', tier0Of('h19'), filters, compulsion).candidates.includes('d');
+  };
+
+  it('hides its bearer below half', () => {
+    expect(canBeSeen(hidden(0.3, ['no-one-saw']))).toBe(false);
+  });
+
+  it('🔴 does not hide it above half — the threshold', () => {
+    expect(canBeSeen(hidden(0.8, ['no-one-saw']))).toBe(true);
+  });
+
+  /** *"Until your next turn"* — without it, a champion below half is unkillable. */
+  it('🔴 stops hiding once the bearer has taken its turn', () => {
+    const state = hidden(0.3, ['no-one-saw']);
+    const acted = fold(state, onUpkeep(state, heroStateOf(state, 'd')));
+    expect(canBeSeen(acted)).toBe(true);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(canBeSeen(hidden(0.3, []))).toBe(true);
+  });
+
+  /** 🔴 The counter-pair (spec A-05): Light's answer to Dark, and it wins. */
+  it('🔴 is seen through by Nowhere to Stand', () => {
+    expect(canBeSeen(hidden(0.3, ['no-one-saw'], ['nowhere-to-stand']))).toBe(true);
+  });
+});
+
+describe('It Stays Open — damage-over-time that cannot be lifted', () => {
+  const applier = (runes: readonly string[]): HeroState =>
+    heroStateOf(board({ heroId: 'h19', runes }, [{ heroId: 'h01', row: 4, id: 'd' }]), 'a');
+
+  it('seals every damage-over-time kind it applies against cleansing', () => {
+    const sealed = (kind: 'burn' | 'bleed' | 'poison') =>
+      shapeOutgoing(stateOf([]), applier(['it-stays-open']), status(kind)).cleansable;
+
+    expect([sealed('burn'), sealed('bleed'), sealed('poison')]).toEqual([false, false, false]);
+  });
+
+  it('🔴 leaves a Stun alone — it is *damage-over-time* you apply', () => {
+    const shaped = shapeOutgoing(
+      stateOf([]),
+      applier(['it-stays-open']),
+      status('stun', { turnsRemaining: 2 }),
+    );
+    expect(shaped.cleansable).toBe(true);
+  });
+
+  /** *"Or reduced"* — one rule, written at `The Deep Holds` rather than twice. */
+  it('🔴 cannot be shortened on the way in either', () => {
+    const earth = board({ heroId: 'h02' }, [{ heroId: 'h01', row: 4, id: 'd' }]);
+    const sealed = { ...status('stun', { turnsRemaining: 2 }), cleansable: false };
+    const ordinary = status('stun', { turnsRemaining: 2 });
+    const bearer = heroStateOf(earth, 'a');
+
+    expect(shapeIncoming(earth, bearer, sealed).instance?.turnsRemaining).toBe(2);
+    expect(
+      shapeIncoming(earth, bearer, ordinary).instance?.turnsRemaining,
+      'the control: Earth still shortens an ordinary Stun',
+    ).toBe(1);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(shapeOutgoing(stateOf([]), applier([]), status('burn')).cleansable).toBe(true);
+  });
+});
+
+describe('Stays Broken — shred that lasts the battle and cannot be lifted', () => {
+  const applier = (runes: readonly string[]): HeroState =>
+    heroStateOf(board({ heroId: 'h19', runes }, [{ heroId: 'h01', row: 4, id: 'd' }]), 'a');
+
+  const shred = () => status('shred', { stat: 'armor', magnitude: 0.3, turnsRemaining: 2 });
+
+  it('makes a shred permanent and uncleansable — two independent fields', () => {
+    const shaped = shapeOutgoing(stateOf([]), applier(['stays-broken']), shred());
+    expect(shaped.turnsRemaining).toBe(PERMANENT);
+    expect(shaped.cleansable).toBe(false);
+  });
+
+  it('🔴 leaves a burn alone — it is *mitigation shred* you apply', () => {
+    const shaped = shapeOutgoing(stateOf([]), applier(['stays-broken']), status('burn'));
+    expect(shaped.turnsRemaining).not.toBe(PERMANENT);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const shaped = shapeOutgoing(stateOf([]), applier([]), shred());
+    expect(shaped.turnsRemaining).toBe(2);
+    expect(shaped.cleansable).toBe(true);
+  });
+});
+
+describe('Straight Past — attacks that pass through shields', () => {
+  const shielded = (attackerRunes: readonly string[]) => {
+    const state = board({ heroId: 'h19', runes: attackerRunes }, [
+      { heroId: 'h01', row: 4, id: 'd' },
+    ]);
+    return withHero(state, 'd', {
+      statuses: [status('shield', { magnitude: 100, turnsRemaining: PERMANENT })],
+    });
+  };
+
+  it('reads the flag off the attacker', () => {
+    expect(ignoresShields(heroStateOf(shielded(['straight-past']), 'a'))).toBe(true);
+  });
+
+  /** 🔴 The counter-pair (spec A-05): Pierce's answer to `Before the First Blow`. */
+  it('🔴 delivers the whole packet past a shield that would have eaten it', () => {
+    const state = shielded(['straight-past']);
+    const defender = heroStateOf(state, 'd');
+    const through = absorb(defender, 60, ignoresShields(heroStateOf(state, 'a')));
+
+    expect(through.throughput, 'the shield holds 100 and the blow is 60').toBe(60);
+    expect(through.absorbed).toBe(0);
+    expect(through.statuses, 'through, not around — the shield is not spent').toEqual(
+      defender.statuses,
+    );
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    const state = shielded([]);
+    const through = absorb(heroStateOf(state, 'd'), 60, ignoresShields(heroStateOf(state, 'a')));
+
+    expect(through.throughput).toBe(0);
+    expect(through.absorbed).toBe(60);
   });
 });

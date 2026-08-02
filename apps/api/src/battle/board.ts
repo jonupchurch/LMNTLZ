@@ -35,11 +35,25 @@ import { getHero, type StatKey } from '@lmntlz/content';
 import {
   AXIS_ROW_OF,
   HP_PER_TOUGHNESS,
+  PERMANENT,
+  RESOLVED_AT_BOARD_BUILD,
   ROW_CAPACITY,
   RUNE_EFFECTS,
+  RUNE_MAGNITUDES,
   cappedStat,
 } from '@lmntlz/sim/rules';
 import type { BattleState, HeroState, Side, SquadRow } from '@lmntlz/sim/rules';
+
+/**
+ * The one catalog entry whose implementation lives in this file.
+ *
+ * **Read from the engine's own declaration rather than typed here**, so the
+ * exemption in `runeEffects.ts` and the implementation below cannot drift apart:
+ * adding a second id there without writing code here fails the guard in
+ * `tests/battle/runeEffectsInBattle.test.ts` rather than shipping a 200-shard
+ * purchase that does nothing.
+ */
+const FIRST_BLOW = RESOLVED_AT_BOARD_BUILD[0]!;
 
 /**
  * **The rows are `SquadRow`, not a local union.** Spelling the three names out
@@ -199,9 +213,12 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
     const toughness = cappedStat(hero.stats.toughness, seat.runes?.statPoints.toughness ?? 0);
     const hp = toughness * HP_PER_TOUGHNESS;
 
+    const effects = knownEffects(side, seat);
+    const instanceId = instanceIdOf(side, seat);
+
     return {
       heroId: seat.heroId,
-      instanceId: instanceIdOf(side, seat),
+      instanceId,
       side,
       row: ROW_OF[side][seat.row],
       hp,
@@ -215,7 +232,38 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
       accumulator: 0,
       /** Every power available at turn 1 except those behind a tier gate. */
       cooldowns: {},
-      statuses: [],
+      /**
+       * **`Before the First Blow` is placed here, and here is the only place it
+       * could be** (021 US2).
+       *
+       * The shield is *"worth 30% of max HP"*, so it has to be sized after the
+       * pool is known — and the pool is known exactly two lines up, because
+       * Toughness runes are resolved eagerly for the reason above. It also has to
+       * exist before the first turn, and this is the only code that runs then. An
+       * `onBattleStart` hook would be a seam with one caller, in the one module
+       * that does not need it.
+       *
+       * `PERMANENT`, because a shield with a duration would quietly expire on a
+       * champion who never got hit; it is spent by being spent. Uncleansable in
+       * the sense that matters — a strip removes *positive* effects, and this is
+       * one — is left alone deliberately: `Straight Past` is the authored answer to
+       * this effect, not a strip.
+       */
+      statuses: effects.includes(FIRST_BLOW)
+        ? [
+            {
+              kind: 'shield' as const,
+              turnsRemaining: PERMANENT,
+              magnitude: Math.round(hp * RUNE_MAGNITUDES.firstBlowShieldFraction),
+              stat: null,
+              sourceInstanceId: instanceId,
+              sourcePowerId: `rune:${FIRST_BLOW}`,
+              escalation: 0,
+              ticksDealt: 0,
+              cleansable: true,
+            },
+          ]
+        : [],
       /**
        * **The rune points, as flat modifiers** — which is what `statMods` is
        * for, and what `reachMod`'s own comment (*"e.g. +1 from a reach rune"*)
@@ -251,7 +299,7 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
        * carries these ids opaquely because it reads frozen history; this is the
        * boundary where they stop being opaque.
        */
-      runeEffects: knownEffects(side, seat),
+      runeEffects: effects,
       hasActed: false,
     };
   });

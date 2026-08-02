@@ -34,6 +34,8 @@ import { getHero } from '@lmntlz/content';
 import {
   SURVIVAL_HP,
   afterTick,
+  ACT_THRESHOLD,
+  actsAgainAfter,
   afterUpkeep,
   applyPassiveEffects,
   battleEnded,
@@ -45,6 +47,7 @@ import {
   isStanding,
   lethalGuard,
   maxHp,
+  fallenBetween,
   onAct,
   onDeath,
   onUpkeep,
@@ -211,7 +214,21 @@ export function applyResolution(
     ...state,
     heroes: state.heroes.map((h) =>
       h.instanceId === instanceId
-        ? clampToPool({ ...h, cooldowns: ticked, statuses })
+        ? /**
+           * **`hasActed` is set here, and here is the only place it could be**
+           * (021 US2). Every turn passes through Resolution — a resolved action, a
+           * pass, and a champion that lost the whole turn to a stun — so this is
+           * the one point that sees them all.
+           *
+           * It therefore reads *"this champion has had a turn"* rather than
+           * *"this champion did something"*. Dark's `Before It Knew` is worth
+           * double against a target that has not yet moved, and a chain-stunned
+           * defender staying permanently unaware would make a stun rune and a Dark
+           * rune multiply into something neither was priced as.
+           *
+           * **Never unset.** It is a fact about the past.
+           */
+          clampToPool({ ...h, cooldowns: ticked, statuses, hasActed: true })
         : h,
     ),
     /**
@@ -291,11 +308,28 @@ export function applyUpkeep(
    * damage-over-time effects, and treating it as the definition of "an Upkeep"
    * would make Bramwen's build depend on whether she happened to be poisoned.
    */
-  const grown = applyPassiveEffects(
+  const beforeGrowth = state;
+  let grown = applyPassiveEffects(
     state,
     onUpkeep(state, heroStateOf(state, instanceId)),
     maxHp,
   );
+
+  /**
+   * **An Upkeep effect can now kill somebody else** (021 US2).
+   *
+   * `The Draft` re-ticks every damage-over-time effect its bearer applied, at the
+   * moment the bearer acts — so for the first time an enemy across the board can
+   * fall during a champion's own Upkeep, before that champion has swung. Swept
+   * with the same helper `resolveOne` uses, so *"who fell just now"* has one
+   * answer rather than two.
+   *
+   * `lethalGuard` has already run inside the fold. What is left here is the
+   * consequence: `The Veil Closes` feeds, and the conclusion below sees a real
+   * board rather than a body nothing reported.
+   */
+  const felled = fallenBetween(beforeGrowth, grown);
+  for (const f of felled) grown = applyPassiveEffects(grown, onDeath(grown, f), maxHp);
 
   const hero = heroStateOf(grown, instanceId);
   const damage = upkeepDamage(hero);
@@ -343,6 +377,42 @@ export function applyUpkeep(
     damage,
     died,
   };
+}
+
+/**
+ * **An extra turn, granted as a full accumulator** (021 US2, `On the Same Breath`).
+ *
+ * The design says *"on a killing blow, act again immediately"*. The grant is
+ * `ACT_THRESHOLD` on the champion's own accumulator rather than a forced
+ * `turnOfInstance`, and that is a deliberate reading: the turn order is a rule
+ * with exactly one implementation in `nextActor`, and a second path that jumped
+ * the queue would be a second implementation of who acts next — the one thing the
+ * accumulator model exists to keep honest. A champion sitting on a full
+ * accumulator is what "next" means here, and it can still be beaten to the punch
+ * by somebody who was already further along, which is the same rule everyone else
+ * plays under.
+ *
+ * **Applied after Resolution, never before.** Resolution ticks the champion's
+ * durations, and the chain-guard the effect pays with has to survive that tick to
+ * be standing during the extra turn — which is exactly how it bounds the chain.
+ */
+function grantExtraTurn(
+  state: BattleState,
+  instanceId: string,
+  killed: boolean,
+): BattleState {
+  const hero = heroStateOf(state, instanceId);
+  const paid = actsAgainAfter(state, hero, killed);
+  if (paid === null) return state;
+
+  const granted: BattleState = {
+    ...state,
+    heroes: state.heroes.map((h) =>
+      h.instanceId === instanceId ? { ...h, accumulator: h.accumulator + ACT_THRESHOLD } : h,
+    ),
+  };
+
+  return applyPassiveEffects(granted, paid, maxHp);
 }
 
 export interface TakenTurn {
@@ -402,7 +472,11 @@ export function takeTurn(
   const resolved = resolveOne(seed, afterUpkeepState, intent, drawIndex);
 
   return {
-    state: applyResolution(resolved.state, intent.actorInstanceId, intent.powerId),
+    state: grantExtraTurn(
+      applyResolution(resolved.state, intent.actorInstanceId, intent.powerId),
+      intent.actorInstanceId,
+      resolved.packet.deaths.length > 0,
+    ),
     /*
      * Upkeep damage is added to the turn's reported damage rather than hidden.
      * A burn that took 14 off a champion is something the battle log has to be

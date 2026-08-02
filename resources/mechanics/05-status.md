@@ -113,6 +113,27 @@ places:
 wire view of a duration must therefore treat *"no numeral"* as a state rather than
 as a number — see *Effect visibility* below.
 
+### What `cleansable: false` forbids, stated fully (021 US2)
+
+**An uncleansable effect cannot be *shortened* either.** *"Nothing may end this
+early"* covers clipping a turn off it as much as removing it outright; the two are
+the same act at different sizes, and a rule that only refused the larger one would
+let a one-turn effect be shortened out of existence while calling itself
+cleanse-proof.
+
+The rule is written **once**, at the incoming-shaping step, because that is the
+only place a duration can be reduced after it is built. It has one live consequence
+today and one live counter-example:
+
+| | |
+|---|---|
+| Slash's `It Stays Open` | *"damage-over-time you apply cannot be cleansed **or reduced**"* — one sentence, one flag, and no second field to keep in step |
+| Earth's `The Deep Holds` | still shortens an *ordinary* Stun by a turn. Only the sealed ones pass through |
+
+The alternative was a second flag beside `cleansable`, which would have to be
+checked in both places by everyone who ever adds a third — and eventually would
+not be.
+
 ---
 
 ## Landing an effect

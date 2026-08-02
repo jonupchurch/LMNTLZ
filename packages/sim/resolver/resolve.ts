@@ -28,7 +28,10 @@ import {
   durationForTier,
   effectiveStat,
   HP_PER_TOUGHNESS,
+  critRefusal,
+  fallenBetween,
   healPreview,
+  ignoresShields,
   heroStateOf,
   isStanding,
   legalTargets,
@@ -38,6 +41,7 @@ import {
   onApplied,
   onCrit,
   onDeath,
+  onHealed,
   onMissed,
   onStrike,
   onStruck,
@@ -334,8 +338,18 @@ function applyOrRemove(
    * control is priced at one turn, so shortening it by one removes it. The rider
    * still spent its draw — it won the contest and was then held.
    */
-  const instance = shapeIncoming(current, shapeOutgoing(applier, built));
-  if (instance === null || instance.turnsRemaining <= 0) return state;
+  const shaped = shapeIncoming(state, current, shapeOutgoing(state, applier, built));
+
+  /**
+   * **A refusal can cost something** (021). `Not This Time` holds one charge
+   * against a Stun or a Silence, and the charge is spent here — the shaping
+   * decided both, so the payment travels with the decision rather than being
+   * re-derived by a second reader that could disagree.
+   */
+  const instance = shaped.instance;
+  if (instance === null || instance.turnsRemaining <= 0) {
+    return shaped.paid.length > 0 ? applyPassiveEffects(state, shaped.paid, maxHp) : state;
+  }
 
   const statuses = applyStatus(current.statuses, instance);
   landed.push(`${rider.kind}:${current.instanceId}`);
@@ -468,12 +482,14 @@ export function resolveOne(
     let next = state;
     let healed = 0;
     let wasted = 0;
+    const healedIds: string[] = [];
 
     for (const target of targetsOf(state, power, primary)) {
       const preview = healPreview(next, actor.instanceId, power.id, target.instanceId);
       const current = heroStateOf(next, target.instanceId);
       const restored = Math.min(preview.amount, maxHp(current) - current.hp);
       healed += restored;
+      healedIds.push(current.instanceId);
       /**
        * **Kept rather than discarded**, which is the whole of the reported bug.
        * `healPreview` computes it and this loop used to drop it on the floor, so
@@ -484,6 +500,19 @@ export function resolveOne(
       wasted += preview.overheal;
       next = replaceHero(next, { ...current, hp: current.hp + restored });
     }
+
+    /**
+     * **What a landed heal sets off** (021 US2). `Runs Dry` halves one heal and
+     * then lets go, and *"one"* has to be spent somewhere — this is the only
+     * moment the board knows a heal happened.
+     *
+     * Folded after every target, not per target, so a party heal spends the mark
+     * once rather than once per ally.
+     */
+    const healEffects = healedIds.flatMap((id) =>
+      onHealed(next, heroStateOf(next, actor.instanceId), heroStateOf(next, id)),
+    );
+    if (healEffects.length > 0) next = applyPassiveEffects(next, healEffects, maxHp);
 
     return {
       state: next,
@@ -565,18 +594,45 @@ export function resolveOne(
 
   const struck: string[] = [];
 
+  /** Read once for the packet: it is a property of the attacker, not of a target. */
+  const piercesShields = ignoresShields(actor);
+
   for (const target of targetsOf(state, power, primary)) {
     const perTarget = damagePreview(next, actor.instanceId, power.id, target.instanceId);
-    const raw = crit ? perTarget.critFinal : perTarget.final;
 
+    if (!isStanding(heroStateOf(next, target.instanceId))) continue;
+
+    /**
+     * **Crit is decided per packet and applied per target** (021 US2).
+     *
+     * `All One Piece` is immune to critical hits and `Turned Aside` spends a
+     * charge to take the first one as a normal blow — so on a row-hitting power
+     * one defender can eat the crit while the one beside it does not. The draw
+     * above is untouched: cancelling it would let a defender's rune shift the
+     * draw sequence for everybody else on the board.
+     */
+    const refusal = crit
+      ? critRefusal(next, heroStateOf(next, target.instanceId))
+      : { refused: false, paid: [] as readonly PassiveEffect[] };
+    if (refusal.paid.length > 0) next = applyPassiveEffects(next, refusal.paid, maxHp);
+
+    const raw = crit && !refusal.refused ? perTarget.critFinal : perTarget.final;
+
+    /**
+     * **Read after the charge is spent, never before.** `Turned Aside` pays with a
+     * mark, and a `current` captured above would be written back over the top of
+     * it a few lines down — the ward would refuse every crit for the rest of the
+     * battle, and nothing would fail.
+     */
     const current = heroStateOf(next, target.instanceId);
-    if (!isStanding(current)) continue;
 
     /**
      * **The shield eats first, and a broken one passes the remainder through in
-     * the same step** — it never absorbs a whole strike for free.
+     * the same step** — it never absorbs a whole strike for free. `Straight Past`
+     * is the one thing that skips it, deliberately answering `Before the First
+     * Blow`, the most-taken effect in the common pool.
      */
-    const { throughput, statuses } = absorb(current, raw);
+    const { throughput, statuses } = absorb(current, raw, piercesShields);
 
     let hp = Math.max(0, current.hp - throughput);
 
@@ -666,7 +722,27 @@ export function resolveOne(
       ...onAllyStruck(next, ctx.attacker, defender, power),
     ];
   });
+  const beforeTriggers = next;
   next = applyPassiveEffects(next, strikeEffects, maxHp);
+
+  /**
+   * **A trigger can kill, and the death has to be a death** (021 US2).
+   *
+   * `Too Close` reflects a fraction of the packet at the attacker, so for the
+   * first time something other than the payload or a burn tick can take a champion
+   * off the board. Swept rather than reported by the effect itself: the fold is
+   * where HP changes, and a sweep is correct for every future effect that can kill
+   * without anybody having to remember to declare it.
+   *
+   * `lethalGuard` has already run inside the fold, so anything found here genuinely
+   * fell. Whoever fell is added to `deaths` — the packet the client draws its log
+   * from — and to `fallen`, so `The Veil Closes` feeds on it exactly as it would
+   * on a killing blow.
+   */
+  for (const felled of fallenBetween(beforeTriggers, next)) {
+    deaths.push(felled.instanceId);
+    fallen.push(felled);
+  }
 
   /**
    * ---- `EFFECT_ORDER` step 5: what a death sets off ----------------------
