@@ -27,6 +27,8 @@ import type { DamageType, HeroId } from '@lmntlz/content';
 import { getHero } from '@lmntlz/content';
 import type { HeroState } from '@lmntlz/sim/rules';
 import { FORCE_RING, FORCE_TEXT, HeroIcon, HeroPortrait } from '../../components/index.js';
+import { StatusRow } from './StatusRow.js';
+import type { WireStatus } from './statusPips.js';
 
 export type CombatantScale = 'board' | 'rail';
 
@@ -186,6 +188,43 @@ export function Combatant({
        * Nothing is lost either way — `aria-label` on the root carries the name,
        * the health and the state in one sentence regardless.
        */}
+      {/**
+       * --- the effects strip -------------------------------------------------
+       *
+       * ⭐ **T050 — every champion on the board, both sides.** Until 020 US4 the
+       * engine applied burns, stuns, shields and shreds and the screen showed a
+       * health bar going down, so a player watched thirty hero turns of arithmetic
+       * with no account of *why*.
+       *
+       * **A fallen champion shows none.** Its effects are off the board with it,
+       * and a corpse still burning is a question the card cannot answer.
+       *
+       * ### ⚠️ The board, and deliberately not the rails
+       *
+       * The first cut drew pips on rail cards too, and a screenshot showed them
+       * **sitting on top of `earth · row 3 · R1`** on every one of the twelve. A
+       * rail card is 64px tall with the portrait taking the left 44px, and the
+       * remainder already carries three lines — the name, the Force line and the
+       * health bar. There is no fourth band to put anything in.
+       *
+       * The e2e test did not catch it because `[data-combatant="d-front-0"]`
+       * matches the board card *and* the rail card, and `.first()` is the board.
+       * It is pinned now, from both directions.
+       *
+       * Positioned absolutely above the label strip, which is what makes the
+       * height free: pips appearing and expiring cannot move the name, the Force
+       * or the health bar, because none of them are in flow with it.
+       */}
+      {board && !down && (
+        <span className="absolute right-1.5 bottom-12 left-1.5 z-10">
+          <StatusRow
+            statuses={hero.statuses as readonly WireStatus[]}
+            scale={scale}
+            heroName={content.name}
+          />
+        </span>
+      )}
+
       <span
         hidden={!board && (down || unreachable)}
         className={[

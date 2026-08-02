@@ -73,13 +73,39 @@ function squad(side: 'attacker' | 'defender', ids: readonly string[]): Hero[] {
   }));
 }
 
-const state = (turnOfInstance: string | null, defenderHp = 1250) => ({
+/**
+ * One effect on the wire, **with `turnsRemaining` as the server actually sends
+ * it** (020 US4).
+ *
+ * `null` is not a placeholder here: a permanent effect is `Infinity`, which
+ * `JSON.stringify` writes as `null`, and a withheld enemy duration is redacted to
+ * the same thing by `disclose.ts`. A fixture that wrote `999` would exercise a
+ * path production never takes.
+ */
+const effect = (kind: string, patch: Record<string, unknown> = {}) => ({
+  kind,
+  stat: null,
+  magnitude: 12,
+  turnsRemaining: 3,
+  sourceInstanceId: 'a-front-0',
+  sourcePowerId: 'p',
+  escalation: 0,
+  ticksDealt: 0,
+  cleansable: true,
+  ...patch,
+});
+
+const state = (
+  turnOfInstance: string | null,
+  defenderHp = 1250,
+  statuses: Readonly<Record<string, readonly unknown[]>> = {},
+) => ({
   heroes: [
     ...squad('attacker', HERO_IDS.slice(0, 6)),
     ...squad('defender', HERO_IDS.slice(6, 12)).map((h) =>
       h.instanceId === 'd-front-0' ? { ...h, hp: defenderHp } : h,
     ),
-  ],
+  ].map((h) => (statuses[h.instanceId] ? { ...h, statuses: statuses[h.instanceId] } : h)),
   heroTurn: 1,
   turnOfInstance,
   engineVersion: 'e2e',
@@ -97,6 +123,7 @@ async function inBattle(
    * during an ambush lost the only notice they were in one — reported live.
    */
   zone: 'visible' | 'hidden' = 'visible',
+  statuses: Readonly<Record<string, readonly unknown[]>> = {},
 ): Promise<void> {
   await signedIn(page);
 
@@ -117,7 +144,7 @@ async function inBattle(
         zone,
         ambushed: zone === 'hidden',
         sequence: 4,
-        state: state('a-front-0'),
+        state: state('a-front-0', 1250, statuses),
         conclusion: null,
         startedAt: '2026-07-29T00:00:00.000Z',
         concludedAt: null,
@@ -677,5 +704,110 @@ test.describe('the result', () => {
     const result = page.getByRole('region', { name: 'Result' });
     await expect(result).toContainText(/already settled/i);
     await expect(result, 'invented a zero payout').not.toContainText('+0');
+  });
+});
+
+/**
+ * The status row, in a browser that does layout (020 US4, T048).
+ *
+ * ### ⚠️ The first draft of this file was vacuous, and the mutants said so
+ *
+ * It asserted *"never moves the name when an effect lands"* — the height-reservation
+ * rule from T046 — and **no mutation could make it fail.** Putting the row back
+ * into normal flow, the exact mistake the rule is about, changed nothing.
+ *
+ * The reason is worth writing down rather than working around: every layer of a
+ * champion card is **absolutely positioned over a portrait**, so the layout shift
+ * T046 warns about is impossible here by construction rather than by care. There
+ * is no height to reserve because nothing is in flow to push.
+ *
+ * What *is* possible with absolute positioning is the other failure — **overlap**.
+ * A row placed a few pixels low sits on top of the champion's name, which is
+ * precisely how the squad cards shipped once before. So that is what these
+ * measure, and a mutant that moves the row down by one band does make them fail.
+ */
+test.describe('the status row', () => {
+  const cardOf = (page: Page) => page.locator('[data-combatant="d-front-0"]').first();
+
+  test('draws pips at a real size, inside the card they belong to', async ({ page }) => {
+    await inBattle(page, 'visible', {
+      'd-front-0': [effect('burn'), effect('stun', { turnsRemaining: 1 })],
+    });
+    await page.goto('/');
+
+    const card = cardOf(page);
+    await expect(card).toBeVisible();
+
+    const pips = card.locator('[data-status-pip]');
+    await expect(pips).toHaveCount(2);
+
+    const cardBox = (await card.boundingBox())!;
+    for (const pip of await pips.all()) {
+      const box = (await pip.boundingBox())!;
+
+      expect(box.x).toBeGreaterThanOrEqual(cardBox.x - 1);
+      expect(box.y).toBeGreaterThanOrEqual(cardBox.y - 1);
+      expect(box.x + box.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+      expect(box.y + box.height).toBeLessThanOrEqual(cardBox.y + cardBox.height + 1);
+
+      /* A 0×0 pip is in the DOM and invisible — jsdom cannot tell the difference. */
+      expect(box.width).toBeGreaterThan(8);
+      expect(box.height).toBeGreaterThan(8);
+    }
+  });
+
+  /**
+   * 🔴 **The failure this level exists to catch.** The name, the Force and the
+   * health bar all live in an absolutely positioned strip at the bottom of the
+   * card; a status row placed one band too low covers them, and every unit test
+   * still passes because the DOM is identical.
+   */
+  /**
+   * 🔴 **The rail card carries none, and a screenshot is what said so.**
+   *
+   * The first cut drew them there too and they landed squarely on
+   * `earth · row 3 · R1` — a 64px card with a 44px portrait has three lines of
+   * room and three lines in it. Every assertion above still passed, because
+   * `[data-combatant]` matches the board card *and* the rail card and `.first()`
+   * is the board one.
+   *
+   * So this reads the **last** match rather than the first, and asserts the
+   * absence. It is the only test in the file that can see the defect.
+   */
+  test('draws nothing on the rail card, which has no room for it', async ({ page }) => {
+    await inBattle(page, 'visible', {
+      'd-front-0': [effect('burn'), effect('stun', { turnsRemaining: 1 })],
+    });
+    await page.goto('/');
+
+    const cards = page.locator('[data-combatant="d-front-0"]');
+    await expect(cards).toHaveCount(2);
+
+    await expect(cards.first().locator('[data-status-pip]')).toHaveCount(2);
+    await expect(cards.last().locator('[data-status-pip]')).toHaveCount(0);
+  });
+
+  test('never covers the champion’s name or its health bar', async ({ page }) => {
+    await inBattle(page, 'visible', {
+      'd-front-0': [effect('burn'), effect('shield'), effect('stun'), effect('fade')],
+    });
+    await page.goto('/');
+
+    const card = cardOf(page);
+    const name = card.locator('[data-may-ellipsis]').first();
+    await expect(name).toBeVisible();
+
+    const nameBox = (await name.boundingBox())!;
+
+    for (const pip of await card.locator('[data-status-pip]').all()) {
+      const box = (await pip.boundingBox())!;
+      const overlaps =
+        box.x < nameBox.x + nameBox.width &&
+        box.x + box.width > nameBox.x &&
+        box.y < nameBox.y + nameBox.height &&
+        box.y + box.height > nameBox.y;
+
+      expect(overlaps, 'a pip is sitting on top of the champion’s name').toBe(false);
+    }
   });
 });

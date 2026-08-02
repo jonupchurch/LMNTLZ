@@ -573,7 +573,51 @@ export const describeEvent = (event: TurnEvent, nameOf: (instanceId: string) => 
     return `${actor} mends ${target ?? 'the line'}, already at full health.`;
   }
 
-  return `${actor} attacks ${target ?? 'nothing'}. Hits for ${damage} damage${crit ? ', a critical' : ''}.`;
+  return (
+    `${actor} attacks ${target ?? 'nothing'}. Hits for ${damage} damage${crit ? ', a critical' : ''}.` +
+    describeRiders(event, nameOf)
+  );
+};
+
+/**
+ * What stuck and what did not (020 US4, T049).
+ *
+ * ### The board and the transcript disagreed, and the board was the one telling
+ * the truth
+ *
+ * `ridersLanded` and `ridersResisted` have been on the wire since US1 and the log
+ * has never read either. So a burn landed, a pip appeared on the champion, and
+ * the only written account of the turn said *"Hits for 41 damage"* — the effect
+ * arrived from nowhere. Worse in the other direction: a rider that was **resisted**
+ * produced no pip and no line, which is indistinguishable from a power that never
+ * had a rider at all.
+ *
+ * Both halves are reported for that reason. *"Bramwen resists the slow"* is the
+ * sentence that tells a player the contest happened and they lost it — and the
+ * potency ladder is a real mechanic they can build against, so it has to be
+ * visible.
+ *
+ * **Named for the target, not counted.** A row-hitting power contests each head
+ * separately, so `burn:d-front-0, burn:d-middle-1` is two contests with two
+ * outcomes; a line reading *"2 riders landed"* would hide which champion is
+ * actually burning.
+ */
+const describeRiders = (event: TurnEvent, nameOf: (instanceId: string) => string): string => {
+  const phrase = (entries: readonly string[]): string =>
+    entries
+      .map((entry) => {
+        const [kind, instanceId] = entry.split(':');
+        return `${kind} on ${instanceId ? nameOf(instanceId) : 'the line'}`;
+      })
+      .join(', ');
+
+  const landed = event.outcome.ridersLanded;
+  const resisted = event.outcome.ridersResisted;
+
+  return (
+    (landed.length > 0 ? ` ${phrase(landed)} takes hold.` : '') +
+    (resisted.length > 0 ? ` Resisted: ${phrase(resisted)}.` : '')
+  );
 };
 
 

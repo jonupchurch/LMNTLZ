@@ -213,6 +213,40 @@ never fire — which is what makes it useful. If it ever does, something genuine
 went wrong (emergency hotfix, rollback, accidental push) rather than being
 routine noise.
 
+#### Deploy note — **a changed `engineVersion` must drain** (020 T025)
+
+Most deploys need none of this. The one that does is a deploy where
+`engineVersion()` in `packages/sim/rules/index.ts` returns a different string
+from the one production is serving, because **every open battle was stamped with
+the old one and cannot be continued honestly under the new**.
+
+Before merging such a change:
+
+1. Set Edge Config to `draining` and leave it ~15 minutes. New battles are
+   refused; in-flight ones finish.
+2. Deploy.
+3. Set it back to `live`.
+
+Skipping it is not a corruption risk — `act.ts` compares the stamp and answers
+`version-mismatch` rather than resolving the battle wrongly — but it strands
+whoever was mid-fight, and *the game refused my move* is a support ticket where a
+15-minute window is not.
+
+**It has fired three times, for three unrelated reasons**, which is the point
+worth remembering: the stamp answers *"would this log produce this state
+again"*, not *"did the RNG change"*.
+
+| Bump | What actually changed |
+|---|---|
+| `e0.2.0` | the pacing pass — every HP total in the game |
+| `e0.3.0` | the status layer — rider contests spend draws that did not exist |
+| `e0.4.0` / `e0.5.0` | the passive layer — **no draw moves at all**, but the same draws now produce different outcomes, and `Still Burning` changes whether a champion is standing |
+
+**Stored replays are never at risk and it is worth being exact about why.** A
+replay is a stored event log and is played back verbatim, never re-simulated
+(Constitution XVI) — so a balance patch cannot reach backwards. Only *open*
+battles have a boundary to cross.
+
 ### The API is versioned because the client can be stale
 
 Unlike a web app, a Steam client is a downloaded artifact and players do not

@@ -19,7 +19,7 @@
 
 import { Hono } from 'hono';
 import { contentVersion } from '@lmntlz/content';
-import { engineVersion, type Conclusion } from '@lmntlz/sim/rules';
+import { engineVersion, type Conclusion, type Side } from '@lmntlz/sim/rules';
 import { requireSession } from '../auth/middleware.js';
 import { writeReplayBlob } from '../replays/record.js';
 import { requireContext, type AuthedEnv } from '../auth/context.js';
@@ -38,7 +38,19 @@ import {
   createBattle,
   openBattleFor,
 } from './create.js';
+import { disclosePacket } from './disclose.js';
 import { appendAction, SequenceGapError, type ActionPacket } from './idempotency.js';
+
+/**
+ * **Whose eyes these routes answer for.**
+ *
+ * Every one of them is behind `requireSession` and refuses a battle the caller
+ * does not attack — `act.ts` checks `row.attackerId` — so the viewer is always
+ * the attacking side. Named rather than inlined because it is a *fact about who
+ * is asking*, and the day a spectator or a defender's review can read a packet,
+ * this is the line that has to change rather than three call sites.
+ */
+const VIEWER: Side = 'attacker';
 import { expiryHours } from './expiry.js';
 import { resolveToNextChoice } from './packet.js';
 import { discard, settle } from './settle.js';
@@ -356,7 +368,7 @@ battleRoutes.post('/battles', async (c) => {
         zone: created.zone,
         ambushed: created.ambushed,
         sequence: created.sequence,
-        packet: created.packet,
+        packet: disclosePacket(created.packet, VIEWER),
       },
       201,
     );
@@ -489,7 +501,18 @@ battleRoutes.post('/battles/:battleId/act', async (c) => {
       throw new Error('unreachable: a written sequence never resolves');
     });
     return c.json(
-      { sequence: intent.sequence, packet: stored.packet, nextSequence: intent.sequence + 1 },
+      /**
+       * **The replayed path redacts too, and it is the one easiest to miss.**
+       * This packet was read back out of the idempotency table, where it is
+       * stored *unredacted* on purpose: storing is not exposing, and that row is
+       * what an investigation reads. A retry that disclosed more than the
+       * original response would make the leak reachable by simply asking twice.
+       */
+      {
+        sequence: intent.sequence,
+        packet: disclosePacket(stored.packet, VIEWER),
+        nextSequence: intent.sequence + 1,
+      },
       200,
     );
   }
@@ -545,7 +568,7 @@ battleRoutes.post('/battles/:battleId/act', async (c) => {
     return c.json(
       {
         sequence: intent.sequence,
-        packet: result.packet satisfies ActionPacket,
+        packet: disclosePacket(result.packet satisfies ActionPacket, VIEWER),
         nextSequence: intent.sequence + 1,
         /**
          * **The one request that can ever say this.** The amounts are not
