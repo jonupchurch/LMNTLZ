@@ -106,13 +106,18 @@ const statusesOf = (state: BattleState, id: string): readonly HeroState['statuse
 
 describe('the registry', () => {
   /**
-   * **37 of 40: four Role, nine House, and 24 of the 27 uniques.**
+   * **38 of 40: four Role, nine House, and 25 of the 27 uniques.**
    *
-   * The three that are not implemented are named in `HELD_UNIQUES` and each is
-   * waiting on something that does not exist — two reactive powers, one a tier-5
-   * spender for Reckoning. **Derived rather than written as a number**, so
-   * building one of the three moves the count here and in the catalog together
-   * and cannot leave the two disagreeing.
+   * The two that are not implemented are named in `HELD_UNIQUES`, and both wait on
+   * the same thing: **the roster authors no reactive power**, so one grants
+   * immunity to nothing and the other denies nothing. **Derived rather than
+   * written as a number**, so building one moves the count here and in the catalog
+   * together and cannot leave the two disagreeing.
+   *
+   * `It All Comes Back` left this list in 2026-08-02 — the block it was waiting on
+   * turned out not to be a missing power at all. Marisel's tier 4 and tier 5 both
+   * exist; what was missing was the rule that reads and spends the stacks, and a
+   * rule about a resource belongs on the passive that owns it.
    */
   it('implements every passive except the three that are held', () => {
     expect(IMPLEMENTED_PASSIVES).toHaveLength(PASSIVES.length - HELD_UNIQUES.length);
@@ -125,12 +130,12 @@ describe('the registry', () => {
    * the registry and quietly added here would keep the count above green while a
    * champion lost its passive.
    */
-  it('holds exactly three, all of them real and none of them running', () => {
+  it('holds exactly two, both of them real and neither running', () => {
     for (const name of HELD_UNIQUES) {
       expect(getPassive(name), `${name} is held but is not a passive`).toBeDefined();
       expect(IMPLEMENTED_PASSIVES, `${name} is held and implemented`).not.toContain(name);
     }
-    expect(HELD_UNIQUES).toHaveLength(3);
+    expect(HELD_UNIQUES).toHaveLength(2);
   });
 
   /**

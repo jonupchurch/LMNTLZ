@@ -273,6 +273,34 @@ export const PASSIVE_MAGNITUDES = Object.freeze({
   duelistBonus: 0.25,
 
   /**
+   * **Reckoning** — the roster's only stacking *resource*, and its three numbers.
+   *
+   * `03-powers.md`: *"Her passive `It All Comes Back` adds a stack to a target each
+   * time she damages it. Tier 4 reads the stacks and scales with them without
+   * consuming them. Tier 5 spends every stack."* The doc authors the **mechanic**
+   * and no magnitudes, so these three are placeholders in exactly the sense the
+   * hero numbers are, and they live here so the tuning pass is one edit.
+   *
+   * ⚠️ **Sized against the design's battle, not the one the engine currently
+   * produces.** At ~8.5 turns per champion Marisel banks ~7 stacks before her
+   * tier-5 comes off cooldown, so the cap binds and the finisher is worth about
+   * double. At the measured ~2.3 turns she banks two, and it is worth +40%. The
+   * same 3.6× under-delivery the rune catalog carries, for the same reason.
+   */
+  reckoningReadStep: 0.08,
+  /** What each spent stack is worth on the finisher. Larger, because it is spent. */
+  reckoningSpendStep: 0.2,
+  /**
+   * The stack ceiling.
+   *
+   * **Bounded on the reader, not on the mark.** `Find the Seam` already
+   * establishes that the counter itself stays uncapped — three passives read one
+   * mark and each wants the raw total — so the cap is applied where the number is
+   * consumed.
+   */
+  reckoningStacks: 5,
+
+  /**
    * `Confluence` — a payoff for playing Reyna's whole kit, not for a stat.
    *
    * Below a ladder step, because unlike every other conditional multiplier here
@@ -776,6 +804,15 @@ export interface PassiveHooks {
 const M = PASSIVE_MAGNITUDES;
 
 const passivePowerId = (name: string): string => `passive:${name}`;
+
+/**
+ * The two tiers Reckoning is expressed at (`03-powers.md` § *Stacks*).
+ *
+ * Named rather than written inline, because `ctx.power.tier === 5` in the middle
+ * of a hook body is a number whose meaning is entirely in the reader's head.
+ */
+const RECKONING_READS = 4;
+const RECKONING_SPENDS = 5;
 
 /**
  * A status a passive places, at the passive tier.
@@ -1370,6 +1407,85 @@ const THE_DUELISTS_HABIT: PassiveHooks = {
 };
 
 /**
+ * *"adds a stack to a target each time she damages it; tier 4 reads them, tier 5
+ * spends them"* — **Reckoning**, and it is one mechanic in three expressions.
+ *
+ * ### Why this sat unimplemented, and why it no longer has to
+ *
+ * `HELD_UNIQUES` recorded it as *"the passive banks Reckoning; tier 4 reads it and
+ * tier 5 spends it, and no power can yet"*, and building the bank alone would have
+ * been a seam with no caller. That reading was right about the shape and wrong
+ * about the blocker: **both powers already exist** — Marisel's `Your Own Past,
+ * Rising` and `Drown in What You Did` — and what was missing was not a power but
+ * the rule that makes them read and spend. A passive is where that rule goes,
+ * because the passive is the thing that owns the resource.
+ *
+ * ### Keyed on the TIER, never on the power's name
+ *
+ * A display name is prose and may be re-worded; the tier is what `03-powers.md`
+ * actually specifies (*"tier 4 reads, tier 5 spends"*) and what the whole magnitude
+ * system is already indexed by. Marisel holds exactly one power at each of those
+ * tiers, so the two readings pick out the same two powers today — and if she is
+ * re-authored, the tier is the half that stays true.
+ *
+ * ### The stack is read BEFORE the strike that places it
+ *
+ * `damageMultiplier` runs during the action and `onStrike` after the payload
+ * connects, so a blow is scaled by the stacks that existed when it was thrown.
+ * That is the ordering `The Duelist's Habit` relies on from the other end — the
+ * doc calls the two *"the exact inverse"* of each other, and they are only
+ * inverses if they read at the same moment.
+ */
+const IT_ALL_COMES_BACK: PassiveHooks = {
+  name: 'It All Comes Back',
+
+  damageMultiplier: (ctx) => {
+    const banked = Math.min(
+      markCount(ctx.defender, ctx.attacker.instanceId, passivePowerId('It All Comes Back')),
+      M.reckoningStacks,
+    );
+    if (banked === 0) return 1;
+
+    if (ctx.power.tier === RECKONING_READS) return 1 + banked * M.reckoningReadStep;
+    if (ctx.power.tier === RECKONING_SPENDS) return 1 + banked * M.reckoningSpendStep;
+
+    /** Every other power banks and reads nothing. The resource is not a stat. */
+    return 1;
+  },
+
+  /**
+   * **The finisher spends and does not re-bank.** Placing a fresh mark in the same
+   * breath as clearing them would leave the target on one stack after a power whose
+   * whole text is *"spends every stack"* — a rule that contradicts itself by one,
+   * which is the kind of thing that reads as a rounding bug for a year.
+   */
+  onStrike: (ctx) =>
+    ctx.power.tier === RECKONING_SPENDS
+      ? [
+          {
+            kind: 'clear',
+            bearerInstanceId: ctx.defender.instanceId,
+            sourceInstanceId: ctx.attacker.instanceId,
+            sourcePowerId: passivePowerId('It All Comes Back'),
+          },
+        ]
+      : [
+          {
+            kind: 'accumulate',
+            bearerInstanceId: ctx.defender.instanceId,
+            status: fromPassive('It All Comes Back', ctx.attacker, 'mark', {
+              magnitude: 0,
+              turnsRemaining: PERMANENT,
+              cleansable: false,
+            }),
+            step: 1,
+            /** Uncapped, like `Find the Seam`'s — the cap belongs to the reader. */
+            cap: PERMANENT,
+          },
+        ],
+};
+
+/**
  * *"both her Forces have hit this battle: +20% damage for the rest of it"*
  *
  * Reyna's Forces are `slash` and `water`. A mark per Force, keyed by type on the
@@ -1534,6 +1650,7 @@ const REGISTRY: Readonly<Record<string, PassiveHooks>> = Object.freeze({
   [STILL_BURNING.name]: STILL_BURNING,
   [MERCIFUL.name]: MERCIFUL,
   [THE_DUELISTS_HABIT.name]: THE_DUELISTS_HABIT,
+  [IT_ALL_COMES_BACK.name]: IT_ALL_COMES_BACK,
   [CONFLUENCE.name]: CONFLUENCE,
   [SEAMS_EVERYWHERE.name]: SEAMS_EVERYWHERE,
   [THE_LEDGER_KEPT.name]: THE_LEDGER_KEPT,
@@ -1562,7 +1679,6 @@ const REGISTRY: Readonly<Record<string, PassiveHooks>> = Object.freeze({
 export const HELD_UNIQUES: readonly string[] = Object.freeze([
   'Already Gone',
   'Nothing to Discuss',
-  'It All Comes Back',
 ]);
 
 /** Every passive with an implementation, by name. */

@@ -826,3 +826,130 @@ describe('No Warning — Boldrek crits harder', () => {
     expect(critMultiplierFor(strike(other, 'a', 'd'))).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// 21 · It All Comes Back — Marisel, and Reckoning
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **The roster's only stacking resource, and it had never run.**
+ *
+ * `03-powers.md`: the passive banks, tier 4 reads without consuming, tier 5
+ * spends. Three expressions of one mechanic, so all three are asserted here —
+ * and the one that would be easiest to get silently wrong is the *ordering*: a
+ * blow is scaled by the stacks that existed when it was thrown, never by the one
+ * it is about to place.
+ */
+describe('It All Comes Back — Marisel banks, reads and spends', () => {
+  const RECKONING = 'passive:It All Comes Back';
+  const fresh = () => board({ heroId: 'h10', row: 3 }, [{ heroId: 'h01', row: 4, id: 'd' }]);
+
+  /** Marisel's tier-4 reader and tier-5 spender, found by tier rather than by name. */
+  const MARISEL = getHero('h10');
+  const READER = MARISEL.powers.findIndex((p) => p.tier === 4);
+  const SPENDER = MARISEL.powers.findIndex((p) => p.tier === 5);
+
+  const banked = (state: BattleState): number => markCount(heroStateOf(state, 'd'), 'a', RECKONING);
+
+  /** Land `n` ordinary blows, banking a stack each time. */
+  const after = (n: number): BattleState => {
+    let state = fresh();
+    for (let i = 0; i < n; i++) {
+      state = applyPassiveEffects(state, onStrike(strike(state, 'a', 'd')), maxHp);
+    }
+    return state;
+  };
+
+  it('the premise: her tier 4 and tier 5 both exist', () => {
+    expect(READER, 'no tier-4 power on Marisel').toBeGreaterThanOrEqual(0);
+    expect(SPENDER, 'no tier-5 power on Marisel').toBeGreaterThanOrEqual(0);
+  });
+
+  it('🔴 banks one stack per damaging strike', () => {
+    expect(banked(fresh())).toBe(0);
+    expect(banked(after(1))).toBe(1);
+    expect(banked(after(3))).toBe(3);
+  });
+
+  /**
+   * 🔴 **The control.** An ordinary power reads nothing, however deep the bank —
+   * the resource is not a stat, and a version that paid on every swing would be a
+   * flat damage bonus wearing a resource's costume.
+   */
+  it('🔴 pays nothing on an ordinary power, however many are banked', () => {
+    expect(damageMultiplierFor(strike(after(4), 'a', 'd'))).toBeCloseTo(1, 5);
+  });
+
+  it('🔴 tier 4 reads the stacks and scales with them', () => {
+    const three = after(3);
+    expect(damageMultiplierFor(strike(three, 'a', 'd', READER))).toBeCloseTo(
+      1 + 3 * M.reckoningReadStep,
+      5,
+    );
+  });
+
+  it('🔴 tier 4 does NOT consume them — that is the whole difference', () => {
+    const three = after(3);
+    const spent = applyPassiveEffects(three, onStrike(strike(three, 'a', 'd', READER)), maxHp);
+
+    expect(banked(spent), 'reading banked a fourth rather than clearing').toBe(4);
+  });
+
+  it('🔴 tier 5 is worth more per stack than tier 4', () => {
+    const three = after(3);
+    const read = damageMultiplierFor(strike(three, 'a', 'd', READER));
+    const spend = damageMultiplierFor(strike(three, 'a', 'd', SPENDER));
+
+    expect(spend).toBeGreaterThan(read);
+    expect(spend).toBeCloseTo(1 + 3 * M.reckoningSpendStep, 5);
+  });
+
+  /**
+   * 🔴 **Spends every stack, and banks none in the same breath.** A finisher that
+   * left the target on one would contradict its own text by exactly one, which is
+   * the kind of thing that reads as a rounding bug for a year.
+   */
+  it('🔴 tier 5 clears the bank to zero', () => {
+    const three = after(3);
+    const spent = applyPassiveEffects(three, onStrike(strike(three, 'a', 'd', SPENDER)), maxHp);
+
+    expect(banked(spent)).toBe(0);
+  });
+
+  /**
+   * 🔴 **The cap binds the reader, not the mark.** `Find the Seam` established
+   * that the counter itself stays uncapped, because three passives read one mark
+   * and each wants the raw total.
+   */
+  it('🔴 caps what a strike can read while the mark keeps counting', () => {
+    const many = after(M.reckoningStacks + 3);
+
+    expect(banked(many), 'the mark is uncapped').toBe(M.reckoningStacks + 3);
+    expect(damageMultiplierFor(strike(many, 'a', 'd', SPENDER))).toBeCloseTo(
+      1 + M.reckoningStacks * M.reckoningSpendStep,
+      5,
+    );
+  });
+
+  /**
+   * 🔴 **Read before placed** — the ordering that makes this the exact inverse of
+   * `The Duelist's Habit`. The first blow of a battle must pay nothing, or the
+   * strike that opens the bank would also collect on it.
+   */
+  it('🔴 pays nothing on the very first blow', () => {
+    expect(damageMultiplierFor(strike(fresh(), 'a', 'd', SPENDER))).toBeCloseTo(1, 5);
+  });
+
+  /** The bank is per target: hitting one champion does not arm a blow at another. */
+  it('🔴 banks against the target it struck, not the board', () => {
+    const two = board({ heroId: 'h10', row: 3 }, [
+      { heroId: 'h01', row: 4, id: 'd' },
+      { heroId: 'h02', row: 4, id: 'e' },
+    ]);
+    const struck = applyPassiveEffects(two, onStrike(strike(two, 'a', 'd')), maxHp);
+
+    expect(markCount(heroStateOf(struck, 'd'), 'a', RECKONING)).toBe(1);
+    expect(markCount(heroStateOf(struck, 'e'), 'a', RECKONING)).toBe(0);
+    expect(damageMultiplierFor(strike(struck, 'a', 'e', SPENDER))).toBeCloseTo(1, 5);
+  });
+});
