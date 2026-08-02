@@ -326,6 +326,15 @@ export interface ProgressionConfig {
   readonly balanceCap: number;
   /** `0.8`. Served so the refund control never types a percentage of its own. */
   readonly refundRate: number;
+  /**
+   * `100`. **Served rather than shipped, like every other number here.**
+   *
+   * The result screen shows what the streak *paid*, which the server sends, so nothing
+   * needs this today. A screen that wants to say *"your streak starts paying at 100"* —
+   * the profile, the matchmaking rail — must read it rather than type it, or moving the
+   * threshold would need a client release and, on Steam, a store submission.
+   */
+  readonly streakBonusThreshold: number;
 }
 
 export function progressionConfig(): ProgressionConfig {
@@ -342,5 +351,6 @@ export function progressionConfig(): ProgressionConfig {
     capInRunes: CAP_IN_RUNES,
     balanceCap: BALANCE_CAP,
     refundRate: REFUND_RATE,
+    streakBonusThreshold: STREAK_BONUS_THRESHOLD,
   };
 }
