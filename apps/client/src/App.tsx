@@ -188,15 +188,32 @@ function GameApp(): JSX.Element {
   }, []);
 
   /**
-   * The two numbers beside the name, re-read **on every navigation**.
+   * The two numbers beside the name, re-read on **navigation or a spend**.
    *
-   * `screen` is the revision key rather than a timer or a manual bump: both figures move
-   * as a consequence of *doing something* — a battle pays shards, the Forge spends them
-   * and moves gear, a melt moves both — and every one of those ends with the player
-   * leaving the screen they did it on. So arriving anywhere is exactly the moment the
-   * header should be re-read, and there is nothing to remember to call.
+   * ### ⚠️ Navigation alone was wrong, and the argument for it is worth keeping
+   *
+   * `screen` was the whole key, reasoning that both figures move as a consequence of
+   * *doing something* — a battle pays shards, the Forge spends them and moves gear — and
+   * that *"every one of those ends with the player leaving the screen they did it on."*
+   *
+   * **The Forge does not.** Jon reported it: commit a rune stage and the header keeps the
+   * old balance and the old roster power, because the Forge refetches its own state and
+   * `screen` never changed. A player forging four stages watches a wrong number the whole
+   * time.
+   *
+   * So screens that move money without navigating call `onAccountChanged`. It is a
+   * counter rather than a payload deliberately: the header's figures come from two
+   * server routes, and letting a screen *push* what it thinks the new balance is would
+   * put a second, guessable copy of the balance in the client.
    */
-  const { shards, power } = useAccountSummary(phase.kind === 'signed-in', screen);
+  const [accountRevision, setAccountRevision] = useState(0);
+  const onAccountChanged = useCallback(() => setAccountRevision((n) => n + 1), []);
+
+  const { shards, power } = useAccountSummary(
+    phase.kind === 'signed-in',
+    screen,
+    accountRevision,
+  );
 
   return (
     <div className="flex min-h-full flex-col">
@@ -372,7 +389,10 @@ function GameApp(): JSX.Element {
                        end and no task anywhere created a screen, so shards
                        were earned with nothing to spend them on and gear
                        score never moved. */
-                    <ForgeScreen onUnauthenticated={onUnauthenticated} />
+                    <ForgeScreen
+                      onUnauthenticated={onUnauthenticated}
+                      onAccountChanged={onAccountChanged}
+                    />
                   ) : screen.kind === 'battles' ? (
                     /* 018 T040 — the caller. `GET /v1/me/battles` and
                        `GET /v1/replays/:id` have been in the gap audit since

@@ -43,6 +43,17 @@ import {
 
 export interface ForgeScreenProps {
   readonly onUnauthenticated: () => void;
+  /**
+   * **Tell the shell the balance moved** (Jon, 2026-08-01).
+   *
+   * The header reads shards and roster power from two routes of its own, keyed on
+   * navigation — and forging is the one thing a player does *repeatedly without
+   * navigating*. So this screen refetched its own state, showed the new balance in its
+   * own panel, and left the header quoting the figure from whenever the player arrived.
+   *
+   * Optional so a test can render the screen without a shell.
+   */
+  readonly onAccountChanged?: (() => void) | undefined;
 }
 
 /** The export's `ALL 27 · OPEN · BARE`. */
@@ -66,7 +77,10 @@ const empty = (heroId: string): OwnedHeroRunes => ({
   })),
 });
 
-export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Element {
+export function ForgeScreen({
+  onUnauthenticated,
+  onAccountChanged,
+}: ForgeScreenProps): JSX.Element {
   const roster = useMemo(() => getAllHeroes(), []);
 
   const [runes, setRunes] = useState<RunesResponse | null>(null);
@@ -183,6 +197,8 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
       setConfirming(false);
       /* Refetch, never patch — the balance, the runes and the gear score all moved. */
       await load();
+      /* ...and so did the two figures in the header, which reads its own routes. */
+      onAccountChanged?.();
     } catch (err) {
       if (unauthenticated(err)) return;
       setError(err instanceof ApiError && err.status === 422 ? err.message : 'Could not melt those runes.');
@@ -211,6 +227,7 @@ export function ForgeScreen({ onUnauthenticated }: ForgeScreenProps): JSX.Elemen
       setDraftStat(null);
       /* Refetch, never patch — see the note at the top of this file. */
       await load();
+      onAccountChanged?.();
     } catch (err) {
       if (unauthenticated(err)) return;
       setError(

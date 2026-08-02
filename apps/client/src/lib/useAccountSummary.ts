@@ -20,9 +20,10 @@
  *
  * Both numbers move constantly — a battle pays shards, forging spends them and moves
  * gear, melting a rune moves both — and this sits on a header that never unmounts. So it
- * re-reads on `revision`, which callers bump when they navigate. A balance that is right
- * once and then quietly wrong for the rest of the session would be the exact failure the
- * original comment refused to ship.
+ * re-reads on **navigation or an explicit spend**. A balance that is right once and then
+ * quietly wrong for the rest of the session would be the exact failure the original
+ * comment refused to ship — and until 2026-08-01 the Forge produced exactly that,
+ * because navigation was the only trigger and forging does not navigate.
  *
  * `undefined` while unknown, never `0`: the caller renders nothing rather than a number
  * that means "we did not ask".
@@ -72,9 +73,28 @@ function numberOr<T>(
 /**
  * @param signedIn Skip the requests entirely when nobody is signed in. Both routes are
  *   authenticated, so calling them on the landing screen buys two guaranteed 401s.
- * @param revision Bump to force a re-read — screen changes, a settled battle, a forge.
+ * @param revision Changes on navigation. Any new value re-reads.
+ * @param accountRevision Bumped by a screen that **spent or earned without navigating**.
+ *
+ * ### ⚠️ Navigation alone is not enough, and the reasoning that said it was is quoted
+ * in `App.tsx`
+ *
+ * Reported by Jon, 2026-08-01: forge a rune stage and the header keeps the old shard
+ * balance and the old roster power. The original key was the screen alone, on the
+ * argument that *"every one of those ends with the player leaving the screen they did it
+ * on."* **The Forge is the counter-example** — a player commits stage after stage on one
+ * screen, and the Forge refetches its own state each time while the header, which reads
+ * two different routes through this hook, never hears about it.
+ *
+ * Two parameters rather than one composite key, because the two triggers are genuinely
+ * different: one is *where you are*, one is *what you did*. A caller that spends must say
+ * so; there is no way to infer it from a screen that did not change.
  */
-export function useAccountSummary(signedIn: boolean, revision: unknown): AccountSummary {
+export function useAccountSummary(
+  signedIn: boolean,
+  revision: unknown,
+  accountRevision: number = 0,
+): AccountSummary {
   const [summary, setSummary] = useState<AccountSummary>({ shards: undefined, power: undefined });
 
   useEffect(() => {
@@ -110,7 +130,7 @@ export function useAccountSummary(signedIn: boolean, revision: unknown): Account
     return () => {
       cancelled = true;
     };
-  }, [signedIn, revision]);
+  }, [signedIn, revision, accountRevision]);
 
   return summary;
 }

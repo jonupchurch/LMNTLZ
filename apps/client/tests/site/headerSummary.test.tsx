@@ -162,3 +162,70 @@ describe('the header summary cannot take down the app', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * 🔴 **Forging spends without navigating, and the header went stale** (Jon,
+ * 2026-08-01).
+ *
+ * The revision key was the screen alone, on the argument that every spend ends with the
+ * player leaving the screen they spent on. **The Forge is the counter-example**: a player
+ * commits stage after stage on one screen, the Forge refetches its own state each time,
+ * and the header — which reads two different routes through this hook — never hears.
+ *
+ * These assert the *mechanism* rather than the Forge, because the mechanism is what any
+ * other screen that spends will need: a changed `accountRevision` re-reads, an unchanged
+ * one does not, and the new figure replaces the old.
+ */
+describe('🔴 a spend that does not navigate still refreshes the header', () => {
+  /** Answers with a balance that moves every time it is asked. */
+  function answerWithBalances(balances: readonly number[]): void {
+    let call = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        if (!String(input).includes('/me/shards')) return Promise.resolve(json(200, { gearScore: 56 }));
+        const value = balances[Math.min(call++, balances.length - 1)]!;
+        return Promise.resolve(json(200, { balance: value }));
+      }),
+    );
+  }
+
+  it('re-reads when accountRevision changes on the same screen', async () => {
+    setSessionToken('token');
+    answerWithBalances([650, 500]);
+
+    const { result, rerender } = renderHook(
+      ({ rev }: { rev: number }) => useAccountSummary(true, 'forge', rev),
+      { initialProps: { rev: 0 } },
+    );
+
+    await waitFor(() => expect(result.current.shards).toBe(650));
+
+    // The screen does not change — only the counter the Forge bumps after a commit.
+    rerender({ rev: 1 });
+
+    await waitFor(() => expect(result.current.shards).toBe(500));
+  });
+
+  /**
+   * **The other half, and the one that makes the first non-vacuous.** A hook that
+   * re-read on every render would pass the test above and hammer two routes forever.
+   */
+  it('does not re-read when nothing changed', async () => {
+    setSessionToken('token');
+    answerWithBalances([650]);
+
+    const { result, rerender } = renderHook(
+      ({ rev }: { rev: number }) => useAccountSummary(true, 'forge', rev),
+      { initialProps: { rev: 0 } },
+    );
+
+    await waitFor(() => expect(result.current.shards).toBe(650));
+    const calls = (fetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length;
+
+    rerender({ rev: 0 });
+    rerender({ rev: 0 });
+
+    expect((fetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(calls);
+  });
+});
