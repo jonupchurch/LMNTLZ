@@ -78,6 +78,15 @@ export interface BattleSettlementWire {
   readonly shards: number;
   readonly shardsEarned: number;
   readonly cappedAt: number | null;
+  /**
+   * How much of `shards` was the streak reward (2026-08-01).
+   *
+   * **The requester's own, never the opponent's.** A defender learning the
+   * bounty learns the attacker's exact streak, which they may already scout; an
+   * attacker learning the bounty *paid* would learn a fact about somebody else's
+   * balance. Each side is told only its own number, like every other field here.
+   */
+  readonly streakShards: number;
   readonly ratingDelta: number;
   readonly ratingBefore: number;
   readonly ratingAfter: number;
@@ -157,6 +166,7 @@ async function settleAndRecord(
     shards: payout.shards,
     shardsEarned: payout.shardsEarned,
     cappedAt: payout.cappedAt,
+    streakShards: payout.streakShards,
     ratingDelta: payout.ratingDelta,
     ratingBefore: payout.ratingBefore,
     ratingAfter: payout.ratingAfter,

@@ -74,8 +74,8 @@ const statusesOf = (state: BattleState, id: string): readonly HeroState['statuse
 // ---------------------------------------------------------------------------
 
 describe('the registry', () => {
-  it('implements exactly the four Role and nine House passives', () => {
-    expect(IMPLEMENTED_PASSIVES).toHaveLength(13);
+  it('implements the four Role, nine House and four settled unique passives', () => {
+    expect(IMPLEMENTED_PASSIVES).toHaveLength(17);
   });
 
   /**
@@ -548,6 +548,65 @@ describe('Nothing Holds — Crush shaves Armor, and it stacks', () => {
     }
 
     expect(damagePreview(next, 'a', tier0Of('h25'), 'd').final).toBeGreaterThan(before);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The four settled uniques
+// ---------------------------------------------------------------------------
+
+describe('the uniques whose effect was already authored', () => {
+  const earth = heroStateFor(getHero('h02'), 'defender', 4, 'd');
+  const ember = heroStateFor(getHero('h07'), 'attacker', 3, 'a');
+  const umbriel = heroStateFor(getHero('h17'), 'attacker', 3, 'a');
+  const cindara = heroStateFor(getHero('h09'), 'attacker', 3, 'a');
+  const kaellis = heroStateFor(getHero('h19'), 'attacker', 3, 'a');
+
+  it('Immovable — Mauless is not compelled by a taunting tank', () => {
+    const state = board({ heroId: 'h27', row: 3 }, [
+      { heroId: 'h02', row: 4, id: 'tank' },
+      { heroId: 'h01', row: 4, id: 'other' },
+    ]);
+    expect(targetingFor(state, 'a').compulsion).toBeNull();
+
+    // ...and a champion without it still is, on the same board.
+    const ordinary = board({ heroId: 'h19', row: 3 }, [
+      { heroId: 'h02', row: 4, id: 'tank' },
+      { heroId: 'h01', row: 4, id: 'other' },
+    ]);
+    expect(targetingFor(ordinary, 'a').compulsion).not.toBeNull();
+  });
+
+  it('Never Quite Out — her burns cannot be cleansed, and still expire', () => {
+    const sealed = shapeOutgoing(ember, status('burn', { magnitude: 9, turnsRemaining: 2 }));
+    expect(sealed.cleansable).toBe(false);
+    // The whole of the passive: removal is refused, the clock is not.
+    expect(tickDurations([sealed])[0]?.turnsRemaining).toBe(1);
+    expect(shapeOutgoing(kaellis, status('burn')).cleansable).toBe(true);
+  });
+
+  it('Written in Pencil — her debuffs, and only her debuffs', () => {
+    expect(shapeOutgoing(umbriel, status('debuff', { stat: 'might' })).cleansable).toBe(false);
+    expect(shapeOutgoing(umbriel, status('burn')).cleansable).toBe(true);
+  });
+
+  it('Banked Coals — one turn longer, and no more magnitude', () => {
+    const longer = shapeOutgoing(cindara, status('burn', { magnitude: 9, turnsRemaining: 2 }));
+    expect(longer.turnsRemaining).toBe(3);
+    expect(longer.magnitude).toBe(9);
+  });
+
+  /**
+   * **The only interaction that puts control above one turn**, and therefore the
+   * only thing that gets through Earth's House rule. Outgoing shaping runs first,
+   * so a two-turn stun meets `−1` and lands for one.
+   */
+  it('Banked Coals is what lets Cindara stun an Earth champion', () => {
+    const hers = shapeOutgoing(cindara, status('stun', { turnsRemaining: 1 }));
+    expect(shapeIncoming(earth, hers)?.turnsRemaining).toBe(1);
+
+    // Anybody else's one-turn stun is still refused outright.
+    expect(shapeIncoming(earth, shapeOutgoing(kaellis, status('stun', { turnsRemaining: 1 })))).toBeNull();
   });
 });
 

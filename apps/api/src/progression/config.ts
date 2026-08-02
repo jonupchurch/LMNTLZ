@@ -64,6 +64,51 @@ export const HIDDEN_MULTIPLIER = 2;
 export const LOSS_PAYOUT = 0;
 
 /**
+ * **The streak reward** (2026-08-01, Jon).
+ *
+ * Past this many consecutive attack wins, each further win pays `streak −
+ * threshold` extra shards — a streak of 150 pays **+50** on top of the ordinary
+ * award. And a defense that **ends** a streak is paid the whole of it as a
+ * bounty.
+ *
+ * ### What it is for: a hundred wins currently buys nothing
+ *
+ * Ambush chance is `+2%` a win capped at 90%, so it stops moving at **45**. From
+ * 46 onward a streak is a number on a screen with no mechanical consequence at
+ * all. This gives the tail meaning in both directions at once — it pays the
+ * runner and it puts a price on their head.
+ *
+ * ### Neither half has a ceiling of its own, and `BALANCE_CAP` is a weaker
+ * limiter than it looks
+ *
+ * Both go through `headroom`, so neither can push a balance past `BALANCE_CAP`.
+ * **But that is a cap on what a player may *hold*, not on what they may earn in
+ * a day** — spend it on a rune and the headroom is back. So the real bound on
+ * the streak tail is the streak itself.
+ *
+ * Sized: an ordinary chosen-door win pays 20. At streak 300 the tail pays **200**
+ * beside it, and a player who keeps spending banks a 650-shard rune roughly every
+ * three wins instead of every thirty. That is a real slope and it is deliberate —
+ * a hundred consecutive wins with no chosen-door loss is the hardest thing in the
+ * game to hold — but it is the number to revisit first if the top of the ladder
+ * starts out-earning everyone.
+ *
+ * **No second cap is written here on purpose.** A ceiling on the bonus would be a
+ * third limit to keep consistent with `BALANCE_CAP` and the daily curve, and the
+ * honest lever if this proves too generous is this threshold.
+ *
+ * ### Why the bounty pays on the *reset* rather than on any defensive win
+ *
+ * An **ambushed** loss deliberately does not reset the streak (`nextAttackStreak`
+ * — the attacker did not choose that fight). If the bounty paid on any win over a
+ * streaking attacker, one Hidden squad could be paid the same 300-shard bounty
+ * every time that streak passed through it, forever, without the streak ever
+ * ending. Paying on the reset makes the bounty exactly what its name says: it is
+ * for **ending** the run, and it can be collected once.
+ */
+export const STREAK_BONUS_THRESHOLD = 100;
+
+/**
  * The daily curve, tiered on the day's **victory count** (2026-07-27).
  *
  * Read as: the first 5 victories pay 1.5×, victories 6–20 pay the base rate, and

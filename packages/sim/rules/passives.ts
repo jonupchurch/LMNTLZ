@@ -500,6 +500,65 @@ const NOTHING_HOLDS: PassiveHooks = {
 };
 
 // ---------------------------------------------------------------------------
+// Uniques whose effect was already authored (US3, T038)
+// ---------------------------------------------------------------------------
+
+/**
+ * **Four of the twenty-seven, and deliberately not more.**
+ *
+ * `03-powers.md` and `05-status.md` between them author eight unique effects.
+ * These four need nothing that does not already exist. The other four are held
+ * back for reasons, not oversight:
+ *
+ * | Held | Why |
+ * |---|---|
+ * | `Already Gone`, `Nothing to Discuss` | both concern **reactive powers**, of which the overlay authors zero — a 020 non-goal |
+ * | `It All Comes Back` | the passive banks Reckoning; tiers 4 and 5 **read and spend** it, and no power can yet. Adding the bank alone is a seam with no caller |
+ * | `The Duelist's Habit` | authored as *"gains damage against a target it has not yet struck"* with **no magnitude**, so it belongs in the approval table with the other nineteen |
+ */
+const IMMOVABLE: PassiveHooks = {
+  name: 'Immovable',
+  /** Mauless chooses freely. `composeTargeting` has taken this since US2. */
+  targeting: { immuneToTaunt: true },
+};
+
+/**
+ * **`cleansable: false` is on the instance rather than the kind**, and these two
+ * passives are the reason. Ember Saelith's burns and Umbriel's debuffs still
+ * expire on their own clock — they cannot be removed *early*.
+ */
+const NEVER_QUITE_OUT: PassiveHooks = {
+  name: 'Never Quite Out',
+  shapeOutgoing: (instance) =>
+    instance.kind === 'burn' ? { ...instance, cleansable: false } : instance,
+};
+
+const WRITTEN_IN_PENCIL: PassiveHooks = {
+  name: 'Written in Pencil',
+  shapeOutgoing: (instance) =>
+    instance.kind === 'debuff' ? { ...instance, cleansable: false } : instance,
+};
+
+/**
+ * **+1 turn, never added magnitude** — `05-status.md` quotes this one while
+ * explaining the duration table.
+ *
+ * It is the only thing in the game that puts control above one turn, which makes
+ * it the single counter to `The Deep Holds`: outgoing shaping runs before
+ * incoming, so Cindara's two-turn stun meets Earth's −1 and lands for one.
+ *
+ * A permanent effect is left alone. `Infinity + 1` is `Infinity` and would be
+ * harmless, but reading it as "extended" would be wrong.
+ */
+const BANKED_COALS: PassiveHooks = {
+  name: 'Banked Coals',
+  shapeOutgoing: (instance) =>
+    Number.isFinite(instance.turnsRemaining)
+      ? { ...instance, turnsRemaining: instance.turnsRemaining + 1 }
+      : instance,
+};
+
+// ---------------------------------------------------------------------------
 // The registry
 // ---------------------------------------------------------------------------
 
@@ -517,6 +576,13 @@ const REGISTRY: Readonly<Record<string, PassiveHooks>> = Object.freeze({
   [THE_CUT_REOPENS.name]: THE_CUT_REOPENS,
   [FIND_THE_SEAM.name]: FIND_THE_SEAM,
   [NOTHING_HOLDS.name]: NOTHING_HOLDS,
+
+  // Uniques — four of twenty-seven; see the block above for what the other
+  // twenty-three are waiting on.
+  [IMMOVABLE.name]: IMMOVABLE,
+  [NEVER_QUITE_OUT.name]: NEVER_QUITE_OUT,
+  [WRITTEN_IN_PENCIL.name]: WRITTEN_IN_PENCIL,
+  [BANKED_COALS.name]: BANKED_COALS,
 });
 
 /** Every passive with an implementation, by name. */

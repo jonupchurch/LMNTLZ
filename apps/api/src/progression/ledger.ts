@@ -62,7 +62,18 @@ export async function lifetimeEarned(accountId: string): Promise<number> {
     .where(
       and(
         eq(shardLedger.accountId, accountId),
-        sql`${shardLedger.reason} in ('attack-victory', 'defense-hold')`,
+        /**
+         * **The allowlist gained the two streak reasons** (2026-08-01), because
+         * both are battle income: won in a fight, on the same cap, from the same
+         * settlement.
+         *
+         * It cannot change any behaviour today and is done for the classification
+         * rather than the effect — this figure gates starter-league graduation,
+         * and a hundred consecutive attack wins is thousands of shards past that
+         * exit. Leaving them out would be a rule that happens to be unreachable,
+         * which is the kind that is wrong the first time a threshold moves.
+         */
+        sql`${shardLedger.reason} in ('attack-victory', 'defense-hold', 'streak-bonus', 'streak-broken')`,
       ),
     );
 

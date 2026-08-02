@@ -90,6 +90,8 @@ export interface BattleSettlement {
   /** What the win was worth before the daily cap. `>= shards`. */
   readonly shardsEarned: number;
   readonly cappedAt: number | null;
+  /** How much of `shards` came from the streak reward. `0` when none did. */
+  readonly streakShards: number;
   readonly ratingDelta: number;
   readonly ratingBefore: number;
   readonly ratingAfter: number;

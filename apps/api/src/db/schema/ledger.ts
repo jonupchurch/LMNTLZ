@@ -57,6 +57,25 @@ export const LEDGER_REASONS = [
   'attack-victory',
   /** Battle income — a successful defense. Never tiered. */
   'defense-hold',
+  /**
+   * **The tail of a long attack streak** (2026-08-01) — `streak − 100`, paid on
+   * top of the ordinary victory award and written as its **own row**.
+   *
+   * A separate row rather than a larger `attack-victory`, because the two answer
+   * different questions and a tuner needs to be able to ask them apart: *what
+   * does a win pay* and *what is the streak tail costing the economy*. Folded
+   * together, the only way to find out would be to reconstruct every player's
+   * streak history from the battle table.
+   */
+  'streak-bonus',
+  /**
+   * **A defense that ended somebody's run** (2026-08-01), paid the whole streak.
+   *
+   * Distinct from `defense-hold` for the same reason: it is a bounty, it can be
+   * an order of magnitude larger than the hold it accompanies, and an aggregate
+   * that could not separate them would read as defensive income having exploded.
+   */
+  'streak-broken',
   /** Rune stage purchase, one row per stage. */
   'rune-stage',
   /** A rebuild: the single 650 charge that destroys and replaces a full rune. */

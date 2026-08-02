@@ -249,6 +249,20 @@ export function ResultScreen({
                     took the rest. It resets tomorrow.
                   </p>
                 ) : null}
+                {/*
+                 * **The streak reward is named, because an unexplained number
+                 * this size reads as a bug.** A defense hold pays 10; the bounty
+                 * arriving beside it can pay 300. Which of the two it was is the
+                 * whole of the message — the attacker is paid for the run they
+                 * are on, the defender for the run they ended.
+                 */}
+                {settlement.streakShards > 0 ? (
+                  <p className="text-caption text-gold">
+                    {settlement.won && settlement.winner === 'defender'
+                      ? `+${settlement.streakShards} for ending a ${settlement.streakShards}-win streak.`
+                      : `+${settlement.streakShards} streak bonus — ${settlement.attackStreak} wins and counting.`}
+                  </p>
+                ) : null}
               </dl>
             ) : (
               <p className="text-caption leading-relaxed text-faint">

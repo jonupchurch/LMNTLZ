@@ -580,6 +580,46 @@ is exactly the failure this file warns about — passive income large enough tha
 logging off competes with playing. At half, defence is a meaningful supplement
 that still cannot rival attacking.
 
+### The streak reward — **added 2026-08-01**
+
+A hundred consecutive attack wins currently buys **nothing**. Ambush chance rises
+2% a win and caps at 90%, which it reaches at **45**; from 46 onward the streak is
+a number on a screen with no mechanical consequence at all. This gives the tail
+meaning in both directions at once.
+
+| Who | When | Shards |
+|---|---|---|
+| **The attacker** | every win at a streak **over 100** | `streak − 100` |
+| **The defender** | a defense that **ends** a streak | the **whole** streak |
+
+So a win taking a player to 150 pays **+50** on top of the ordinary award, and
+whoever finally beats them is paid **150**.
+
+**The two are deliberately asymmetric.** The attacker is paid only for the tail;
+the defender is paid the entire run, with no threshold. A defender does not choose
+who attacks them — gating the bounty at 100 would pay nothing for the common case,
+which is the same reasoning that keeps holds off the daily curve.
+
+**The bounty is for *ending* a run, not for winning a defense.** An ambushed loss
+does not reset the streak (the attacker did not choose that fight), so it ends
+nothing and pays no bounty. Without that condition a single Hidden squad could
+collect the same bounty off the same unbroken streak indefinitely.
+
+**Neither is tiered, doubled by zone, or multiplied by a boost pass.** They are
+flat additions beside the ordinary award, not terms in its product — a streak
+term inside that chain would be multiplied by the Hidden double and the boost
+pass, so a boosted ambush at streak 300 would pay +800 rather than +200, a number
+nobody chose. Both are written as their **own ledger rows**, so *what a win pays*
+and *what the streak tail costs the economy* stay separate questions.
+
+> **What it is not bounded by.** Both go through the balance cap, but that is a
+> ceiling on what a player may *hold* — spend it and the headroom returns. So the
+> real limit is the streak itself. At 300 the tail pays 200 against a base of 20,
+> and a player who keeps spending banks a 650-shard rune every three wins instead
+> of every thirty. That is deliberate — an unbroken hundred is the hardest thing
+> in the game to hold — and **the threshold is the lever** if the top of the
+> ladder starts out-earning everybody.
+
 ### The daily curve — **set 2026-07-27**
 
 > **Attack income is tiered by the day's victory count: the first 5 victories pay

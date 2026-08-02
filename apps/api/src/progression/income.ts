@@ -54,6 +54,7 @@ import {
   HIDDEN_MULTIPLIER,
   HOLDS_ARE_TIERED,
   LOSS_PAYOUT,
+  STREAK_BONUS_THRESHOLD,
 } from './config.js';
 
 /** What produced the income. `zone` decides the Hidden double. */
@@ -210,4 +211,78 @@ export async function awardShards(
   await append(accountId, credited, event.kind as LedgerReason, battleId, tx);
 
   return { credited, earned, cappedAt: credited < earned ? credited : null };
+}
+
+// ---------------------------------------------------------------------------
+// The streak reward (2026-08-01)
+// ---------------------------------------------------------------------------
+
+/**
+ * What a win at this streak pays **on top of** the ordinary award.
+ *
+ * Pure and flat: it is added beside the victory, never folded into
+ * `payoutFor`'s product. Two reasons, and the first is the load-bearing one.
+ *
+ * **The multiplier chain must stay a chain.** `income.ts` records that Hidden ×
+ * daily × starter × boost composes into 011's advertised ×4 *"and nothing
+ * special-cases it"*. A streak term inside that product would be multiplied by
+ * the boost pass and by the Hidden double, so a boosted ambush at streak 300
+ * would pay **+800** rather than +200 — a number nobody chose, arrived at by
+ * composition.
+ *
+ * **And a bonus is not a rate.** The daily curve exists to pace grinding; the
+ * streak tail rewards a thing that is hard *because* it is fragile. Tapering it
+ * by the same curve would mean the twenty-first win of the day both earns the
+ * most streak and is paid half of it.
+ *
+ * `streak` is the streak **after** the win being paid — the number the player is
+ * shown.
+ */
+export function streakBonusFor(streak: number): number {
+  return Math.max(0, streak - STREAK_BONUS_THRESHOLD);
+}
+
+/**
+ * What a defense is paid for **ending** a streak: the whole of it.
+ *
+ * No threshold. `06-progression.md` states the asymmetry plainly — the attacker
+ * is paid only for the tail past 100, and the defender is paid the entire run.
+ * A defender does not choose who attacks them, so gating the bounty would make
+ * the common case (a short streak) pay nothing for the same work.
+ *
+ * Takes the streak **as it stood before the loss**, which is why the caller must
+ * read the row before writing the reset and not after.
+ */
+export function streakBountyFor(brokenStreak: number): number {
+  return Math.max(0, brokenStreak);
+}
+
+/**
+ * Credit a flat streak reward, under the same cap as everything else.
+ *
+ * **Not `awardShards`**, because that function's whole body is the multiplier
+ * chain and the daily tier lookup, neither of which applies here. Sharing it
+ * would mean threading a "skip the multipliers" flag through it — a branch that
+ * makes the chain conditional is exactly what its header warns against.
+ *
+ * What *is* shared is the part that must be: `headroom` and `append`, so a bonus
+ * cannot push a balance past the ceiling and every shard still lands in the one
+ * ledger.
+ */
+export async function awardStreakReward(
+  accountId: string,
+  amount: number,
+  reason: Extract<LedgerReason, 'streak-bonus' | 'streak-broken'>,
+  battleId: string | null = null,
+  tx: Pick<ReturnType<typeof db>, 'insert'> = db(),
+): Promise<Award> {
+  if (amount <= 0) return { credited: 0, earned: 0, cappedAt: null };
+
+  const room = await headroom(accountId);
+  const credited = Math.max(0, Math.min(amount, room));
+  if (credited === 0) return { credited: 0, earned: amount, cappedAt: 0 };
+
+  await append(accountId, credited, reason, battleId, tx);
+
+  return { credited, earned: amount, cappedAt: credited < amount ? credited : null };
 }

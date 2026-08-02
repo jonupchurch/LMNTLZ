@@ -46,7 +46,12 @@ import { playerStreaks } from '../db/schema/streaks.js';
 import { insertRecord } from '../replays/record.js';
 import { nextAttackStreak } from '../squads/ambush.js';
 import { touchActivity } from '../matchmaking/candidates.js';
-import { awardShards } from '../progression/income.js';
+import {
+  awardShards,
+  awardStreakReward,
+  streakBonusFor,
+  streakBountyFor,
+} from '../progression/income.js';
 import { applyRating, ratingDeltas, standingFor } from '../progression/rating.js';
 import { noteShardsEarned } from '../matchmaking/starterLeague.js';
 import { lifetimeEarned } from '../progression/ledger.js';
@@ -84,6 +89,15 @@ export interface SettlePayout {
   readonly shardsEarned: number;
   /** The cap that truncated the award, or `null` if it did not. */
   readonly cappedAt: number | null;
+  /**
+   * How much of `shards` was the streak reward (2026-08-01) — `0` when none.
+   *
+   * For an attacker it is `streak − 100` past the threshold; for a defender it is
+   * the **whole streak they just ended**. Reported separately because it is a
+   * different thing from battle income and can dwarf it: a defense hold pays 10
+   * and the bounty beside it can pay 300.
+   */
+  readonly streakShards: number;
   /** Signed, one decimal, already carrying the ×2 Hidden bonus on a win. */
   readonly ratingDelta: number;
   readonly ratingBefore: number;
@@ -218,6 +232,15 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
     });
 
     let attackStreak = 0;
+    /**
+     * **The streak as it stood when this battle started** (2026-08-01).
+     *
+     * Held separately because the bounty is paid on it and the row is about to be
+     * overwritten with the reset. Reading it back afterwards would find a zero,
+     * and the defender would be paid nothing for the thing they are being paid
+     * for.
+     */
+    let streakBefore = 0;
 
     if (attackerId) {
       const [row] = await tx
@@ -234,7 +257,8 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
        * cap would be to stop attacking. `nextAttackStreak` owns that rule; this
        * only supplies whether it was an ambush.
        */
-      const next = nextAttackStreak(row?.current ?? 0, attackerWon ? 'win' : 'loss', wasAmbush);
+      streakBefore = row?.current ?? 0;
+      const next = nextAttackStreak(streakBefore, attackerWon ? 'win' : 'loss', wasAmbush);
       attackStreak = next.attackStreak;
 
       await tx
@@ -343,6 +367,45 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
         )
       : null;
 
+    /**
+     * **The streak reward, both halves** (2026-08-01).
+     *
+     * Two separate ledger rows beside the two above rather than larger versions
+     * of them, so an aggregate can always tell ordinary income from the streak
+     * tail. Both go through `headroom`, so neither can push a balance past the
+     * daily ceiling.
+     *
+     * - The **attacker** is paid `streak − 100` for a win, on the streak *after*
+     *   this victory — the number they are shown.
+     * - The **defender** is paid the whole streak, and **only when it actually
+     *   reset**. A streak that survived an ambushed loss was not ended, so
+     *   nothing was beaten; without that condition one Hidden squad could collect
+     *   the same bounty off the same unbroken run indefinitely.
+     */
+    const streakBonus =
+      attackerId && attackerWon
+        ? await awardStreakReward(
+            attackerId,
+            streakBonusFor(attackStreak),
+            'streak-bonus',
+            battleId,
+            tx,
+          )
+        : null;
+
+    const streakBroken = streakBefore > 0 && attackStreak === 0;
+
+    const streakBounty =
+      defenderId && streakBroken
+        ? await awardStreakReward(
+            defenderId,
+            streakBountyFor(streakBefore),
+            'streak-broken',
+            battleId,
+            tx,
+          )
+        : null;
+
     let deltas: { attacker: number; defender: number } | null = null;
     let before: { attacker: number; defender: number } | null = null;
 
@@ -394,10 +457,23 @@ export async function settle(input: SettleInput, now: Date = new Date()): Promis
       if (!award) return null;
       const ratingBefore = before?.[side] ?? 0;
       const ratingAfter = Math.round(ratingBefore + (deltas?.[side] ?? 0));
+
+      /**
+       * **The streak reward is added to the totals *and* reported on its own.**
+       *
+       * `shards` has to be the whole of what landed in the balance or the end
+       * screen disagrees with the wallet. `streakShards` exists beside it so the
+       * screen can say *why* a hold paid 160 — the bounty is up to an order of
+       * magnitude larger than the hold it arrives with, and an unexplained number
+       * that size reads as a bug rather than a reward.
+       */
+      const bonus = side === 'attacker' ? streakBonus : streakBounty;
+
       return {
-        shards: award.credited,
-        shardsEarned: award.earned,
-        cappedAt: award.cappedAt,
+        shards: award.credited + (bonus?.credited ?? 0),
+        shardsEarned: award.earned + (bonus?.earned ?? 0),
+        cappedAt: award.cappedAt ?? bonus?.cappedAt ?? null,
+        streakShards: bonus?.credited ?? 0,
         ratingDelta: ratingAfter - ratingBefore,
         ratingBefore,
         ratingAfter,
