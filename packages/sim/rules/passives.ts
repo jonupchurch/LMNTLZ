@@ -61,6 +61,7 @@ import {
   markCount,
   shieldForTier,
   statChangeForTier,
+  statusFrom,
   targetingStatuses,
   type StatKey,
   type Tier,
@@ -529,17 +530,11 @@ function fromPassive(
     readonly cleansable?: boolean;
   },
 ): StatusInstance {
-  return {
-    kind,
-    stat: fields.stat ?? null,
-    magnitude: fields.magnitude,
-    turnsRemaining: fields.turnsRemaining,
-    sourceInstanceId: applier.instanceId,
-    sourcePowerId: passivePowerId(name),
-    escalation: fields.escalation ?? 0,
-    ticksDealt: 0,
-    cleansable: fields.cleansable ?? true,
-  };
+  /* The shape and its defaults live in `status.ts` (021), because rune effects
+     build instances the same way and two copies of `cleansable ?? true` is how
+     two sources of one effect start behaving differently. Only the id prefix
+     belongs to this file. */
+  return statusFrom(passivePowerId(name), applier, kind, fields);
 }
 
 /**

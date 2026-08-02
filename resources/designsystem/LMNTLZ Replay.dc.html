@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0E0C17; }
+  * { box-sizing: border-box; }
+  a { color: #F2C744; text-decoration: none; }
+  a:hover { color: #FFF6D6; }
+  ::-webkit-scrollbar { width: 10px; height: 10px }
+  ::-webkit-scrollbar-track { background: #141221 }
+  ::-webkit-scrollbar-thumb { background: #3A3357; border-radius: 99px }
+  @keyframes b-pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+  @keyframes b-hit { 0% { box-shadow: 0 0 0 2px #F2C744, 0 0 26px rgba(242,199,68,.55) } 100% { box-shadow: 0 0 0 2px rgba(242,199,68,0), 0 0 0 rgba(242,199,68,0) } }
+</style>
+</helmet>
+<div style="background:#0E0C17;color:#EDEAF6;font-family:Barlow,system-ui,sans-serif;height:100vh;min-height:820px;display:flex;flex-direction:column;overflow:hidden">
+
+  <div style="height:34px;flex:0 0 auto;background:#1C1930;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding-left:14px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(140deg,#F2C744,#B5732E);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:#141221">L</div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.16em;color:#B4AECB">LMNTLZ</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#57507A">/ REPLAY THEATRE</div>
+    </div>
+    <div style="display:flex;height:34px">
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:11px;height:1px;background:#B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#241F38"><div style="width:10px;height:10px;border:1px solid #B4AECB"></div></div>
+      <div style="width:44px;display:flex;align-items:center;justify-content:center" style-hover="background:#C0313A"><div style="width:11px;height:11px;position:relative"><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(45deg)"></div><div style="position:absolute;top:5px;width:11px;height:1px;background:#B4AECB;transform:rotate(-45deg)"></div></div></div>
+    </div>
+  </div>
+
+  <div style="height:54px;flex:0 0 auto;background:#141221;border-bottom:1px solid #241F38;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:18px">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.06em;color:#F4EFE4;white-space:nowrap">READ THE DOORS</div>
+      <div style="display:flex;gap:3px">
+        <sc-for list="{{ allyBanner }}" as="b" hint-placeholder-count="6">
+          <div style="width:8px;height:18px;border-radius:2px;background:{{ b.color }};opacity:{{ b.opacity }}"></div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;flex:0 0 auto">
+      <div style="text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">ROUND</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:#F4EFE4">{{ round }}</div>
+      </div>
+      <div style="padding:0 16px;border-left:1px solid #241F38;border-right:1px solid #241F38;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">OUTCOME</div>
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.1em;color:{{ outcomeColor }}">{{ outcome }}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">MATCH</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8E87A8">{{ matchId }}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;justify-content:flex-end">
+      <div style="display:flex;gap:3px">
+        <sc-for list="{{ foeBanner }}" as="b" hint-placeholder-count="6">
+          <div style="width:8px;height:18px;border-radius:2px;background:{{ b.color }};opacity:{{ b.opacity }}"></div>
+        </sc-for>
+      </div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.06em;color:#F06A72;white-space:nowrap">THE LONG VIGIL</div>
+      <div onClick="{{ share }}" style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;color:#8E87A8;border:1px solid #3A3357;border-radius:5px;padding:6px 10px;cursor:pointer;white-space:nowrap" style-hover="border-color:#F2C744;color:#F2C744">{{ shareLabel }}</div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;overflow-x:auto">
+
+    <div style="width:246px;flex:0 0 auto;background:#141221;border-right:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:13px 14px 9px;border-bottom:1px solid #241F38">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:0.1em;color:#F4EFE4">THE STRIKING SIX</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;margin-top:4px">{{ allyAliveLabel }}</div>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;padding:9px;display:flex;flex-direction:column;gap:7px;min-height:0">
+        <sc-for list="{{ allyCards }}" as="a" hint-placeholder-count="6">
+          <div style="position:relative;height:74px;border-radius:8px;border:2px solid {{ a.border }};background-image:{{ a.image }};background-size:cover;background-position:50% 8%;background-color:#241F38;overflow:hidden;opacity:{{ a.opacity }};filter:{{ a.filter }};animation:{{ a.anim }};flex:0 0 auto">
+            <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,12,23,.88) 0%,rgba(14,12,23,.5) 50%,rgba(20,18,33,.3) 100%)"></div>
+            <div style="position:absolute;top:6px;left:6px;width:28px;height:28px;background-image:{{ a.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 6px rgba(14,12,23,.9))"></div>
+            <div style="position:absolute;left:40px;right:8px;top:7px">
+              <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.03em;color:#F4EFE4;line-height:1.1;text-shadow:0 1px 8px rgba(14,12,23,.9)">{{ a.name }}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.1em;color:{{ a.core }}">{{ a.typeName }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:#6E6690">ROW {{ a.row }}</span>
+              </div>
+            </div>
+            <div style="position:absolute;left:40px;right:8px;bottom:7px">
+              <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:8px;color:#C9BFE0;margin-bottom:3px"><span>{{ a.hpText }}</span><span style="color:{{ a.deltaColor }}">{{ a.delta }}</span></div>
+              <div style="height:6px;border-radius:99px;background:rgba(14,12,23,.85);overflow:hidden;box-shadow:inset 0 0 0 1px #3A3357"><div style="width:{{ a.hpPct }};height:6px;background:{{ a.hpFill }};transition:width 260ms ease"></div></div>
+            </div>
+            <sc-if value="{{ a.ko }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;background:rgba(14,12,23,.74);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:0.12em;color:#F06A72">RETURNED TO THE SHARD</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex:1 1 auto;min-width:640px;display:flex;flex-direction:column;min-height:0">
+
+      <div style="flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px 18px 14px;background:radial-gradient(90% 80% at 12% 10%,rgba(122,63,160,0.12),transparent 60%),radial-gradient(90% 80% at 88% 10%,rgba(192,49,58,0.12),transparent 60%)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px;flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.18em;color:#6E6690">BATTLEFIELD AXIS · ROWS 1–6 · STATE AFTER EVENT {{ eventNo }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ headlineColor }}">{{ headline }}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:stretch;min-height:420px;width:100%">
+          <sc-for list="{{ rowBand }}" as="r" hint-placeholder-count="7">
+            <div style="flex:{{ r.flex }};min-width:{{ r.minW }};border-radius:10px;border:1px {{ r.borderStyle }} {{ r.border }};background:{{ r.bg }};display:flex;flex-direction:column;padding:9px 7px;gap:8px">
+              <div style="display:flex;align-items:center;justify-content:center;gap:6px">
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:{{ r.color }}">{{ r.row }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;color:#57507A">{{ r.label }}</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:7px">
+                <sc-for list="{{ r.units }}" as="u" hint-placeholder-count="2">
+                  <div style="position:relative;height:{{ u.h }};border-radius:8px;border:2px solid {{ u.border }};background-image:{{ u.image }};background-size:cover;background-position:50% 8%;background-color:#241F38;overflow:hidden;opacity:{{ u.opacity }};filter:{{ u.filter }};animation:{{ u.anim }}">
+                    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,23,.25) 0%,rgba(14,12,23,0) 40%,rgba(20,18,33,.94) 100%)"></div>
+                    <div style="position:absolute;top:6px;left:6px;width:26px;height:26px;background-image:{{ u.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 5px rgba(14,12,23,.9))"></div>
+                    <div style="position:absolute;left:0;right:0;bottom:0;padding:5px 6px">
+                      <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;color:#F4EFE4;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 6px rgba(14,12,23,.9)">{{ u.name }}</div>
+                      <div style="height:5px;border-radius:99px;background:rgba(14,12,23,.85);overflow:hidden;margin-top:4px;box-shadow:inset 0 0 0 1px #3A3357"><div style="width:{{ u.hpPct }};height:5px;background:{{ u.hpFill }};transition:width 260ms ease"></div></div>
+                    </div>
+                    <sc-if value="{{ u.isActor }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;left:0;right:0;top:0;height:3px;background:#F2C744"></div>
+                    </sc-if>
+                    <sc-if value="{{ u.float }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;left:0;right:0;top:34px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:{{ u.floatColor }};text-shadow:0 0 14px {{ u.floatColor }}">{{ u.float }}</div><div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:8px;letter-spacing:0.1em;color:{{ u.floatColor }}">{{ u.floatLabel }}</div></div>
+                    </sc-if>
+                    <sc-if value="{{ u.ko }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;background:rgba(14,12,23,.8);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:8px;letter-spacing:0.1em;color:#F06A72;text-align:center;padding:6px">RETURNED TO<br />THE SHARD</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ r.isGap }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1;border-radius:9px;border:1px dashed #3A3357;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:340px">
+                    <div style="width:2px;flex:1;background:linear-gradient(180deg,transparent,#F2C744,transparent)"></div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.18em;color:#F2C744;writing-mode:vertical-rl">CONTACT</div>
+                    <div style="width:2px;flex:1;background:linear-gradient(180deg,transparent,#F2C744,transparent)"></div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:0 0 auto;border-top:1px solid #241F38;background:#141221;padding:12px 20px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:#6E6690">TIMELINE</div>
+          <div style="flex:1;height:1px;background:#241F38"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#8E87A8">{{ clock }} / {{ duration }}</div>
+        </div>
+
+        <div onClick="{{ scrubClick }}" style="position:relative;height:44px;cursor:pointer;margin-bottom:12px">
+          <div style="position:absolute;left:0;right:0;top:20px;height:6px;border-radius:99px;background:#1C1930;box-shadow:inset 0 0 0 1px #241F38"></div>
+          <div style="position:absolute;left:0;top:20px;height:6px;border-radius:99px;background:linear-gradient(90deg,#B5732E,#F2C744);width:{{ progressPct }}"></div>
+          <sc-for list="{{ roundMarks }}" as="m" hint-placeholder-count="7">
+            <div style="position:absolute;left:{{ m.left }};top:2px;bottom:2px;display:flex;flex-direction:column;align-items:center;pointer-events:none">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.1em;color:{{ m.color }};transform:translateX(-50%);white-space:nowrap;margin-left:0">{{ m.label }}</div>
+              <div style="width:1px;flex:1;background:#2A2640;margin-top:2px"></div>
+            </div>
+          </sc-for>
+          <sc-for list="{{ eventMarks }}" as="e" hint-placeholder-count="18">
+            <div onClick="{{ e.click }}" style="position:absolute;left:{{ e.left }};top:{{ e.top }};width:{{ e.size }};height:{{ e.size }};border-radius:2px;background:{{ e.color }};transform:translateX(-50%) rotate(45deg);opacity:{{ e.opacity }};cursor:pointer" style-hover="opacity:1"></div>
+          </sc-for>
+          <div style="position:absolute;left:{{ progressPct }};top:8px;bottom:8px;width:2px;background:#FFF6D6;box-shadow:0 0 10px rgba(255,246,214,.8);transform:translateX(-1px);pointer-events:none"></div>
+          <div style="position:absolute;left:{{ progressPct }};top:2px;width:11px;height:11px;border-radius:3px;background:#F2C744;transform:translateX(-5.5px) rotate(45deg);pointer-events:none"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div onClick="{{ restart }}" title="Restart" style="width:36px;height:36px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:#B4AECB" style-hover="border-color:#F2C744;color:#F2C744">⏮</div>
+            <div onClick="{{ stepBack }}" title="Previous event" style="width:36px;height:36px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:#B4AECB" style-hover="border-color:#F2C744;color:#F2C744">◀◀</div>
+            <div onClick="{{ togglePlay }}" style="width:52px;height:36px;border-radius:7px;background:{{ playBg }};border:1px solid {{ playBorder }};display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:{{ playColor }}">{{ playGlyph }}</div>
+            <div onClick="{{ stepFwd }}" title="Next event" style="width:36px;height:36px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:#B4AECB" style-hover="border-color:#F2C744;color:#F2C744">▶▶</div>
+            <div onClick="{{ toEnd }}" title="Jump to end" style="width:36px;height:36px;border-radius:7px;border:1px solid #3A3357;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:#B4AECB" style-hover="border-color:#F2C744;color:#F2C744">⏭</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;padding-left:14px;border-left:1px solid #241F38">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;color:#6E6690">SPEED</div>
+            <div style="display:flex;gap:4px">
+              <sc-for list="{{ speeds }}" as="sp" hint-placeholder-count="5">
+                <div onClick="{{ sp.click }}" style="min-width:44px;height:30px;padding:0 10px;border-radius:6px;border:1px solid {{ sp.border }};background:{{ sp.bg }};display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;letter-spacing:0.06em;color:{{ sp.color }}" style-hover="border-color:#57507A">{{ sp.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;padding-left:14px;border-left:1px solid #241F38">
+            <div onClick="{{ toggleKeys }}" style="height:30px;padding:0 12px;border-radius:6px;border:1px solid {{ keysBorder }};background:{{ keysBg }};display:flex;align-items:center;gap:7px;cursor:pointer">
+              <div style="width:7px;height:7px;border-radius:50%;background:{{ keysDot }}"></div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:{{ keysColor }};white-space:nowrap">KEY MOMENTS ONLY</span>
+            </div>
+            <div onClick="{{ toggleFollow }}" style="height:30px;padding:0 12px;border-radius:6px;border:1px solid {{ followBorder }};background:{{ followBg }};display:flex;align-items:center;gap:7px;cursor:pointer">
+              <div style="width:7px;height:7px;border-radius:50%;background:{{ followDot }}"></div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:{{ followColor }};white-space:nowrap">LOG FOLLOWS PLAYHEAD</span>
+            </div>
+          </div>
+
+          <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#57507A;white-space:nowrap">EVENT {{ eventNo }} OF {{ eventTotal }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:272px;flex:0 0 auto;background:#141221;border-left:1px solid #241F38;display:flex;flex-direction:column;min-height:0">
+      <div style="flex:0 0 auto;padding:13px 14px 9px;border-bottom:1px solid #241F38">
+        <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:0.1em;color:#F06A72">ENGINE DEFENSE</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;color:#6E6690;margin-top:4px">{{ foeAliveLabel }}</div>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:9px 12px 14px">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+          <sc-for list="{{ foeCards }}" as="u" hint-placeholder-count="6">
+            <div style="position:relative;height:66px;border-radius:8px;border:2px solid {{ u.border }};background-image:{{ u.image }};background-size:cover;background-position:52% 8%;background-color:#241F38;overflow:hidden;opacity:{{ u.opacity }};filter:{{ u.filter }};animation:{{ u.anim }};flex:0 0 auto">
+              <div style="position:absolute;inset:0;background:linear-gradient(270deg,rgba(14,12,23,.86) 0%,rgba(14,12,23,.5) 48%,rgba(20,18,33,.3) 100%)"></div>
+              <div style="position:absolute;top:6px;right:6px;width:26px;height:26px;background-image:{{ u.emblemUrl }};background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 2px 5px rgba(14,12,23,.9))"></div>
+              <div style="position:absolute;left:8px;right:38px;top:7px">
+                <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;color:#F4EFE4;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.name }}</div>
+                <div style="display:flex;gap:6px;margin-top:3px">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:{{ u.core }}">{{ u.typeName }}</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:#6E6690">ROW {{ u.row }}</span>
+                </div>
+              </div>
+              <div style="position:absolute;left:8px;right:38px;bottom:7px">
+                <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:#C9BFE0;margin-bottom:3px"><span>{{ u.hpText }}</span><span style="color:{{ u.deltaColor }}">{{ u.delta }}</span></div>
+                <div style="height:5px;border-radius:99px;background:rgba(14,12,23,.85);overflow:hidden;box-shadow:inset 0 0 0 1px #3A3357"><div style="width:{{ u.hpPct }};height:5px;background:{{ u.hpFill }};transition:width 260ms ease"></div></div>
+              </div>
+              <sc-if value="{{ u.ko }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:0;background:rgba(14,12,23,.78);display:flex;align-items:center;justify-content:center;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.12em;color:#F06A72">RETURNED TO THE SHARD</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#6E6690;margin-bottom:10px">THIS EVENT</div>
+        <div style="border:1px solid {{ current.border }};border-radius:8px;background:#1C1930;padding:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="width:22px;height:22px;background-image:{{ current.emblemUrl }};background-size:contain;background-repeat:no-repeat"></div>
+            <div style="font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.04em;color:#F4EFE4">{{ current.actor }}</div>
+          </div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.1em;color:{{ current.effColor }};margin-bottom:6px">{{ current.eff }}</div>
+          <div style="font-size:12px;line-height:1.5;color:#B4AECB">{{ current.detail }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#6E6690;margin-top:9px;padding-top:9px;border-top:1px solid #241F38">{{ current.doors }}</div>
+        </div>
+
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#6E6690;margin:16px 0 10px">DAMAGE BY CHAMPION</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ damageBoard }}" as="d" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:18px;height:18px;background-image:{{ d.emblemUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></div>
+              <span style="font-size:11.5px;color:{{ d.nameColor }};flex:0 0 74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.name }}</span>
+              <div style="flex:1;height:6px;border-radius:99px;background:#1C1930;overflow:hidden"><div style="width:{{ d.pct }};height:6px;background:{{ d.fill }};transition:width 260ms ease"></div></div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8E87A8;flex:0 0 auto">{{ d.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:0 0 auto;height:212px;border-top:1px solid #241F38;background:#141221;display:flex;flex-direction:column;min-height:0">
+    <div style="flex:0 0 auto;height:38px;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid #241F38">
+      <div style="font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.12em;color:#F4EFE4">BATTLE LOG</div>
+      <div style="display:flex;gap:5px">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+          <div onClick="{{ f.click }}" style="height:22px;padding:0 9px;border-radius:5px;border:1px solid {{ f.border }};background:{{ f.bg }};display:flex;align-items:center;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;color:{{ f.color }}" style-hover="border-color:#57507A">{{ f.label }}</div>
+        </sc-for>
+      </div>
+      <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;color:#57507A">{{ logCount }} · CLICK A LINE TO SEEK</div>
+    </div>
+    <div style="flex:0 0 auto;height:24px;display:flex;align-items:center;padding:0 18px;gap:10px;border-bottom:1px solid #241F38;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.16em;color:#57507A">
+      <span style="flex:0 0 54px">TIME</span>
+      <span style="flex:0 0 46px">ROUND</span>
+      <span style="flex:0 0 132px">ACTOR</span>
+      <span style="flex:0 0 148px">ACTION</span>
+      <span style="flex:0 0 132px">TARGET</span>
+      <span style="flex:0 0 118px">RESULT</span>
+      <span style="flex:1 1 auto">NOTE</span>
+    </div>
+    <div ref="{{ logRef }}" style="flex:1 1 auto;overflow-y:auto;min-height:0">
+      <sc-for list="{{ logRows }}" as="l" hint-placeholder-count="10">
+        <div onClick="{{ l.click }}" id="{{ l.domId }}" style="display:flex;align-items:center;gap:10px;padding:0 18px;height:30px;cursor:pointer;background:{{ l.bg }};border-left:3px solid {{ l.side }};opacity:{{ l.opacity }}" style-hover="background:#1C1930">
+          <span style="flex:0 0 54px;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#6E6690">{{ l.time }}</span>
+          <span style="flex:0 0 46px;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#8E87A8">R{{ l.round }}</span>
+          <span style="flex:0 0 132px;display:flex;align-items:center;gap:6px;min-width:0"><span style="width:15px;height:15px;background-image:{{ l.emblemUrl }};background-size:contain;background-repeat:no-repeat;flex:0 0 auto"></span><span style="font-size:12px;color:{{ l.actorColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.actor }}</span></span>
+          <span style="flex:0 0 148px;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11.5px;letter-spacing:0.04em;color:#C9BFE0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.action }}</span>
+          <span style="flex:0 0 132px;font-size:12px;color:#8E87A8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.target }}</span>
+          <span style="flex:0 0 118px;display:flex;align-items:center;gap:7px"><span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:{{ l.effColor }}">{{ l.value }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:0.08em;color:{{ l.effColor }};opacity:.8">{{ l.eff }}</span></span>
+          <span style="flex:1 1 auto;font-size:11.5px;color:#8E87A8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.note }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:980},&quot;defaultSpeed&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;0.5&quot;,&quot;1&quot;,&quot;2&quot;,&quot;4&quot;,&quot;8&quot;],&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Playback&quot;},&quot;autoPlay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Playback&quot;}}">
+const TYPES = {
+  earth:{name:"EARTH",core:"#4E7C3A",accent:"#C9922E"},
+  air:{name:"AIR",core:"#8FCFE0",accent:"#DCE6EA"},
+  fire:{name:"FIRE",core:"#E8552B",accent:"#FFB347"},
+  water:{name:"WATER",core:"#2A7FB8",accent:"#4FC3D6"},
+  light:{name:"LIGHT",core:"#F2C744",accent:"#FFF6D6"},
+  dark:{name:"DARK",core:"#7A3FA0",accent:"#C64BB0"},
+  slash:{name:"SLASH",core:"#C0313A",accent:"#F06A72"},
+  pierce:{name:"PIERCE",core:"#3B5BD1",accent:"#7B93F0"},
+  crush:{name:"CRUSH",core:"#B5732E",accent:"#E0A15A"}
+};
+const COUNTER = {earth:"air",air:"earth",fire:"water",water:"fire",light:"dark",dark:"light",slash:"crush",pierce:"slash",crush:"pierce"};
+const mk = (slug,name,type,second,reach,row,maxHp,spd,side) => ({
+  slug,name,type,second,reach,row,maxHp,spd,side,
+  bane:COUNTER[type], fault:COUNTER[second],
+  emblem:"hero-icons/" + slug.replace(/^\d+-/,"") + ".svg",
+  img:"portraits/" + slug + ".png"
+});
+const UNITS = [
+  mk("16-dark-nyxara","Nyxara","dark","water",2,2,1840,88,"ally"),
+  mk("04-air-zephyrine","Zephyrine","air","light",2,2,1520,118,"ally"),
+  mk("22-pierce-vantric","Vantric","pierce","air",2,2,1860,96,"ally"),
+  mk("08-fire-pyrrhic","Pyrrhic","fire","light",1,3,1720,88,"ally"),
+  mk("19-slash-kaellis","Kaellis","slash","light",1,3,2010,102,"ally"),
+  mk("02-earth-ossic","Ossic","earth","dark",2,1,2260,44,"ally"),
+  mk("15-light-auriel-dawnkeep","Auriel Dawnkeep","light","water",2,4,2180,48,"foe"),
+  mk("25-crush-boldrek","Boldrek","crush","light",1,4,2420,42,"foe"),
+  mk("12-water-nix","Nix","water","air",2,5,1700,92,"foe"),
+  mk("01-earth-bramwen","Bramwen","earth","fire",1,5,2140,52,"foe"),
+  mk("17-dark-umbriel","Umbriel","dark","fire",1,5,1740,80,"foe"),
+  mk("21-slash-grieve","Grieve","slash","dark",2,6,2080,78,"foe")
+];
+const BY = {}; UNITS.forEach(u => BY[u.slug] = u);
+const EFF = {
+  super:{label:"SUPER",color:"#F2C744"},
+  eff:{label:"EFFECTIVE",color:"#E0A15A"},
+  neutral:{label:"NEUTRAL",color:"#B4AECB"},
+  res:{label:"RESISTED",color:"#8FCFE0"},
+  heal:{label:"MENDED",color:"#4E7C3A"},
+  buff:{label:"WARDED",color:"#8FCFE0"},
+  status:{label:"STATUS",color:"#E8552B"},
+  ko:{label:"KO",color:"#F06A72"}
+};
+const e = (r,a,act,t,v,eff,note,key) => ({ r:r, a:a, act:act, t:t, v:v, eff:eff, note:note, key:!!key });
+const EVENTS = [
+  e(1,"04-air-zephyrine","Thin Blade","01-earth-bramwen",435,"super","Air opens Bramwen's door — 1.5×.",true),
+  e(1,"22-pierce-vantric","Threading Spear","21-slash-grieve",408,"super","Pierce beats Slash. Reach 2 clears the contact line."),
+  e(1,"25-crush-boldrek","Avalanche","19-slash-kaellis",520,"super","Crush answers Slash. Kaellis takes the front.",true),
+  e(1,"02-earth-ossic","Bone Wall",null,0,"buff","Squad DEF +25% for two rounds."),
+  e(2,"16-dark-nyxara","Veilstep","15-light-auriel-dawnkeep",160,"res","Light resists Dark. Poor read."),
+  e(2,"19-slash-kaellis","Immaculate","17-dark-umbriel",350,"neutral","Straight trade into the middle row."),
+  e(2,"12-water-nix","Tidewrack","08-fire-pyrrhic",492,"super","Water floods Fire. Pyrrhic drops under half.",true),
+  e(2,"08-fire-pyrrhic","Cinder Vow","12-water-nix",0,"status","Burn applied — 90 per turn."),
+  e(3,"04-air-zephyrine","Cutting Gale","01-earth-bramwen",270,"super","Split across two, Bramwen takes the heavier half."),
+  e(3,"01-earth-bramwen","Rootgrip","04-air-zephyrine",188,"res","Earth folds against Air."),
+  e(3,"22-pierce-vantric","Seam Finder","25-crush-boldrek",312,"neutral","Ignores DEF. Boldrek's guard means nothing."),
+  e(3,"15-light-auriel-dawnkeep","Dawnkeep","25-crush-boldrek",-460,"heal","Auriel mends the wall she stands behind."),
+  e(4,"19-slash-kaellis","One Cut","17-dark-umbriel",590,"super","Light in the second slot — Umbriel's fault line.",true),
+  e(4,"17-dark-umbriel","Hollow Song","16-dark-nyxara",120,"res","Dark on Dark. Nothing moves."),
+  e(4,"16-dark-nyxara","Kind Ending","08-fire-pyrrhic",-280,"heal","Pyrrhic pulled back off the edge."),
+  e(4,"12-water-nix","Undertow","22-pierce-vantric",305,"neutral","Vantric holds at 83%."),
+  e(5,"04-air-zephyrine","Sky Verdict","01-earth-bramwen",810,"super","Bramwen returned to the shard.",true),
+  e(5,"25-crush-boldrek","Avalanche","19-slash-kaellis",498,"super","Kaellis under half and still standing."),
+  e(5,"19-slash-kaellis","Duelist's Mark",null,0,"buff","+50% on the next strike."),
+  e(6,"19-slash-kaellis","Immaculate","17-dark-umbriel",680,"super","Marked. Umbriel returned to the shard.",true),
+  e(6,"22-pierce-vantric","Single Truth","25-crush-boldrek",702,"neutral","Boldrek to 12%."),
+  e(6,"12-water-nix","Tidewrack","08-fire-pyrrhic",520,"super","Pyrrhic returned to the shard.",true),
+  e(6,"16-dark-nyxara","Last Silence","12-water-nix",620,"neutral","Nix to 34% with burn still running."),
+  e(7,"04-air-zephyrine","Thin Blade","25-crush-boldrek",290,"neutral","Boldrek returned to the shard.",true),
+  e(7,"19-slash-kaellis","One Cut","12-water-nix",560,"neutral","Nix returned to the shard.",true),
+  e(7,"22-pierce-vantric","Threading Spear","21-slash-grieve",690,"super","Grieve returned to the shard. Court closed.",true),
+  e(7,"15-light-auriel-dawnkeep","Yield",null,0,"ko","Auriel Dawnkeep concedes the Court.",true)
+];
+const SPEEDS = [0.5, 1, 2, 4, 8];
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+const mmss = sec => Math.floor(sec / 60) + ":" + String(Math.floor(sec % 60)).padStart(2, "0");
+
+class Component extends DCLogic {
+  state = { idx: 12, playing: false, speed: 1, keysOnly: false, follow: true, filter: "all", copied: false };
+
+  componentDidMount() {
+    this.setState({ speed: Number(this.props.defaultSpeed || 1), playing: !!this.props.autoPlay });
+    this.tick();
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+  tick() {
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      if (this.state.playing) {
+        if (this.state.idx >= EVENTS.length - 1) this.setState({ playing: false });
+        else this.seek(this.state.idx + 1);
+      }
+      this.tick();
+    }, Math.max(90, 1300 / this.state.speed));
+  }
+  seek(i) {
+    const n = Math.max(0, Math.min(EVENTS.length - 1, i));
+    this.setState({ idx: n });
+    if (this.state.follow) {
+      const el = this._log && this._log.querySelector("#ev-" + n);
+      if (el && this._log) {
+        const top = el.offsetTop - this._log.clientHeight / 2 + 15;
+        this._log.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      }
+    }
+  }
+  hpAt(i) {
+    const hp = {}; UNITS.forEach(u => hp[u.slug] = u.maxHp);
+    for (let k = 0; k <= i; k++) {
+      const ev = EVENTS[k];
+      if (!ev.t || !ev.v) continue;
+      hp[ev.t] = Math.max(0, Math.min(BY[ev.t].maxHp, hp[ev.t] - ev.v));
+    }
+    return hp;
+  }
+  renderVals() {
+    const s = this.state, self = this;
+    const ev = EVENTS[s.idx], hp = this.hpAt(s.idx), prevHp = this.hpAt(s.idx - 1);
+    const total = EVENTS.length;
+    const alive = side => UNITS.filter(u => u.side === side && hp[u.slug] > 0).length;
+
+    const unitVals = u => {
+      const cur = hp[u.slug], prev = prevHp[u.slug], d = prev - cur;
+      const isTarget = ev.t === u.slug, isActor = ev.a === u.slug;
+      return {
+        name: u.name.toUpperCase(), typeName: TYPES[u.type].name, core: TYPES[u.type].core, row: u.row,
+        image: "url('" + u.img + "')", emblemUrl: "url('" + u.emblem + "')",
+        hpText: fmt(cur) + " / " + fmt(u.maxHp),
+        hpPct: Math.round(cur / u.maxHp * 100) + "%",
+        hpFill: cur / u.maxHp < 0.4 ? "linear-gradient(90deg,#77161C,#C0313A)" : "linear-gradient(90deg," + TYPES[u.type].core + "," + TYPES[u.type].accent + ")",
+        delta: d > 0 ? "\u2212" + fmt(d) : (d < 0 ? "+" + fmt(-d) : Math.round(cur / u.maxHp * 100) + "%"),
+        deltaColor: d > 0 ? "#F06A72" : (d < 0 ? "#8FCE7A" : "#8E87A8"),
+        ko: cur === 0, opacity: cur === 0 ? 0.5 : 1,
+        filter: cur === 0 ? "grayscale(1) brightness(.6)" : "none",
+        border: isTarget ? EFF[ev.eff].color : (isActor ? "#F2C744" : (cur === 0 ? "#2A2640" : TYPES[u.type].core)),
+        anim: isTarget || isActor ? "b-hit 620ms ease-out" : "none",
+        isActor: isActor
+      };
+    };
+
+    const rowUnits = row => UNITS.filter(u => u.row === row).map(u => {
+      const v = unitVals(u), n = UNITS.filter(x => x.row === row).length;
+      const d = prevHp[u.slug] - hp[u.slug];
+      return Object.assign(v, {
+        h: n > 2 ? "150px" : (n === 2 ? "212px" : "300px"),
+        float: ev.t === u.slug && d !== 0 ? (d > 0 ? "\u2212" + fmt(d) : "+" + fmt(-d)) : null,
+        floatLabel: ev.t === u.slug ? EFF[ev.eff].label : "",
+        floatColor: EFF[ev.eff].color
+      });
+    });
+
+    const roundOf = i => EVENTS[i].r;
+    const timeOf = i => i * 7 + 4;
+    const dur = timeOf(total - 1) + 6;
+    const pct = i => (i / (total - 1)) * 100;
+
+    const damage = {};
+    for (let k = 0; k <= s.idx; k++) { const x = EVENTS[k]; if (x.v > 0) damage[x.a] = (damage[x.a] || 0) + x.v; }
+    const maxDmg = Math.max(1, ...Object.values(damage));
+
+    const filters = [
+      { id: "all", label: "ALL" }, { id: "ally", label: "OUR SIX" }, { id: "foe", label: "ENGINE" },
+      { id: "super", label: "SUPER EFFECTIVE" }, { id: "ko", label: "KNOCKOUTS" }
+    ].map(f => ({
+      label: f.label,
+      border: s.filter === f.id ? "#F2C744" : "#2A2640",
+      bg: s.filter === f.id ? "rgba(242,199,68,.12)" : "transparent",
+      color: s.filter === f.id ? "#F2C744" : "#8E87A8",
+      click: () => self.setState({ filter: f.id })
+    }));
+
+    const passes = (x) => {
+      if (s.filter === "ally") return BY[x.a].side === "ally";
+      if (s.filter === "foe") return BY[x.a].side === "foe";
+      if (s.filter === "super") return x.eff === "super";
+      if (s.filter === "ko") return x.key;
+      return true;
+    };
+
+    const logRows = EVENTS.map((x, i) => ({ x: x, i: i })).filter(o => passes(o.x)).map(o => {
+      const x = o.x, i = o.i, cur = i === s.idx, actorSide = BY[x.a].side;
+      return {
+        domId: "ev-" + i, time: mmss(timeOf(i)), round: x.r,
+        actor: x.a === null ? "—" : BY[x.a].name,
+        emblemUrl: "url('" + BY[x.a].emblem + "')",
+        actorColor: actorSide === "ally" ? "#F4EFE4" : "#D9B6BA",
+        action: x.act.toUpperCase(),
+        target: x.t ? BY[x.t].name : "—",
+        value: x.v > 0 ? fmt(x.v) : (x.v < 0 ? "+" + fmt(-x.v) : "—"),
+        eff: EFF[x.eff].label, effColor: EFF[x.eff].color,
+        note: x.note,
+        side: actorSide === "ally" ? "#F2C744" : "#C0313A",
+        bg: cur ? "rgba(242,199,68,.12)" : (i < s.idx ? "transparent" : "transparent"),
+        opacity: i > s.idx ? 0.42 : 1,
+        click: () => self.seek(i)
+      };
+    });
+
+    const speeds = SPEEDS.map(v => ({
+      label: (v === 1 ? "1" : String(v)) + "\u00D7",
+      border: s.speed === v ? "#F2C744" : "#2A2640",
+      bg: s.speed === v ? "rgba(242,199,68,.14)" : "#1C1930",
+      color: s.speed === v ? "#F2C744" : "#8E87A8",
+      click: () => self.setState({ speed: v })
+    }));
+
+    const roundStarts = [];
+    EVENTS.forEach((x, i) => { if (i === 0 || EVENTS[i - 1].r !== x.r) roundStarts.push({ i: i, r: x.r }); });
+
+    return {
+      matchId: "MC-4471-A", outcome: "VICTORY", outcomeColor: "#F2C744",
+      round: ev.r, eventNo: s.idx + 1, eventTotal: total,
+      clock: mmss(timeOf(s.idx)), duration: mmss(dur),
+      progressPct: pct(s.idx) + "%",
+      allyBanner: UNITS.filter(u => u.side === "ally").map(u => ({ color: TYPES[u.type].core, opacity: hp[u.slug] > 0 ? 1 : 0.25 })),
+      foeBanner: UNITS.filter(u => u.side === "foe").map(u => ({ color: TYPES[u.type].core, opacity: hp[u.slug] > 0 ? 1 : 0.25 })),
+      allyAliveLabel: alive("ally") + " OF 6 STANDING",
+      foeAliveLabel: alive("foe") + " OF 6 STANDING",
+      allyCards: UNITS.filter(u => u.side === "ally").map(unitVals),
+      foeCards: UNITS.filter(u => u.side === "foe").map(unitVals),
+
+      rowBand: [1,2,3,"gap",4,5,6].map(row => {
+        if (row === "gap") return { isGap: true, units: [], flex: "0 1 58px", minW: "30px",
+          row: "", label: "", color: "#F2C744", border: "#241F38", borderStyle: "dashed", bg: "transparent" };
+        const us = UNITS.filter(u => u.row === row);
+        const anyAlive = us.some(u => hp[u.slug] > 0);
+        const hot = us.some(u => u.slug === ev.t || u.slug === ev.a);
+        return { isGap: false, row: row, flex: "1 1 108px", minW: "84px",
+          label: row === 1 || row === 6 ? "BACK" : (row === 2 || row === 5 ? "MIDDLE" : "FRONT"),
+          color: hot ? "#F2C744" : (anyAlive ? "#B4AECB" : "#57507A"),
+          border: hot ? "rgba(242,199,68,.5)" : "#241F38",
+          borderStyle: anyAlive ? "solid" : "dashed",
+          bg: hot ? "rgba(242,199,68,.06)" : "rgba(28,25,48,.55)",
+          units: rowUnits(row) };
+      }),
+
+      headline: (BY[ev.a].name + " · " + ev.act).toUpperCase(),
+      headlineColor: EFF[ev.eff].color,
+
+      current: {
+        actor: BY[ev.a].name.toUpperCase(), emblemUrl: "url('" + BY[ev.a].emblem + "')",
+        border: EFF[ev.eff].color, eff: ev.act.toUpperCase() + " · " + EFF[ev.eff].label,
+        effColor: EFF[ev.eff].color,
+        detail: ev.t
+          ? (ev.v > 0 ? ev.act + " landed " + fmt(ev.v) + " on " + BY[ev.t].name + ", leaving " + fmt(hp[ev.t]) + " HP." : (ev.v < 0 ? ev.act + " mended " + fmt(-ev.v) + " on " + BY[ev.t].name + "." : ev.note))
+          : ev.note,
+        doors: ev.t
+          ? "TARGET DOORS · BANE " + TYPES[BY[ev.t].bane].name + " · FAULT " + TYPES[BY[ev.t].fault].name
+          : "NO TARGET · " + TYPES[BY[ev.a].type].name + " ACTION"
+      },
+
+      damageBoard: Object.keys(damage).sort((a,b) => damage[b] - damage[a]).slice(0, 7).map(slug => ({
+        name: BY[slug].name, emblemUrl: "url('" + BY[slug].emblem + "')",
+        nameColor: BY[slug].side === "ally" ? "#F4EFE4" : "#D9B6BA",
+        pct: Math.round(damage[slug] / maxDmg * 100) + "%",
+        fill: "linear-gradient(90deg," + TYPES[BY[slug].type].core + "," + TYPES[BY[slug].type].accent + ")",
+        value: fmt(damage[slug])
+      })),
+
+      roundMarks: roundStarts.map(m => ({ left: pct(m.i) + "%", label: "R" + m.r,
+        color: m.r === ev.r ? "#F2C744" : "#57507A" })),
+      eventMarks: EVENTS.map((x, i) => {
+        if (s.keysOnly && !x.key) return { left: "-50px", top: "0px", size: "0px", color: "transparent", opacity: 0, click: () => {} };
+        const big = x.key;
+        return { left: pct(i) + "%", top: big ? "16px" : "18px", size: big ? "14px" : "10px",
+          color: EFF[x.eff].color, opacity: i <= s.idx ? 1 : 0.35,
+          click: () => self.seek(i) };
+      }),
+
+      playGlyph: s.playing ? "❚❚" : "▶",
+      playBg: s.playing ? "rgba(242,199,68,.16)" : "#F2C744",
+      playBorder: "#F2C744",
+      playColor: s.playing ? "#F2C744" : "#141221",
+      togglePlay: () => self.setState(st => ({ playing: !st.playing, idx: st.idx >= total - 1 && !st.playing ? 0 : st.idx })),
+      restart: () => { self.setState({ playing: false }); self.seek(0); },
+      stepBack: () => { self.setState({ playing: false }); self.seek(s.idx - 1); },
+      stepFwd: () => { self.setState({ playing: false }); self.seek(s.idx + 1); },
+      toEnd: () => { self.setState({ playing: false }); self.seek(total - 1); },
+      scrubClick: (e2) => {
+        const r = e2.currentTarget.getBoundingClientRect();
+        const f = Math.max(0, Math.min(1, (e2.clientX - r.left) / r.width));
+        self.seek(Math.round(f * (total - 1)));
+      },
+      speeds: speeds,
+
+      keysOnly: s.keysOnly,
+      keysBorder: s.keysOnly ? "#F2C744" : "#2A2640",
+      keysBg: s.keysOnly ? "rgba(242,199,68,.12)" : "#1C1930",
+      keysDot: s.keysOnly ? "#F2C744" : "#3A3357",
+      keysColor: s.keysOnly ? "#F2C744" : "#8E87A8",
+      toggleKeys: () => self.setState(st => ({ keysOnly: !st.keysOnly })),
+      followBorder: s.follow ? "#F2C744" : "#2A2640",
+      followBg: s.follow ? "rgba(242,199,68,.12)" : "#1C1930",
+      followDot: s.follow ? "#F2C744" : "#3A3357",
+      followColor: s.follow ? "#F2C744" : "#8E87A8",
+      toggleFollow: () => self.setState(st => ({ follow: !st.follow })),
+
+      filters: filters, logRows: logRows,
+      logCount: logRows.length + " OF " + total + " EVENTS",
+      logRef: (el) => { self._log = el; },
+      shareLabel: s.copied ? "LINK COPIED" : "SHARE REPLAY",
+      share: () => { self.setState({ copied: true }); setTimeout(() => self.setState({ copied: false }), 1600); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

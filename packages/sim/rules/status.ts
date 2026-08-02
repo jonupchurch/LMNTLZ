@@ -291,6 +291,45 @@ export const isPermanent = (status: StatusInstance): boolean =>
   !Number.isFinite(status.turnsRemaining);
 
 /**
+ * Build an effect instance from something that is **not a power** — a passive or a
+ * rune (020, 021).
+ *
+ * **One builder, because the defaults are a rule.** `ticksDealt: 0`,
+ * `escalation ?? 0` and `cleansable ?? true` decide how an instance behaves the
+ * moment it lands, and two copies of them would let a rider from a passive and a
+ * rider from a rune quietly disagree about the same effect.
+ *
+ * `sourcePowerId` is a namespaced synthetic id — `passive:<name>`, `rune:<id>` —
+ * and never a real power id. That is what keeps two sources of the same effect
+ * *different* sources: a bleed from a passive and a bleed the same champion applied
+ * by rider stack toward the cap of 3 instead of refreshing each other into one.
+ */
+export function statusFrom(
+  sourcePowerId: string,
+  applier: HeroState,
+  kind: StatusInstance['kind'],
+  fields: {
+    readonly magnitude: number;
+    readonly turnsRemaining: number;
+    readonly stat?: StatKey | null;
+    readonly escalation?: number;
+    readonly cleansable?: boolean;
+  },
+): StatusInstance {
+  return {
+    kind,
+    stat: fields.stat ?? null,
+    magnitude: fields.magnitude,
+    turnsRemaining: fields.turnsRemaining,
+    sourceInstanceId: applier.instanceId,
+    sourcePowerId,
+    escalation: fields.escalation ?? 0,
+    ticksDealt: 0,
+    cleansable: fields.cleansable ?? true,
+  };
+}
+
+/**
  * Shred is the one magnitude **not** derived from tier.
  *
  * **A percentage of the stat, never flat points**, and the arithmetic is why:
