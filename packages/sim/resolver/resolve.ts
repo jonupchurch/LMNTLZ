@@ -32,13 +32,18 @@ import {
   heroStateOf,
   isStanding,
   legalTargets,
+  lethalGuard,
   maxHp,
+  onAllyStruck,
+  onApplied,
   onCrit,
   onDeath,
   onMissed,
   onStrike,
+  onStruck,
   applyPassiveEffects,
   potencyForTier,
+  SURVIVAL_HP,
   riderLandProbability,
   shapeIncoming,
   shapeOutgoing,
@@ -49,6 +54,7 @@ import {
   type BattleState,
   type Conclusion,
   type HeroState,
+  type PassiveEffect,
   type StatusInstance,
   type Tier,
 } from '../rules/index.js';
@@ -352,7 +358,24 @@ function applyOrRemove(
       ? instance.magnitude * HP_PER_TOUGHNESS
       : 0;
 
-  return replaceHero(state, { ...current, statuses, hp: current.hp + grant });
+  const landedOn = replaceHero(state, { ...current, statuses, hp: current.hp + grant });
+
+  /**
+   * **`Word Travels` — the applier hears its own good news** (020 US3).
+   *
+   * Fired with the instance **as it landed**, after both shaping passes, so
+   * Cirrolan's copy is half of what the ally actually received rather than half
+   * of what was cast at them. The hook itself refuses a self-target, which is
+   * what stops a copy from copying itself.
+   */
+  const echo = onApplied({
+    state: landedOn,
+    applier: heroStateOf(landedOn, applier.instanceId),
+    bearer: heroStateOf(landedOn, current.instanceId),
+    instance,
+  });
+
+  return echo.length > 0 ? applyPassiveEffects(landedOn, echo, maxHp) : landedOn;
 }
 
 export interface Resolution {
@@ -555,9 +578,34 @@ export function resolveOne(
      */
     const { throughput, statuses } = absorb(current, raw);
 
-    const hp = Math.max(0, current.hp - throughput);
-    total += Math.min(throughput, current.hp);
+    let hp = Math.max(0, current.hp - throughput);
+
+    /**
+     * **`Still Burning` — the one passive that changes whether a champion is on
+     * the board** (020 US3).
+     *
+     * Checked here rather than after the fact because everything downstream reads
+     * `deaths`: the second death check, `The Veil Closes`, the conclusion. A
+     * guard applied later would have to *resurrect*, and a hero that died and
+     * came back in one action is two events on the wire for one thing that
+     * happened.
+     *
+     * The guard returns what it costs — a permanent, uncleansable mark — so
+     * "once per battle" needs no field on `HeroState` and nothing can refund it.
+     */
+    let guardPaid: readonly PassiveEffect[] = [];
+    if (hp === 0) {
+      const paid = lethalGuard(next, current);
+      if (paid !== null) {
+        hp = SURVIVAL_HP;
+        guardPaid = paid;
+      }
+    }
+
+    /** HP actually lost, which a survived lethal blow makes different from `throughput`. */
+    total += current.hp - hp;
     next = replaceHero(next, { ...current, hp, statuses });
+    if (guardPaid.length > 0) next = applyPassiveEffects(next, guardPaid, maxHp);
 
     if (hp === 0) {
       deaths.push(current.instanceId);
@@ -605,7 +653,18 @@ export function resolveOne(
      * module that knows a swing critted is the resolver — so the branch lives
      * here and `The Cut Reopens` never sees a flag.
      */
-    return crit ? [...onStrike(ctx), ...onCrit(ctx)] : onStrike(ctx);
+    const attacking = crit ? [...onStrike(ctx), ...onCrit(ctx)] : onStrike(ctx);
+
+    /**
+     * **Three heroes have something to say about one blow**, and until US3 only
+     * the attacker did. The defender spends `First Guard` and loses `No Ripple`;
+     * a bystander in the struck hero's row throws a shield over it.
+     */
+    return [
+      ...attacking,
+      ...onStruck(ctx),
+      ...onAllyStruck(next, ctx.attacker, defender, power),
+    ];
   });
   next = applyPassiveEffects(next, strikeEffects, maxHp);
 

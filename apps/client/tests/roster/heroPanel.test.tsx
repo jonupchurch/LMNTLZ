@@ -164,16 +164,30 @@ describe('the passive flyout', () => {
   });
 
   /**
-   * ⚠️ **Twenty-two of the 27 uniques have no authored effect**, and the panel says so
-   * rather than inventing one. Text written here to fill the space would make a screen
-   * a second source for unmade design decisions, and every passive is inert in play
-   * today — a confident description would be a promise the engine does not keep.
+   * ⭐ **T041 — the flyout shows real text for all 27 uniques.**
+   *
+   * ⚠️ **This test used to assert the opposite and it was right to.** For most of
+   * this project 19 of the 27 uniques had no authored effect, and the panel said
+   * *"not yet specified"* rather than inventing one — text written on a screen to
+   * fill a space would have made it a second source for unmade design decisions.
+   *
+   * They were approved and written on 2026-08-01, so the honest claim inverted: the
+   * placeholder is now **unreachable on the real roster**, and a champion that
+   * reached it would be an authoring gap that shipped.
+   *
+   * The catalog half is asserted for all 27 cheaply; the render half is asserted
+   * through the real drawer for a champion that was unwritten until that date, so
+   * the wiring is exercised rather than assumed.
    */
-  it('says so plainly when the effect is unwritten, rather than inventing one', async () => {
+  it('shows an authored effect for every unique, and the placeholder for none', async () => {
     const unwritten = getAllHeroes()
       .map((h) => h.passives[2])
-      .find((name) => getPassive(name)?.effect === null)!;
-    const owner = getAllHeroes().find((h) => h.passives[2] === unwritten)!;
+      .filter((name) => getPassive(name)?.effect == null);
+
+    expect(unwritten, 'a champion would reach the flyout with nothing to say').toEqual([]);
+
+    /* Bramwen's The Long Patience — one of the nineteen, authored 2026-08-01. */
+    const owner = getAllHeroes().find((h) => h.passives[2] === 'The Long Patience')!;
 
     serve({ heroes: [] });
     render(<RosterScreen />);
@@ -182,9 +196,11 @@ describe('the passive flyout', () => {
     await userEvent.click(cards[0]!);
     const drawer = (await screen.findByLabelText('Passives')).closest('aside')!;
 
-    await userEvent.hover(within(drawer).getByText(unwritten));
+    await userEvent.hover(within(drawer).getByText('The Long Patience'));
 
-    expect(await within(drawer).findByRole('tooltip')).toHaveTextContent(/not yet specified/i);
+    const flyout = await within(drawer).findByRole('tooltip');
+    expect(flyout).toHaveTextContent(getPassive('The Long Patience')!.effect!);
+    expect(flyout).not.toHaveTextContent(/not yet specified/i);
   });
 
   /** Held on hover, cleared on leave — this flyout overlays the champion grid. */

@@ -296,6 +296,81 @@ he has *not* yet struck, Marisel on one she *has*. The same board rewards them
 differently, which is the differentiation `01-stats.md` says powers exist to
 carry.
 
+### The nineteen — approved 2026-08-01 (feature 020 US3)
+
+Eight of the 27 had an authored effect: five here and three in `05-status.md`.
+The remaining **nineteen were named on the roster and specified nowhere**. They
+were drafted as one table with a *priced against* column, approved line by line,
+and implemented in the same commit that added this section — because a magnitude
+that exists only in TypeScript is not canon.
+
+**The anchors everything below is priced from:**
+
+- `Seams Everywhere` (×0.70 mitigation) and `Room to Swing` (+5 Armor per enemy,
+  cap +30) were already balanced. They are the yardsticks, not the proposals.
+- **One turn of stun is the strongest single effect in the game**, and nothing
+  here scales past it.
+- The tier ladder: ±10 to ±25 points, 1 to 4 turns.
+- Roughly **35 points of headroom** over a typical stat before the 75 cap makes
+  further investment waste.
+
+| Champion | Passive | Trigger | Effect | Priced against |
+|---|---|---|---|---|
+| Bramwen | **The Long Patience** | each turn nothing damages her | **+5 Might**, stacking to **+25**; a landed hit clears all of it | five quiet turns to reach the tier-5 stat change, undone by one cheap attack |
+| Ossic | **The Bone Beneath** | below half its health pool | **+20 Magic Resist** | ⚠️ settled: Magic Resist, *never* Armor. The tier-4 stat change |
+| Terragosa | **Something Green Returns** | an ally falls within her reach | restores **Might × 0.5** to every champion still standing on her side | half `The Veil Closes`, because it pays the whole squad |
+| Zephyrine | **Out of Reach** | after she acts | **+1 reach** for one turn | the reach rune buys +1 permanently; this rents it, and the rent is due every turn |
+| Cirrolan | **Word Travels** | he places a beneficial effect on an ally | the same effect lands on him at **half magnitude** | the buff was already paid for by the power; the copy is the discount |
+| Vael | **Gravity Is a Suggestion** | attacking a target **2+ rows** away | ignores **30%** of the mitigation answering the attack | `Seams Everywhere` exactly, gated on distance |
+| Pyrrhic | **Nothing Left to Take** | target carries no beneficial effect | **+25% damage** | one step on the effectiveness ladder, on a condition the player creates |
+| Marisel | **It All Comes Back** | *(authored — needs a spender)* | banks Reckoning per strike | tier 4 reads it, tier 5 spends it; **no power can yet** |
+| Tidewarden Coll | **Ground Yielded** | an ally **in her own row** is struck | that ally gains a shield of **Might × 1.0** | the tier-1 shield, the same anchor as `The Veil Closes` |
+| Nix | **No Ripple** | nothing has landed on her this battle | **+15 Agility** | the tier-2 stat change; it ends on the first hit and does not return |
+| Seraphel | **Under Judgement** | target carries a harmful effect | **+25% damage** | mirrors `Nothing Left to Take` from the other side |
+| Lucen | **Nothing Casts Twice** | an enemy spends a power | that power's cooldown **+1** | tempo, never damage — the only cooldown-touching passive |
+| Auriel Dawnkeep | **Still Burning** | she would fall | survives at **1 HP**, **once per battle** | the strongest thing here; once-per-battle is the whole price |
+| Nyxara | **Merciful** | target under **25%** health | **+40% damage** | narrower and larger than `Finish It`, and the two compound |
+| Umbriel | **Written in Pencil** | *(authored, `05-status.md`)* | her debuffs cannot be cleansed | — |
+| Kaellis | **The Duelist's Habit** | a target she has not yet struck | **+25% damage** | authored with no magnitude; the exact inverse of Reckoning |
+| Reyna Two-Rivers | **Confluence** | both her Forces have landed this battle | **+20% damage** for the rest of it | a payoff for using her whole kit, not a stat — and below a ladder step because it never turns off |
+| Vantric | **Seams Everywhere** | *(already balanced)* | **×0.70** mitigation, before Penetration | unchanged — the anchor everything else is priced from |
+| Silka Pinquick | **Already Gone** | *(authored)* | cannot be the target of a reactive power | blocked: **no reactive power exists** |
+| Corvane | **The Ledger Kept** | an ally falls, **anywhere** | **+10 Might** per fallen ally, permanent, cap **+50** | caps at a full wipe, by which point the battle is lost |
+| Grieve | **Room to Swing** | *(already balanced)* | **+5 Armor** per enemy in reach, cap **+30** | unchanged |
+| Lord Aiguille | **First Guard** | the first time **each** enemy lands a blow on him | that blow deals **25% less** | once per enemy, so a full squad spends it six times and never again |
+| Boldrek | **No Warning** | a critical hit | crits land at **×2.5** rather than ×2 | crit chance is `Luck × 0.5%`, so this is a lottery ticket by design |
+| Hettamar Ironfall | **Nothing to Discuss** | *(authored)* | denies reactions to anyone he damages | blocked: no reactive power exists |
+| Mauless | **Immovable** | *(authored)* | cannot be compelled by taunt | — |
+| Ember Saelith | **Never Quite Out** | *(authored, `05-status.md`)* | her burns cannot be cleansed | — |
+| Cindara | **Banked Coals** | *(authored, `05-status.md`)* | her effects last **+1 turn** | — |
+
+**Two rows depart from the approved wording, and both are deliberate:**
+
+> `Gravity Is a Suggestion` and `Seams Everywhere` were approved as *"ignores 30%
+> of **Armor**"*. Both are implemented against **whichever mitigation stat answers
+> the attack**. A literal Armor-only reading would make the first of them inert:
+> Vael is an Air champion and every power she owns is arcane, so it would never
+> once have fired for the hero who holds it.
+
+**Three consequences worth knowing before tuning any of them:**
+
+- **`No Ripple` rides the accuracy clamp.** At full strength it puts four of the
+  729 pairings above a 50% *unclamped* miss rate — the property `01-stats.md`'s
+  `+20` edge exists to prevent. The 65% floor refuses it, so nothing is
+  unhittable, but Nix is the only champion in the game that reaches the rail.
+- **`First Guard` is the first thing that ever reached the 25% damage floor.**
+  For five features the floor was a guarantee with nothing to guard. Its
+  reduction is taken *before* the floor, so it can lower a blow toward the
+  minimum and never below it.
+- **`The Duelist's Habit` set a new overkill ceiling**: Kaellis' tier-5 into
+  Nyxara now lands at **2.095×** a full health bar, up from just under 2×.
+
+**Three of the 27 are written and do not run.** `Already Gone` and `Nothing to
+Discuss` both concern reactive powers, of which the roster authors zero;
+`It All Comes Back` banks a resource no power can spend. All three are named in
+`HELD_UNIQUES` in `packages/sim/rules/passives.ts`, and a test reads that list, so
+the count cannot drift.
+
 ---
 
 ## Stacks

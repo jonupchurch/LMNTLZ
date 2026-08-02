@@ -92,22 +92,43 @@ export type {
  * layer is invisible to the RNG index even though it changes outcomes.
  */
 export {
+  HELD_UNIQUES,
   IMPLEMENTED_PASSIVES,
   PASSIVE_MAGNITUDES,
   PASSIVE_TIER,
+  SURVIVAL_HP,
   applyPassiveEffects,
+  cooldownExtensionFor,
+  critMultiplierFor,
   damageMultiplierFor,
   hooksFor,
+  incomingMultiplierFor,
+  lethalGuard,
+  mitigationMultiplierFor,
+  onAct,
+  onAllyStruck,
+  onApplied,
   onCrit,
   onDeath,
   onMissed,
   onStrike,
+  onStruck,
+  onUpkeep,
   penetrationBonusFor,
   shapeIncoming,
   shapeOutgoing,
+  statBonusFor,
   targetingFor,
 } from './passives.js';
-export type { DeathContext, PassiveEffect, PassiveHooks, StrikeContext } from './passives.js';
+export type {
+  ApplyContext,
+  DeathContext,
+  PassiveEffect,
+  PassiveHooks,
+  StatContext,
+  StrikeContext,
+  WitnessContext,
+} from './passives.js';
 
 export {
   ATTACKER_EDGE,
@@ -240,6 +261,9 @@ export type { Conclusion } from './ending.js';
  *
  * ### Changelog
  *
+ * - **`e0.5.0`** — the nineteen approved uniques (020 US3). Still **no draw
+ *   moves**, and one of them changes whether a champion is standing at all:
+ *   `Still Burning` refuses one lethal blow per battle.
  * - **`e0.4.0`** — the passive layer (020 US2). **No draw moves**; thirteen Role
  *   and House rules change what the same draws produce.
  * - **`e0.3.0`** — the status layer (020 US1). Rider contests spend draws at step
@@ -255,22 +279,23 @@ export type { Conclusion } from './ending.js';
 export const ENGINE_RNG = 'splitmix64';
 
 /**
- * **`e0.3.0` → `e0.4.0` for 020 US2 — Constitution XVI, and a different reason
- * from the last two.**
+ * **`e0.4.0` → `e0.5.0` for 020 US3 — Constitution XVI, same reason as the last
+ * bump and a sharper example of it.**
  *
  * The passive layer **consumes no randomness at all**: every trigger is something
  * that already passed a contest, so not one draw index moves and the four
  * determinism suites reconstruct the sequence unchanged.
  *
  * It still needs the bump, and that is the point worth writing down. `e0.2.0`
- * moved because HP totals changed; `e0.3.0` moved because draws changed; this one
- * moves because **outcomes** changed — a Striker's blow below half pool is now
- * ×1.25, an Earth champion cannot be stunned, a Crush hero's target loses Armor
- * permanently. Re-deriving an in-flight battle across the boundary would replay
- * the same draws into a different world.
+ * moved because HP totals changed; `e0.3.0` moved because draws changed; the last
+ * two move because **outcomes** changed — a Striker's blow below half pool is
+ * ×1.25, an Earth champion cannot be stunned, and now Auriel Dawnkeep **does not
+ * fall** to the blow that killed her under `e0.4.0`. Re-deriving an in-flight
+ * battle across the boundary would replay the same draws into a different world,
+ * with a different hero standing in it.
  *
  * > **A version stamp answers "would this log produce this state again", not
- * > "did the RNG change".** Three bumps, three unrelated causes, one question.
+ * > "did the RNG change".** Four bumps, three unrelated causes, one question.
  *
  * **Stored replays are not at risk and this is worth being exact about.** A replay
  * is a stored event log and is never re-simulated — that is the whole of XVI and
@@ -280,4 +305,4 @@ export const ENGINE_RNG = 'splitmix64';
  * The risk is confined to battles that are open when the deploy lands, which is
  * why **deploys drain before switching**. See `specs/020-status-and-passives/`.
  */
-export const engineVersion = (): string => `e0.4.0-${ENGINE_RNG}`;
+export const engineVersion = (): string => `e0.5.0-${ENGINE_RNG}`;

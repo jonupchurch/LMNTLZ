@@ -43,17 +43,22 @@ const TIERS: readonly Tier[] = [1, 2, 3, 4, 5];
 
 describe('the catalog', () => {
   /**
-   * **Twelve, and the twelfth is deliberately not authorable.** `mark` was added
-   * for 020 US2: `Find the Seam` sharpens against a repeat target, and two uniques
-   * will read the same counter. `statusKindSchema` in `@lmntlz/content` stays at
-   * **eleven** so no power can author one — a mark is placed by a passive, and if
-   * both could write it nothing would say which did.
+   * **Thirteen, and the last two are deliberately not authorable.**
+   *
+   * `mark` was added for 020 US2 — `Find the Seam` sharpens against a repeat
+   * target, and four uniques now read the same counter. `reach` was added for US3:
+   * `Out of Reach` grants Zephyrine a row of range for a turn, which no `buff` can
+   * carry because reach is not a stat and `statusPoints` matches on one.
+   *
+   * `statusKindSchema` in `@lmntlz/content` stays at **eleven** so no power can
+   * author either — both are placed by a passive, and if both a rider and a
+   * passive could write one, nothing would say which did.
    *
    * The asymmetry is asserted below rather than left as a comment, because a
    * later hand widening the schema to "match" would be undoing a decision.
    */
   it('defines every kind exactly once, with a stacking rule', () => {
-    expect(STATUS_KINDS).toHaveLength(12);
+    expect(STATUS_KINDS).toHaveLength(13);
     for (const kind of STATUS_KINDS) {
       expect(definitionOf(kind).kind, `${kind} is mis-keyed in the catalog`).toBe(kind);
       expect(definitionOf(kind).stacking.mode).toBeTruthy();

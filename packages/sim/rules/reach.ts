@@ -13,6 +13,7 @@ import {
   type BattleState,
   type Row,
 } from './state.js';
+import { reachBonusOf } from './status.js';
 
 /**
  * Occupied rows crossed, **including the target's row and excluding the actor's
@@ -40,16 +41,22 @@ export function distance(state: BattleState, from: Row, to: Row): number {
 }
 
 /**
- * `distance ≤ hero.reach + reachMod` (FR-007).
+ * `distance ≤ hero.reach + reachMod + any reach effect` (FR-007).
  *
  * **Never bounded by a constant.** Feature 004 carries FR-020 specifically for
  * this: a reach-2 front-seat hero with a `+1` reach rune sees *three* enemy
  * rows, not two. An implementation that wrote `Math.min(reach + mod, 2)` would
  * look defensive and quietly delete the rune.
+ *
+ * The three terms are three different things and stay three: what the champion
+ * **is** (`hero.reach`), what its owner **bought** (`reachMod`, permanent), and
+ * what the battle **granted** (`Out of Reach`, one turn at a time). Folding the
+ * third into the second would put a passive's grant in the field a rune owns —
+ * the same collision `statMods` already carries a warning about.
  */
 export function inReach(state: BattleState, actorInstanceId: string, targetRow: Row): boolean {
   const actor = heroStateOf(state, actorInstanceId);
-  const reach = getHero(actor.heroId).reach + actor.reachMod;
+  const reach = getHero(actor.heroId).reach + actor.reachMod + reachBonusOf(actor);
 
   return distance(state, actor.row, targetRow) <= reach;
 }

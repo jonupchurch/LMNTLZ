@@ -34,19 +34,25 @@
  * `effectiveness.test.ts` caught the first draft of this file doing exactly that, with
  * a literal `1.25` in a display string.
  *
- * ### ⚠️ Nineteen effects are `null`, and that is the honest state
+ * ### All forty are now written — the nineteen were approved 2026-08-01
  *
- * `03-powers.md` gives all four role effects and all nine house effects. Of the 27
- * uniques it describes **five**, the ones with hook mechanics other rules depend on;
- * `05-status.md` settles three more. The remaining **nineteen** are named in the roster
- * and have no authored effect anywhere in the project.
+ * `03-powers.md` gave all four Role effects and all nine House effects. Of the 27
+ * uniques it described **five**, the ones with hook mechanics other rules depend on;
+ * `05-status.md` settled three more. The remaining **nineteen** were named in the
+ * roster and had no authored effect anywhere in the project — so this file carried
+ * `null` for them rather than inventing text, because `CLAUDE.md` is explicit that the
+ * rules live in `resources/mechanics/` and a screen is never a source of them.
  *
- * **They are `null` rather than invented.** `CLAUDE.md` is explicit that the rules live
- * in `resources/mechanics/` and that a screen is never a source of them; writing effect
- * text here to fill a panel would create a second source for 22 unwritten design
- * decisions, and the first person to author them for real would find this file already
- * disagreeing. A surface that says *not yet specified* is telling the truth about a
- * game whose passives, per `06-progression.md`, **run nowhere yet**.
+ * They were drafted as a table, approved line by line, written into `03-powers.md` and
+ * implemented in `packages/sim/rules/passives.ts` in one commit. **`effect` is no
+ * longer `null` for any passive on the roster**, and `passives.test.ts` asserts it —
+ * so a future hero whose passive nobody authored fails the build rather than reaching
+ * a player as *"not yet specified"*.
+ *
+ * The `string | null` type stays. `null` still means *unwritten* and must remain
+ * expressible: a reader has to be able to tell an authoring gap from a passive that
+ * deliberately does nothing, and today's answer being "there are none" is a fact about
+ * the roster, not about the shape.
  */
 
 import type { DamageType } from './types.js';
@@ -106,10 +112,17 @@ const HOUSE: ReadonlyArray<Passive & { readonly belongsTo: DamageType }> = [
 ];
 
 /**
- * **Unique passives** — 27 conditional triggers, one per hero.
+ * **Unique passives** — 27 conditional triggers, one per hero, and all 27 are written.
  *
- * Five have authored effects because other rules depend on them; the rest are named and
- * unwritten. See the file header for why they are not filled in here.
+ * Eight came from `03-powers.md` and `05-status.md`; the other nineteen were drafted,
+ * approved line by line and written into `03-powers.md` on 2026-08-01.
+ *
+ * **Three of the 27 are described here and do not yet run**, which is a different thing
+ * from unwritten and worth being exact about: `Already Gone` and `Nothing to Discuss`
+ * both concern reactive powers, of which the roster authors zero, and `It All Comes
+ * Back` banks a resource no power can spend yet. `HELD_UNIQUES` in
+ * `packages/sim/rules/passives.ts` names them, and a test reads that list — so the count
+ * cannot drift without something going red.
  *
  * *It All Comes Back* is the roster's only stacking resource and has exactly one
  * source, stated on the generator: the passive banks Reckoning, tier 4 reads it without
@@ -144,23 +157,62 @@ const UNIQUE_EFFECTS: Readonly<Record<string, string>> = {
     'Her debuffs cannot be cleansed. They still expire — they cannot be removed early.',
   'Banked Coals':
     'Her effects last one turn longer — +1 turn on top of the tier’s duration, never added magnitude.',
+
+  /**
+   * --- The nineteen, approved line by line 2026-08-01 ------------------------
+   *
+   * Drafted as a table with a *"priced against"* column, approved unchanged, and
+   * written into `03-powers.md` in the same commit as the implementation.
+   *
+   * **Still not one number**, for the reason at the top of this file: the engine owns
+   * the magnitudes and `@lmntlz/content` cannot read them, so a figure here could never
+   * be kept honest. Every line below describes a *shape* — what triggers, what moves,
+   * which direction — and a surface that wants the size asks the engine.
+   */
+  'The Long Patience':
+    'Gains Might on every turn nothing damages her, stacking toward a cap. A single landed hit takes all of it back at once.',
+  'The Bone Beneath': 'Gains Magic Resist while below half his health pool.',
+  'Something Green Returns':
+    'When an ally falls within her reach, restores health to every champion still standing on her side.',
+  'Out of Reach': 'Gains a row of reach for a turn each time she acts.',
+  'Word Travels':
+    'A beneficial effect he places on an ally also lands on him, at reduced magnitude.',
+  'Gravity Is a Suggestion':
+    'Ignores part of the mitigation answering her attacks, against a target two or more rows away.',
+  'Nothing Left to Take': 'Deals bonus damage to a target carrying no beneficial effects.',
+  'Ground Yielded': 'Shields an ally in his own row whenever that ally is struck.',
+  'No Ripple':
+    'Gains Agility until the first attack of the battle lands on her. It does not come back.',
+  'Under Judgement': 'Deals bonus damage to a target already carrying a harmful effect.',
+  'Nothing Casts Twice': 'Lengthens the cooldown of every power an enemy spends.',
+  'Still Burning': 'Survives one otherwise-lethal blow per battle, at a sliver of health.',
+  Merciful:
+    'Deals heavily increased damage to a target near death, and it compounds with the Striker’s own bonus.',
+  Confluence:
+    'Gains lasting damage for the rest of the battle once both of her Forces have landed a blow.',
+  'Seams Everywhere':
+    'Ignores part of the mitigation answering his attacks. Always, with no condition at all.',
+  'The Ledger Kept': 'Gains Might permanently for each ally that falls, to a cap.',
+  'Room to Swing': 'Gains Armor for every enemy within his reach, to a cap.',
+  'First Guard': 'The first blow each enemy lands on him is reduced.',
+  'No Warning': 'His critical hits strike harder than a critical hit otherwise does.',
 };
 
 /**
- * ⚠️ **Half-settled, and deliberately not given effect text.**
+ * ⚠️ **Retired 2026-08-01 — the constraint it carried was honored.**
  *
- * `05-status.md`'s balance review fixes that Ossic's `The Bone Beneath` grants **`Magic
- * Resist` rather than `Armor`** — every arcane hero sits at the roster-minimum Armor 15,
- * so an Armor buff improved the stat they have least of *and* the one answering fewest
- * attacks. That settles the **stat**. It does not settle the trigger, the magnitude or
- * the duration, so there is no effect to state and the drawer correctly says so.
+ * This held one row while `The Bone Beneath` was half-settled: `05-status.md`'s balance
+ * review fixed that it grants **`Magic Resist` rather than `Armor`** — every arcane hero
+ * sits at the roster-minimum Armor 15, so an Armor buff would improve the stat they have
+ * least of *and* the one answering fewest attacks. That settled the stat and not the
+ * trigger, so there was no effect to state.
  *
- * Recorded here so the authoring pass starts from the constraint rather than
- * rediscovering it and picking `Armor`.
+ * The approval table started from exactly that constraint rather than rediscovering it,
+ * which is what this existed to make happen. **Kept as an empty object rather than
+ * deleted**: it is the shape a future half-settled passive goes in, and `passives.test.ts`
+ * reads it to assert that nothing sits here with an effect already written.
  */
-export const PARTIALLY_SETTLED: Readonly<Record<string, string>> = {
-  'The Bone Beneath': 'Must grant Magic Resist, not Armor (05-status.md).',
-};
+export const PARTIALLY_SETTLED: Readonly<Record<string, string>> = Object.freeze({});
 
 /** Every unique passive on the roster, in roster order. */
 const UNIQUE_NAMES: readonly string[] = [

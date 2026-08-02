@@ -122,10 +122,26 @@ describe('the clamp', () => {
 /**
  * T015 — the recorded 729-pair distribution, locked as a regression.
  *
- * Every figure here is reproduced by `tools/verify-accuracy.py`, and
- * `research.md` Q2 records them against the analysis in `01-stats.md`. They are
+ * `research.md` Q2 records these against the analysis in `01-stats.md`. They are
  * asserted rather than described because the `+20` edge and the die convention
  * are both things somebody could plausibly "tidy up".
+ *
+ * ### ⚠️ Re-recorded 2026-08-01, and `tools/verify-accuracy.py` now measures
+ * something slightly different
+ *
+ * `No Ripple` grants Nix `Agility` **until the first attack of the battle lands
+ * on her** — so at the opening of every pairing it is on, and the engine's
+ * accuracy is no longer the pure roster-stat contest the python tool computes.
+ *
+ * | | pre-passive (`verify-accuracy.py`) | engine, today |
+ * |---|---|---|
+ * | mean miss | 13.0% | **13.7%** |
+ * | p90 miss | 28.9% | **31.7%** |
+ * | mean miss, no `+20` | 42.6% | **43.5%** |
+ *
+ * The tool's figures are the **baseline the `+20` decision was made against** and
+ * stay valid as that; these are what a player meets. The whole 0.7-point gap is
+ * one hero, which the test below pins by name.
  */
 describe('the recorded unclamped distribution over 729 pairings', () => {
   const misses = allPairings()
@@ -136,17 +152,45 @@ describe('the recorded unclamped distribution over 729 pairings', () => {
     expect(misses).toHaveLength(729);
   });
 
-  it('has a mean miss rate of 13.0%', () => {
+  it('has a mean miss rate of 13.7%', () => {
     const mean = misses.reduce((s, m) => s + m, 0) / misses.length;
-    expect(mean).toBeCloseTo(0.13, 2);
+    expect(mean).toBeCloseTo(0.137, 2);
   });
 
-  it('has a p90 miss rate of 28.9%', () => {
-    expect(percentile(misses, 0.9)).toBeCloseTo(0.289, 2);
+  it('has a p90 miss rate of 31.7%', () => {
+    expect(percentile(misses, 0.9)).toBeCloseTo(0.317, 2);
   });
 
-  it('has zero pairs missing more than half the time', () => {
-    expect(misses.filter((m) => m > 0.5)).toHaveLength(0);
+  /**
+   * ⚠️ **The guarantee this used to make is now made by the clamp, and the
+   * difference is worth stating plainly.**
+   *
+   * It read *"zero pairs missing more than half the time"* — the property that
+   * made the game playable. `No Ripple` breaks it **unclamped**: four pairings
+   * now sit at a 55.8% miss, and Nix is the defender in every one of them.
+   *
+   * She is not unhittable, and that is exactly what `MIN_HIT_PROBABILITY` is for.
+   * The clamp sees the true 55.8% and refuses it, so the worst any attacker
+   * actually faces is the 65% floor — the same rail that stops an `Agility` +
+   * `Luck` rune build from becoming a literal invincibility build. **This is a
+   * passive riding the clamp rather than defeating it.**
+   *
+   * So the assertion moved to where the guarantee lives: clamped, nothing misses
+   * more than half the time, and the unclamped exceptions are pinned by name so a
+   * second one cannot arrive quietly.
+   */
+  it('leaves no pair missing more than half the time once the clamp applies', () => {
+    const clamped = allPairings().map(({ state }) => 1 - hitProbability(state, 'a', 'd'));
+    expect(clamped.filter((m) => m > 0.5)).toHaveLength(0);
+  });
+
+  it('has exactly four unclamped pairs above half, all of them Nix defending', () => {
+    const over = allPairings()
+      .filter(({ state }) => 1 - unclampedHitProbability(state, 'a', 'd') > 0.5)
+      .map(({ defender }) => defender.name);
+
+    expect(over).toHaveLength(4);
+    expect([...new Set(over)], 'a second passive is pushing pairs past the clamp').toEqual(['Nix']);
   });
 
   it('has 42 auto-hits and 0 auto-misses', () => {
@@ -174,7 +218,7 @@ describe('the recorded unclamped distribution over 729 pairings', () => {
     expect(median).toBeLessThan(0.5);
 
     const mean = symmetric.reduce((s, m) => s + m, 0) / symmetric.length;
-    expect(mean).toBeCloseTo(0.426, 2);
+    expect(mean).toBeCloseTo(0.435, 2);
   });
 });
 

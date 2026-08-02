@@ -171,24 +171,24 @@ contest results. This is the MVP — the game's combat now does what its text sa
 
 ## Phase 4 — US3: Each champion plays differently (P3)
 
-- [ ] **T034** 🚦 **GATE** — draft all **19** unwritten unique passives as one
+- [X] **T034** 🚦 **GATE** — draft all **19** unwritten unique passives as one
   table: trigger, effect, magnitude, and **what each is priced against**. Anchors
   in [research.md](./research.md) §5. `The Bone Beneath` starts from its settled
   constraint — **Magic Resist, not Armor**.
-- [ ] **T035** 🚦 **BLOCKING** — Jon accepts / rejects / edits line by line.
+- [X] **T035** 🚦 **BLOCKING** — Jon accepts / rejects / edits line by line.
   **No row is implemented before it is approved.** Constitution XIV: an
   over-tuned passive can only be corrected by raising the other twenty-six.
-- [ ] **T036** Write the approved 19 into `resources/mechanics/03-powers.md`.
+- [X] **T036** Write the approved 19 into `resources/mechanics/03-powers.md`.
   **Same commit as the implementation** — a magnitude that exists only in
   TypeScript is not canon (Constitution XX).
-- [ ] **T037** [P] Add the 19 to `UNIQUE_EFFECTS` in
+- [X] **T037** [P] Add the 19 to `UNIQUE_EFFECTS` in
   `packages/content/src/passives.ts`; retire `PARTIALLY_SETTLED`.
-- [ ] **T038** [P] Implement the 8 already-authored uniques. They are unchanged
+- [X] **T038** [P] Implement the 8 already-authored uniques. They are unchanged
   by T034–T036.
-- [ ] **T039** Implement the 19 approved uniques.
-- [ ] **T040** Test: no passive reports a null effect (SC-003), and all 27
+- [X] **T039** Implement the 19 approved uniques.
+- [X] **T040** Test: no passive reports a null effect (SC-003), and all 27
   diverge under suppression (SC-002).
-- [ ] **T041** ⭐ **WIRING** — every unique is reachable from `hooksFor`, and the
+- [X] **T041** ⭐ **WIRING** — every unique is reachable from `hooksFor`, and the
   roster drawer's flyout shows real text for all 27.
 
 ---

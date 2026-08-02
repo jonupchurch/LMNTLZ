@@ -65,7 +65,8 @@ export type StatusKind =
   | 'fade'
   | 'stun'
   | 'silence'
-  | 'mark';
+  | 'mark'
+  | 'reach';
 
 export type StatusFamily =
   | 'damage-over-time'
@@ -74,7 +75,8 @@ export type StatusFamily =
   | 'shield'
   | 'targeting'
   | 'control'
-  | 'mark';
+  | 'mark'
+  | 'reach';
 
 /**
  * How a kind behaves when it meets another of its own kind.
@@ -177,6 +179,26 @@ export const STATUS_CATALOG: Readonly<Record<StatusKind, StatusDefinition>> = Ob
    * two wrote it. The asymmetry is the rule, not drift.
    */
   mark: define('mark', 'mark', { mode: 'unbounded' }, 'negative'),
+
+  /**
+   * **Reach, for a turn — the thirteenth kind, and the second a rider may not
+   * author** (020 US3).
+   *
+   * `Out of Reach` grants Zephyrine a row of extra range after she acts. Reach is
+   * not a stat: it lives on `HeroState.reachMod` beside the rune that buys it, not
+   * in `stats`, so a `buff` cannot carry it — `statusPoints` matches on `stat` and
+   * there is no `stat` to name.
+   *
+   * `largest-wins` rather than `unbounded`, and the difference is the whole point:
+   * two sources of extra reach give the better one, never their sum. Range is the
+   * most expensive thing in the game to widen — a reach-2 hero already sees three
+   * enemy rows with the rune — and stacking it is how a back seat quietly becomes
+   * a front one.
+   *
+   * `statusKindSchema` in `@lmntlz/content` stays at eleven for the same reason it
+   * excludes `mark`: this is placed by a passive, never by an authored rider.
+   */
+  reach: define('reach', 'reach', { mode: 'largest-wins' }, 'positive'),
 });
 
 export const STATUS_KINDS: readonly StatusKind[] = Object.freeze(
@@ -422,6 +444,48 @@ export function accumulateStatus(
  * Reckoning and the Pierce House's sharpening can sit on the same target without
  * either reading the other's total.
  */
+/**
+ * Extra rows of range the bearer currently holds — `0` when it holds none.
+ *
+ * **Read by `reach.ts`, placed by `passives.ts`, and the indirection is what
+ * keeps them apart.** `passives.ts` reads `distance` and `inReach`, so a reach
+ * rule that lived there and was read from `reach.ts` would be a module cycle in
+ * the middle of targeting.
+ *
+ * `largest-wins` is enforced at application; this takes the maximum anyway,
+ * because a reader that summed would make the stacking rule depend on which of
+ * two functions asked.
+ */
+export function reachBonusOf(hero: HeroState): number {
+  let best = 0;
+  for (const s of hero.statuses) {
+    if (s.kind === 'reach' && s.magnitude > best) best = s.magnitude;
+  }
+  return best;
+}
+
+/**
+ * Drop every effect one source placed, whatever its kind or duration.
+ *
+ * **`The Long Patience` is the only caller and it is the only shape that needs
+ * this**: Bramwen's build is *undone* by being hit, not merely stopped. Expiry
+ * cannot express that — a duration says *when* an effect ends, never *what* ends
+ * it — and lowering the magnitude would leave the accumulator holding a number
+ * the next tick would grow again from.
+ *
+ * Keyed on the source pair rather than the kind, so it can never reach a buff
+ * some other hero placed on the same bearer.
+ */
+export function clearFromSource(
+  statuses: readonly StatusInstance[],
+  sourceInstanceId: string,
+  sourcePowerId: string,
+): readonly StatusInstance[] {
+  return statuses.filter(
+    (s) => s.sourceInstanceId !== sourceInstanceId || s.sourcePowerId !== sourcePowerId,
+  );
+}
+
 export function markCount(
   bearer: HeroState,
   sourceInstanceId: string,

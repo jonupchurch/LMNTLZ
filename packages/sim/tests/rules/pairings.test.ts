@@ -126,8 +126,20 @@ describe('every one of the 729 pairings', () => {
     expect(oneShots / total).toBeGreaterThan(0.04);
     expect(oneShots / total).toBeLessThan(0.07);
 
-    // Nothing reaches twice a bar, so overkill stays bounded.
-    expect(worst).toBeLessThan(2);
+    /**
+     * **Overkill stays bounded, and the bound moved on 2026-08-01.**
+     *
+     * This read `< 2` — nothing reached twice a health bar — and the nineteen
+     * approved uniques took the worst case to **2.095**: Kaellis' tier-5 into
+     * Nyxara, with `The Duelist's Habit` paying its +25% because he has not
+     * struck her yet.
+     *
+     * That is the passive working. The figure to watch is the shape rather than
+     * the value: a conditional bonus on a tier-5 is the largest number the game
+     * can produce, and `2.5` is where it would stop being *bounded overkill* and
+     * start being a second one-shot tier.
+     */
+    expect(worst).toBeLessThan(2.5);
   });
 
   it('never returns a negative or fractional final', () => {

@@ -13,15 +13,27 @@
 
 import { getHero, powerEffectiveness, type Effectiveness, type Power } from '@lmntlz/content';
 import {
+  cappedStat,
   effectiveStat,
   heroStateOf,
+  maxHp,
   type BattleState,
   type HeroState,
   type StatusInstance,
 } from './state.js';
 import { critChance, hitProbability } from './probability.js';
 import { shieldOf, shredFactor } from './status.js';
-import { damageMultiplierFor, penetrationBonusFor, type StrikeContext } from './passives.js';
+import {
+  critMultiplierFor,
+  damageMultiplierFor,
+  incomingMultiplierFor,
+  mitigationMultiplierFor,
+  penetrationBonusFor,
+  statBonusFor,
+  type StrikeContext,
+} from './passives.js';
+
+export { HP_PER_TOUGHNESS, maxHp } from './state.js';
 
 /** `01-stats.md`. The same constant as the stat cap, and deliberately so. */
 export const K = 75;
@@ -30,46 +42,6 @@ export const K = 75;
 export const DAMAGE_FLOOR_FRACTION = 0.25;
 
 export const CRIT_MULTIPLIER = 2;
-
-/**
- * `maxHp = Toughness × 8` (FR-016).
- *
- * **This constant is the game's pacing dial, and it was 50 until it was
- * measured.** At 50 the median battle ran **299 hero-turns into a 300-turn cap**
- * — 62% of battles never reached a wipe at all and were decided on pooled HP
- * share — while a typical hit took **3.8%** off a health bar and 90% of every
- * hit in the game landed under 10%. The hardest hit the roster could produce,
- * anywhere, was 28.7%.
- *
- * At 8, over 600 auto-played battles with both sides on the shipped AI:
- *
- * | | 50 | 8 |
- * |---|---|---|
- * | hero-turns, median | 299 (the cap) | **49** |
- * | ended on the cap | 62% | **0%** |
- * | normal hit | 3.8% | **26.3%** (p75 44%) |
- * | crit | 8.0% | **45.5%** (p90 100%) |
- * | hits under 10% of a bar | 90% | **10%** |
- *
- * **Nothing about relative balance moves.** Damage and healing are both
- * absolute — `Might × multiplier` — so scaling the pool scales both against it
- * identically, and every matchup ratio the design reasoned about is preserved.
- * That is precisely why this is the lever and `Might` is not: `Might` is capped
- * at 75 and tops out at 45 today, nowhere near the 6× of headroom needed.
- *
- * **The absolute damage numbers are unchanged** — a hit still lands for ~60. It
- * is the health bars that stopped being 1,250–2,000 points long.
- *
- * Two consequences are deliberate rather than overlooked, and both are asserted
- * in tests rather than left as prose: a tier-4 or tier-5 power can now one-shot
- * a full-health hero (`pairings.test.ts`), and a hero acts few enough times that
- * some of its six powers never fire (`firingProfile.ts`, `BATTLE_TURNS`).
- */
-export const HP_PER_TOUGHNESS = 8;
-
-export function maxHp(hero: HeroState): number {
-  return effectiveStat(hero, getHero(hero.heroId).stats, 'toughness') * HP_PER_TOUGHNESS;
-}
 
 /**
  * `packet = Might × power.multiplier` (FR-017).
@@ -125,8 +97,17 @@ export interface DamagePreview {
   readonly mitigated: number;
   readonly typeMultiplier: Effectiveness;
   readonly resistedBy: 'armor' | 'magicResist';
-  /** What the attacker's passives multiplied the landed blow by. `1` when none apply. */
+  /**
+   * What the **attacker's** passives multiplied the landed blow by. `1` when none
+   * apply.
+   *
+   * The defender's own reduction is not in this: it is taken before the floor, so
+   * it arrives inside `mitigated`'s successor rather than beside it. Two numbers
+   * would suggest they compose, and they do not — see the note at the floor.
+   */
   readonly passiveMultiplier: number;
+  /** What the **defender's** passives multiplied the incoming blow by, before the floor. */
+  readonly incomingMultiplier: number;
   readonly final: number;
   readonly floorApplied: boolean;
   readonly hitProbability: number;
@@ -181,9 +162,39 @@ export function damagePreview(
    * against a lightly armored target than a heavily armored one. That is exactly
    * backwards for an effect called "find the seam".
    */
-  const armor = effectiveStat(defender, defenderHero.stats, 'armor') * shredFactor(defender, 'armor');
+  /**
+   * **The defender's own passives raise the wall before shred takes a bite**
+   * (020 US3).
+   *
+   * `The Bone Beneath` grants `Magic Resist` below half pool and `Room to Swing`
+   * grants `Armor` per enemy in reach. Both are *conditional* and neither can be a
+   * status: nothing applies them, they simply hold while the condition does. So
+   * they are added to the base stat, which is the one place a shred can still
+   * answer them — a bonus added after the shred would be a wall no strip could
+   * reach.
+   *
+   * ### ⚠️ `cappedStat`, and the first draft did not have it
+   *
+   * Adding the bonus straight onto `effectiveStat` **bypasses the 75 cap**, because
+   * `effectiveStat` clamps and then the bonus lands on top. `Room to Swing` on a
+   * runed defender reached `Armor` 105, and the note on `mitigationFactor` — *"never
+   * exceeds 50% reduction, because `E` is bounded by the 75 stat cap"* — stopped
+   * being true. Caught by the floor test, which asserts the floor never binds against
+   * a defender pushed to the cap on both walls.
+   *
+   * **The cap is the ceiling for every source, or it is not a cap.** That is the same
+   * rule runes are priced against.
+   */
+  const armor =
+    cappedStat(
+      effectiveStat(defender, defenderHero.stats, 'armor'),
+      statBonusFor(state, defender, 'armor'),
+    ) * shredFactor(defender, 'armor');
   const magicResist =
-    effectiveStat(defender, defenderHero.stats, 'magicResist') * shredFactor(defender, 'magicResist');
+    cappedStat(
+      effectiveStat(defender, defenderHero.stats, 'magicResist'),
+      statBonusFor(state, defender, 'magicResist'),
+    ) * shredFactor(defender, 'magicResist');
   /**
    * **The passive layer, read here so a preview cannot disagree with a
    * resolution** (020 US2).
@@ -214,14 +225,44 @@ export function damagePreview(
   const answeredBy: 'armor' | 'magicResist' =
     answering === 'mixed' ? (armor <= magicResist ? 'armor' : 'magicResist') : answering;
 
-  const effectiveResistance = wall - penetration;
+  /**
+   * **`Seams Everywhere` and `Gravity Is a Suggestion` — a fraction of the wall,
+   * taken in the same place a shred is and for the same reason** (020 US3).
+   *
+   * Both read as *"ignores 30% of Armor"* in the approval table, and both are
+   * implemented against **whichever mitigation stat answers the attack**. A
+   * literal `Armor`-only reading would make `Gravity Is a Suggestion` inert:
+   * Vael is an Air champion whose whole kit is arcane, so it would have answered
+   * `Armor` on none of her own powers.
+   *
+   * Multiplied before `Penetration` is subtracted, exactly like shred — see the
+   * note above for why that order is not interchangeable.
+   */
+  const effectiveResistance = wall * mitigationMultiplierFor(strike) - penetration;
   const factor = mitigationFactor(effectiveResistance);
   const mitigated = packet * factor;
 
   // FR-022, Constitution XIII — taken from @lmntlz/content, never recomputed.
   const typeMultiplier = powerEffectiveness(power, defenderHero);
 
-  const afterType = mitigated * typeMultiplier;
+  /**
+   * **The defender's own reduction is taken before the floor; the attacker's
+   * bonus after it.** The asymmetry is deliberate and it is the floor's whole
+   * meaning.
+   *
+   * `final = max(packet × 0.25, mitigated × typeMultiplier)` is a **guarantee
+   * about what a hit delivers** — `CLAUDE.md` states it in that form. A defensive
+   * passive that multiplied the already-floored result would breach it: measured,
+   * `First Guard` took the worst case to **0.213 of a packet** against a floor of
+   * 0.25. So `First Guard` reduces what mitigation delivers and then the floor
+   * catches it, exactly like `Armor` does.
+   *
+   * The attacker's side keeps the opposite treatment for the reason recorded
+   * below: a Striker closing out a kill should not lose its bonus on precisely
+   * the blows that were reduced to their floor.
+   */
+  const incoming = incomingMultiplierFor(strike);
+  const afterType = mitigated * typeMultiplier * incoming;
   const floor = packet * DAMAGE_FLOOR_FRACTION;
   const floorApplied = floor > afterType;
 
@@ -242,11 +283,18 @@ export function damagePreview(
     typeMultiplier,
     resistedBy: answeredBy,
     passiveMultiplier: passiveFactor,
+    incomingMultiplier: incoming,
     final: Math.round(landed),
     floorApplied,
     hitProbability: hitProbability(state, attackerInstanceId, defenderInstanceId),
     critChance: critChance(state, attackerInstanceId),
-    critFinal: Math.round(landed * CRIT_MULTIPLIER),
+    /**
+     * **`No Warning` is the only thing that moves this**, and it moves the
+     * multiplier rather than the damage: Boldrek's crits land at ×2.5. Read here
+     * so the number a player sees on a projected crit is the number the resolver
+     * spends — `resolveOne` takes `critFinal` straight off this preview.
+     */
+    critFinal: Math.round(landed * (critMultiplierFor(strike) ?? CRIT_MULTIPLIER)),
   };
 }
 

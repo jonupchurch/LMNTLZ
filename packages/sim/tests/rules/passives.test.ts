@@ -14,23 +14,39 @@
  * here and is not used.
  */
 
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { getAllHeroes, getHero } from '@lmntlz/content';
+import { PASSIVES, getAllHeroes, getHero, getPassive } from '@lmntlz/content';
 import { damagePreview } from '../../rules/damage.js';
 import { legalTargets } from '../../rules/targeting.js';
-import { tickDurations } from '../../rules/status.js';
+import { markCount, tickDurations } from '../../rules/status.js';
+import { inReach } from '../../rules/reach.js';
 import {
+  HELD_UNIQUES,
   IMPLEMENTED_PASSIVES,
   PASSIVE_MAGNITUDES,
+  SURVIVAL_HP,
   applyPassiveEffects,
+  cooldownExtensionFor,
+  critMultiplierFor,
+  damageMultiplierFor,
   hooksFor,
+  incomingMultiplierFor,
+  lethalGuard,
+  mitigationMultiplierFor,
+  onAct,
+  onAllyStruck,
+  onApplied,
   onCrit,
   onDeath,
   onMissed,
   onStrike,
+  onStruck,
+  onUpkeep,
   penetrationBonusFor,
   shapeIncoming,
   shapeOutgoing,
+  statBonusFor,
   targetingFor,
   type StrikeContext,
 } from '../../rules/passives.js';
@@ -74,8 +90,32 @@ const statusesOf = (state: BattleState, id: string): readonly HeroState['statuse
 // ---------------------------------------------------------------------------
 
 describe('the registry', () => {
-  it('implements the four Role, nine House and four settled unique passives', () => {
-    expect(IMPLEMENTED_PASSIVES).toHaveLength(17);
+  /**
+   * **37 of 40: four Role, nine House, and 24 of the 27 uniques.**
+   *
+   * The three that are not implemented are named in `HELD_UNIQUES` and each is
+   * waiting on something that does not exist — two reactive powers, one a tier-5
+   * spender for Reckoning. **Derived rather than written as a number**, so
+   * building one of the three moves the count here and in the catalog together
+   * and cannot leave the two disagreeing.
+   */
+  it('implements every passive except the three that are held', () => {
+    expect(IMPLEMENTED_PASSIVES).toHaveLength(PASSIVES.length - HELD_UNIQUES.length);
+  });
+
+  /**
+   * 🔴 **The held list must name real passives that really are unimplemented.**
+   *
+   * Without this, `HELD_UNIQUES` could drift into an excuse: a name removed from
+   * the registry and quietly added here would keep the count above green while a
+   * champion lost its passive.
+   */
+  it('holds exactly three, all of them real and none of them running', () => {
+    for (const name of HELD_UNIQUES) {
+      expect(getPassive(name), `${name} is held but is not a passive`).toBeDefined();
+      expect(IMPLEMENTED_PASSIVES, `${name} is held and implemented`).not.toContain(name);
+    }
+    expect(HELD_UNIQUES).toHaveLength(3);
   });
 
   /**
@@ -99,10 +139,17 @@ describe('the registry', () => {
     expect(hooksFor('h01').map((h) => h.name)).not.toContain('Hold the Line');
   });
 
-  /** Nineteen uniques are still names. A battle must not fail because of it. */
+  /**
+   * Three uniques are still names. A battle must not fail because of it.
+   *
+   * Silka Pinquick carries `Already Gone`, which needs a reactive power to have
+   * anything to refuse — so she runs with her Role and her House and nothing else,
+   * rather than throwing on a lookup.
+   */
   it('skips a passive with no implementation instead of throwing', () => {
-    expect(() => hooksFor('h22')).not.toThrow();
-    expect(hooksFor('h22').map((h) => h.name)).not.toContain('Seams Everywhere');
+    expect(() => hooksFor('h23')).not.toThrow();
+    expect(hooksFor('h23').map((h) => h.name)).not.toContain('Already Gone');
+    expect(hooksFor('h23')).toHaveLength(2);
   });
 });
 
@@ -432,14 +479,21 @@ describe('The Veil Closes — Dark feeds on a nearby death', () => {
 describe('The Cut Reopens — Slash bleeds on a crit', () => {
   const state = board({ heroId: 'h19', row: 3 }, [{ heroId: 'h01', row: 4, id: 'd' }]);
 
+  /**
+   * ⚠️ The control used to be `onStrike(...) === []`, and Kaellis stopped being
+   * empty on 2026-08-01: `The Duelist's Habit` places its own mark on every hit.
+   * So the control is now *"no bleed without a crit"* rather than *"nothing at
+   * all"* — narrower, and about the passive under test rather than about the
+   * champion that happens to carry it.
+   */
   it('opens a bleed the ordinary strike does not', () => {
-    expect(onStrike(strike(state, 'a', 'd'))).toEqual([]);
+    const ordinary = applyPassiveEffects(state, onStrike(strike(state, 'a', 'd')), maxHp);
+    expect(statusesOf(ordinary, 'd').filter((s) => s.kind === 'bleed')).toEqual([]);
 
     const after = applyPassiveEffects(state, onCrit(strike(state, 'a', 'd')), maxHp);
-    const bled = statusesOf(after, 'd');
+    const bled = statusesOf(after, 'd').filter((s) => s.kind === 'bleed');
 
     expect(bled).toHaveLength(1);
-    expect(bled[0]!.kind).toBe('bleed');
     expect(bled[0]!.magnitude).toBeGreaterThan(0);
   });
 
@@ -450,7 +504,8 @@ describe('The Cut Reopens — Slash bleeds on a crit', () => {
    */
   it('is a different source from the same hero’s authored riders', () => {
     const after = applyPassiveEffects(state, onCrit(strike(state, 'a', 'd')), maxHp);
-    expect(statusesOf(after, 'd')[0]!.sourcePowerId).toBe('passive:The Cut Reopens');
+    const bleed = statusesOf(after, 'd').find((s) => s.kind === 'bleed');
+    expect(bleed?.sourcePowerId).toBe('passive:The Cut Reopens');
   });
 
   it('does nothing for another House', () => {
@@ -615,35 +670,67 @@ describe('the uniques whose effect was already authored', () => {
 // ---------------------------------------------------------------------------
 
 /**
- * **SC-002: every one of the thirteen changes the board.**
+ * **SC-002: every one of the thirty-seven changes the board.**
  *
- * The per-passive suites above each compare against a control, which is the same
- * claim one passive at a time. This one asserts the *coverage* — that no name in
- * the registry is an empty object somebody added to make a count come out right.
- *
- * It cannot be satisfied by an inert hook: a `PassiveHooks` with no callable
- * field contributes nothing to any of the six collectors.
+ * The per-passive suites — here for the thirteen Role and House rules, and in
+ * `uniques.test.ts` for the nineteen — each compare against a control, which is
+ * the same claim one passive at a time. This one asserts the *coverage*: that no
+ * name in the registry is an empty object somebody added to make a count come out
+ * right, and that no hook is declared without something reading it.
  */
 describe('🔴 every implemented passive has a reachable hook', () => {
+  /**
+   * ⚠️ **This listed the nine hook names by hand until 2026-08-01, and that is
+   * how a guard rots.**
+   *
+   * US3 added eleven more. Fourteen passives immediately read as *inert* — not
+   * because they did nothing, but because the guard had never heard of
+   * `statBonus`, `onStruck`, `lethalGuard` and the rest. **A scan sees what it
+   * was written to see**, and a scan that has to be edited every time the thing
+   * it scans grows will eventually be edited wrong.
+   *
+   * So it derives from the object instead: a `PassiveHooks` carrying nothing but
+   * its `name` is inert, and that stays true for every hook anyone adds later.
+   */
   it('leaves no name in the registry doing nothing', () => {
     const inert: string[] = [];
 
     for (const hero of getAllHeroes()) {
       for (const hooks of hooksFor(hero.id)) {
-        const reachable =
-          Boolean(hooks.damageMultiplier) ||
-          Boolean(hooks.penetrationBonus) ||
-          Boolean(hooks.onStrike) ||
-          Boolean(hooks.onCrit) ||
-          Boolean(hooks.onMissed) ||
-          Boolean(hooks.onDeathNearby) ||
-          Boolean(hooks.shapeOutgoing) ||
-          Boolean(hooks.shapeIncoming) ||
-          Boolean(hooks.targeting);
-        if (!reachable) inert.push(hooks.name);
+        const fields = Object.keys(hooks).filter((k) => k !== 'name');
+        if (fields.length === 0) inert.push(hooks.name);
       }
     }
 
     expect([...new Set(inert)]).toEqual([]);
+  });
+
+  /**
+   * 🔴 **And every hook a passive declares must be one the engine collects.**
+   *
+   * The inert check above cannot see the *other* failure, which this project has
+   * already shipped once: a hook field that is written, typed, tested in
+   * isolation and **never read by anything**. `legalTargets` accepted taunt and
+   * fade filters for four features while the resolver passed three arguments of
+   * five.
+   *
+   * So this reads `passives.ts` itself and demands that every field name any
+   * passive actually uses appears as `hooks.<field>` in a collector. A new hook
+   * with no collector fails here rather than in a battle nobody is watching.
+   */
+  it('collects every hook any passive declares', () => {
+    const source = readFileSync(new URL('../../rules/passives.ts', import.meta.url), 'utf8');
+
+    const declared = new Set<string>();
+    for (const hero of getAllHeroes()) {
+      for (const hooks of hooksFor(hero.id)) {
+        for (const field of Object.keys(hooks)) {
+          if (field !== 'name') declared.add(field);
+        }
+      }
+    }
+
+    const uncollected = [...declared].filter((field) => !source.includes(`hooks.${field}`));
+    expect(uncollected, 'a hook nobody reads is a seam with no caller').toEqual([]);
   });
 });

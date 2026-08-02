@@ -65,6 +65,10 @@ const STAT_SLUG: Readonly<Record<StatKey, string>> = Object.freeze({
  *   the guard — it removes the guard."*
  * - **`mark` is `reprisal`.** A mark is a record that this attacker has struck
  *   this target before, which is exactly what Reckoning cashes in.
+ * - **`reach` is `extended-reach`**, and the icon was drawn before the mechanic
+ *   existed. The design system has carried `status-extended-reach` since 017; 020
+ *   US3 gave it something to mean when `Out of Reach` became the first effect that
+ *   grants a row of range.
  */
 const BASE: Readonly<Record<StatusKind, StatusIconKey>> = Object.freeze({
   burn: 'status-dot',
@@ -79,6 +83,7 @@ const BASE: Readonly<Record<StatusKind, StatusIconKey>> = Object.freeze({
   stun: 'status-stun',
   silence: 'status-silence',
   mark: 'status-reprisal',
+  reach: 'status-extended-reach',
 });
 
 /** The icon for a status, using the stat when the kind carries one. */

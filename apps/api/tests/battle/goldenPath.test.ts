@@ -122,14 +122,15 @@ describe('a battle fought end to end', () => {
    * today would fail on untuned content rather than on a defect, and widening the
    * band far enough to survive would assert nothing at all.
    *
-   * ### The number has moved three times, and it now overshoots
+   * ### The number has moved four times, and it now overshoots
    *
    * | | requests | hero turns |
    * |---|---|---|
    * | design prediction | 20–40 | ~102 |
    * | before the pacing pass | ~85 | ~260–280 |
    * | after it (`e0.2.0`, `HP_PER_TOUGHNESS` 50 → 8) | ~12 | ~41 |
-   * | with the status and passive layers (`e0.4.0`) | **~9** | **~30** |
+   * | with the status and passive layers (`e0.4.0`) | ~9 | ~30 |
+   * | with the nineteen approved uniques (`e0.5.0`) | **~9** | **~28** |
    *
    * **The overshoot is the point.** The pacing pass was measured against combat
    * that was *pure damage arithmetic* — every rider and every passive inert — so
@@ -137,6 +138,12 @@ describe('a battle fought end to end', () => {
    * had always specified. Turning them on cost another quarter of the battle's
    * length: 41 hero turns to 30, measured on the same eight-battle harness with
    * only the passive layer changing.
+   *
+   * The nineteen uniques cost a further **7%** — 30 to 27.8 across the same eight
+   * battles, spread from 19 to 40 — which is small precisely because most of them
+   * are conditional. Four conditions are true at the opening of every battle
+   * (`Nothing Left to Take`, `The Duelist's Habit`, `No Ripple`, `Room to Swing`)
+   * and the rest have to be created.
    *
    * So a battle is now **three times shorter than the design assumes**, and the
    * lever is `HP_PER_TOUGHNESS` or the Toughness budget — both of which belong to

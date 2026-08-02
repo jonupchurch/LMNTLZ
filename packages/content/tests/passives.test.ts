@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { getAllHeroes } from '../src/index.js';
-import { PASSIVES, getPassive } from '../src/passives.js';
+import { PARTIALLY_SETTLED, PASSIVES, getPassive } from '../src/passives.js';
 
 const heroes = getAllHeroes();
 
@@ -87,27 +87,40 @@ describe('the three slots mean what 03-powers.md says they mean', () => {
   });
 });
 
-describe('the unwritten effects', () => {
+describe('the written effects', () => {
   /**
-   * ⚠️ **Pinned so it can only go down.**
+   * ⚠️ **This assertion was inverted on 2026-08-01, and the inversion is the feature.**
    *
-   * `03-powers.md` authors all 4 role effects and all 9 house effects, and describes 5
-   * of the 27 uniques — the ones whose hook mechanics other rules depend on. The other
-   * 22 are named on the roster and specified nowhere.
+   * It used to read `toHaveLength(19)` and pin the number of passives the design had
+   * *not* written — visible on purpose, so nobody could quietly add a twentieth. The
+   * nineteen were drafted, approved line by line and written into `03-powers.md`, so
+   * the honest claim is now the opposite one.
    *
-   * They are `null` in the catalog rather than invented, because inventing them would
-   * create a second source for 22 unmade design decisions. This test exists so that
-   * number is visible and so nobody can quietly add a 23rd.
+   * **Zero rather than a smaller number** (SC-003). A count that merely went down would
+   * have to be edited every time one was authored, and an assertion nobody can satisfy
+   * by accident is worth more than one that tracks progress: from here, a hero whose
+   * passive nobody wrote fails the build instead of reaching a player as *"effect not
+   * yet specified"* on the roster drawer.
    */
-  const UNWRITTEN = 19;
-
-  it('leaves exactly the effects the design has not written', () => {
+  it('leaves no passive on the roster without an effect', () => {
     const blank = PASSIVES.filter((p) => p.effect === null);
 
-    expect(blank, blank.map((p) => p.name).join(' · ')).toHaveLength(UNWRITTEN);
-    expect(blank.every((p) => p.scope === 'unique'), 'a role or house effect went missing').toBe(
-      true,
-    );
+    expect(blank, blank.map((p) => p.name).join(' · ')).toHaveLength(0);
+  });
+
+  /**
+   * **A written effect is not the same as a running one**, and the catalog must not
+   * blur them.
+   *
+   * `PARTIALLY_SETTLED` held `The Bone Beneath` while its stat was decided and its
+   * trigger was not. It is empty now, and it stays as a shape rather than being
+   * deleted — this asserts nothing has been parked in it *and* given effect text,
+   * which would be a passive claiming to be both settled and unsettled at once.
+   */
+  it('parks nothing in PARTIALLY_SETTLED that already has an effect', () => {
+    for (const name of Object.keys(PARTIALLY_SETTLED)) {
+      expect(getPassive(name)?.effect, `${name} is both half-settled and written`).toBeNull();
+    }
   });
 
   it('has an effect for every role and house passive', () => {

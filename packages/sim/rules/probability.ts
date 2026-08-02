@@ -12,7 +12,8 @@
  */
 
 import { getHero } from '@lmntlz/content';
-import { effectiveStat, heroStateOf, type BattleState, type HeroState } from './state.js';
+import { cappedStat, effectiveStat, heroStateOf, type BattleState, type HeroState } from './state.js';
+import { statBonusFor } from './passives.js';
 
 /** FR-020. Applied **after** the fold — see `hitProbability`. */
 export const MIN_HIT_PROBABILITY = 0.65;
@@ -61,8 +62,19 @@ const clampProbability = (p: number): number =>
       ? MAX_HIT_PROBABILITY
       : p;
 
+/**
+ * **The `state` argument stopped being decorative** (020 US3).
+ *
+ * It has been accepted and ignored since 002. `No Ripple` grants Nix `Agility`
+ * while nothing has landed on her this battle — a *conditional* stat, held by no
+ * status and applied by nothing, so the only place it can be read is where the
+ * stat is consumed. This is one of the two such places; the mitigation pair is
+ * the other, in `damagePreview`.
+ *
+ * Every one of these is a pure read of the board. Nothing here draws.
+ */
 const statOf = (state: BattleState, hero: HeroState, key: 'perception' | 'agility' | 'luck' | 'resolve'): number =>
-  effectiveStat(hero, getHero(hero.heroId).stats, key);
+  cappedStat(effectiveStat(hero, getHero(hero.heroId).stats, key), statBonusFor(state, hero, key));
 
 /**
  * The unclamped probability, exposed because the regression figures in

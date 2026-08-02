@@ -32,22 +32,28 @@
 
 import { getHero } from '@lmntlz/content';
 import {
+  SURVIVAL_HP,
   afterTick,
   afterUpkeep,
   applyPassiveEffects,
   battleEnded,
+  cooldownExtensionFor,
   cooldownsAfterResolution,
   gainPerTick,
   heroStateOf,
   isIncapacitated,
   isStanding,
+  lethalGuard,
   maxHp,
+  onAct,
   onDeath,
+  onUpkeep,
   tickDurations,
   upkeepDamage,
   type BattleState,
   type Conclusion,
   type HeroState,
+  type PassiveEffect,
 } from '@lmntlz/sim/rules';
 import { resolveOne, type ActionIntent, type ResolvedPacket, type Seed } from '@lmntlz/sim/resolver';
 
@@ -176,7 +182,19 @@ export function applyResolution(
 
   if (firedPowerId) {
     const power = getHero(hero.heroId).powers.find((p) => p.id === firedPowerId);
-    if (power && power.cooldown > 0) ticked[firedPowerId] = power.cooldown;
+    /**
+     * **`Nothing Casts Twice` — the only passive that reaches a cooldown** (020
+     * US3). Lucen adds a turn to whatever an enemy just spent.
+     *
+     * Applied to the power going **on** cooldown rather than to the tick, so it
+     * lengthens the one power that was cast rather than freezing the whole hand
+     * — and a power with no cooldown at all stays free, because a tier-0
+     * auto-attack that could be locked out would leave a silenced hero with
+     * nothing to do.
+     */
+    if (power && power.cooldown > 0) {
+      ticked[firedPowerId] = power.cooldown + cooldownExtensionFor(state, instanceId);
+    }
   }
 
   /**
@@ -189,7 +207,7 @@ export function applyResolution(
    */
   const statuses = tickDurations(hero.statuses);
 
-  return {
+  const resolved: BattleState = {
     ...state,
     heroes: state.heroes.map((h) =>
       h.instanceId === instanceId
@@ -202,6 +220,24 @@ export function applyResolution(
      */
     heroTurn: state.heroTurn + 1,
   };
+
+  /**
+   * **`Out of Reach` — granted after the tick, and the order is the passive**
+   * (020 US3).
+   *
+   * A one-turn effect written before `tickDurations` would be counted down by the
+   * same Resolution that created it and never exist. Placed here, Zephyrine
+   * carries the extra row from her second action onward — and loses it the moment
+   * she misses a turn, which is what makes a stun on her cost more than a turn.
+   *
+   * A hero that fell during its own turn gets nothing: `applyPassiveEffects`
+   * refuses to fold onto a hero at 0 HP.
+   */
+  return applyPassiveEffects(
+    resolved,
+    onAct(resolved, heroStateOf(resolved, instanceId)),
+    maxHp,
+  );
 }
 
 /**
@@ -245,20 +281,52 @@ export function applyUpkeep(
   state: BattleState,
   instanceId: string,
 ): { readonly state: BattleState; readonly damage: number; readonly died: boolean } {
-  const hero = heroStateOf(state, instanceId);
+  /**
+   * **The passive tick runs first, and it runs whether or not anything is
+   * burning** (020 US3).
+   *
+   * `The Long Patience` grows on a turn where *nothing happened*, which is
+   * precisely the turn the early return below used to skip. So it is folded
+   * before the guard rather than after it — the guard is an optimization about
+   * damage-over-time effects, and treating it as the definition of "an Upkeep"
+   * would make Bramwen's build depend on whether she happened to be poisoned.
+   */
+  const grown = applyPassiveEffects(
+    state,
+    onUpkeep(state, heroStateOf(state, instanceId)),
+    maxHp,
+  );
+
+  const hero = heroStateOf(grown, instanceId);
   const damage = upkeepDamage(hero);
 
   if (damage <= 0 && hero.statuses.length === 0) {
-    return { state, damage: 0, died: false };
+    return { state: grown, damage: 0, died: false };
   }
 
-  const hp = Math.max(0, hero.hp - damage);
+  let hp = Math.max(0, hero.hp - damage);
+
+  /**
+   * **The second doorway `Still Burning` has to watch.** A champion can fall to a
+   * burn without anyone swinging at it, and a guard that only saw the killing
+   * blow in `resolveOne` would be silently conditional on *how* she died.
+   */
+  let guardPaid: readonly PassiveEffect[] = [];
+  if (hp === 0 && hero.hp > 0) {
+    const paid = lethalGuard(grown, hero);
+    if (paid !== null) {
+      hp = SURVIVAL_HP;
+      guardPaid = paid;
+    }
+  }
+
   const next: HeroState = { ...hero, hp, statuses: afterUpkeep(hero.statuses) };
 
-  const ticked: BattleState = {
-    ...state,
-    heroes: state.heroes.map((h) => (h.instanceId === instanceId ? next : h)),
+  let ticked: BattleState = {
+    ...grown,
+    heroes: grown.heroes.map((h) => (h.instanceId === instanceId ? next : h)),
   };
+  if (guardPaid.length > 0) ticked = applyPassiveEffects(ticked, guardPaid, maxHp);
 
   const died = hp === 0 && hero.hp > 0;
 

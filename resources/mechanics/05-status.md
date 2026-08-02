@@ -227,6 +227,22 @@ unresolvable board impossible. **They cancel on the same hero.** Tank and Buffer
 role passives are permanent instances of each, which makes them each other's
 counter.
 
+### Two kinds a power may never author — added by feature 020
+
+The catalog above is the **eleven kinds a rider can carry**, and the content
+schema validates exactly those eleven. The engine holds two more, both placed
+only by a passive:
+
+| Kind | Family | Stacking | Why it cannot be a rider |
+|---|---|---|---|
+| **`mark`** | bookkeeping | unbounded | A counter, not an effect — *how many times has this attacker struck this target?* Four passives read one: `Find the Seam`, `The Duelist's Habit`, `First Guard` and Reckoning. If both a rider and a passive could write it, nothing would say which did. |
+| **`reach`** | reach | **largest-wins** | `Out of Reach` grants Zephyrine a row of range for a turn. Reach is not a stat — it lives beside the rune that buys it, not in `stats` — so no `buff` can carry it. |
+
+`reach` stacks **largest-wins rather than summing**, and the difference is the
+point: two sources of extra range give the better one, never their total. Range
+is the most expensive thing in the game to widen, and stacking it is how a back
+seat quietly becomes a front one.
+
 ### Cleanses and strips
 
 **Cleanse** removes negative effects from an ally; **strip** removes positive

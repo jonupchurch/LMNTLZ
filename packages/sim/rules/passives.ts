@@ -43,6 +43,7 @@ import { getHero, type Power } from '@lmntlz/content';
 import {
   effectiveStat,
   heroStateOf,
+  maxHp,
   type BattleState,
   type HeroState,
   type StatusInstance,
@@ -52,11 +53,13 @@ import {
   PERMANENT,
   accumulateStatus,
   applyStatus,
+  clearFromSource,
   composeTargeting,
   definitionOf,
   dotTickForTier,
   durationForTier,
   markCount,
+  shieldForTier,
   statChangeForTier,
   targetingStatuses,
   type StatKey,
@@ -140,6 +143,172 @@ export const PASSIVE_MAGNITUDES = Object.freeze({
 
   /** `It Catches` — `05-status.md` states this one outright: +50% of base a tick. */
   itCatchesEscalation: 0.5,
+
+  // -------------------------------------------------------------------------
+  // The nineteen uniques — approved line by line, 2026-08-01
+  // -------------------------------------------------------------------------
+
+  /**
+   * `The Long Patience` — `+5` `Might` a quiet turn, to the top of the ladder.
+   *
+   * Five turns to reach `statChangeForTier(5)`, which is the largest stat change
+   * any power in the game can buy — and Bramwen only reaches it by being ignored
+   * for five of her own turns in a battle that now runs about thirty. **Undone
+   * rather than paused** by a landed hit: the whole shape is a threat a player
+   * can answer with a single cheap attack.
+   */
+  longPatienceStep: 5,
+  longPatienceCap: statChangeForTier(5),
+
+  /**
+   * `The Bone Beneath` — ⚠️ **`Magic Resist`, never `Armor`.**
+   *
+   * `05-status.md`'s balance review settled the stat and not the number: every
+   * arcane champion sits at the roster-minimum `Armor` 15, so an `Armor` grant
+   * would raise the stat they have least of *and* the one answering fewest
+   * attacks. The magnitude is the tier-4 stat change, one rung below the top,
+   * because the condition creates itself — every tank reaches half pool.
+   */
+  boneBeneathMagicResist: statChangeForTier(4),
+  boneBeneathThreshold: 0.5,
+
+  /**
+   * `Something Green Returns` — **half of `The Veil Closes`, because it pays the
+   * whole squad** rather than the witness alone.
+   *
+   * ⚠️ The trigger is reach-gated and the payout is not. Terragosa must be within
+   * reach of the champion that fell — the same test `The Veil Closes` uses — and
+   * everyone still standing on her side is then restored, wherever they stand.
+   * Reach gates *targeting*: which head a power may choose. Nothing is chosen
+   * here.
+   */
+  somethingGreenFraction: 0.5,
+
+  /**
+   * `Out of Reach` — one row, for one turn, renewed every time she acts.
+   *
+   * Anchored to the reach rune, which buys exactly `+1` **permanently**. This
+   * rents what that buys, and the rent is due every turn: miss a turn to a stun
+   * and the row is gone.
+   */
+  outOfReachRows: 1,
+
+  /**
+   * `Word Travels` — the copy Cirrolan keeps is **half** what the ally got.
+   *
+   * The buff was already paid for by the power that cast it; the discount is the
+   * passive. Half rather than full because a Buffer that mirrored its own kit at
+   * full strength would be the best target for its own powers, which inverts the
+   * Role.
+   */
+  wordTravelsFraction: 0.5,
+
+  /**
+   * `Gravity Is a Suggestion` — `Seams Everywhere` exactly, gated on distance.
+   *
+   * One constant shared with Vantric's, deliberately: they are the same effect
+   * priced differently, one always-on for a champion built around it and one
+   * conditional for a champion that has to hold the back seat to keep it.
+   */
+  gravityMitigation: 0.7,
+  gravityDistance: 2,
+
+  /** `Nothing Left to Take` — one step on the effectiveness ladder, same as a Role. */
+  nothingLeftBonus: 0.25,
+
+  /** `Under Judgement` — the mirror of the above, read from the other side. */
+  underJudgementBonus: 0.25,
+
+  /**
+   * `No Ripple` — the tier-2 stat change in `Agility`, **until anything lands.**
+   *
+   * It ends on the first hit Nix takes and never returns, which is why it can be
+   * larger than the tier-1 change `Never Where You Struck` grants: that one
+   * renews forever.
+   */
+  noRippleAgility: statChangeForTier(2),
+
+  /**
+   * `Nothing Casts Twice` — one turn, and **the only passive that touches a
+   * cooldown.**
+   *
+   * Tempo rather than damage. Powerful across a long fight and close to invisible
+   * in a short one — worth watching now that battles run about thirty hero turns
+   * rather than the ~102 the design assumes.
+   */
+  nothingCastsTwiceTurns: 1,
+
+  /**
+   * `Still Burning` — survive at exactly 1, **once per battle**.
+   *
+   * The strongest single thing on the approval table, and once-per-battle is the
+   * whole of its price. Spent by a mark that never expires and cannot be
+   * cleansed, so nothing in the game can refund it.
+   */
+  stillBurningHp: 1,
+
+  /**
+   * `Merciful` — narrower and larger than `Finish It`, **and they stack.**
+   *
+   * Nyxara is a Striker, so under 25% she carries both: `1.25 × 1.40 = 1.75`.
+   * That is intended — the two are a Role's floor and a champion's signature, and
+   * a champion whose signature did not compound with its Role would be a champion
+   * who plays like every other Striker.
+   */
+  mercifulBonus: 0.4,
+  mercifulThreshold: 0.25,
+
+  /**
+   * `The Duelist's Habit` — **the exact inverse of Reckoning**, and the same size
+   * as the Role bonus it is priced beside.
+   *
+   * Authored in `03-powers.md` with no magnitude, which is why it sat with the
+   * nineteen rather than with the eight.
+   */
+  duelistBonus: 0.25,
+
+  /**
+   * `Confluence` — a payoff for playing Reyna's whole kit, not for a stat.
+   *
+   * Below a ladder step, because unlike every other conditional multiplier here
+   * it **never turns off** once it is on.
+   */
+  confluenceBonus: 0.2,
+
+  /** `Seams Everywhere` — the anchor the other mitigation passive is priced from. */
+  seamsMitigation: 0.7,
+
+  /**
+   * `The Ledger Kept` — `+10` `Might` per fallen ally, permanent, capped at `+50`.
+   *
+   * The cap is five allies, which is a full wipe of everyone but Corvane — by
+   * which point the battle is lost. So the effective ceiling is two or three, and
+   * the number that looks uncapped is bounded by the fiction that produces it.
+   */
+  ledgerStep: 10,
+  ledgerCap: 50,
+
+  /** `Room to Swing` — `+5` `Armor` per enemy in reach, to `+30`. Already balanced. */
+  roomToSwingStep: 5,
+  roomToSwingCap: 30,
+
+  /**
+   * `First Guard` — the first blow each enemy lands on Lord Aiguille is worth
+   * **75%** of itself.
+   *
+   * Once per attacker, so a full enemy squad spends it six times and never again.
+   * It is a tax on opening a fight against him, not a wall.
+   */
+  firstGuardReduction: 0.75,
+
+  /**
+   * `No Warning` — Boldrek's critical hits land at **×2.5** rather than ×2.
+   *
+   * Crit chance is `Luck × 0.5%`, so at the roster's highest `Luck` this fires on
+   * roughly one swing in five at best. A lottery ticket by design: the largest
+   * multiplier in the game on the least reliable trigger.
+   */
+  noWarningCrit: 2.5,
 } as const);
 
 // ---------------------------------------------------------------------------
@@ -183,13 +352,60 @@ export type PassiveEffect =
       readonly step: number;
       readonly cap: number;
     }
-  | { readonly kind: 'heal'; readonly instanceId: string; readonly amount: number };
+  | { readonly kind: 'heal'; readonly instanceId: string; readonly amount: number }
+  /**
+   * **Undo, not expire.** `The Long Patience` is the only passive whose build is
+   * *removed* by an event rather than run down by a clock, and a duration cannot
+   * say that.
+   */
+  | {
+      readonly kind: 'clear';
+      readonly bearerInstanceId: string;
+      readonly sourceInstanceId: string;
+      readonly sourcePowerId: string;
+    };
 
 export interface DeathContext {
   readonly state: BattleState;
   /** The hero holding the passive. */
   readonly witness: HeroState;
   readonly fallen: HeroState;
+}
+
+/**
+ * A third party watching a blow land on somebody else.
+ *
+ * `Ground Yielded` is the only passive that reads one: Tidewarden Coll shields
+ * the ally beside her when that ally is struck, so the hero holding the passive
+ * is neither the attacker nor the defender. Every existing hook assumed it was
+ * one of the two.
+ */
+export interface WitnessContext {
+  readonly state: BattleState;
+  /** The hero holding the passive. Never the attacker, never the defender. */
+  readonly witness: HeroState;
+  readonly attacker: HeroState;
+  readonly defender: HeroState;
+  readonly power: Power;
+}
+
+/**
+ * An effect this hero has just placed on somebody, **after** it landed.
+ *
+ * Read only by `Word Travels`, and only for effects that went to *another* hero:
+ * a self-copy that could itself trigger a copy would not terminate.
+ */
+export interface ApplyContext {
+  readonly state: BattleState;
+  readonly applier: HeroState;
+  readonly bearer: HeroState;
+  readonly instance: StatusInstance;
+}
+
+/** What a conditional stat grant needs: the board, and the hero holding it. */
+export interface StatContext {
+  readonly state: BattleState;
+  readonly hero: HeroState;
 }
 
 /**
@@ -224,8 +440,53 @@ export interface PassiveHooks {
   readonly onCrit?: (ctx: StrikeContext) => readonly PassiveEffect[];
   /** Fires on the **defender** after an attack against it misses. */
   readonly onMissed?: (ctx: StrikeContext) => readonly PassiveEffect[];
+  /** Fires on the **defender** after a blow against it lands. */
+  readonly onStruck?: (ctx: StrikeContext) => readonly PassiveEffect[];
+  /** Fires on a **bystander** when a blow lands on somebody else. */
+  readonly onAllyStruck?: (ctx: WitnessContext) => readonly PassiveEffect[];
+  /** Fires on the **applier** after an effect it placed lands on another hero. */
+  readonly onApplied?: (ctx: ApplyContext) => readonly PassiveEffect[];
+  /** Fires on the hero at the top of its own Upkeep, before it acts. */
+  readonly onUpkeep?: (ctx: StatContext) => readonly PassiveEffect[];
+  /** Fires on the hero at the end of its own turn, after durations tick. */
+  readonly onAct?: (ctx: StatContext) => readonly PassiveEffect[];
   /** Fires on any standing hero when somebody falls within its reach. */
   readonly onDeathNearby?: (ctx: DeathContext) => readonly PassiveEffect[];
+  /**
+   * Fires on any standing hero when somebody falls **anywhere**.
+   *
+   * A second death hook rather than a `withinReach` flag on the first, because
+   * the two ask different questions and a flag would let a caller forget to
+   * check it. `The Veil Closes` feeds on a death it could have reached; `The
+   * Ledger Kept` counts a squadmate it could not save.
+   */
+  readonly onAnyDeath?: (ctx: DeathContext) => readonly PassiveEffect[];
+  /**
+   * Points added to one of the bearer's stats **while a condition holds**.
+   *
+   * Not a status: nothing applies these and nothing expires them. `Room to
+   * Swing` is worth more as enemies close in and less as they fall, on the same
+   * turn, with nothing written to the board. Read at the two places a stat is
+   * consumed — `damagePreview` for the mitigation pair, `probability.ts` for the
+   * accuracy contest.
+   */
+  readonly statBonus?: (ctx: StatContext, stat: StatKey) => number;
+  /** Multiplies the mitigation an outgoing attack faces, before Penetration. */
+  readonly mitigationMultiplier?: (ctx: StrikeContext) => number;
+  /** Multiplies damage landing **on** this hero. Read by `damagePreview`. */
+  readonly incomingMultiplier?: (ctx: StrikeContext) => number;
+  /** Replaces `CRIT_MULTIPLIER` for this hero's own critical blows. */
+  readonly critMultiplier?: number;
+  /** Extra turns added to a cooldown an **enemy** just started. */
+  readonly cooldownPenalty?: number;
+  /**
+   * Refuses a lethal blow, leaving the hero at 1 HP.
+   *
+   * Returns the effects that **pay for it** — `null` means the guard is not
+   * available, which is how "once per battle" is expressed without a field on
+   * `HeroState`.
+   */
+  readonly lethalGuard?: (ctx: StatContext) => readonly PassiveEffect[] | null;
   /** Reshapes an effect this hero is **applying**, before it lands. */
   readonly shapeOutgoing?: (instance: StatusInstance) => StatusInstance;
   /** Reshapes an effect landing **on** this hero. `null` refuses it outright. */
@@ -504,17 +765,12 @@ const NOTHING_HOLDS: PassiveHooks = {
 // ---------------------------------------------------------------------------
 
 /**
- * **Four of the twenty-seven, and deliberately not more.**
+ * **The four whose effect was already written down**, from `03-powers.md` and
+ * `05-status.md` between them. They needed nothing that did not already exist,
+ * which is why they shipped a commit ahead of the nineteen.
  *
- * `03-powers.md` and `05-status.md` between them author eight unique effects.
- * These four need nothing that does not already exist. The other four are held
- * back for reasons, not oversight:
- *
- * | Held | Why |
- * |---|---|
- * | `Already Gone`, `Nothing to Discuss` | both concern **reactive powers**, of which the overlay authors zero — a 020 non-goal |
- * | `It All Comes Back` | the passive banks Reckoning; tiers 4 and 5 **read and spend** it, and no power can yet. Adding the bank alone is a seam with no caller |
- * | `The Duelist's Habit` | authored as *"gains damage against a target it has not yet struck"* with **no magnitude**, so it belongs in the approval table with the other nineteen |
+ * See {@link HELD_UNIQUES} for the three that are still names and what each is
+ * waiting on.
  */
 const IMMOVABLE: PassiveHooks = {
   name: 'Immovable',
@@ -559,6 +815,415 @@ const BANKED_COALS: PassiveHooks = {
 };
 
 // ---------------------------------------------------------------------------
+// The nineteen approved uniques (US3, T039) — approved line by line 2026-08-01
+// ---------------------------------------------------------------------------
+
+/**
+ * **Every one of these was approved as a sentence, and the sentence is quoted at
+ * its definition.** The magnitudes live in {@link PASSIVE_MAGNITUDES} above and
+ * in `resources/mechanics/03-powers.md`; nothing here invents a number.
+ *
+ * Two rows departed from the approved wording and both say so where they are
+ * defined: `Gravity Is a Suggestion` and `Seams Everywhere` read *"the mitigation
+ * answering this attack"* rather than `Armor` literally, because a literal
+ * reading makes the first of them inert on every power its champion owns.
+ */
+
+/** *"each turn it has not been damaged: +5 Might, stacking, resets on being hit"* */
+const THE_LONG_PATIENCE: PassiveHooks = {
+  name: 'The Long Patience',
+  onUpkeep: (ctx) => [
+    {
+      kind: 'accumulate',
+      bearerInstanceId: ctx.hero.instanceId,
+      status: fromPassive('The Long Patience', ctx.hero, 'buff', {
+        stat: 'might',
+        magnitude: 0,
+        turnsRemaining: PERMANENT,
+      }),
+      step: M.longPatienceStep,
+      cap: M.longPatienceCap,
+    },
+  ],
+  /**
+   * **Cleared, not decremented.** A hit undoes the whole build — five quiet turns
+   * for `+25`, and one cheap swing to take all of it back. That asymmetry is the
+   * passive: it is a clock any opponent can stop for the price of one attack.
+   */
+  onStruck: (ctx) => [
+    {
+      kind: 'clear',
+      bearerInstanceId: ctx.defender.instanceId,
+      sourceInstanceId: ctx.defender.instanceId,
+      sourcePowerId: passivePowerId('The Long Patience'),
+    },
+  ],
+};
+
+/** *"below half pool: +20 Magic Resist"* — ⚠️ Magic Resist, never Armor. */
+const THE_BONE_BENEATH: PassiveHooks = {
+  name: 'The Bone Beneath',
+  statBonus: (ctx, stat) => {
+    if (stat !== 'magicResist') return 0;
+    const pool = maxHp(ctx.hero);
+    if (pool <= 0) return 0;
+    return ctx.hero.hp / pool < M.boneBeneathThreshold ? M.boneBeneathMagicResist : 0;
+  },
+};
+
+/** *"an ally falls within reach: heals every surviving ally for Might × 0.5"* */
+const SOMETHING_GREEN_RETURNS: PassiveHooks = {
+  name: 'Something Green Returns',
+  onDeathNearby: (ctx) => {
+    if (ctx.fallen.side !== ctx.witness.side) return [];
+
+    const amount = Math.round(mightOf(ctx.witness) * M.somethingGreenFraction);
+    if (amount <= 0) return [];
+
+    /**
+     * **The whole squad, including Terragosa herself.** She is one of the
+     * survivors, and a rule that excluded the healer would be a special case
+     * nothing else in the game has. The reach test above is the trigger; it is
+     * not a filter on who is paid.
+     */
+    return ctx.state.heroes
+      .filter((h) => h.side === ctx.witness.side && h.hp > 0)
+      .map((h) => ({ kind: 'heal' as const, instanceId: h.instanceId, amount }));
+  },
+};
+
+/** *"after it acts: +1 reach for one turn"* */
+const OUT_OF_REACH: PassiveHooks = {
+  name: 'Out of Reach',
+  /**
+   * **Placed after Resolution has ticked**, or a one-turn effect granted at the
+   * end of a turn would expire in the same breath it was granted. So Zephyrine
+   * carries the extra row from her second action onward and loses it the moment
+   * she misses a turn — which is what makes a stun on her worth more than the
+   * turn it costs.
+   */
+  onAct: (ctx) => [
+    {
+      kind: 'status',
+      bearerInstanceId: ctx.hero.instanceId,
+      status: fromPassive('Out of Reach', ctx.hero, 'reach', {
+        magnitude: M.outOfReachRows,
+        turnsRemaining: durationForTier(PASSIVE_TIER),
+      }),
+    },
+  ],
+};
+
+/** *"it buffs an ally: the buff also lands on itself at half magnitude"* */
+const WORD_TRAVELS: PassiveHooks = {
+  name: 'Word Travels',
+  onApplied: (ctx) => {
+    /**
+     * **Positive effects only, and never onto itself.** Cirrolan's debuffs are
+     * not mirrored — that would be a passive that hurts its own champion — and a
+     * self-copy that could itself be copied would not terminate. Both guards are
+     * load-bearing rather than defensive.
+     */
+    if (definitionOf(ctx.instance.kind).polarity !== 'positive') return [];
+    if (ctx.bearer.instanceId === ctx.applier.instanceId) return [];
+    if (ctx.bearer.side !== ctx.applier.side) return [];
+
+    const magnitude = Math.round(ctx.instance.magnitude * M.wordTravelsFraction);
+    if (magnitude <= 0) return [];
+
+    return [
+      {
+        kind: 'status',
+        bearerInstanceId: ctx.applier.instanceId,
+        status: fromPassive('Word Travels', ctx.applier, ctx.instance.kind, {
+          stat: ctx.instance.stat,
+          magnitude,
+          turnsRemaining: ctx.instance.turnsRemaining,
+        }),
+      },
+    ];
+  },
+};
+
+/**
+ * *"attacking a target 2+ rows away: ignores 30% of Armor"*
+ *
+ * ⚠️ **Reads "the mitigation answering this attack" rather than `Armor`
+ * literally.** Vael is an Air champion and every power she owns is arcane, so an
+ * `Armor`-only implementation would be a passive that never once fired for the
+ * hero who holds it. Flagged rather than assumed — the approved row says Armor.
+ */
+const GRAVITY_IS_A_SUGGESTION: PassiveHooks = {
+  name: 'Gravity Is a Suggestion',
+  mitigationMultiplier: (ctx) =>
+    distance(ctx.state, ctx.attacker.row, ctx.defender.row) >= M.gravityDistance
+      ? M.gravityMitigation
+      : 1,
+};
+
+/** *"target has no positive statuses: +25% damage"* */
+const NOTHING_LEFT_TO_TAKE: PassiveHooks = {
+  name: 'Nothing Left to Take',
+  damageMultiplier: (ctx) =>
+    ctx.defender.statuses.some((s) => definitionOf(s.kind).polarity === 'positive')
+      ? 1
+      : 1 + M.nothingLeftBonus,
+};
+
+/** *"an ally in its row is struck: that ally gains a shield of Might × 1.0"* */
+const GROUND_YIELDED: PassiveHooks = {
+  name: 'Ground Yielded',
+  onAllyStruck: (ctx) => {
+    if (ctx.defender.side !== ctx.witness.side) return [];
+    if (ctx.defender.row !== ctx.witness.row) return [];
+
+    const magnitude = shieldForTier(PASSIVE_TIER, mightOf(ctx.witness));
+    if (magnitude <= 0) return [];
+
+    return [
+      {
+        kind: 'status',
+        bearerInstanceId: ctx.defender.instanceId,
+        status: fromPassive('Ground Yielded', ctx.witness, 'shield', {
+          magnitude,
+          turnsRemaining: durationForTier(PASSIVE_TIER),
+        }),
+      },
+    ];
+  },
+};
+
+/** *"it has not been struck this battle: +15 Agility"* */
+const NO_RIPPLE: PassiveHooks = {
+  name: 'No Ripple',
+  statBonus: (ctx, stat) => {
+    if (stat !== 'agility') return 0;
+    return markCount(ctx.hero, ctx.hero.instanceId, passivePowerId('No Ripple')) > 0
+      ? 0
+      : M.noRippleAgility;
+  },
+  /**
+   * **One mark, permanent and uncleansable, and it never comes off.** *"This
+   * battle"* is a fact about the past, so nothing may undo it — a cleanse that
+   * restored Nix's untouched state would let a support hand her back a stat by
+   * pretending a hit never landed.
+   */
+  onStruck: (ctx) => [
+    {
+      kind: 'accumulate',
+      bearerInstanceId: ctx.defender.instanceId,
+      status: fromPassive('No Ripple', ctx.defender, 'mark', {
+        magnitude: 0,
+        turnsRemaining: PERMANENT,
+        cleansable: false,
+      }),
+      step: 1,
+      cap: 1,
+    },
+  ],
+};
+
+/** *"target carries a debuff: +25% damage"* */
+const UNDER_JUDGEMENT: PassiveHooks = {
+  name: 'Under Judgement',
+  damageMultiplier: (ctx) =>
+    ctx.defender.statuses.some(
+      (s) => definitionOf(s.kind).polarity === 'negative' && s.kind !== 'mark',
+    )
+      ? 1 + M.underJudgementBonus
+      : 1,
+};
+
+/** *"an enemy uses a power: that power's cooldown +1 for that enemy"* */
+const NOTHING_CASTS_TWICE: PassiveHooks = {
+  name: 'Nothing Casts Twice',
+  cooldownPenalty: M.nothingCastsTwiceTurns,
+};
+
+/** *"it would fall: survives at 1 HP, once per battle"* */
+const STILL_BURNING: PassiveHooks = {
+  name: 'Still Burning',
+  lethalGuard: (ctx) => {
+    if (markCount(ctx.hero, ctx.hero.instanceId, passivePowerId('Still Burning')) > 0) {
+      return null;
+    }
+    return [
+      {
+        kind: 'accumulate',
+        bearerInstanceId: ctx.hero.instanceId,
+        status: fromPassive('Still Burning', ctx.hero, 'mark', {
+          magnitude: 0,
+          turnsRemaining: PERMANENT,
+          cleansable: false,
+        }),
+        step: 1,
+        cap: 1,
+      },
+    ];
+  },
+};
+
+/** *"+40% damage against a target under 25%"* */
+const MERCIFUL: PassiveHooks = {
+  name: 'Merciful',
+  damageMultiplier: (ctx) =>
+    ctx.defenderHpFraction < M.mercifulThreshold ? 1 + M.mercifulBonus : 1,
+};
+
+/**
+ * *"gains damage against a target it has not yet struck"* (`03-powers.md`), at
+ * the magnitude approved with the nineteen.
+ *
+ * **The exact inverse of `It All Comes Back`**, and it uses the same bookkeeping
+ * from the other end: a mark placed on every target it hits, read *before* the
+ * blow it is placed by.
+ */
+const THE_DUELISTS_HABIT: PassiveHooks = {
+  name: "The Duelist's Habit",
+  damageMultiplier: (ctx) =>
+    markCount(ctx.defender, ctx.attacker.instanceId, passivePowerId("The Duelist's Habit")) > 0
+      ? 1
+      : 1 + M.duelistBonus,
+  onStrike: (ctx) => [
+    {
+      kind: 'accumulate',
+      bearerInstanceId: ctx.defender.instanceId,
+      status: fromPassive("The Duelist's Habit", ctx.attacker, 'mark', {
+        magnitude: 0,
+        turnsRemaining: PERMANENT,
+        cleansable: false,
+      }),
+      step: 1,
+      cap: 1,
+    },
+  ],
+};
+
+/**
+ * *"both her Forces have hit this battle: +20% damage for the rest of it"*
+ *
+ * Reyna's Forces are `slash` and `water`. A mark per Force, keyed by type on the
+ * source power id, so the two counts cannot read each other — and placed only for
+ * a type she actually holds, because a rune or a future power could give her a
+ * third and *"both"* would stop meaning anything.
+ */
+const CONFLUENCE: PassiveHooks = {
+  name: 'Confluence',
+  damageMultiplier: (ctx) => {
+    const forces = getHero(ctx.attacker.heroId).strengths;
+    const landed = forces.every(
+      (type) =>
+        markCount(ctx.attacker, ctx.attacker.instanceId, passivePowerId(`Confluence:${type}`)) > 0,
+    );
+    return landed ? 1 + M.confluenceBonus : 1;
+  },
+  onStrike: (ctx) => {
+    const forces = getHero(ctx.attacker.heroId).strengths;
+    return ctx.power.types
+      .filter((type) => forces.includes(type))
+      .map((type) => ({
+        kind: 'accumulate' as const,
+        bearerInstanceId: ctx.attacker.instanceId,
+        status: fromPassive(`Confluence:${type}`, ctx.attacker, 'mark', {
+          magnitude: 0,
+          turnsRemaining: PERMANENT,
+          cleansable: false,
+        }),
+        step: 1,
+        cap: 1,
+      }));
+  },
+};
+
+/**
+ * *"×0.70 mitigation before Penetration"* — already balanced, and the anchor the
+ * other mitigation passive is priced from.
+ *
+ * ⚠️ Reads the mitigation answering the attack rather than `Armor` alone; see
+ * `Gravity Is a Suggestion` for why the two agree on this.
+ */
+const SEAMS_EVERYWHERE: PassiveHooks = {
+  name: 'Seams Everywhere',
+  mitigationMultiplier: () => M.seamsMitigation,
+};
+
+/** *"an enemy kills one of its allies: +10 Might per fallen ally, permanent"* */
+const THE_LEDGER_KEPT: PassiveHooks = {
+  name: 'The Ledger Kept',
+  /**
+   * **`onAnyDeath`, so reach never gates grief.** Corvane counts a squadmate he
+   * could not have reached — that is the whole reading of the name — where `The
+   * Veil Closes` feeds only on a death it stood beside.
+   */
+  onAnyDeath: (ctx) => {
+    if (ctx.fallen.side !== ctx.witness.side) return [];
+    return [
+      {
+        kind: 'accumulate',
+        bearerInstanceId: ctx.witness.instanceId,
+        status: fromPassive('The Ledger Kept', ctx.witness, 'buff', {
+          stat: 'might',
+          magnitude: 0,
+          turnsRemaining: PERMANENT,
+        }),
+        step: M.ledgerStep,
+        cap: M.ledgerCap,
+      },
+    ];
+  },
+};
+
+/** *"+5 Armor per enemy in reach, cap +30"* — already balanced. */
+const ROOM_TO_SWING: PassiveHooks = {
+  name: 'Room to Swing',
+  statBonus: (ctx, stat) => {
+    if (stat !== 'armor') return 0;
+
+    let enemies = 0;
+    for (const other of ctx.state.heroes) {
+      if (other.side === ctx.hero.side || other.hp <= 0) continue;
+      if (inReach(ctx.state, ctx.hero.instanceId, other.row)) enemies++;
+    }
+
+    return Math.min(enemies * M.roomToSwingStep, M.roomToSwingCap);
+  },
+};
+
+/** *"first time each enemy attacks it: that attack deals 25% less"* */
+const FIRST_GUARD: PassiveHooks = {
+  name: 'First Guard',
+  /**
+   * The mark is placed by `onStruck`, which runs **after** the damage it reduced
+   * — so the blow that spends the guard is the blow the guard applies to. A mark
+   * placed first would make the passive do nothing at all, which is the failure
+   * mode a test pins.
+   */
+  incomingMultiplier: (ctx) =>
+    markCount(ctx.defender, ctx.attacker.instanceId, passivePowerId('First Guard')) > 0
+      ? 1
+      : M.firstGuardReduction,
+  onStruck: (ctx) => [
+    {
+      kind: 'accumulate',
+      bearerInstanceId: ctx.defender.instanceId,
+      status: fromPassive('First Guard', ctx.attacker, 'mark', {
+        magnitude: 0,
+        turnsRemaining: PERMANENT,
+        cleansable: false,
+      }),
+      step: 1,
+      cap: 1,
+    },
+  ],
+};
+
+/** *"a crit: +50% crit damage (×2.5 not ×2)"* */
+const NO_WARNING: PassiveHooks = {
+  name: 'No Warning',
+  critMultiplier: M.noWarningCrit,
+};
+
+// ---------------------------------------------------------------------------
 // The registry
 // ---------------------------------------------------------------------------
 
@@ -577,13 +1242,58 @@ const REGISTRY: Readonly<Record<string, PassiveHooks>> = Object.freeze({
   [FIND_THE_SEAM.name]: FIND_THE_SEAM,
   [NOTHING_HOLDS.name]: NOTHING_HOLDS,
 
-  // Uniques — four of twenty-seven; see the block above for what the other
-  // twenty-three are waiting on.
+  // Uniques — the four whose effect `03-powers.md` and `05-status.md` already
+  // carried, and which needed nothing that did not exist.
   [IMMOVABLE.name]: IMMOVABLE,
   [NEVER_QUITE_OUT.name]: NEVER_QUITE_OUT,
   [WRITTEN_IN_PENCIL.name]: WRITTEN_IN_PENCIL,
   [BANKED_COALS.name]: BANKED_COALS,
+
+  // Uniques — the nineteen approved 2026-08-01 (US3).
+  [THE_LONG_PATIENCE.name]: THE_LONG_PATIENCE,
+  [THE_BONE_BENEATH.name]: THE_BONE_BENEATH,
+  [SOMETHING_GREEN_RETURNS.name]: SOMETHING_GREEN_RETURNS,
+  [OUT_OF_REACH.name]: OUT_OF_REACH,
+  [WORD_TRAVELS.name]: WORD_TRAVELS,
+  [GRAVITY_IS_A_SUGGESTION.name]: GRAVITY_IS_A_SUGGESTION,
+  [NOTHING_LEFT_TO_TAKE.name]: NOTHING_LEFT_TO_TAKE,
+  [GROUND_YIELDED.name]: GROUND_YIELDED,
+  [NO_RIPPLE.name]: NO_RIPPLE,
+  [UNDER_JUDGEMENT.name]: UNDER_JUDGEMENT,
+  [NOTHING_CASTS_TWICE.name]: NOTHING_CASTS_TWICE,
+  [STILL_BURNING.name]: STILL_BURNING,
+  [MERCIFUL.name]: MERCIFUL,
+  [THE_DUELISTS_HABIT.name]: THE_DUELISTS_HABIT,
+  [CONFLUENCE.name]: CONFLUENCE,
+  [SEAMS_EVERYWHERE.name]: SEAMS_EVERYWHERE,
+  [THE_LEDGER_KEPT.name]: THE_LEDGER_KEPT,
+  [ROOM_TO_SWING.name]: ROOM_TO_SWING,
+  [FIRST_GUARD.name]: FIRST_GUARD,
+  [NO_WARNING.name]: NO_WARNING,
 });
+
+/**
+ * The four uniques that are still names, and **why each one is held rather than
+ * overlooked** (T039).
+ *
+ * | Held | Why |
+ * |---|---|
+ * | `Already Gone`, `Nothing to Discuss` | both concern **reactive powers**, of which the overlay authors zero — a 020 non-goal, and `04-turns.md` resolved to author the powers rather than replace the passives |
+ * | `It All Comes Back` | the passive banks Reckoning; tier 4 **reads** it and tier 5 **spends** it, and no power can yet. Building the bank alone would be a seam with no caller |
+ *
+ * `The Duelist's Habit` was in this list until 2026-08-01: it was authored with
+ * no magnitude, which is why it went to the approval table with the nineteen
+ * rather than shipping with the eight.
+ *
+ * **Three of twenty-seven, and the number is asserted** — `passives.test.ts`
+ * reads this list against the registry, so a unique that quietly stops being
+ * implemented cannot pass as one that was never approved.
+ */
+export const HELD_UNIQUES: readonly string[] = Object.freeze([
+  'Already Gone',
+  'Nothing to Discuss',
+  'It All Comes Back',
+]);
 
 /** Every passive with an implementation, by name. */
 export const IMPLEMENTED_PASSIVES: readonly string[] = Object.freeze(Object.keys(REGISTRY));
@@ -638,6 +1348,123 @@ export function penetrationBonusFor(ctx: StrikeContext): number {
   }
   return total;
 }
+
+/**
+ * The product of every multiplier the attacker's passives put on the **defender's
+ * mitigation**, before `Penetration` is subtracted.
+ *
+ * Multiplicative, like `damageMultiplierFor`, so two shredding passives on one
+ * champion compose to `0.49` rather than to `0.40` — a floor that approaches zero
+ * without reaching it. Nothing on the roster carries two today.
+ */
+export function mitigationMultiplierFor(ctx: StrikeContext): number {
+  let factor = 1;
+  for (const hooks of hooksOf(ctx.attacker)) {
+    if (hooks.mitigationMultiplier) factor *= hooks.mitigationMultiplier(ctx);
+  }
+  return factor;
+}
+
+/**
+ * What the **defender's** passives do to a blow arriving at it.
+ *
+ * Separate from `damageMultiplierFor` because the two read different heroes'
+ * passive lists, and folding them into one function would make `First Guard`
+ * depend on who happened to be attacking.
+ */
+export function incomingMultiplierFor(ctx: StrikeContext): number {
+  let factor = 1;
+  for (const hooks of hooksOf(ctx.defender)) {
+    if (hooks.incomingMultiplier) factor *= hooks.incomingMultiplier(ctx);
+  }
+  return factor;
+}
+
+/**
+ * The attacker's critical multiplier, or **`null` when nothing replaces the
+ * default**.
+ *
+ * `null` rather than `CRIT_MULTIPLIER` deliberately: that constant lives in
+ * `damage.ts`, which imports this module, and importing it back would put a
+ * value-level cycle between them — a temporal-dead-zone crash at load rather
+ * than a type error. So the rule answers *"is there an override"* and the damage
+ * pipeline keeps ownership of its own default.
+ *
+ * **The largest override wins rather than the last one read.** Multiplying two
+ * crit multipliers together would be a different effect entirely, and `No
+ * Warning` is priced as a replacement: ×2.5, not ×2 × 1.5.
+ */
+export function critMultiplierFor(ctx: StrikeContext): number | null {
+  let best: number | null = null;
+  for (const hooks of hooksOf(ctx.attacker)) {
+    if (hooks.critMultiplier !== undefined && (best === null || hooks.critMultiplier > best)) {
+      best = hooks.critMultiplier;
+    }
+  }
+  return best;
+}
+
+/**
+ * Points a hero's own passives add to one of its stats **right now**.
+ *
+ * Called from the two places a stat is consumed rather than from `effectiveStat`,
+ * and that is not a compromise: these are conditional on the *board*, so a reader
+ * with only a `HeroState` could not answer them. `Room to Swing` is worth `+30`
+ * with a full enemy squad in reach and `0` after a wipe, with nothing written
+ * anywhere in between.
+ */
+export function statBonusFor(state: BattleState, hero: HeroState, stat: StatKey): number {
+  let total = 0;
+  for (const hooks of hooksOf(hero)) {
+    if (hooks.statBonus) total += hooks.statBonus({ state, hero }, stat);
+  }
+  return total;
+}
+
+/**
+ * Extra turns to add to a cooldown **`actorInstanceId` is about to start**.
+ *
+ * Read from the opposing side: `Nothing Casts Twice` is Lucen's, and it lengthens
+ * what an *enemy* just spent. Only standing heroes count — a passive cannot reach
+ * out of a grave.
+ */
+export function cooldownExtensionFor(state: BattleState, actorInstanceId: string): number {
+  const actor = heroStateOf(state, actorInstanceId);
+  let extra = 0;
+
+  for (const hero of state.heroes) {
+    if (hero.side === actor.side || hero.hp <= 0) continue;
+    for (const hooks of hooksOf(hero)) {
+      if (hooks.cooldownPenalty) extra += hooks.cooldownPenalty;
+    }
+  }
+
+  return extra;
+}
+
+/**
+ * **Whether this hero refuses to fall, and what that costs it.**
+ *
+ * `null` — the overwhelming case — means the blow lands as it would have. A
+ * non-null result means the caller sets the hero's HP to `stillBurningHp` and
+ * folds the returned effects, which are what makes the guard once-only.
+ *
+ * Returned rather than applied, because the two callers are in different packages
+ * and at different phases: a killing blow in `resolveOne`, and a burn tick in the
+ * API's Upkeep. **A death has two doorways and a guard that watched one would be
+ * silently conditional on how the champion died.**
+ */
+export function lethalGuard(state: BattleState, hero: HeroState): readonly PassiveEffect[] | null {
+  for (const hooks of hooksOf(hero)) {
+    if (!hooks.lethalGuard) continue;
+    const paid = hooks.lethalGuard({ state, hero });
+    if (paid !== null) return paid;
+  }
+  return null;
+}
+
+/** What a passive is worth to a hero that survived a lethal blow. */
+export const SURVIVAL_HP = PASSIVE_MAGNITUDES.stillBurningHp;
 
 // ---------------------------------------------------------------------------
 // Targeting — the passive half of taunt and fade
@@ -734,13 +1561,45 @@ function fold(
       ...hero,
       statuses: accumulateStatus(hero.statuses, effect.status, effect.step, effect.cap),
     };
+  } else if (effect.kind === 'clear') {
+    next = {
+      ...hero,
+      statuses: clearFromSource(hero.statuses, effect.sourceInstanceId, effect.sourcePowerId),
+    };
   } else {
     const shaped = shapeIncoming(hero, effect.status);
     if (shaped === null) return state;
     next = { ...hero, statuses: applyStatus(hero.statuses, shaped) };
   }
 
-  return { ...state, heroes: state.heroes.map((h) => (h.instanceId === id ? next : h)) };
+  /**
+   * **A `Toughness` buff is temporary hit points here too** (`05-status.md`).
+   *
+   * The resolver grants it when a *rider* raises `Toughness`; a passive that did
+   * the same and skipped the grant would hand the champion a bigger empty pool,
+   * which is worth nothing to the hero about to die that a buff is cast on.
+   *
+   * Measured as **the growth of the pool** rather than recomputed from the
+   * magnitude, so this needs neither `HP_PER_TOUGHNESS` nor a second copy of the
+   * arithmetic — and it is correct for any future effect that widens the pool by
+   * any route.
+   */
+  const pool = poolOf(next);
+  const grant = Math.max(0, pool - poolOf(hero));
+
+  /**
+   * **And the pool can shrink here too**, which is the same defect `clampToPool`
+   * exists for in the turn loop: a `clear` that removed a `Toughness` buff would
+   * leave a champion holding more health than it has room for. Floored at 1 —
+   * losing a buff should return a hero to the brink, never past it, because a
+   * death with no killer has no event and nothing a player can read.
+   */
+  const hp = Math.min(next.hp + grant, Math.max(1, pool));
+
+  return {
+    ...state,
+    heroes: state.heroes.map((h) => (h.instanceId === id ? { ...next, hp } : h)),
+  };
 }
 
 export function applyPassiveEffects(
@@ -789,6 +1648,89 @@ export function onMissed(ctx: StrikeContext): readonly PassiveEffect[] {
 }
 
 /**
+ * The **defender's** own passives, after a blow against it lands.
+ *
+ * Three of the nineteen live here and all three are about *the first time*
+ * something happened: `The Long Patience` loses a build, `No Ripple` loses a
+ * stat for good, `First Guard` spends its discount against one attacker.
+ */
+export function onStruck(ctx: StrikeContext): readonly PassiveEffect[] {
+  const effects: PassiveEffect[] = [];
+  for (const hooks of hooksOf(ctx.defender)) {
+    if (hooks.onStruck) effects.push(...hooks.onStruck(ctx));
+  }
+  return effects;
+}
+
+/**
+ * Every **bystander** watching a blow land on somebody else, in board order.
+ *
+ * Neither the attacker nor the defender is offered the hook — they have their
+ * own — so a passive here can never double up with one of theirs.
+ */
+export function onAllyStruck(
+  state: BattleState,
+  attacker: HeroState,
+  defender: HeroState,
+  power: Power,
+): readonly PassiveEffect[] {
+  const effects: PassiveEffect[] = [];
+
+  for (const witness of state.heroes) {
+    if (witness.hp <= 0) continue;
+    if (witness.instanceId === defender.instanceId) continue;
+    if (witness.instanceId === attacker.instanceId) continue;
+
+    for (const hooks of hooksOf(witness)) {
+      if (hooks.onAllyStruck) {
+        effects.push(...hooks.onAllyStruck({ state, witness, attacker, defender, power }));
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * The **applier's** passives, after an effect it placed has landed on somebody
+ * else.
+ *
+ * Called with the instance **as it landed** — after `shapeOutgoing` and
+ * `shapeIncoming` — so `Word Travels` copies what the ally actually received
+ * rather than what was cast at them.
+ */
+export function onApplied(ctx: ApplyContext): readonly PassiveEffect[] {
+  const effects: PassiveEffect[] = [];
+  for (const hooks of hooksOf(ctx.applier)) {
+    if (hooks.onApplied) effects.push(...hooks.onApplied(ctx));
+  }
+  return effects;
+}
+
+/** The hero's own passives, at the top of its Upkeep and before it acts. */
+export function onUpkeep(state: BattleState, hero: HeroState): readonly PassiveEffect[] {
+  const effects: PassiveEffect[] = [];
+  for (const hooks of hooksOf(hero)) {
+    if (hooks.onUpkeep) effects.push(...hooks.onUpkeep({ state, hero }));
+  }
+  return effects;
+}
+
+/**
+ * The hero's own passives at the end of its turn, **after durations have ticked**.
+ *
+ * The ordering is the whole of `Out of Reach`: a one-turn grant written before
+ * the tick would be removed by the same Resolution that created it.
+ */
+export function onAct(state: BattleState, hero: HeroState): readonly PassiveEffect[] {
+  const effects: PassiveEffect[] = [];
+  for (const hooks of hooksOf(hero)) {
+    if (hooks.onAct) effects.push(...hooks.onAct({ state, hero }));
+  }
+  return effects;
+}
+
+/**
  * Everyone who feeds on a death, in board order.
  *
  * **Both sides.** `The Veil Closes` does not ask whose champion fell — Dark's
@@ -804,10 +1746,18 @@ export function onDeath(state: BattleState, fallen: HeroState): readonly Passive
 
   for (const witness of state.heroes) {
     if (witness.hp <= 0 || witness.instanceId === fallen.instanceId) continue;
-    if (!inReach(state, witness.instanceId, fallen.row)) continue;
+
+    const ctx = { state, witness, fallen };
+    const nearby = inReach(state, witness.instanceId, fallen.row);
 
     for (const hooks of hooksOf(witness)) {
-      if (hooks.onDeathNearby) effects.push(...hooks.onDeathNearby({ state, witness, fallen }));
+      /**
+       * **Board-wide first, then reach-gated.** `The Ledger Kept` counts a
+       * squadmate Corvane could not have reached — that is the reading of the
+       * name — while `The Veil Closes` feeds only on an ending it stood beside.
+       */
+      if (hooks.onAnyDeath) effects.push(...hooks.onAnyDeath(ctx));
+      if (nearby && hooks.onDeathNearby) effects.push(...hooks.onDeathNearby(ctx));
     }
   }
 

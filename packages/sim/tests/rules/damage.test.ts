@@ -140,18 +140,32 @@ describe('the 25% floor', () => {
   });
 
   /**
-   * **The floor currently ties at the worst case and never bites.**
+   * **The floor started binding on 2026-08-01, and this test is how we know
+   * exactly what reached it.**
    *
-   * Mitigation alone caps at 50% reduction and the harshest type multiplier is
-   * ×0.50, so the worst possible outcome is exactly 0.25 of the packet — the
-   * floor's own value. It is a guarantee that is currently redundant, and the
-   * day it starts binding is the day something changed. This test says so.
+   * It read *"ties at the worst case and never actually binds today"* for five
+   * features, and the reasoning was sound: mitigation alone caps at 50% reduction
+   * and the harshest type multiplier is ×0.50, so the worst possible outcome was
+   * exactly 0.25 of a packet — the floor's own value. A guarantee with nothing to
+   * guard.
+   *
+   * `First Guard` is the first thing in the game that can push past it. Lord
+   * Aiguille reduces the opening blow from each enemy by a quarter, and against a
+   * defender already at the stat cap on both walls that lands **below** the floor
+   * — so the floor catches it. Measured: **6 of 4,212 combinations**, and the
+   * defender is Lord Aiguille in every one of them.
+   *
+   * ⚠️ **That the defender is always the same hero is the assertion, not a
+   * footnote.** A defensive multiplier applied *after* the floor rather than
+   * before it took the worst case to **0.213 of a packet** — a hit landing for
+   * less than the pipeline's own stated minimum. This pins both the value and its
+   * one cause, so a second passive reaching the floor cannot arrive unnoticed.
    */
-  it('ties at the worst case and never actually binds today', () => {
-    let everApplied = false;
+  it('binds only for First Guard, and holds the 25% minimum when it does', () => {
+    const reached: string[] = [];
     let minRatio = Infinity;
 
-    for (const { attacker, state } of allPairings()) {
+    for (const { attacker, defender, state } of allPairings()) {
       for (const power of attacker.powers) {
         if (power.multiplier === null || power.friendly) continue;
 
@@ -159,12 +173,16 @@ describe('the 25% floor', () => {
         const worst = withHero(state, 'd', { statMods: { armor: 75, magicResist: 75 } });
         const preview = damagePreview(worst, 'a', power.id, 'd');
 
-        if (preview.floorApplied) everApplied = true;
+        if (preview.floorApplied) reached.push(defender.name);
         if (preview.packet > 0) minRatio = Math.min(minRatio, preview.final / preview.packet);
       }
     }
 
-    expect(everApplied).toBe(false);
+    expect([...new Set(reached)], 'something other than First Guard reached the floor').toEqual([
+      'Lord Aiguille',
+    ]);
+
+    // The floor is a guarantee, so nothing may land under it — rounding aside.
     expect(minRatio).toBeGreaterThanOrEqual(DAMAGE_FLOOR_FRACTION - 0.01);
   });
 });
