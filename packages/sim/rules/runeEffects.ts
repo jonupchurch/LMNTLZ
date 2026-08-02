@@ -226,11 +226,26 @@ export interface RuneEffect {
   readonly id: string;
   /** The authored display name. Collision-checked against every power and passive. */
   readonly name: string;
+  /**
+   * What it does, in the player's words — **built from `RUNE_MAGNITUDES`, so it
+   * cannot go stale.**
+   *
+   * It lives here rather than in the client because the Forge has to describe an
+   * effect *before* 200 shards are committed, and a description retyped on a
+   * screen is a second source for a rule (Constitution XIII). It cannot live in
+   * `packages/content` either: that package cannot import `packages/sim`, so a
+   * magnitude quoted there could never be kept honest — which is exactly the state
+   * the passive text is already in.
+   */
+  readonly description: string;
   readonly pool: PoolKey;
   readonly role: EffectRole;
   readonly shape: EffectShape;
   readonly hooks: PassiveHooks;
 }
+
+/** Percentages read better than fractions in a description. */
+const pct = (fraction: number): string => `${Math.round(fraction * 100)}%`;
 
 // ---------------------------------------------------------------------------
 // Small builders, shared by every effect below
@@ -664,6 +679,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   cornered: {
     id: 'cornered',
     name: 'Cornered',
+    description: `The first time you drop below half health, gain ${M.corneredMight} Might for the rest of the battle.`,
     pool: 'common',
     role: 'offense',
     shape: 'trigger',
@@ -672,6 +688,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'the-point-proven': {
     id: 'the-point-proven',
     name: 'The Point Proven',
+    description: `The first Bane hit you land grants ${M.pointProvenPenetration} Penetration for the rest of the battle.`,
     pool: 'common',
     role: 'offense',
     shape: 'trigger',
@@ -680,6 +697,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'the-line-shortens': {
     id: 'the-line-shortens',
     name: 'The Line Shortens',
+    description: `When an ally falls, gain ${M.lineShortensSpeed} Speed for the rest of the battle.`,
     pool: 'common',
     role: 'tempo',
     shape: 'trigger',
@@ -690,6 +708,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'made-heavy': {
     id: 'made-heavy',
     name: 'Made Heavy',
+    description: `Bane hits you land cost the target ${M.madeHeavySpeed} Speed for the rest of the battle.`,
     pool: 'earth',
     role: 'offense',
     shape: 'trigger',
@@ -698,6 +717,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'weight-tells': {
     id: 'weight-tells',
     name: 'Weight Tells',
+    description: `Below half health, gain ${M.weightTellsMitigation} Armor and ${M.weightTellsMitigation} Magic Resist.`,
     pool: 'earth',
     role: 'defense',
     shape: 'trigger',
@@ -708,6 +728,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'harder-to-follow': {
     id: 'harder-to-follow',
     name: 'Harder to Follow',
+    description: `The first Bane hit you take grants ${M.harderToFollowAgility} Agility for the rest of the battle.`,
     pool: 'air',
     role: 'defense',
     shape: 'trigger',
@@ -718,6 +739,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'it-spreads': {
     id: 'it-spreads',
     name: 'It Spreads',
+    description: `Each killing blow grants ${M.itSpreadsMight} Might, up to ${M.itSpreadsStacks} times.`,
     pool: 'fire',
     role: 'offense',
     shape: 'trigger',
@@ -728,6 +750,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'nowhere-to-stand': {
     id: 'nowhere-to-stand',
     name: 'Nowhere to Stand',
+    description: `Enemies cannot conceal themselves from you, and you gain ${M.nowhereToStandPerception} Perception.`,
     pool: 'light',
     role: 'defense',
     shape: 'trigger',
@@ -738,6 +761,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'it-lingers': {
     id: 'it-lingers',
     name: 'It Lingers',
+    description: `Debuffs you apply last ${M.itLingersExtraTurns} turn longer.`,
     pool: 'dark',
     role: 'tempo',
     shape: 'trigger',
@@ -748,6 +772,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'again-there': {
     id: 'again-there',
     name: 'Again, There',
+    description: `Each consecutive attack on the same target deals ${pct(M.againThereStep)} more. Switching targets resets it.`,
     pool: 'slash',
     role: 'offense',
     shape: 'trigger',
@@ -758,6 +783,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'the-way-in': {
     id: 'the-way-in',
     name: 'The Way In',
+    description: `Gain ${M.theWayInPenetration} Penetration against any enemy you have already struck.`,
     pool: 'pierce',
     role: 'offense',
     shape: 'trigger',
@@ -768,6 +794,7 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
   'the-floor-comes-up': {
     id: 'the-floor-comes-up',
     name: 'The Floor Comes Up',
+    description: `The first time you drop below half health, stun every enemy in reach for ${M.floorComesUpTurns} turn.`,
     pool: 'crush',
     role: 'defense',
     shape: 'trigger',

@@ -23,8 +23,10 @@
  */
 
 import { STAT_CAP, STAT_KEYS, type Hero, type StatKey } from '@lmntlz/content';
+import { RUNE_EFFECTS } from '@lmntlz/sim/rules';
 import type { JSX } from 'react';
 import { RUNE_SLOTS, type OwnedHeroRunes, type RuneSlot } from './types.js';
+import { UtilityPicker } from './UtilityPicker.js';
 
 export interface SlotPlannerProps {
   readonly hero: Hero;
@@ -36,6 +38,16 @@ export interface SlotPlannerProps {
   readonly onDraft: (stat: StatKey | null) => void;
   /** `config.stageBoosts[stage]` — what the next stage would add. */
   readonly nextBoost: number;
+  /**
+   * The stage-4 effect under consideration, and how to change it (021).
+   *
+   * Optional so the planner still renders in a test that only cares about stats —
+   * but when a stage-4 slot is selected and this is absent, the player is shown a
+   * stage with nothing to choose, which is the defect. `ForgeScreen` always passes
+   * it.
+   */
+  readonly draftUtility?: string | null;
+  readonly onChooseUtility?: ((id: string | null) => void) | undefined;
 }
 
 const SLOT_LABEL: Record<RuneSlot, string> = {
@@ -77,6 +89,8 @@ export function SlotPlanner({
   draftStat,
   onDraft,
   nextBoost,
+  draftUtility,
+  onChooseUtility,
 }: SlotPlannerProps): JSX.Element {
   const placed = placedPoints(runes);
   const slotOf = (slot: RuneSlot) => runes.slots.find((s) => s.slot === slot)!;
@@ -185,7 +199,11 @@ export function SlotPlanner({
                   </span>
                 )}
                 {state.utility ? (
-                  <span className="text-caption font-mono text-gold">{state.utility}</span>
+                  /* **The name, not the id.** This printed `the-floor-comes-up`
+                     until 021 gave the ids something to be looked up in. */
+                  <span className="text-caption font-mono text-gold" data-utility-placed={state.utility}>
+                    {RUNE_EFFECTS[state.utility]?.name ?? state.utility}
+                  </span>
                 ) : null}
               </button>
             );
@@ -199,11 +217,27 @@ export function SlotPlanner({
         </h3>
 
         {nextBoost === 0 ? (
-          <p className="text-caption font-mono text-muted">
-            {/* Stage 4 buys no points, so there is no stat to choose. */}
-            This stage buys the utility effect rather than stat points, so there is nothing
-            to allocate.
-          </p>
+          /**
+           * **Stage 4 buys no stat points, and until 021 it bought nothing else
+           * either.** This branch used to end at the sentence below — accurate
+           * about the allocation and silent about the fact that there was also
+           * nothing to *choose*, which is how the most expensive stage of a rune
+           * came to charge 200 shards and store `null`.
+           */
+          <div className="flex flex-col gap-3">
+            <p className="text-caption font-mono text-muted">
+              This stage buys the utility effect rather than stat points, so there is
+              nothing to allocate.
+            </p>
+            {onChooseUtility ? (
+              <UtilityPicker
+                heroId={hero.id}
+                slot={selected}
+                chosen={draftUtility ?? null}
+                onChoose={onChooseUtility}
+              />
+            ) : null}
+          </div>
         ) : (
           <ul className="flex flex-col gap-1">
             {STAT_KEYS.map((stat) => {

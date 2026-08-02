@@ -93,6 +93,8 @@ export function ForgeScreen({
   const [heroId, setHeroId] = useState<string>(roster[0]?.id ?? '');
   const [slot, setSlot] = useState<RuneSlot>('primary');
   const [draftStat, setDraftStat] = useState<StatKey | null>(null);
+  /** The stage-4 effect being considered. Free and reversible until committed (021). */
+  const [draftUtility, setDraftUtility] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   /** The server's quote, and "the melt dialog is open" — deliberately one state. */
   const [refunding, setRefunding] = useState<RefundQuote | null>(null);
@@ -219,12 +221,20 @@ export function ForgeScreen({
         body: JSON.stringify({
           /* Stage 4 buys the utility effect, so it allocates nothing. */
           allocations: nextBoost > 0 && draftStat ? { [draftStat]: nextBoost } : {},
+          /**
+           * **Sent only when this commit actually places one** (021). A rebuild
+           * always lands on stage 4 so it always carries one; an advance carries
+           * one only on the 3→4 edge, and the server refuses an effect named on a
+           * stat stage rather than ignoring it.
+           */
+          ...(draftUtility && (rebuild || nextBoost === 0) ? { utility: draftUtility } : {}),
           ...(rebuild ? { rebuild: true, confirmed: true } : {}),
         }),
       });
 
       setConfirming(false);
       setDraftStat(null);
+      setDraftUtility(null);
       /* Refetch, never patch — see the note at the top of this file. */
       await load();
       onAccountChanged?.();
@@ -421,11 +431,16 @@ export function ForgeScreen({
               onSelect={(next) => {
                 setSlot(next);
                 setDraftStat(null);
+                /* A different slot offers a different pool, so the choice cannot
+                   carry across — it would be an id the new slot must refuse. */
+                setDraftUtility(null);
                 setConfirming(false);
               }}
               draftStat={draftStat}
               onDraft={setDraftStat}
               nextBoost={nextBoost}
+              draftUtility={draftUtility}
+              onChooseUtility={setDraftUtility}
             />
           </div>
         ) : null}
@@ -466,6 +481,13 @@ export function ForgeScreen({
                       /* A stat is required for stages 1-3 and meaningless for 4. */
                       if (nextBoost > 0 && !draftStat) {
                         setError('Choose which stat this stage raises.');
+                        return;
+                      }
+                      /* Stage 4 is the inverse: no stat, and an effect is required
+                         (021). The server refuses a stage-4 commit with none, and
+                         asking here saves the round trip. */
+                      if (nextBoost === 0 && !draftUtility) {
+                        setError('Choose the utility effect this stage places.');
                         return;
                       }
                       void commit(false);

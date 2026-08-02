@@ -62,39 +62,41 @@ effect, fight, and see it fire — with the stored row carrying a non-null
 
 ### Catalog — the 12 that need no new engine capability
 
-- [ ] **T010** [US1] Implement the 3 common-pool effects in `packages/sim/rules/runeEffects.ts`: `Cornered` (first below 50% HP → `Might`, rest of battle), `The Point Proven` (first Bane hit landed → `Penetration`), `The Line Shortens` (an ally falls → `Speed`). All magnitudes from `RUNE_MAGNITUDES`.
-- [ ] **T011** [US1] Implement the Earth pair in `packages/sim/rules/runeEffects.ts`: `Made Heavy` (Bane hits you land permanently cost the target `Speed`) and `Weight Tells` (below 50% → `Armor` + `Magic Resist`). **The "cannot be moved" clause is inert and documented as such** — no displacement mechanic exists, and none is being invented (spec A-03).
-- [ ] **T012** [US1] Implement `Harder to Follow` (Air, first Bane hit taken → `Agility`) and `It Spreads` (Fire, killing blow → `Might`, stacking to the authored cap via the existing `accumulate` effect kind) in `packages/sim/rules/runeEffects.ts`.
-- [ ] **T013** [US1] Implement `Nowhere to Stand` (Light, fade-piercing + `Perception`) and `It Lingers` (Dark, debuffs you apply last one turn longer, via `shapeOutgoing`) in `packages/sim/rules/runeEffects.ts`.
-- [ ] **T014** [US1] Implement the 3 martial effects in `packages/sim/rules/runeEffects.ts`: `Again, There` (Slash, consecutive attacks on one target escalate, resetting on switch), `The Way In` (Pierce, `Penetration` against an already-struck enemy), `The Floor Comes Up` (Crush, below 50% → stun every enemy in reach, once).
+- [X] **T010** [US1] Implement the 3 common-pool effects in `packages/sim/rules/runeEffects.ts`: `Cornered` (first below 50% HP → `Might`, rest of battle), `The Point Proven` (first Bane hit landed → `Penetration`), `The Line Shortens` (an ally falls → `Speed`). All magnitudes from `RUNE_MAGNITUDES`.
+- [X] **T011** [US1] Implement the Earth pair in `packages/sim/rules/runeEffects.ts`: `Made Heavy` (Bane hits you land permanently cost the target `Speed`) and `Weight Tells` (below 50% → `Armor` + `Magic Resist`). **The "cannot be moved" clause is inert and documented as such** — no displacement mechanic exists, and none is being invented (spec A-03).
+- [X] **T012** [US1] Implement `Harder to Follow` (Air, first Bane hit taken → `Agility`) and `It Spreads` (Fire, killing blow → `Might`, stacking to the authored cap via the existing `accumulate` effect kind) in `packages/sim/rules/runeEffects.ts`.
+- [X] **T013** [US1] Implement `Nowhere to Stand` (Light, fade-piercing + `Perception`) and `It Lingers` (Dark, debuffs you apply last one turn longer, via `shapeOutgoing`) in `packages/sim/rules/runeEffects.ts`.
+- [X] **T014** [US1] Implement the 3 martial effects in `packages/sim/rules/runeEffects.ts`: `Again, There` (Slash, consecutive attacks on one target escalate, resetting on switch), `The Way In` (Pierce, `Penetration` against an already-struck enemy), `The Floor Comes Up` (Crush, below 50% → stun every enemy in reach, once).
 
 ### Catalog guards — all three must scan, not list
 
-- [ ] **T015** [P] [US1] Add `packages/sim/tests/rules/runeEffects.test.ts` completeness block — derive expectations from `Object.keys(RUNE_EFFECTS)` and the content package's own damage-type list, **never from a hand-written list of 33 names**. Assert: 6 common, 3 per element, and within each element pool the three `role` values are distinct. A missing effect must **fail**, not pass silently.
-- [ ] **T016** [P] [US1] Add the no-magic-numbers guard to `packages/sim/tests/rules/runeEffects.test.ts` — read the `runeEffects.ts` source and fail on any numeric literal inside an effect body. Every magnitude comes from `RUNE_MAGNITUDES` (FR-002), because the battle-length flag means these numbers **will** move.
-- [ ] **T017** [P] [US1] Add the name-collision guard to `packages/sim/tests/rules/runeEffects.test.ts` — assert no `RuneEffect.name` collides with any authored power or passive name, read from `packages/content`. Assert every `id` is unique.
-- [ ] **T018** [P] [US1] Add `packages/sim/tests/rules/runeEffects.test.ts` behaviour cases for the 12 — each with the condition met and the authored consequence observed, plus `Cornered` **not** re-triggering after a heal back above half (FR-014). Include the acting-hero case for `Nowhere to Stand` specifically, which is what T004 fixes.
+- [X] **T015** [P] [US1] Add `packages/sim/tests/rules/runeEffects.test.ts` completeness block — derive expectations from `Object.keys(RUNE_EFFECTS)` and the content package's own damage-type list, **never from a hand-written list of 33 names**. Assert: 6 common, 3 per element, and within each element pool the three `role` values are distinct. A missing effect must **fail**, not pass silently.
+- [X] **T016** [P] [US1] Add the no-magic-numbers guard to `packages/sim/tests/rules/runeEffects.test.ts` — read the `runeEffects.ts` source and fail on any numeric literal inside an effect body. Every magnitude comes from `RUNE_MAGNITUDES` (FR-002), because the battle-length flag means these numbers **will** move.
+- [X] **T017** [P] [US1] Add the name-collision guard to `packages/sim/tests/rules/runeEffects.test.ts` — assert no `RuneEffect.name` collides with any authored power or passive name, read from `packages/content`. Assert every `id` is unique.
+- [X] **T018** [P] [US1] Add `packages/sim/tests/rules/runeEffects.test.ts` behaviour cases for the 12 — each with the condition met and the authored consequence observed, plus `Cornered` **not** re-triggering after a heal back above half (FR-014). Include the acting-hero case for `Nowhere to Stand` specifically, which is what T004 fixes.
 
 ### The write path — where the 200 shards currently vanish
 
-- [ ] **T019** [US1] Change `placeStage` in `apps/api/src/progression/runes.ts` to take a utility effect id **only on the 3→4 edge**, store it, and refuse it by name on a 1/2/3 advance.
-- [ ] **T020** [US1] Change `rebuildRune` in `apps/api/src/progression/runes.ts` to take a utility id **unconditionally** and stop writing `utilityEffect: null` at line 377 — a rebuild lands directly on stage 4 in one transaction, so it cannot lean on a later advance.
-- [ ] **T021** [US1] Add server-side pool validation to `apps/api/src/progression/runes.ts`, derived from `slotAccepts(heroId, slot)` — refuse an out-of-pool id **by name**, naming the id, the slot and the pool the slot offers. Never trust the client (Constitution XII); never store the pool (XV).
-- [ ] **T022** [US1] Parse and validate the new `utility` body field in `apps/api/src/progression/routes.ts` for `POST /v1/heroes/:heroId/runes/:slot`, mapping refusals through the existing `RuneError` → HTTP table. **No new status codes.**
-- [ ] **T023** [P] [US1] Add `apps/api/tests/progression/runeUtility.test.ts` — the 3→4 advance stores the id; the rebuild path stores one; an out-of-pool id is refused by name; 200 shards debited exactly once; a stage-4 effect cannot be swapped in place (FR-009). **Go through the real write path — no hand-inserted rows.**
+- [X] **T019** [US1] Change `placeStage` in `apps/api/src/progression/runes.ts` to take a utility effect id **only on the 3→4 edge**, store it, and refuse it by name on a 1/2/3 advance.
+- [X] **T020** [US1] Change `rebuildRune` in `apps/api/src/progression/runes.ts` to take a utility id **unconditionally** and stop writing `utilityEffect: null` at line 377 — a rebuild lands directly on stage 4 in one transaction, so it cannot lean on a later advance.
+- [X] **T021** [US1] Add server-side pool validation to `apps/api/src/progression/runes.ts`, derived from `slotAccepts(heroId, slot)` — refuse an out-of-pool id **by name**, naming the id, the slot and the pool the slot offers. Never trust the client (Constitution XII); never store the pool (XV).
+- [X] **T022** [US1] Parse and validate the new `utility` body field in `apps/api/src/progression/routes.ts` for `POST /v1/heroes/:heroId/runes/:slot`, mapping refusals through the existing `RuneError` → HTTP table. **No new status codes.**
+- [X] **T023** [P] [US1] Add `apps/api/tests/progression/runeUtility.test.ts` — the 3→4 advance stores the id; the rebuild path stores one; an out-of-pool id is refused by name; 200 shards debited exactly once; a stage-4 effect cannot be swapped in place (FR-009). **Go through the real write path — no hand-inserted rows.**
 
 ### The Forge
 
-- [ ] **T024** [US1] Add the stage-4 step to the Forge in `apps/client/src/features/forge/` — offer the pool for that slot by importing `RUNE_EFFECTS` and `poolOf` from `@lmntlz/sim/rules` and filtering by the `element` that `GET /v1/me/runes` already returns. **No client copy of the catalog** (Constitution XIII).
-- [ ] **T025** [US1] Send the chosen `utility` id on commit from `apps/client/src/features/forge/`, and surface the four new refusals as readable messages rather than a generic failure.
-- [ ] **T026** [P] [US1] Add `apps/client/tests/forge/stageFour.test.tsx` — the right pool is offered per slot, selecting is free and reversible until commit (FR-010), and committing sends the id.
+- [X] **T024** [US1] Add the stage-4 step to the Forge in `apps/client/src/features/forge/` — offer the pool for that slot by importing `RUNE_EFFECTS` and `poolOf` from `@lmntlz/sim/rules` and filtering by the `element` that `GET /v1/me/runes` already returns. **No client copy of the catalog** (Constitution XIII).
+- [X] **T025** [US1] Send the chosen `utility` id on commit from `apps/client/src/features/forge/`, and surface the four new refusals as readable messages rather than a generic failure.
+- [X] **T026** [P] [US1] Add `apps/client/tests/forge/stageFour.test.tsx` — the right pool is offered per slot, selecting is free and reversible until commit (FR-010), and committing sends the id.
 
 ### Wiring
 
-- [ ] **T027** [US1] **WIRING** — `apps/api/src/battle/board.ts` populates `HeroState.runeEffects` from the snapshot's existing `RuneLoadout.utility`, and **throws loudly** on an id absent from the catalog (FR-021, R-16). An absent loadout still means none (Constitution XVI).
-- [ ] **T028** [US1] **WIRING** — prove the chain end to end in `apps/api/tests/battle/runeEffects.test.ts`: buy → snapshot → `HeroState.runeEffects` → effect fires in a resolved battle. Mutation-check by restoring `utilityEffect: null` at `runes.ts:377` and confirming the store assertion fails. *That null is production behaviour today, so the mutant is the live bug.*
+- [X] **T027** [US1] **WIRING** — `apps/api/src/battle/board.ts` populates `HeroState.runeEffects` from the snapshot's existing `RuneLoadout.utility`, and **throws loudly** on an id absent from the catalog (FR-021, R-16). An absent loadout still means none (Constitution XVI).
+- [X] **T028** [US1] **WIRING** — prove the chain end to end in `apps/api/tests/battle/runeEffects.test.ts`: buy → snapshot → `HeroState.runeEffects` → effect fires in a resolved battle. Mutation-check by restoring `utilityEffect: null` at `runes.ts:377` and confirming the store assertion fails. *That null is production behaviour today, so the mutant is the live bug.*
 
-**Checkpoint**: the overcharge is closed. 12 effects live. Water still empty — that is US2.
+**Checkpoint**: ✅ the overcharge is closed. 12 effects live and a player can buy one.
+sim 578 · apps/api 1185 (6 pre-existing matchmaking) · client 1045 · client build clean.
+Water still empty and seven pools hold one — that is US2.
 
 ---
 

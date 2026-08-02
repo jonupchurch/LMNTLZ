@@ -151,6 +151,30 @@ describe('magnitudes', () => {
     expect(Object.isFrozen(RUNE_MAGNITUDES)).toBe(true);
     expect(Object.isFrozen(RUNE_EFFECTS)).toBe(true);
   });
+
+  /**
+   * 🔴 **The descriptions quote the magnitudes; they never restate them.**
+   *
+   * The no-magic-numbers scan above stops at `RUNE_EFFECTS`, so it does not see
+   * these — and a description is exactly where a stale number does the most harm,
+   * because the player reads it *before* committing 200 shards. Every figure must
+   * arrive by interpolation, so a tuning pass moves the copy with the rule.
+   */
+  it('hardcodes no number in a description', () => {
+    const start = SOURCE.indexOf('export const RUNE_EFFECTS');
+    const offenders = SOURCE.slice(start)
+      .split('\n')
+      .filter((line) => line.trim().startsWith('description:'))
+      /* Blank out every `${…}` first: what is left is the prose. */
+      .filter((line) => /\d/.test(line.replace(/\$\{[^}]*\}/g, '')));
+
+    expect(offenders, 'a number typed into copy outlives the tuning pass').toEqual([]);
+  });
+
+  it('gives every effect a description a player can act on', () => {
+    const missing = ALL.filter((e) => e.description.trim().length < 20).map((e) => e.id);
+    expect(missing, 'the Forge shows this before 200 shards are spent').toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------

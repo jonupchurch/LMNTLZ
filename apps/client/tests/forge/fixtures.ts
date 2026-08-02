@@ -117,9 +117,19 @@ export const RUNES_WITH = (
 };
 
 let calls: string[] = [];
+let sent: Record<string, unknown>[] = [];
 
 /** Every path the screen requested, in order. */
 export const requested = (): readonly string[] => calls;
+
+/**
+ * Every JSON body the screen **sent**, in order (021).
+ *
+ * `requested()` proves a call happened; this proves what was in it. Stage 4's
+ * whole failure mode was a request that looked completely normal and carried no
+ * effect, so asserting the path alone would pass against the defect.
+ */
+export const sentBodies = (): readonly Record<string, unknown>[] => sent;
 
 /**
  * Stub `fetch` with a path → body map. An unmapped path is a **failure**, not an
@@ -131,11 +141,21 @@ export function stubForge(
   overrides: Record<string, { status: number; body: unknown }> = {},
 ): void {
   calls = [];
+  sent = [];
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       calls.push(`${init?.method ?? 'GET'} ${url}`);
+
+      if (typeof init?.body === 'string') {
+        try {
+          sent.push(JSON.parse(init.body) as Record<string, unknown>);
+        } catch {
+          /* A non-JSON body is not something this screen sends; ignore it here
+             rather than failing a fixture on a shape no assertion reads. */
+        }
+      }
 
       for (const [path, override] of Object.entries(overrides)) {
         if (url.includes(path)) {
