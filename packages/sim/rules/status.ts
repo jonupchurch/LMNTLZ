@@ -64,7 +64,8 @@ export type StatusKind =
   | 'taunt'
   | 'fade'
   | 'stun'
-  | 'silence';
+  | 'silence'
+  | 'mark';
 
 export type StatusFamily =
   | 'damage-over-time'
@@ -72,7 +73,8 @@ export type StatusFamily =
   | 'mitigation-shred'
   | 'shield'
   | 'targeting'
-  | 'control';
+  | 'control'
+  | 'mark';
 
 /**
  * How a kind behaves when it meets another of its own kind.
@@ -154,6 +156,27 @@ export const STATUS_CATALOG: Readonly<Record<StatusKind, StatusDefinition>> = Ob
   // Control — never stack; duration refreshes only.
   stun: define('stun', 'control', { mode: 'refresh-only' }, 'negative'),
   silence: define('silence', 'control', { mode: 'refresh-only' }, 'negative'),
+
+  /**
+   * **Bookkeeping, not an effect — the twelfth kind, and the only one a rider
+   * may not author** (020 US2).
+   *
+   * Three passives need to answer *"how many times has this attacker struck this
+   * target?"*: `Find the Seam` sharpens with the count, `The Duelist's Habit`
+   * pays for a target **not** yet struck, and `It All Comes Back` banks Reckoning
+   * for a tier-5 to spend. That question has no home on `HeroState`, and putting
+   * it there would be a fourth representation of the board.
+   *
+   * A mark on the *target*, sourced by the attacker, answers all three from state
+   * the engine already carries — and it is the only counter-shaped thing in the
+   * game, so `magnitude` is a count rather than points.
+   *
+   * **`statusKindSchema` in `@lmntlz/content` deliberately stays at eleven.** A
+   * mark is placed by a passive and never by an authored rider; widening the
+   * schema would let a power author one, and nothing would then say which of the
+   * two wrote it. The asymmetry is the rule, not drift.
+   */
+  mark: define('mark', 'mark', { mode: 'unbounded' }, 'negative'),
 });
 
 export const STATUS_KINDS: readonly StatusKind[] = Object.freeze(
@@ -224,6 +247,26 @@ export const potencyForTier = (tier: Tier): number => at(POTENCY, tier);
  * than any stat change. A stun does not get longer because it came off a tier-5.
  */
 export const CONTROL_DURATION = 1;
+
+/**
+ * **An effect that does not expire** — the Water House passive `Wears Through`,
+ * whose shreds *persist* (`03-powers.md`).
+ *
+ * `Infinity` rather than a large finite number, and that is the whole of the
+ * implementation: `tickDurations` subtracts 1 and keeps anything above zero, and
+ * `Infinity - 1` is `Infinity`. `applyStatus`'s `Math.max` refresh is correct for
+ * it too. **Nothing needed a new branch**, which is why this is a constant and
+ * not a flag.
+ *
+ * A sentinel like `999` would have read as a duration everywhere it surfaced —
+ * the status row would have rendered *"999 turns"* — and would have quietly
+ * expired in a long battle. Use {@link isPermanent} at any boundary that has to
+ * put a duration on a wire; `JSON.stringify(Infinity)` is `null`.
+ */
+export const PERMANENT = Number.POSITIVE_INFINITY;
+
+export const isPermanent = (status: StatusInstance): boolean =>
+  !Number.isFinite(status.turnsRemaining);
 
 /**
  * Shred is the one magnitude **not** derived from tier.
@@ -329,6 +372,68 @@ export function applyStatus(
     default:
       return [...refreshed, incoming];
   }
+}
+
+/**
+ * **Grow a same-source effect instead of refreshing it** (020 US2).
+ *
+ * `applyStatus` is deliberately unable to do this: *the same source refreshes* is
+ * the whole rule for riders, and a power that spammed a growing debuff would be
+ * unbounded. Two passives are specified to grow rather than refresh, and both say
+ * so in `03-powers.md` — `Nothing Holds` **"shaves `Armor` on every attack, and it
+ * stacks"**, and `Find the Seam` sharpens *against a repeat target*.
+ *
+ * A separate function rather than a `StackRule` mode, because the two differ in
+ * what they need from the caller, not merely in how they stack: growth needs a
+ * **step** and a **cap**, which no rider carries and no tier table supplies.
+ *
+ * The cap is applied to the total, so the last increment is partial rather than
+ * refused — `Nothing Holds` at 0.05 a strike reaches exactly 0.40 on the eighth,
+ * never 0.45.
+ */
+export function accumulateStatus(
+  existing: readonly StatusInstance[],
+  incoming: StatusInstance,
+  step: number,
+  cap: number,
+): readonly StatusInstance[] {
+  const found = existing.find((s) => sameSource(s, incoming));
+
+  if (!found) {
+    return [...existing, { ...incoming, magnitude: Math.min(step, cap) }];
+  }
+
+  return existing.map((s) =>
+    sameSource(s, incoming)
+      ? {
+          ...s,
+          magnitude: Math.min(s.magnitude + step, cap),
+          turnsRemaining: Math.max(s.turnsRemaining, incoming.turnsRemaining),
+        }
+      : s,
+  );
+}
+
+/**
+ * How much of a mark one attacker holds on one bearer — `0` when there is none.
+ *
+ * The count is the `magnitude`, because a mark is the only counter-shaped effect
+ * in the game. Keyed on the **power id as well as the instance**, so Marisel's
+ * Reckoning and the Pierce House's sharpening can sit on the same target without
+ * either reading the other's total.
+ */
+export function markCount(
+  bearer: HeroState,
+  sourceInstanceId: string,
+  sourcePowerId: string,
+): number {
+  const found = bearer.statuses.find(
+    (s) =>
+      s.kind === 'mark' &&
+      s.sourceInstanceId === sourceInstanceId &&
+      s.sourcePowerId === sourcePowerId,
+  );
+  return found?.magnitude ?? 0;
 }
 
 /**
@@ -441,65 +546,114 @@ export function upkeepDamage(hero: HeroState): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Turn the taunt and fade statuses on the board into the filter and compulsion
- * `legalTargets` has always accepted **and never once been given** (020).
+ * Taunt and fade — the filter and compulsion `legalTargets` has always accepted
+ * **and never once been given** (020).
  *
  * `targeting.ts` has taken `filters` and `compulsion` parameters since 002; the
  * resolver called it with three of five arguments, so taunt and fade — and with
  * them the Tank and Buffer roles — had no mechanical existence at all.
  *
- * ### Two behaviours that are emergent, not coded
+ * ### Split in two, because passives are the other half
  *
- * **Taunt and fade cancel on the same hero.** `legalTargets` applies filters
- * first and then looks for the compulsion's target; a hero removed by its own
- * fade is no longer there to be compelled to. That is Tank versus Buffer, and it
- * needs no special case — only a test.
+ * `Hold the Line` and `Behind the Line` are a permanent taunt and a permanent
+ * fade that **no status carries**. So the board's taunt/fade membership is read
+ * raw ({@link targetingStatuses}), merged with the passive layer by
+ * `passives.ts`, and composed **once** ({@link composeTargeting}). Composing each
+ * half separately would apply cancellation twice and get a different answer.
+ *
+ * ### One behaviour that stays emergent
  *
  * **A fade that would empty the candidate set is ignored**, so a faded Buffer
- * that is the last thing an attacker can reach becomes targetable. Also already
- * in `legalTargets`, as one of its two anti-deadlock invariants.
+ * that is the last thing an attacker can reach becomes targetable. That is
+ * already one of `legalTargets`'s two anti-deadlock invariants and gets no second
+ * implementation here — only a test.
+ */
+export interface TargetingLayer {
+  /** Instance ids currently taunting, **before** fade cancels any of them. */
+  readonly taunting: readonly string[];
+  /** Instance ids currently faded, **before** taunt cancels any of them. */
+  readonly faded: readonly string[];
+  /** The actor sees through fade — the Light House passive `Nothing Stays Hidden`. */
+  readonly ignoresFade?: boolean;
+  /** The actor cannot be compelled — Mauless's `Immovable`. */
+  readonly immuneToTaunt?: boolean;
+}
+
+/**
+ * Who is taunting and who is faded **according to statuses alone**, before
+ * cancellation.
+ *
+ * Raw rather than composed, because cancellation has to see both layers at once:
+ * `Hold the Line` is a taunt no status carries, and a hero holding a status fade
+ * and a passive taunt must still cancel. Composing this half on its own and then
+ * merging the results would apply the rule twice and get a different answer.
+ */
+export function targetingStatuses(state: BattleState): TargetingLayer {
+  const has = (hero: HeroState, kind: StatusKind): boolean =>
+    hero.statuses.some((s) => s.kind === kind && s.turnsRemaining > 0);
+
+  return {
+    taunting: state.heroes.filter((h) => h.hp > 0 && has(h, 'taunt')).map((h) => h.instanceId),
+    faded: state.heroes.filter((h) => h.hp > 0 && has(h, 'fade')).map((h) => h.instanceId),
+  };
+}
+
+/**
+ * Turn a taunt/fade layer into the filter and compulsion `legalTargets` accepts.
+ *
+ * **Cancellation happens here and nowhere else.** A hero in both sets is in
+ * neither — that is Tank versus Buffer, and both directions fall out of the one
+ * subtraction rather than being written twice.
  *
  * ### Whose taunt applies
  *
  * A taunt sits on the hero **being protected** — `The Bulwark Holds` taunts *to*
  * Coll — so the compulsion an attacker feels is the taunt on an enemy it can
  * reach. Reach is checked by `legalTargets` itself, which is why a taunting tank
- * two rows away compels nobody.
+ * two rows away compels nobody, and why `Hold the Line` needs no row logic of its
+ * own to be "row-scoped".
  *
  * **Nearest first when several taunt at once**, then instance id. Any total order
  * would do; what matters is that it is *deterministic*, because a replay that
  * picked differently on a second evaluation would diverge.
  */
-export function statusTargeting(
+export function composeTargeting(
   state: BattleState,
   actorInstanceId: string,
+  layer: TargetingLayer,
 ): { readonly filters: readonly TargetFilter[]; readonly compulsion: Compulsion | null } {
   const actor = heroStateOf(state, actorInstanceId);
   const enemySide = actor.side === 'attacker' ? 'defender' : 'attacker';
 
-  const has = (hero: HeroState, kind: StatusKind): boolean =>
-    hero.statuses.some((s) => s.kind === kind && s.turnsRemaining > 0);
+  const tauntingIds = new Set(layer.taunting);
+  const fadedIds = new Set(layer.faded);
+
+  // Cancellation: in both is in neither.
+  for (const id of [...tauntingIds]) {
+    if (fadedIds.has(id)) {
+      tauntingIds.delete(id);
+      fadedIds.delete(id);
+    }
+  }
 
   const taunting = state.heroes
-    .filter((h) => h.side === enemySide && h.hp > 0 && has(h, 'taunt') && !has(h, 'fade'))
+    .filter((h) => h.side === enemySide && h.hp > 0 && tauntingIds.has(h.instanceId))
     .sort((a, b) => Math.abs(a.row - actor.row) - Math.abs(b.row - actor.row)
       || (a.instanceId < b.instanceId ? -1 : a.instanceId > b.instanceId ? 1 : 0));
 
-  const faded = new Set(
-    state.heroes.filter((h) => has(h, 'fade') && !has(h, 'taunt')).map((h) => h.instanceId),
-  );
-
   const filters: TargetFilter[] = [];
-  if (faded.size > 0) {
+  if (fadedIds.size > 0 && layer.ignoresFade !== true) {
     filters.push({
       name: 'fade',
-      permits: (candidates) => candidates.filter((c) => !faded.has(c.instanceId)),
+      permits: (candidates) => candidates.filter((c) => !fadedIds.has(c.instanceId)),
     });
   }
 
+  const compelledBy = layer.immuneToTaunt === true ? undefined : taunting[0];
+
   return {
     filters,
-    compulsion: taunting[0] ? { name: 'taunt', instanceId: taunting[0].instanceId } : null,
+    compulsion: compelledBy ? { name: 'taunt', instanceId: compelledBy.instanceId } : null,
   };
 }
 

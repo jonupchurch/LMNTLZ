@@ -49,14 +49,19 @@ export type { BattleState, HeroState, Row, Side, StatusInstance } from './state.
 export {
   CONTROL_DURATION,
   CROWD_CONTROL,
+  PERMANENT,
   STATUS_CATALOG,
   STATUS_KINDS,
+  accumulateStatus,
   afterUpkeep,
   applyStatus,
   cleanse,
+  composeTargeting,
   definitionOf,
   dotTickForTier,
   durationForTier,
+  isPermanent,
+  markCount,
   potencyForTier,
   shieldForTier,
   shieldOf,
@@ -64,7 +69,7 @@ export {
   shredFraction,
   statChangeForTier,
   statusPoints,
-  statusTargeting,
+  targetingStatuses,
   tickDurations,
   upkeepDamage,
 } from './status.js';
@@ -75,8 +80,34 @@ export type {
   StatusDefinition,
   StatusFamily,
   StatusKind,
+  TargetingLayer,
   Tier,
 } from './status.js';
+
+/**
+ * **Passives (020 US2)** — the thirteen Role and House rules, and the hooks the
+ * remaining twenty-seven uniques will hang on.
+ *
+ * Pure like everything else here: **no passive consumes a draw**, so the whole
+ * layer is invisible to the RNG index even though it changes outcomes.
+ */
+export {
+  IMPLEMENTED_PASSIVES,
+  PASSIVE_MAGNITUDES,
+  PASSIVE_TIER,
+  applyPassiveEffects,
+  damageMultiplierFor,
+  hooksFor,
+  onCrit,
+  onDeath,
+  onMissed,
+  onStrike,
+  penetrationBonusFor,
+  shapeIncoming,
+  shapeOutgoing,
+  targetingFor,
+} from './passives.js';
+export type { DeathContext, PassiveEffect, PassiveHooks, StrikeContext } from './passives.js';
 
 export {
   ATTACKER_EDGE,
@@ -209,6 +240,11 @@ export type { Conclusion } from './ending.js';
  *
  * ### Changelog
  *
+ * - **`e0.4.0`** — the passive layer (020 US2). **No draw moves**; thirteen Role
+ *   and House rules change what the same draws produce.
+ * - **`e0.3.0`** — the status layer (020 US1). Rider contests spend draws at step
+ *   3 that a battle in flight took zero of, so every index after the first landed
+ *   rider shifts.
  * - **`e0.2.0`** — the pacing pass. `HP_PER_TOUGHNESS` 50 → 8, taking the median
  *   battle from 299 hero-turns to 49. Draw order is untouched, but every HP
  *   total in the game changed, so an in-flight battle resumed under this engine
@@ -219,13 +255,22 @@ export type { Conclusion } from './ending.js';
 export const ENGINE_RNG = 'splitmix64';
 
 /**
- * **`e0.2.0` → `e0.3.0` for 020 — Constitution XVI.**
+ * **`e0.3.0` → `e0.4.0` for 020 US2 — Constitution XVI, and a different reason
+ * from the last two.**
  *
- * Rider contests consume draws at step 3 that no battle before this feature
- * consumed. The slot was reserved and documented from the start, but reserving an
- * index is not the same as spending one: a battle **in flight** took zero draws
- * there, so re-deriving it under this engine would read a different index for the
- * targeting tiebreak and for every action after it. Same log, different past.
+ * The passive layer **consumes no randomness at all**: every trigger is something
+ * that already passed a contest, so not one draw index moves and the four
+ * determinism suites reconstruct the sequence unchanged.
+ *
+ * It still needs the bump, and that is the point worth writing down. `e0.2.0`
+ * moved because HP totals changed; `e0.3.0` moved because draws changed; this one
+ * moves because **outcomes** changed — a Striker's blow below half pool is now
+ * ×1.25, an Earth champion cannot be stunned, a Crush hero's target loses Armor
+ * permanently. Re-deriving an in-flight battle across the boundary would replay
+ * the same draws into a different world.
+ *
+ * > **A version stamp answers "would this log produce this state again", not
+ * > "did the RNG change".** Three bumps, three unrelated causes, one question.
  *
  * **Stored replays are not at risk and this is worth being exact about.** A replay
  * is a stored event log and is never re-simulated — that is the whole of XVI and
@@ -235,4 +280,4 @@ export const ENGINE_RNG = 'splitmix64';
  * The risk is confined to battles that are open when the deploy lands, which is
  * why **deploys drain before switching**. See `specs/020-status-and-passives/`.
  */
-export const engineVersion = (): string => `e0.3.0-${ENGINE_RNG}`;
+export const engineVersion = (): string => `e0.4.0-${ENGINE_RNG}`;

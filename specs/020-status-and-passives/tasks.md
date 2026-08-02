@@ -142,25 +142,25 @@ contest results. This is the MVP — the game's combat now does what its text sa
 
 ## Phase 3 — US2: Role and House mean something (P2)
 
-- [ ] **T026** Create `packages/sim/rules/passives.ts` with the `PassiveHooks`
+- [X] **T026** Create `packages/sim/rules/passives.ts` with the `PassiveHooks`
   shape and `hooksFor(heroId)`.
-- [ ] **T027** [P] Implement `Finish It` and `Measured Shot` — the only two
+- [X] **T027** [P] Implement `Finish It` and `Measured Shot` — the only two
   passives that are pure damage math and need no status.
-- [ ] **T028** Implement `Hold the Line` (row-scoped taunt → `Compulsion`) and
+- [X] **T028** Implement `Hold the Line` (row-scoped taunt → `Compulsion`) and
   `Behind the Line` (permanent fade → `TargetFilter`).
-- [ ] **T029** Test that taunt and fade **cancel on the same hero**, and that a
+- [X] **T029** Test that taunt and fade **cancel on the same hero**, and that a
   fade which would empty the candidate set is **ignored**. *Both are already
   emergent from `legalTargets`'s filter-then-compulsion ordering — this is a
   test with no implementation behind it, deliberately.*
-- [ ] **T030** [P] Implement the 9 House passives: `The Deep Holds`,
+- [X] **T030** [P] Implement the 9 House passives: `The Deep Holds`,
   `Never Where You Struck`, `It Catches`, `Wears Through`,
   `Nothing Stays Hidden`, `The Veil Closes`, `The Cut Reopens`,
   `Find the Seam`, `Nothing Holds`.
-- [ ] **T031** `It Catches` uses the `escalation` field rather than a special
+- [X] **T031** `It Catches` uses the `escalation` field rather than a special
   case in the tick function.
-- [ ] **T032** Test all 13: same board, same seed, suppressed vs active → the
+- [X] **T032** Test all 13: same board, same seed, suppressed vs active → the
   event logs differ (SC-002).
-- [ ] **T033** ⭐ **WIRING** — `resolveOne` and the Upkeep step invoke
+- [X] **T033** ⭐ **WIRING** — `resolveOne` and the Upkeep step invoke
   `hooksFor` at each trigger point. *Verify with
   `rg -n "hooksFor" packages/sim apps/api | rg -v "\.test\.|export "` — zero
   hits outside its definition is the defect.*

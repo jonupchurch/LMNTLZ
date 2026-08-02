@@ -224,6 +224,68 @@ Light hero **ignore fade** — a faded enemy is targetable without clearing the
 unfaded heroes first. It is the only passive that reaches into the targeting
 pipeline, and it makes Light the answer to a fade-heavy squad.
 
+### The magnitudes — settled 2026-08-01 (feature 020 US2)
+
+The thirteen above stated *what* each passive does and, for eight of them, no
+number at all. These are the numbers. **Every one is anchored to something the
+design had already settled** rather than chosen, and the anchor is the column
+that matters — it is what a tuning pass argues with.
+
+**Passives are priced at tier 1**, the lowest rung of `05-status.md`'s ladder. A
+passive costs nothing: no cooldown, no gate, no slot. So it prices below a power
+of any tier, and being wrong in the *weak* direction is the cheap one — the
+correction under Constitution XIV is raising the other twenty-six, never
+trimming this.
+
+**No passive consumes a die.** Every trigger is something that already passed a
+contest: a hit landed, a crit came up, a rider stuck, a champion fell. That is
+what lets the whole layer exist without moving a single RNG index.
+
+| Passive | Trigger | Magnitude | Anchored to |
+|---|---|---|---|
+| **Finish It** | target below **half** its pool | **×1.25** damage | one step on the effectiveness ladder (a Fault) |
+| **Measured Shot** | distance **≥ 2** | **×1.25** damage | the same step — the two differ in *uptime*, not in size |
+| **Hold the Line** | always | taunt to self | no magnitude; reach scopes it |
+| **Behind the Line** | always | fade on self | no magnitude; the empty-set invariant bounds it |
+| **The Deep Holds** | control lands on this hero | **−1 turn** | `CONTROL_DURATION`, which is 1 |
+| **Never Where You Struck** | an attack misses this hero | **+10 `Agility`**, 1 turn | the tier-1 stat change |
+| **It Catches** | this hero applies a **burn** | **+50%** of base a tick | stated outright in `05-status.md` |
+| **Wears Through** | this hero applies a **shred** | never expires | the word *persist* |
+| **Nothing Stays Hidden** | always | ignores fade | no magnitude |
+| **The Veil Closes** | a champion falls **within reach** | heals **`Might` × 1.0** | the tier-1 shield fraction |
+| **The Cut Reopens** | a **crit** connects | a bleed at the power's own tier | the tier ladder; floored at tier 1 |
+| **Find the Seam** | each prior strike on that target | **+5 `Penetration`**, to **+25** | the top of the stat-change ladder |
+| **Nothing Holds** | every strike | **−5% `Armor`**, to **−40%** | the `large` shred band |
+
+Four of these deserve a sentence rather than a row.
+
+> **`The Deep Holds` is effectively immunity, and that is what the text says.**
+> Control is priced at exactly one turn, so shortening it by one removes it —
+> the three Earth champions cannot be stunned or silenced. It is not absolute:
+> `Banked Coals` puts Cindara's control at two turns, so she still lands one.
+
+> **`Nothing Holds` and `Find the Seam` accumulate rather than refresh.** Every
+> other effect in the game follows *the same source refreshes*; these two are the
+> exception `03-powers.md` already named — *"and it stacks"* — and they are
+> bounded by a cap rather than by that rule.
+
+> **`Find the Seam` counts with a mark on the target.** It is a twelfth status
+> kind, placed only by a passive and never authorable on a power, and it is the
+> same counter `It All Comes Back` will bank and `The Duelist's Habit` will read
+> inverted.
+
+> **`The Veil Closes` counts a death on either side.** Dark's signature is
+> endings, not allegiance — a rule that checked whose champion fell would make a
+> Dark hero's own squad safer to stand beside, which is backwards. *"Nearby"* is
+> **within reach**, so it widens as the line collapses.
+
+**Measured consequence, recorded rather than argued about**: turning the status
+and passive layers on took a battle from **41 hero turns to 30** on the same
+eight-battle harness — about a quarter — against a design length of ~102. The
+pacing pass that set `HP_PER_TOUGHNESS = 8` was measured on combat that was pure
+damage arithmetic, so it tuned the pool against roughly two thirds of the damage
+the design specifies. **The lever is the health pool, in the hero-numbers pass.**
+
 ### Unique passives
 
 27 conditional triggers, one per hero. Five hook mechanics settled alongside

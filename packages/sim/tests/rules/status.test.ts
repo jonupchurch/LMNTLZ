@@ -42,8 +42,18 @@ const TIERS: readonly Tier[] = [1, 2, 3, 4, 5];
 // ---------------------------------------------------------------------------
 
 describe('the catalog', () => {
+  /**
+   * **Twelve, and the twelfth is deliberately not authorable.** `mark` was added
+   * for 020 US2: `Find the Seam` sharpens against a repeat target, and two uniques
+   * will read the same counter. `statusKindSchema` in `@lmntlz/content` stays at
+   * **eleven** so no power can author one — a mark is placed by a passive, and if
+   * both could write it nothing would say which did.
+   *
+   * The asymmetry is asserted below rather than left as a comment, because a
+   * later hand widening the schema to "match" would be undoing a decision.
+   */
   it('defines every kind exactly once, with a stacking rule', () => {
-    expect(STATUS_KINDS).toHaveLength(11);
+    expect(STATUS_KINDS).toHaveLength(12);
     for (const kind of STATUS_KINDS) {
       expect(definitionOf(kind).kind, `${kind} is mis-keyed in the catalog`).toBe(kind);
       expect(definitionOf(kind).stacking.mode).toBeTruthy();
@@ -81,6 +91,20 @@ describe('the catalog', () => {
     for (const invented of ['freeze', 'petrify', 'sleep']) {
       expect(STATUS_KINDS as readonly string[]).not.toContain(invented);
     }
+  });
+
+  /**
+   * **`mark` is passive-only, and this is the assertion that keeps it that way.**
+   *
+   * Reads the roster rather than the schema, so it stays true however the schema
+   * is expressed: if a power ever authors a mark, the two writers problem is back
+   * and nothing else in the suite would notice.
+   */
+  it('no authored rider may place a mark', () => {
+    const authoredKinds = getAllHeroes().flatMap((h) =>
+      h.powers.flatMap((p) => p.riders.map((r) => r.kind as string)),
+    );
+    expect(authoredKinds).not.toContain('mark');
   });
 });
 

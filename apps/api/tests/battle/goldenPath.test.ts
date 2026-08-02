@@ -118,21 +118,32 @@ describe('a battle fought end to end', () => {
   /**
    * ### The 20–40 request count is not asserted, and that is deliberate
    *
-   * Measured, a battle asks the player **~85 times over ~260–280 hero turns**,
-   * against a design prediction of 20–40 over ~102. Every stop is a genuine
-   * choice point — checked below, turn by turn — so **the boundary rule is not
-   * what is off; the battle is simply two and a half times longer than the
-   * design assumes.**
+   * This file asserts the **rule** and reports the **numbers**. Pinning 20–40
+   * today would fail on untuned content rather than on a defect, and widening the
+   * band far enough to survive would assert nothing at all.
    *
-   * Damage lands at **4.5% of a hero's health pool per acting turn** where the
-   * design's length implies about 11%, and **30% of all turns are passes**
-   * because a reach-1 champion in rows 1–2 can reach nothing at full formation.
-   * Both belong to the hero-numbers pass, which `resources/mechanics/README.md`
-   * has parked on purpose and which now carries these figures.
+   * ### The number has moved three times, and it now overshoots
    *
-   * So this file asserts the **rule** and reports the **numbers**. Pinning
-   * 20–40 today would fail on untuned content rather than on a defect, and
-   * widening it to 15–95 would assert nothing at all.
+   * | | requests | hero turns |
+   * |---|---|---|
+   * | design prediction | 20–40 | ~102 |
+   * | before the pacing pass | ~85 | ~260–280 |
+   * | after it (`e0.2.0`, `HP_PER_TOUGHNESS` 50 → 8) | ~12 | ~41 |
+   * | with the status and passive layers (`e0.4.0`) | **~9** | **~30** |
+   *
+   * **The overshoot is the point.** The pacing pass was measured against combat
+   * that was *pure damage arithmetic* — every rider and every passive inert — so
+   * it tuned the health pool against about two thirds of the damage the design
+   * had always specified. Turning them on cost another quarter of the battle's
+   * length: 41 hero turns to 30, measured on the same eight-battle harness with
+   * only the passive layer changing.
+   *
+   * So a battle is now **three times shorter than the design assumes**, and the
+   * lever is `HP_PER_TOUGHNESS` or the Toughness budget — both of which belong to
+   * the hero-numbers pass that `resources/mechanics/README.md` parks on purpose.
+   * Constitution XIV points the same way: the correction is **raising the pool**,
+   * not trimming thirteen passives that are doing exactly what they were
+   * specified to do.
    */
   it('folds several turns into every request', () => {
     // The property the packet exists for, and the one that is independent of
@@ -145,10 +156,19 @@ describe('a battle fought end to end', () => {
   });
 
   it('stays inside the engine’s own hard limits', () => {
-    // Not a balance assertion — a check that nothing runs away. The 300-turn
-    // cap is the engine's, and a battle brushing it is a content signal.
+    /**
+     * Not a balance assertion — a check that nothing runs away in either
+     * direction. The 300-turn cap is the engine's, and a battle brushing it is a
+     * content signal.
+     *
+     * **The lower bound was 20 until 020 and was measuring content, not the
+     * engine.** It was set when a battle ran ~280 hero turns; at ~30 it started
+     * failing at exactly 20 on some seeds — the passive layer working, not a
+     * regression. **Six is derived**: a squad is six champions and a battle ends
+     * on a wipe, so nothing honest concludes in fewer, whatever the numbers are.
+     */
     for (const f of fights) {
-      expect(f.heroTurns, `${f.heroTurns} hero turns in ${f.acts} acts`).toBeGreaterThan(20);
+      expect(f.heroTurns, `${f.heroTurns} hero turns in ${f.acts} acts`).toBeGreaterThan(6);
       expect(f.heroTurns).toBeLessThanOrEqual(301);
     }
   });

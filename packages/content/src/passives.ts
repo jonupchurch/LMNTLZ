@@ -18,12 +18,28 @@
  * > The real complexity is lower than 40 suggests: a player learns 4 role rules and 9
  * > House rules once and reuses them across the whole roster.
  *
- * ### ⚠️ Twenty-two effects are `null`, and that is the honest state
+ * ### ⚠️ No number appears in an `effect`, and that is a rule rather than a style
  *
- * `03-powers.md` gives all four role effects in a table and all nine house effects in
- * prose. Of the 27 uniques it describes **five** — the ones with hook mechanics that
- * other rules depend on. The remaining twenty-two are named in the roster and have no
- * authored effect anywhere in the project.
+ * 020 settled a magnitude for all thirteen Role and House passives, and **not one of
+ * them is repeated here.** The engine owns them, in `PASSIVE_MAGNITUDES`
+ * (`packages/sim/rules/passives.ts`), and `resources/mechanics/03-powers.md` carries
+ * them as canon. A third copy in this file would be a **second implementation** of a
+ * tunable rule: retune `roleDamageBonus` and the roster drawer would go on quoting the
+ * old figure, with nothing failing.
+ *
+ * `@lmntlz/content` also **cannot** read them — the dependency runs content → sim, never
+ * back — so this is not a copy that could be kept honest by importing. A surface that
+ * wants to show a player the number reads the engine, which the client already does.
+ *
+ * `effectiveness.test.ts` caught the first draft of this file doing exactly that, with
+ * a literal `1.25` in a display string.
+ *
+ * ### ⚠️ Nineteen effects are `null`, and that is the honest state
+ *
+ * `03-powers.md` gives all four role effects and all nine house effects. Of the 27
+ * uniques it describes **five**, the ones with hook mechanics other rules depend on;
+ * `05-status.md` settles three more. The remaining **nineteen** are named in the roster
+ * and have no authored effect anywhere in the project.
  *
  * **They are `null` rather than invented.** `CLAUDE.md` is explicit that the rules live
  * in `resources/mechanics/` and that a screen is never a source of them; writing effect
@@ -64,9 +80,9 @@ export interface Passive {
  * buffer drags it into the open.
  */
 const ROLE: readonly Passive[] = [
-  { name: 'Finish It', scope: 'role', belongsTo: 'striker', effect: 'Bonus damage below half pool.' },
+  { name: 'Finish It', scope: 'role', belongsTo: 'striker', effect: 'Deals bonus damage to a target below half its health pool.' },
   { name: 'Hold the Line', scope: 'role', belongsTo: 'tank', effect: 'Row-scoped taunt. Bounded to the tank’s own row, so it never locks down the board — and an attacker that cannot reach the tank chooses freely.' },
-  { name: 'Measured Shot', scope: 'role', belongsTo: 'ranged', effect: 'Bonus damage at distance 2.' },
+  { name: 'Measured Shot', scope: 'role', belongsTo: 'ranged', effect: 'Deals bonus damage at distance 2 or more. Distance counts occupied rows, so the bonus is lost as the line collapses.' },
   { name: 'Behind the Line', scope: 'role', belongsTo: 'buffer', effect: 'Permanent fade. Self-limiting: once the buffer is the only thing an attacker can reach, the filter would empty the candidate set and is ignored.' },
 ];
 
@@ -78,15 +94,15 @@ const ROLE: readonly Passive[] = [
  * fade-heavy squad.
  */
 const HOUSE: ReadonlyArray<Passive & { readonly belongsTo: DamageType }> = [
-  { name: 'The Deep Holds', scope: 'house', belongsTo: 'earth', effect: 'Shortens control effects on itself.' },
-  { name: 'Never Where You Struck', scope: 'house', belongsTo: 'air', effect: 'Gains Agility after being missed.' },
-  { name: 'It Catches', scope: 'house', belongsTo: 'fire', effect: 'Burns escalate per tick.' },
-  { name: 'Wears Through', scope: 'house', belongsTo: 'water', effect: 'Mitigation shreds persist.' },
+  { name: 'The Deep Holds', scope: 'house', belongsTo: 'earth', effect: 'Control effects on this champion last a turn less. Control is priced at one turn, so in practice it cannot be stunned or silenced at all — unless something extended the effect first.' },
+  { name: 'Never Where You Struck', scope: 'house', belongsTo: 'air', effect: 'Gains Agility for a turn each time an attack misses it.' },
+  { name: 'It Catches', scope: 'house', belongsTo: 'fire', effect: 'Burns it applies grow every turn instead of staying level.' },
+  { name: 'Wears Through', scope: 'house', belongsTo: 'water', effect: 'Mitigation shreds it applies never expire.' },
   { name: 'Nothing Stays Hidden', scope: 'house', belongsTo: 'light', effect: 'Ignores fade — a faded enemy is targetable without clearing the unfaded heroes first. The only passive that reaches into targeting, and what makes Light the answer to a fade-heavy squad.' },
-  { name: 'The Veil Closes', scope: 'house', belongsTo: 'dark', effect: 'Feeds on nearby deaths.' },
-  { name: 'The Cut Reopens', scope: 'house', belongsTo: 'slash', effect: 'Bleeds on crit.' },
-  { name: 'Find the Seam', scope: 'house', belongsTo: 'pierce', effect: 'Sharpens against a repeat target.' },
-  { name: 'Nothing Holds', scope: 'house', belongsTo: 'crush', effect: 'Shaves Armor cumulatively.' },
+  { name: 'The Veil Closes', scope: 'house', belongsTo: 'dark', effect: 'Restores health when any champion falls within its reach — either side.' },
+  { name: 'The Cut Reopens', scope: 'house', belongsTo: 'slash', effect: 'A critical hit opens a bleed, at the tier of the power that landed it.' },
+  { name: 'Find the Seam', scope: 'house', belongsTo: 'pierce', effect: 'Gains Penetration against a target for every time it has struck that target before, up to a cap.' },
+  { name: 'Nothing Holds', scope: 'house', belongsTo: 'crush', effect: 'Every strike shaves Armor off the target, and it stacks — up to a cap.' },
 ];
 
 /**

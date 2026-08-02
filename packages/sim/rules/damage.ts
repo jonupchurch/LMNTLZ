@@ -21,6 +21,7 @@ import {
 } from './state.js';
 import { critChance, hitProbability } from './probability.js';
 import { shieldOf, shredFactor } from './status.js';
+import { damageMultiplierFor, penetrationBonusFor, type StrikeContext } from './passives.js';
 
 /** `01-stats.md`. The same constant as the stat cap, and deliberately so. */
 export const K = 75;
@@ -124,6 +125,8 @@ export interface DamagePreview {
   readonly mitigated: number;
   readonly typeMultiplier: Effectiveness;
   readonly resistedBy: 'armor' | 'magicResist';
+  /** What the attacker's passives multiplied the landed blow by. `1` when none apply. */
+  readonly passiveMultiplier: number;
   readonly final: number;
   readonly floorApplied: boolean;
   readonly hitProbability: number;
@@ -181,7 +184,29 @@ export function damagePreview(
   const armor = effectiveStat(defender, defenderHero.stats, 'armor') * shredFactor(defender, 'armor');
   const magicResist =
     effectiveStat(defender, defenderHero.stats, 'magicResist') * shredFactor(defender, 'magicResist');
-  const penetration = effectiveStat(attacker, getHero(attacker.heroId).stats, 'penetration');
+  /**
+   * **The passive layer, read here so a preview cannot disagree with a
+   * resolution** (020 US2).
+   *
+   * `damagePreview` is what the client shows a player *and* what the resolver
+   * spends, so `Finish It`, `Measured Shot` and `Find the Seam` have to enter the
+   * pipeline at the one point both paths pass through. A passive applied in
+   * `resolveOne` instead would make every projected swing on screen a lie by
+   * exactly its own bonus.
+   *
+   * None of these draw — see the invariant at the top of `passives.ts`.
+   */
+  const strike: StrikeContext = {
+    state,
+    attacker,
+    defender,
+    power,
+    defenderHpFraction: maxHp(defender) > 0 ? defender.hp / maxHp(defender) : 0,
+  };
+
+  const penetration =
+    effectiveStat(attacker, getHero(attacker.heroId).stats, 'penetration') +
+    penetrationBonusFor(strike);
 
   const answering = resistedBy(power);
   const wall =
@@ -200,8 +225,14 @@ export function damagePreview(
   const floor = packet * DAMAGE_FLOOR_FRACTION;
   const floorApplied = floor > afterType;
 
-  const critAfterType = afterType * CRIT_MULTIPLIER;
-  const critFloor = floor * CRIT_MULTIPLIER;
+  /**
+   * **Applied last, to the floored result.** `Finish It` and `Measured Shot` pay
+   * on a blow that was reduced to its floor too — the floor is a guarantee about
+   * what a *hit* delivers, and a Striker closing out a kill should not be the one
+   * case it stops applying.
+   */
+  const passiveFactor = damageMultiplierFor(strike);
+  const landed = Math.max(floor, afterType) * passiveFactor;
 
   return {
     packet,
@@ -210,11 +241,12 @@ export function damagePreview(
     mitigated,
     typeMultiplier,
     resistedBy: answeredBy,
-    final: Math.round(Math.max(floor, afterType)),
+    passiveMultiplier: passiveFactor,
+    final: Math.round(landed),
     floorApplied,
     hitProbability: hitProbability(state, attackerInstanceId, defenderInstanceId),
     critChance: critChance(state, attackerInstanceId),
-    critFinal: Math.round(Math.max(critFloor, critAfterType)),
+    critFinal: Math.round(landed * CRIT_MULTIPLIER),
   };
 }
 

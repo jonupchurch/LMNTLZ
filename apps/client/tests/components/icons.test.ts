@@ -16,13 +16,19 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getAllHeroes, HERO_IDS } from '@lmntlz/content';
+import { DAMAGE_TYPES, getAllHeroes, HERO_IDS } from '@lmntlz/content';
 import { describe, expect, it } from 'vitest';
 import {
   HERO_ICONS,
   STATUS_ICONS,
   STATUS_ICON_KEYS,
 } from '../../src/components/icons/icons.generated.js';
+import {
+  MAPPED_STATUS_KINDS,
+  dotPipFor,
+  statPipFor,
+  statusIconFor,
+} from '../../src/components/icons/statusIcons.js';
 
 describe('every hero has a face', () => {
   /** The positive case. `toHaveLength(27)` on an empty map fails; "no crash" would not. */
@@ -135,44 +141,96 @@ describe('the icons have callers', () => {
 });
 
 /**
- * ⚠️ **THE ANTI-VACUITY GUARD** (T041).
+ * ✅ **THE ANTI-VACUITY GUARD, NOW REAL** (017 T041 → 020 US2).
  *
- * The suite above checks the registry against *itself*. It cannot check that
- * the engine's statuses have icons, because **the engine emits no statuses** —
- * `StatusInstance.kind` is an open `string` and `board.ts` hardcodes
- * `statuses: []`. So "every status has an icon" is an assertion over an empty
- * set: it passes, and it means nothing.
+ * It used to assert the *preconditions of a vacuum*: `StatusInstance.kind` was
+ * an open `string` and nothing produced a status, so "every status has an icon"
+ * was an assertion over an empty set. Two tripwires stood in for it, with one
+ * instruction — *"when a vocabulary is authored, do not relax these; write the
+ * real cross-check."*
  *
- * These two tests exist so that it cannot go on meaning nothing quietly. They
- * assert the *preconditions of the vacuum*. When a status vocabulary is
- * authored — a union on `kind`, or a real producer — one of them goes red.
+ * 020 authored it. **The tripwire fired and this is the cross-check**, reading
+ * the engine's own `StatusKind` union rather than a list restated here — which
+ * is the whole difference between a guard that moves when the code moves and a
+ * guard that has to be remembered.
  *
- * **When that happens, do not relax these.** Their failure is the signal to
- * write the real cross-check: every authored status kind resolves to an icon,
- * and every icon is claimed by some kind.
+ * **The reverse direction is deliberately not asserted.** Seventy-one icons
+ * against twelve kinds is by design: the registry draws a pip per Force and per
+ * stat and direction, information the *power* carries and the status does not.
+ * "Every icon is claimed by some kind" would fail on a correct registry, so
+ * `statusIcons.ts` documents the asymmetry instead of the test pretending to it.
  */
-describe('⚠️ the status guard is vacuous, and must fail when it stops being', () => {
+describe('✅ every status the engine can produce resolves to an icon', () => {
   const REPO = join(import.meta.dirname, '../../../..');
 
-  it('StatusInstance.kind is still an open string — no vocabulary exists yet', () => {
-    const state = readFileSync(join(REPO, 'packages/sim/rules/state.ts'), 'utf8');
-    const kind = /export interface StatusInstance \{[^}]*?readonly kind:\s*([^;]+);/s.exec(state);
+  /**
+   * The union is read off the source, so a thirteenth kind added to the engine
+   * fails here rather than rendering as a blank square in a battle.
+   */
+  const engineKinds = (): readonly string[] => {
+    const status = readFileSync(join(REPO, 'packages/sim/rules/status.ts'), 'utf8');
+    const union = /export type StatusKind =\s*([^;]+);/s.exec(status);
+    expect(union, 'StatusKind no longer parses — this guard has stopped applying').not.toBeNull();
+    return [...union![1]!.matchAll(/'([a-z-]+)'/g)].map((m) => m[1]!);
+  };
 
-    expect(kind, 'StatusInstance no longer parses — check this guard still applies').not.toBeNull();
-    expect(
-      kind![1]!.trim(),
-      'StatusInstance.kind is no longer `string`, so a status vocabulary now exists. ' +
-        'The registry check above is no longer vacuous and must be replaced with a real ' +
-        'cross-check against the authored kinds. See src/components/icons/README.md.',
-    ).toBe('string');
+  it('maps every kind the engine declares, with none invented', () => {
+    const declared = [...engineKinds()].sort();
+    expect(declared.length).toBeGreaterThan(0);
+    expect([...MAPPED_STATUS_KINDS].sort()).toEqual(declared);
   });
 
-  it('the engine still produces no statuses', () => {
-    const board = readFileSync(join(REPO, 'apps/api/src/battle/board.ts'), 'utf8');
-    expect(
-      /statuses:\s*\[\s*\]/.test(board),
-      'board.ts no longer hardcodes `statuses: []`, so something now produces statuses. ' +
-        'StatusPip has a producer and needs wiring, and the icon guard needs to become real.',
-    ).toBe(true);
+  it('resolves each one to a key the registry actually holds', () => {
+    for (const kind of MAPPED_STATUS_KINDS) {
+      const key = statusIconFor({ kind, stat: null });
+      expect(STATUS_ICON_KEYS, `${kind} resolves to "${key}", which is not a registry key`).toContain(
+        key,
+      );
+    }
   });
+
+  /**
+   * A stat buff must not fall back to the generic pip. Ten stats, both
+   * directions, all twenty keys present — the check the registry could never
+   * make against itself.
+   */
+  it('resolves every stat, in both directions, for a stat modifier', () => {
+    const stats = [
+      'might',
+      'perception',
+      'agility',
+      'toughness',
+      'armor',
+      'penetration',
+      'magicResist',
+      'speed',
+      'resolve',
+      'luck',
+    ] as const;
+
+    for (const stat of stats) {
+      const neutral = statusIconFor({ kind: 'buff', stat });
+      expect(STATUS_ICON_KEYS, `buff of ${stat} resolves to "${neutral}"`).toContain(neutral);
+      expect(neutral, `buff of ${stat} fell back to the generic icon`).not.toBe('status-renewed');
+
+      for (const direction of ['up', 'down'] as const) {
+        expect(STATUS_ICON_KEYS).toContain(statPipFor(stat, direction));
+      }
+    }
+  });
+
+  it('resolves a damage-over-time pip for all nine Forces', () => {
+    for (const force of DAMAGE_TYPES) {
+      expect(STATUS_ICON_KEYS, `no dot pip for ${force}`).toContain(dotPipFor(force));
+    }
+  });
+
+  /*
+   * **`StatusPip` still has no caller, and that is still deliberate** — rendering
+   * the row is US4. There is no test for it *here*, because the suite above
+   * already asserts it and a second, weaker restatement is how a guard rots. The
+   * first draft of this block scanned `statusIcons.ts` for `/<[A-Z]/` to prove it
+   * was "not a component"; that matches `Record<StatusKind` and was a worse
+   * version of a check that already existed.
+   */
 });

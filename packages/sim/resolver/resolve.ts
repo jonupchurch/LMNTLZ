@@ -33,12 +33,19 @@ import {
   isStanding,
   legalTargets,
   maxHp,
+  onCrit,
+  onDeath,
+  onMissed,
+  onStrike,
+  applyPassiveEffects,
   potencyForTier,
   riderLandProbability,
+  shapeIncoming,
+  shapeOutgoing,
   shieldForTier,
   shredFraction,
   statChangeForTier,
-  statusTargeting,
+  targetingFor,
   type BattleState,
   type Conclusion,
   type HeroState,
@@ -305,7 +312,23 @@ function applyOrRemove(
     return replaceHero(state, { ...current, statuses });
   }
 
-  const instance = instanceFor(rider, power, applier, current);
+  const built = instanceFor(rider, power, applier, current);
+  if (built === null || built.turnsRemaining <= 0) return state;
+
+  /**
+   * **Shaped on the way out, then on the way in** (020 US2).
+   *
+   * `It Catches` and `Wears Through` change what the *applier* produces — a Fire
+   * burn escalates, a Water shred does not expire — and `The Deep Holds` changes
+   * what the *bearer* accepts. Two hooks rather than one because they belong to
+   * two different heroes, and a single "modify the effect" hook would have to
+   * guess which.
+   *
+   * A `null` from the incoming shape means the effect **does not land at all**:
+   * control is priced at one turn, so shortening it by one removes it. The rider
+   * still spent its draw — it won the contest and was then held.
+   */
+  const instance = shapeIncoming(current, shapeOutgoing(applier, built));
   if (instance === null || instance.turnsRemaining <= 0) return state;
 
   const statuses = applyStatus(current.statuses, instance);
@@ -374,7 +397,7 @@ export function resolveOne(
    * five, so every taunt and fade on the board was invisible to it — which is why
    * Tank and Buffer had no mechanical existence at all.
    */
-  const { filters, compulsion } = statusTargeting(state, actor.instanceId);
+  const { filters, compulsion } = targetingFor(state, actor.instanceId);
   const legal = legalTargets(state, actor.instanceId, power.id, filters, compulsion);
 
   if (legal.candidates.length === 0) {
@@ -462,11 +485,29 @@ export function resolveOne(
   consumed += 1n;
 
   if (!hit) {
+    /**
+     * **The defender's own passives fire on an evasion** (020 US2) — `Never Where
+     * You Struck` is the whole of Air's House rule, and it triggers on being
+     * missed rather than on acting.
+     *
+     * Every hero the payload would have reached, not only the named target: the
+     * hit draw is per *packet*, so a party power that misses was dodged by all of
+     * them.
+     */
+    const evaded = targetsOf(state, power, primary);
+    const dodged = applyPassiveEffects(
+      state,
+      evaded.flatMap((defender) =>
+        onMissed({ state, attacker: actor, defender, power, defenderHpFraction: 1 }),
+      ),
+      maxHp,
+    );
+
     // A miss is NOT the end of a turn's draws in general — a reaction can fire
     // on an evaded attack — but no reactive power is authored yet, so nothing
     // draws here today. When one is, its contest goes at step 3.
     return {
-      state,
+      state: dodged,
       packet: {
         hit: false,
         crit: false,
@@ -476,7 +517,7 @@ export function resolveOne(
         ridersLanded: [],
         ridersResisted: [],
         deaths: [],
-        conclusion: battleEnded(state),
+        conclusion: battleEnded(dodged),
       },
       drawsConsumed: consumed,
     };
@@ -490,6 +531,14 @@ export function resolveOne(
   let next = state;
   let total = 0;
   const deaths: string[] = [];
+
+  /**
+   * **The fallen as they stood, not as they lie.** `The Veil Closes` measures
+   * reach to the hero that fell, and reach needs a row — which the post-death
+   * state still carries, but only because a body is left on the board at 0 HP.
+   * Keeping the pre-damage snapshot means the passive does not depend on that.
+   */
+  const fallen: HeroState[] = [];
 
   const struck: string[] = [];
 
@@ -510,8 +559,10 @@ export function resolveOne(
     total += Math.min(throughput, current.hp);
     next = replaceHero(next, { ...current, hp, statuses });
 
-    if (hp === 0) deaths.push(current.instanceId);
-    else struck.push(current.instanceId);
+    if (hp === 0) {
+      deaths.push(current.instanceId);
+      fallen.push(current);
+    } else struck.push(current.instanceId);
   }
 
   // ---- 3. riders — one contest each, only on a payload that connected ------
@@ -525,6 +576,46 @@ export function resolveOne(
   );
   consumed += drawsUsed;
   next = afterRiders;
+
+  /**
+   * ---- `EFFECT_ORDER` step 2: on-hit triggers ----------------------------
+   *
+   * **After the riders and before the second death check**, which is the order
+   * `phases.ts` fixed in 002 and nothing has ever run. Passives never draw, so
+   * this whole block is invisible to the draw index — the reason `goldenPath` and
+   * the three determinism suites keep reconstructing it exactly.
+   *
+   * Read off `next`, not `state`: `Find the Seam` counts the marks a target
+   * already carries, and a party power striking one hero twice in a turn is not a
+   * thing, but a rider that just landed is.
+   */
+  const strikeEffects = struck.flatMap((id) => {
+    const defender = heroStateOf(next, id);
+    const pool = maxHp(defender);
+    const ctx = {
+      state: next,
+      attacker: heroStateOf(next, actor.instanceId),
+      defender,
+      power,
+      defenderHpFraction: pool > 0 ? defender.hp / pool : 0,
+    };
+    /**
+     * **The resolver decides which hook, the rule decides what it does.** `rules/`
+     * may not declare a `crit: boolean` — `purity.test.ts` refuses it, because a
+     * module that knows a swing critted is the resolver — so the branch lives
+     * here and `The Cut Reopens` never sees a flag.
+     */
+    return crit ? [...onStrike(ctx), ...onCrit(ctx)] : onStrike(ctx);
+  });
+  next = applyPassiveEffects(next, strikeEffects, maxHp);
+
+  /**
+   * ---- `EFFECT_ORDER` step 5: what a death sets off ----------------------
+   *
+   * `The Veil Closes` feeds on it. Folded after the on-hit triggers so a champion
+   * that killed and was healed in the same action reports one board, not two.
+   */
+  next = applyPassiveEffects(next, fallen.flatMap((f) => onDeath(next, f)), maxHp);
 
   const ridersLanded = landed;
   const ridersResisted = resisted;

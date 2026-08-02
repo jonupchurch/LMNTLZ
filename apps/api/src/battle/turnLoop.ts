@@ -34,6 +34,7 @@ import { getHero } from '@lmntlz/content';
 import {
   afterTick,
   afterUpkeep,
+  applyPassiveEffects,
   battleEnded,
   cooldownsAfterResolution,
   gainPerTick,
@@ -41,6 +42,7 @@ import {
   isIncapacitated,
   isStanding,
   maxHp,
+  onDeath,
   tickDurations,
   upkeepDamage,
   type BattleState,
@@ -253,10 +255,25 @@ export function applyUpkeep(
   const hp = Math.max(0, hero.hp - damage);
   const next: HeroState = { ...hero, hp, statuses: afterUpkeep(hero.statuses) };
 
+  const ticked: BattleState = {
+    ...state,
+    heroes: state.heroes.map((h) => (h.instanceId === instanceId ? next : h)),
+  };
+
+  const died = hp === 0 && hero.hp > 0;
+
+  /**
+   * **A burn kills, and `The Veil Closes` still feeds** (020 US2).
+   *
+   * A death has two doorways — a blow in `resolveOne` and a tick here — and a
+   * passive that only saw the first would be silently conditional on *how* the
+   * champion fell. `hero` rather than `next` is passed, because reach needs the
+   * row it stood in.
+   */
   return {
-    state: { ...state, heroes: state.heroes.map((h) => (h.instanceId === instanceId ? next : h)) },
+    state: died ? applyPassiveEffects(ticked, onDeath(ticked, hero), maxHp) : ticked,
     damage,
-    died: hp === 0 && hero.hp > 0,
+    died,
   };
 }
 

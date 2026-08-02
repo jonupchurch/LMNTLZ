@@ -94,7 +94,9 @@ export interface StatusInstance {
     | 'taunt'
     | 'fade'
     | 'stun'
-    | 'silence';
+    | 'silence'
+    | 'mark';
+  /** `Infinity` for a `Wears Through` shred — see `PERMANENT` in `status.ts`. */
   readonly turnsRemaining: number;
   /**
    * **Fixed at application and never recalculated.** Points for a stat change, a

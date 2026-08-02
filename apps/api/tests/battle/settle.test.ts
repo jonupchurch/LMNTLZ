@@ -107,9 +107,19 @@ describe('a battle fought to its end', () => {
      * afterwards — the log holds actions, not hero turns — so a battle that
      * settled without writing it has a permanent hole in the history feature
      * 008's aggregates are computed from.
+     *
+     * **The floor was 20 and had to move, because the game got faster** (020).
+     * It is not a balance assertion — it exists to catch a `turnCount` of 0 or 1,
+     * which is what "settled without writing it" looks like. Twenty was picked
+     * when a battle ran ~280 hero turns; a battle now runs ~30 and brushes it,
+     * so the bound was reporting the *content* rather than the *column*.
+     *
+     * **Six is derived rather than chosen**: a squad is six champions and a
+     * battle ends when one side is wiped, so no honest battle concludes in fewer
+     * than six hero turns even if every single one killed outright.
      */
     const row = await battleRow(started.battleId);
-    expect(row.turnCount).toBeGreaterThan(20);
+    expect(row.turnCount).toBeGreaterThan(6);
   });
 
   it('moves the attack streak in the direction the result demands', async () => {
