@@ -105,7 +105,7 @@ describe('the defender’s bounty', () => {
  */
 describe('🔴 an older server sends no streakShards at all', () => {
   it('renders no streak line rather than an undefined one', () => {
-    const legacy = settlement({ attackStreak: 150 }) as Record<string, unknown>;
+    const legacy = settlement({ attackStreak: 150 }) as unknown as Record<string, unknown>;
     delete legacy['streakShards'];
 
     show(WON, legacy as unknown as BattleSettlement);
