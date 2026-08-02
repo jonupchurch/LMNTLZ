@@ -220,9 +220,12 @@ and tuning:
 
 - **The hero-numbers pass** — every formula is specified; the values are still a
   Role-shaped template. Blocks no spec and blocks all balance, and under the
-  no-nerf rule this is the last moment numbers move freely. **Reactive powers are
-  specified but unpopulated**, leaving two passives dead; that authoring belongs
-  here.
+  no-nerf rule this is the last moment numbers move freely. **All 40 passives now
+  run** (2026-08-02): `Redouble` was made reactive, which is what `Already Gone`
+  and `Nothing to Discuss` were waiting on. ⚠️ **Which champions get a reactive
+  power still belongs here** — a reaction wants high `Agility` to fire at all, so
+  the three Slash champions are a stated assumption and one line in
+  `tools/power-targeting.json`, not a decision.
 - **~130 bot squads** — the single largest authoring job in the project, inside
   009. Each bot's Hidden squad is authored one band up its own ramp.
 - **Three sets of numbers whose shape is settled and whose values are not**: the
