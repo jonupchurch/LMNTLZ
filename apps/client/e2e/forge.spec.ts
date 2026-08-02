@@ -21,6 +21,7 @@
 
 import { expect, test } from '@playwright/test';
 import { getAllHeroes, STAT_CAP } from '@lmntlz/content';
+import { effectsForSlot } from '@lmntlz/sim/rules';
 import { signedIn } from './fixtures.js';
 
 const HERO = getAllHeroes()[0]!;
@@ -63,6 +64,15 @@ const shardsPayload = (balance: number) => ({
     holdsAreTiered: false,
     capInRunes: 10,
     balanceCap: 6500,
+    /**
+     * **Missing here until 021 US4, and a screenshot is what found it.** The melt
+     * control read *"returns NaN% of what is placed"* in every run of this file,
+     * because `Math.round(undefined * 100)` is `NaN` and no assertion looked at
+     * that string. The API has always sent the field, so it was never a live
+     * defect — but a fixture that renders `NaN` at a player teaches whoever reads
+     * the artifact to skip past one.
+     */
+    refundRate: 0.8,
   },
 });
 
@@ -143,4 +153,95 @@ test('the Forge is leavable without a page reload', async ({ page }) => {
    */
   await page.getByRole('button', { name: /^codex$/i }).click();
   await expect(page.getByRole('region', { name: 'Stage ladder' })).toHaveCount(0);
+});
+
+/**
+ * 🔴 **The stage-4 picker, in a browser** (021 US4, T057/T060).
+ *
+ * ### TL;DR
+ *
+ * Stage 4 is the most expensive stage of a rune — 200 shards — and grants **zero**
+ * stat points; the effect is the entire purchase. So the one thing a player must
+ * be able to do before committing is *read what they are buying*, and that had
+ * never been checked at any level: `UtilityPicker` shipped with no unit test and
+ * no e2e test at all.
+ *
+ * ### Counts before indexing
+ *
+ * The pool is asserted to be the designed size **first**, then read. A `.first()`
+ * on a short list is how a pool that quietly lost an option passes as full — and
+ * `06-progression.md` names *"a fixed single effect per pool"* as the outcome to
+ * avoid, because it strands half the elemental shard sink.
+ */
+test('the stage-4 picker offers the slot’s own pool and describes every option', async ({
+  page,
+}) => {
+  await signedIn(page);
+
+  await page.route('**/v1/me/runes', (route) =>
+    route.fulfill({ json: runesPayload(3, { might: 35 }) }),
+  );
+  await page.route('**/v1/me/shards', (route) =>
+    route.fulfill({ json: shardsPayload(OPENING_BALANCE) }),
+  );
+
+  await page.goto('/');
+  await page.getByRole('button', { name: /rune forge/i }).click();
+  await page.getByRole('button', { name: new RegExp(HERO.name, 'i') }).first().click();
+
+  /**
+   * **The pool is derived from the champion, not from the screen.** `poolOf` is
+   * the same derivation the server validates the commit against, so asking the
+   * catalog here rather than typing a list means this test moves when the roster
+   * is re-authored.
+   */
+  const offered = effectsForSlot(HERO.id, 'primary');
+  expect(offered.length, 'the primary pool is authored').toBeGreaterThan(0);
+
+  const options = page.locator('[data-utility]');
+  await expect(options, 'every effect the pool holds, and no others').toHaveCount(offered.length);
+
+  /* Each one names itself and states its condition and consequence. */
+  for (const effect of offered) {
+    const option = page.locator(`[data-utility="${effect.id}"]`);
+    await expect(option).toHaveCount(1);
+    await expect(option).toContainText(effect.name);
+    await expect(
+      option,
+      'a 200-shard purchase a player cannot read before committing',
+    ).toContainText(effect.description);
+  }
+
+  /* Choosing is a selection, not a commit — `aria-pressed`, and reversible. */
+  const first = page.locator(`[data-utility="${offered[0]!.id}"]`);
+  await expect(first).toHaveAttribute('aria-pressed', 'false');
+  await first.click();
+  await expect(first).toHaveAttribute('aria-pressed', 'true');
+  await first.click();
+  await expect(first, 'clicking the chosen one again clears it').toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+});
+
+/** **T061** — the Forge at stage 4, photographed and looked at. */
+test('screenshot — the Forge offering stage-4 effects', async ({ page }, testInfo) => {
+  await signedIn(page);
+  await page.route('**/v1/me/runes', (route) =>
+    route.fulfill({ json: runesPayload(3, { might: 35 }) }),
+  );
+  await page.route('**/v1/me/shards', (route) =>
+    route.fulfill({ json: shardsPayload(OPENING_BALANCE) }),
+  );
+
+  await page.goto('/');
+  await page.getByRole('button', { name: /rune forge/i }).click();
+  await page.getByRole('button', { name: new RegExp(HERO.name, 'i') }).first().click();
+
+  const options = page.locator('[data-utility]');
+  await expect(options).toHaveCount(effectsForSlot(HERO.id, 'primary').length);
+
+  const path = testInfo.outputPath('forge-stage-4.png');
+  await page.screenshot({ path });
+  await testInfo.attach('forge-stage-4.png', { path, contentType: 'image/png' });
 });

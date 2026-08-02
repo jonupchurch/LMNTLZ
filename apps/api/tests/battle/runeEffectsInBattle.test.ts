@@ -25,6 +25,7 @@ import { describe, expect, it } from 'vitest';
 import { getAllHeroes } from '@lmntlz/content';
 import {
   RESOLVED_AT_BOARD_BUILD,
+  RUNE_EFFECTS,
   RUNE_MAGNITUDES,
   absorb,
   actsAgainAfter,
@@ -41,8 +42,12 @@ import {
   statBonusFor,
   applyPassiveEffects,
   maxHp,
+  type BattleState,
 } from '@lmntlz/sim/rules';
+import { createSeed } from '@lmntlz/sim/resolver';
 import { MalformedSquadError, buildInitialState, type SnapshotSeat } from '../../src/battle/board.js';
+import { takeTurn } from '../../src/battle/turnLoop.js';
+import { autoPowerOf, board, withHero } from './fixtures.js';
 import { parseAttackerSnapshot, parseDefenderSnapshot } from '../../src/battle/snapshot.js';
 
 const ROSTER = getAllHeroes().map((h) => h.id);
@@ -316,6 +321,98 @@ describe('every US2 reader has a caller', () => {
   it('names readers that actually exist', () => {
     for (const [name, fn] of Object.entries(READERS)) {
       expect(typeof fn, `${name} is not a function`).toBe('function');
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WIRING — the battle SAYS a rune fired (021 US4, T059)
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **The client formats `runesFired`. Nothing proves the server sends it.**
+ *
+ * That is this project's signature defect in its purest form: a field declared,
+ * typed, rendered, unit-tested on the client — and populated by nobody. The log
+ * would read exactly as it did before, every test would pass, and the effect a
+ * player spent 200 shards on would go on being silent.
+ *
+ * So these drive a **real turn** through `takeTurn` and read the packet.
+ *
+ * `Too Close` is the subject because it is the one effect that fires
+ * **unconditionally on being struck** — no chance roll, no threshold, no latch.
+ * A conditional effect would make a green run indistinguishable from a run where
+ * the condition simply did not hold.
+ */
+describe('a rune firing reaches the packet', () => {
+  /** h07 Ember Saelith is Fire, so `Too Close` is genuinely in her primary pool. */
+  const BEARER = 'h07';
+  const DEFENDER_SEAT = 'd-front-0';
+  const ATTACKER_SEAT = 'a-front-0';
+
+  const boardWith = (utility: readonly string[]): BattleState =>
+    withHero(board(ROSTER.slice(0, 6), [BEARER, ...ROSTER.slice(7, 12)]), DEFENDER_SEAT, {
+      runeEffects: utility,
+    });
+
+  const strike = (state: BattleState) =>
+    takeTurn(
+      createSeed(),
+      state,
+      {
+        sequence: 1,
+        actorInstanceId: ATTACKER_SEAT,
+        powerId: autoPowerOf(ROSTER[0]!),
+        targetInstanceId: DEFENDER_SEAT,
+      },
+      0n,
+    );
+
+  /**
+   * The premise, asserted rather than assumed: a miss reflects nothing, so a run
+   * that happened to miss would report an empty list for the wrong reason.
+   */
+  const landedStrike = (state: BattleState) => {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const taken = strike(state);
+      if (taken.outcome.hit && taken.outcome.deaths.length === 0) return taken;
+    }
+    throw new Error('60 attempts and the blow never landed — the fixture cannot measure anything');
+  };
+
+  it('🔴 names the rune that fired, on the champion it happened to', () => {
+    const taken = landedStrike(boardWith(['too-close']));
+    const fired = taken.outcome.runesFired ?? [];
+
+    expect(fired, 'the server sent nothing — the client formats a field nobody fills').not.
+      toHaveLength(0);
+    expect(fired).toContain(`too-close:${ATTACKER_SEAT}`);
+  });
+
+  /**
+   * 🔴 **The control.** The identical board without the rune must report nothing,
+   * or the field is reporting the champion's passives and would name something on
+   * every turn of every battle ever fought.
+   */
+  it('🔴 reports nothing for the same board without the rune', () => {
+    const taken = landedStrike(boardWith([]));
+
+    expect(taken.outcome.runesFired ?? []).toEqual([]);
+  });
+
+  /**
+   * 🔴 **A passive is not a purchase.** Every champion carries three and a player
+   * chose none of them, so naming them here would tell somebody their 200 shards
+   * bought a thing a stranger's identical champion also has.
+   */
+  it('🔴 never names a passive, however many fired', () => {
+    const taken = landedStrike(boardWith(['too-close']));
+    const fired = taken.outcome.runesFired ?? [];
+
+    const known = new Set(Object.keys(RUNE_EFFECTS));
+    for (const entry of fired) {
+      const id = entry.split(':')[0]!;
+      expect(known.has(id), `"${id}" is not a rune effect id`).toBe(true);
     }
   });
 });

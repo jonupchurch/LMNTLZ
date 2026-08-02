@@ -24,6 +24,7 @@
  */
 
 import { expect, test, type Page } from '@playwright/test';
+import { RUNE_EFFECTS, RUNE_MAGNITUDES, runeSource } from '@lmntlz/sim/rules';
 import { signedIn } from './fixtures.js';
 
 const HERO_IDS = Array.from({ length: 27 }, (_, i) => `h${String(i + 1).padStart(2, '0')}`);
@@ -809,5 +810,106 @@ test.describe('the status row', () => {
 
       expect(overlaps, 'a pip is sitting on top of the champion’s name').toBe(false);
     }
+  });
+});
+
+/**
+ * 🔴 **A rune effect, named on the board a player is looking at** (021 US4,
+ * T060).
+ *
+ * ### TL;DR
+ *
+ * Stage 4 of a rune costs 200 shards and grants no stats — the effect is the
+ * whole purchase. It has always drawn a pip, and drawn the *identical* pip to
+ * the same effect from any power, so a player could look straight at their
+ * purchase working and not know it was theirs. This checks the board says whose
+ * it is, in a real browser.
+ *
+ * **Counts are asserted before anything is indexed.** `[data-combatant]` matches
+ * the board card *and* the rail card, and a `.first()` on a selector matching
+ * more than one is exactly how status pips shipped onto the text of all twelve
+ * rail cards past 1,034 unit tests and three e2e tests.
+ */
+test.describe('a rune effect on the board', () => {
+  const CORNERED = RUNE_EFFECTS['cornered']!;
+
+  /** The same shape the server sends: a buff whose source is the rune namespace. */
+  const runeBuff = () =>
+    effect('buff', {
+      stat: 'might',
+      magnitude: RUNE_MAGNITUDES.corneredMight,
+      turnsRemaining: null,
+      sourcePowerId: runeSource('cornered'),
+    });
+
+  test('names the rune on the pip, and only on the pip that came from one', async ({ page }) => {
+    await inBattle(page, 'visible', {
+      'd-front-0': [runeBuff(), effect('burn')],
+    });
+    await page.goto('/');
+
+    const card = page.locator('[data-combatant="d-front-0"]').first();
+    await expect(card).toBeVisible();
+
+    const pips = card.locator('[data-status-pip]');
+    await expect(pips, 'one buff, one burn').toHaveCount(2);
+
+    /* Count first, then read: a `.first()` here would hide a row that grew. */
+    const named = card.locator('[data-status-pip][data-rune]');
+    await expect(named, 'exactly one of the two came from a rune').toHaveCount(1);
+    await expect(named).toHaveAttribute('data-rune', CORNERED.name);
+    await expect(named).toHaveAttribute('title', new RegExp(CORNERED.name));
+  });
+
+  /**
+   * 🔴 **The control, and it is the one that would catch a blanket label.** An
+   * implementation that marked every pip would pass the test above and be wrong
+   * about every effect in the game.
+   */
+  test('marks nothing when no rune is involved', async ({ page }) => {
+    await inBattle(page, 'visible', {
+      'd-front-0': [effect('burn'), effect('stun', { turnsRemaining: 1 })],
+    });
+    await page.goto('/');
+
+    const card = page.locator('[data-combatant="d-front-0"]').first();
+    await expect(card.locator('[data-status-pip]')).toHaveCount(2);
+    await expect(card.locator('[data-status-pip][data-rune]')).toHaveCount(0);
+  });
+
+  /**
+   * **T061 — the screenshot, taken and looked at.**
+   *
+   * No unit test on this project has ever caught a layout defect and the
+   * screenshot has caught several, so the artifact is the point. `fullPage` does
+   * not scroll a fixed-height inner panel, which is why this frames the card
+   * rather than the document.
+   */
+  test('screenshot — the board with an active rune effect', async ({ page }, testInfo) => {
+    await inBattle(page, 'visible', {
+      'd-front-0': [runeBuff(), effect('burn')],
+    });
+    await page.goto('/');
+
+    const card = page.locator('[data-combatant="d-front-0"]').first();
+    await expect(card).toBeVisible();
+    await expect(card.locator('[data-status-pip][data-rune]')).toHaveCount(1);
+
+    /**
+     * Written to a path as well as attached. An attachment lives inside the HTML
+     * report, and a screenshot nobody opens is a screenshot nobody looked at —
+     * which is the entire failure mode this task exists to prevent.
+     */
+    const path = testInfo.outputPath('rune-effect-on-board.png');
+    await page.screenshot({ path });
+    await testInfo.attach('rune-effect-on-board.png', { path, contentType: 'image/png' });
+
+    /**
+     * And the card on its own, because the ring is a 24px detail and a 1280px
+     * board is not the frame that answers *"can somebody actually see this"*.
+     */
+    const close = testInfo.outputPath('rune-effect-card.png');
+    await card.screenshot({ path: close });
+    await testInfo.attach('rune-effect-card.png', { path: close, contentType: 'image/png' });
   });
 });

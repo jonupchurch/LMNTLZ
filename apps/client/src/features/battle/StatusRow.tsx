@@ -73,7 +73,17 @@ export function StatusRow({ statuses, scale, heroName }: StatusRowProps): React.
           stacks={group.stacks}
           sealed={group.sealed}
           duration={group.duration}
-          label={group.label}
+          /**
+           * **The rune is named in the label, not given a badge of its own**
+           * (021 US4, FR-025). The pip already says an effect is here; what a
+           * player could not tell was *whose*, and that is a word rather than a
+           * second indicator competing for 24 pixels.
+           *
+           * `data-rune` carries the same fact for a test to assert on, because a
+           * title string is the one thing a screenshot cannot check.
+           */
+          label={group.runes.length === 0 ? group.label : `${group.label} · ${group.runes.join(', ')}`}
+          {...(group.runes.length > 0 && { rune: group.runes.join(', ') })}
         />
       ))}
       {spilled > 0 && (

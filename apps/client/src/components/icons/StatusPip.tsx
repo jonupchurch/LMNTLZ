@@ -49,6 +49,16 @@ export interface StatusPipProps {
   readonly duration?: number | null;
   /** Spoken name for the pip, so the row is not twelve identical "burn" strings. */
   readonly label?: string;
+  /**
+   * The rune effect(s) that put something in this pip, comma-joined (021 US4).
+   *
+   * **A declared prop rather than a spread**, because this component does not take
+   * arbitrary attributes — and a `data-` attribute passed to something that
+   * ignores it is a test selector that silently matches nothing. It is deliberately
+   * separate from `label`: the label is prose a screen reader speaks, this is the
+   * machine-readable fact a Playwright check counts.
+   */
+  readonly rune?: string;
 }
 
 export function StatusPip({
@@ -57,14 +67,33 @@ export function StatusPip({
   sealed,
   duration,
   label,
+  rune,
 }: StatusPipProps): React.JSX.Element {
   return (
     <span
-      className="relative inline-flex size-6 items-center justify-center"
+      /**
+       * **A rune's pip wears a gold ring, and the ring is the point** (021 US4).
+       *
+       * The first cut carried the rune's name in `data-rune` and in `title`, and
+       * a screenshot settled it: both are invisible. This row is deliberately not
+       * interactive — the board's hover already drives the target read — so a
+       * fact that needs a hover to appear is a fact a player never sees, and
+       * *"the player can see what they bought"* was the whole user story.
+       *
+       * Gold because gold is already this design's *"yours, and it matters"*
+       * accent — the stack badge and the active rail entry both use it. A ring
+       * rather than another icon: the pip's 24px is spoken for by two numerals
+       * that must not read as one number, and a third glyph would crowd them.
+       */
+      className={
+        'relative inline-flex size-6 items-center justify-center' +
+        (rune === undefined ? '' : ' rounded-full ring-1 ring-gold/70')
+      }
       data-status-pip={kind}
       data-sealed={sealed || undefined}
       data-duration={duration ?? undefined}
       data-stacks={stacks !== undefined && stacks > 1 ? stacks : undefined}
+      data-rune={rune}
       title={label ?? kind}
     >
       <img src={STATUS_ICONS[kind]} alt={label ?? kind} className="size-6" draggable={false} />

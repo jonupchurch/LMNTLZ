@@ -32,7 +32,7 @@
  * badly is it burning"* rather than *"who lit it"*.
  */
 
-import { definitionOf, type StatusInstance } from '@lmntlz/sim/rules';
+import { RUNE_EFFECTS, definitionOf, runeIdOf, type StatusInstance } from '@lmntlz/sim/rules';
 import { statusIconFor } from '../../components/icons/statusIcons.js';
 import type { StatusIconKey } from '../../components/icons/icons.generated.js';
 
@@ -81,6 +81,23 @@ export interface StatusGroup {
    * So a mixed group is named for its family. A pure one keeps its own name.
    */
   readonly label: string;
+  /**
+   * The display names of any **rune effects** that put something in this pip
+   * (021 US4), in catalog order and deduplicated.
+   *
+   * ### Why the row needed this at all
+   *
+   * A rune effect places an ordinary status, so `Cornered`'s +20 Might has always
+   * drawn a pip — and drawn the *identical* pip to a +20 Might from a power's
+   * rider. A player who spent 200 shards on stage 4 could look straight at it
+   * working and have no way to tell it apart from something the enemy did to
+   * them. That is the whole of *"the player can see what they bought"*.
+   *
+   * **No new indicator**, per FR-025: the effect is already on the row, and a
+   * second badge for the same fact is two places to keep in step. What is new is
+   * that the row can now say whose it is.
+   */
+  readonly runes: readonly string[];
 }
 
 /**
@@ -117,6 +134,24 @@ const FAMILY_RANK: Readonly<Record<string, number>> = {
 const HIDDEN_KINDS: ReadonlySet<string> = new Set(['mark']);
 
 /**
+ * The display name of the rune effect behind one status, or `null`.
+ *
+ * **Derived from `sourcePowerId` through the shared catalog**, never from a table
+ * of names on this side (Constitution XIII). The Forge already describes an effect
+ * from `RUNE_EFFECTS` before a player buys it; the board naming it from anywhere
+ * else is how the two screens would eventually call one rune two things.
+ *
+ * `runeIdOf` is the same reader `passives.ts` uses server-side, so a prefix change
+ * cannot leave the board silently naming nothing.
+ */
+export function runeNameOf(status: WireStatus): string | null {
+  const id = runeIdOf(status.sourcePowerId);
+  if (id === null) return null;
+  /* An id the catalog does not know renders as itself rather than vanishing. */
+  return RUNE_EFFECTS[id]?.name ?? id;
+}
+
+/**
  * Every pip a champion shows, in reading order.
  *
  * Grouped on the **icon** rather than the kind, because that is what a player
@@ -133,6 +168,7 @@ export function statusGroups(statuses: readonly WireStatus[]): readonly StatusGr
     const icon = statusIconFor(status);
     const duration = durationOf(status);
     const found = byIcon.get(icon);
+    const rune = runeNameOf(status);
 
     if (!found) {
       byIcon.set(icon, {
@@ -142,6 +178,7 @@ export function statusGroups(statuses: readonly WireStatus[]): readonly StatusGr
         duration,
         sealed: !status.cleansable,
         label: status.kind,
+        runes: rune === null ? [] : [rune],
       });
       continue;
     }
@@ -149,6 +186,8 @@ export function statusGroups(statuses: readonly WireStatus[]): readonly StatusGr
     byIcon.set(icon, {
       icon,
       kind: found.kind,
+      /** Two sources of one icon can be two different runes; both are named. */
+      runes: rune === null || found.runes.includes(rune) ? found.runes : [...found.runes, rune],
       /** Mixed kinds under one icon are named for what they have in common. */
       label:
         found.kind === status.kind ? found.label : definitionOf(found.kind).family.replaceAll('-', ' '),

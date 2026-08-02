@@ -27,6 +27,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { RUNE_EFFECTS } from '@lmntlz/sim/rules';
 import { describeEvent } from '../../src/features/battle/BattleScreen.js';
 import type { TurnEvent } from '../../src/features/battle/types.js';
 
@@ -160,5 +161,84 @@ describe('an old replay still reads', () => {
 
     expect(rendered).toBe('Corvane attacks Marisel. Hits for 0 damage.');
     expect(rendered).not.toMatch(/undefined|NaN/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A rune has a voice (021 US4, T059)
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **Twenty-nine of the thirty-three effects place a status, so the board grew
+ * a pip and the transcript said nothing.** The other four are worse: `Too Close`
+ * reflects damage and `Take It Back` *removes* something, so they leave no pip
+ * either — a player who bought a 25% effect had no way to learn it ever fired.
+ *
+ * These assert the line, the display name, and the two ways it must stay quiet.
+ */
+describe('naming the rune that fired', () => {
+  const struck = (
+    runesFired: readonly string[] | undefined,
+    over: Partial<TurnEvent> = {},
+  ): TurnEvent =>
+    event(
+      {
+        damage: 41,
+        ...(runesFired === undefined ? {} : { runesFired }),
+      },
+      { powerId: 'strike', targetInstanceId: 'd-front-1', ...over },
+    );
+
+  it('🔴 names the effect and who it happened to', () => {
+    const rendered = describeEvent(struck(['both-ways:a-middle-1']), nameOf);
+
+    expect(rendered).toContain('Both Ways on Corvane');
+  });
+
+  /**
+   * 🔴 **The display name comes from the catalog, not from the id.** A line
+   * reading `both-ways on Corvane` would be the client inventing its own
+   * vocabulary for something the Forge already named a different way.
+   */
+  it('🔴 uses the catalog’s display name rather than the stored id', () => {
+    const rendered = describeEvent(struck(['take-it-back:d-front-1']), nameOf);
+
+    expect(rendered).toContain(RUNE_EFFECTS['take-it-back']!.name);
+    expect(rendered, 'the kebab-case id must not reach a player').not.toContain('take-it-back');
+  });
+
+  it('names several, comma-joined, in the order they fired', () => {
+    const rendered = describeEvent(
+      struck(['too-close:a-middle-1', 'both-ways:a-middle-1']),
+      nameOf,
+    );
+
+    expect(rendered).toContain('Too Close on Corvane, Both Ways on Corvane');
+  });
+
+  /** 🔴 The control: an ordinary turn with no rune says nothing extra. */
+  it('🔴 adds nothing when no rune fired', () => {
+    const rendered = describeEvent(struck([]), nameOf);
+
+    expect(rendered).toBe('Corvane attacks Seraphel. Hits for 41 damage.');
+  });
+
+  /**
+   * ⚠️ **An absent field is not an empty one** (Constitution XVI). Every battle
+   * recorded before this shipped has no `runesFired` and cannot be given one, so
+   * an old replay must read cleanly rather than crash or print `undefined`.
+   */
+  it('🔴 survives a replay recorded before the field existed', () => {
+    const rendered = describeEvent(struck(undefined), nameOf);
+
+    expect(rendered).toBe('Corvane attacks Seraphel. Hits for 41 damage.');
+    expect(rendered).not.toMatch(/undefined|NaN/);
+  });
+
+  /** An id the catalog does not know renders as itself rather than vanishing. */
+  it('falls back to the raw id for an effect the catalog has never heard of', () => {
+    const rendered = describeEvent(struck(['no-such-rune:d-front-1']), nameOf);
+
+    expect(rendered).toContain('no-such-rune on Seraphel');
   });
 });

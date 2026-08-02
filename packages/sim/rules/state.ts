@@ -251,6 +251,25 @@ export function effectiveStat(
 }
 
 /**
+ * The namespace every rune-borne effect is attributed under (021 US4).
+ *
+ * **Here for the same cycle reason `mightOf` is**, and it has to be somewhere
+ * shared: `runeEffects.ts` writes the prefix onto each effect and `passives.ts`
+ * reads it back off, and those two cannot import values from each other. Two
+ * string literals four hundred lines apart is precisely how a writer and a reader
+ * of one rule start disagreeing — and the disagreement here is silent, because a
+ * prefix that no longer matches simply reports *"no rune did this"*.
+ */
+const RUNE_PREFIX = 'rune:';
+
+/** `rune:<id>` — what a rune effect stamps on everything it places. */
+export const runeSource = (id: string): string => `${RUNE_PREFIX}${id}`;
+
+/** The effect id back out of a `rune:` stamp, or `null` if it is not one. */
+export const runeIdOf = (source: string | null | undefined): string | null =>
+  source != null && source.startsWith(RUNE_PREFIX) ? source.slice(RUNE_PREFIX.length) : null;
+
+/**
  * A champion's `Might` as everything else in the engine reads it.
  *
  * **Here rather than in `passives.ts`**, where it lived as a private helper until

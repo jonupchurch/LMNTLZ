@@ -46,7 +46,14 @@
 import { DAMAGE_TYPES, getHero, type DamageType } from '@lmntlz/content';
 import type { PassiveEffect, PassiveHooks } from './passives.js';
 import { inReach } from './reach.js';
-import { maxHp, mightOf, packetOf, type HeroState, type StatusInstance } from './state.js';
+import {
+  maxHp,
+  mightOf,
+  packetOf,
+  runeSource,
+  type HeroState,
+  type StatusInstance,
+} from './state.js';
 import {
   PERMANENT,
   definitionOf,
@@ -302,7 +309,7 @@ const M = RUNE_MAGNITUDES;
  * champion applied by rider, so the two stack toward the cap of 3 rather than
  * refreshing each other into one.
  */
-const runePowerId = (id: string): string => `rune:${id}`;
+const runePowerId = runeSource;
 
 /**
  * An effect instance placed by a rune. Defaults live in `status.ts`, once.
@@ -513,6 +520,7 @@ const TAKE_IT_BACK: PassiveHooks = {
         bearerInstanceId: ctx.defender.instanceId,
         polarity: 'positive',
         count: 1,
+        source: runeSource('take-it-back'),
       },
     ],
   },
@@ -737,6 +745,7 @@ const TOO_CLOSE: PassiveHooks = {
       kind: 'damage',
       bearerInstanceId: ctx.attacker.instanceId,
       amount: Math.round(packetOf(ctx.attacker, ctx.power) * M.tooCloseFraction),
+      source: runeSource('too-close'),
     },
   ],
 };
@@ -765,6 +774,7 @@ const THE_DRAFT: PassiveHooks = {
         kind: 'damage' as const,
         bearerInstanceId: hero.instanceId,
         amount: extra,
+        source: runeSource('the-draft'),
       })),
 };
 
@@ -838,7 +848,12 @@ const IT_PASSES_THROUGH: PassiveHooks = {
 
     return [
       latch('it-passes-through', ctx.hero),
-      { kind: 'cleanse', bearerInstanceId: ctx.hero.instanceId, polarity: 'negative' },
+      {
+        kind: 'cleanse',
+        bearerInstanceId: ctx.hero.instanceId,
+        polarity: 'negative',
+        source: runeSource('it-passes-through'),
+      },
     ];
   },
 };
@@ -892,7 +907,12 @@ const THE_LAMP_LIFTED: PassiveHooks = {
 
     for (const ally of ctx.state.heroes) {
       if (ally.side !== ctx.witness.side || ally.hp <= 0) continue;
-      effects.push({ kind: 'cleanse', bearerInstanceId: ally.instanceId, polarity: 'negative' });
+      effects.push({
+        kind: 'cleanse',
+        bearerInstanceId: ally.instanceId,
+        polarity: 'negative',
+        source: runeSource('the-lamp-lifted'),
+      });
     }
 
     return effects;

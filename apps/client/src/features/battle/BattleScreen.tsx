@@ -33,6 +33,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getHero } from '@lmntlz/content';
 import {
+  RUNE_EFFECTS,
   availablePowers,
   distance,
   legalTargets,
@@ -575,8 +576,50 @@ export const describeEvent = (event: TurnEvent, nameOf: (instanceId: string) => 
 
   return (
     `${actor} attacks ${target ?? 'nothing'}. Hits for ${damage} damage${crit ? ', a critical' : ''}.` +
-    describeRiders(event, nameOf)
+    describeRiders(event, nameOf) +
+    describeRunes(event, nameOf)
   );
+};
+
+/**
+ * **What a rune you bought just did** (021 US4, T059).
+ *
+ * ### The thing that had no voice at all
+ *
+ * Twenty-nine of the thirty-three effects place a status, so the board grew a pip
+ * and the transcript said nothing — the effect arrived from nowhere, exactly the
+ * complaint 020 fixed for riders. The other four are worse: `Too Close` reflects
+ * damage and `Take It Back` *removes* something, so they leave no pip either.
+ * A player who spent 200 shards on a 25% effect had no way to learn it had ever
+ * fired, and a rune that works invisibly is indistinguishable from one that does
+ * not work.
+ *
+ * ### Named, and named the same way riders are
+ *
+ * `<effectId>:<instanceId>`, split exactly as `describeRiders` splits its own
+ * entries — one vocabulary rather than two. The **display name** comes from
+ * `RUNE_EFFECTS`, the same catalog the Forge described it from before the player
+ * bought it, so the two screens cannot end up calling one rune two things
+ * (Constitution XIII).
+ *
+ * ⚠️ **`?? []` reads an ABSENT field, not an empty one.** Every battle recorded
+ * before this shipped has no `runesFired` and cannot be given one — the same
+ * reasoning `overheal` carries a few lines up. An old replay says nothing here
+ * rather than claiming nothing fired.
+ */
+const describeRunes = (event: TurnEvent, nameOf: (instanceId: string) => string): string => {
+  const fired = event.outcome.runesFired ?? [];
+  if (fired.length === 0) return '';
+
+  const phrase = fired
+    .map((entry) => {
+      const [id, instanceId] = entry.split(':');
+      const name = (id && RUNE_EFFECTS[id]?.name) ?? id ?? 'a rune';
+      return instanceId ? `${name} on ${nameOf(instanceId)}` : name;
+    })
+    .join(', ');
+
+  return ` ${phrase}.`;
 };
 
 /**

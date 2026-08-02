@@ -211,11 +211,31 @@ asserted bit-identical to `e0.5.0` rather than assumed to be.
 **Goal**: the effect is described before purchase, visible on the board, and named
 in the log when it fires.
 
-- [ ] **T057** [US4] Render each offered effect's condition and consequence in the stage-4 builder in `apps/client/src/features/forge/`, sourced from `RUNE_EFFECTS` — **not retyped client text** (FR-022, Constitution XIII).
-- [ ] **T058** [P] [US4] Show an active persistent rune effect on the champion on the battle board in `apps/client/src/features/battle/`, reusing 020's status row rather than inventing a second indicator. **020's disclosure rule applies unchanged** (FR-025).
-- [ ] **T059** [P] [US4] Name the effect and what it did in the battle log in `apps/client/src/features/battle/BattleScreen.tsx`, extending the existing rider-description path.
-- [ ] **T060** [US4] Add Playwright coverage to `apps/client/e2e/` for the Forge at stage 4 and a battle board with an active rune effect. **Assert element counts before indexing** — never `.first()` on a selector that matches more than one card. *That exact hole let status pips sit on the text of all 12 rail cards past 1,034 unit tests and 3 e2e tests.*
-- [ ] **T061** [US4] **WIRING** — take a real screenshot of both surfaces and look at them. `fullPage` does **not** scroll. The screenshot is the instrument; no unit test has ever caught a layout defect on this project.
+- [X] **T057** [US4] Render each offered effect's condition and consequence in the stage-4 builder in `apps/client/src/features/forge/`, sourced from `RUNE_EFFECTS` — **not retyped client text** (FR-022, Constitution XIII).
+- [X] **T058** [P] [US4] Show an active persistent rune effect on the champion on the battle board in `apps/client/src/features/battle/`, reusing 020's status row rather than inventing a second indicator. **020's disclosure rule applies unchanged** (FR-025).
+- [X] **T059** [P] [US4] Name the effect and what it did in the battle log in `apps/client/src/features/battle/BattleScreen.tsx`, extending the existing rider-description path.
+- [X] **T060** [US4] Add Playwright coverage to `apps/client/e2e/` for the Forge at stage 4 and a battle board with an active rune effect. **Assert element counts before indexing** — never `.first()` on a selector that matches more than one card. *That exact hole let status pips sit on the text of all 12 rail cards past 1,034 unit tests and 3 e2e tests.*
+- [X] **T061** [US4] **WIRING** — take a real screenshot of both surfaces and look at them. `fullPage` does **not** scroll. The screenshot is the instrument; no unit test has ever caught a layout defect on this project.
+
+**Delivered, with what the work actually turned out to be:**
+
+| Task | As written | As built |
+|---|---|---|
+| T057 | render the condition and consequence in the stage-4 builder | **already done in US1.** `UtilityPicker` renders `effect.description` from `RUNE_EFFECTS`. What it had was *no test at any level* — no unit file, no e2e — so the task became coverage rather than code |
+| T058 | show an active persistent rune effect on the board | needed a **server** change first. Attribution existed for four effect kinds and not for `damage` or `cleanse`, so `Too Close` and `It Passes Through` were unattributable — `EffectSource` and `runeBehind` close that, and `runeIdOf`/`runeSource` live in `state.ts` because the writer and the reader cannot import values from each other |
+| T058 | *(the indicator itself)* | ⛔ **the screenshot rejected the first cut.** It carried the rune's name in `data-rune` and `title` — both invisible on a row that is deliberately not interactive. A player would have seen nothing. Now a **gold ring** on the pip |
+| T059 | extend the rider-description path | plus a new `runesFired` on `ResolvedPacket`, collected from the **effect lists** rather than by diffing the board: `Too Close` reflects damage and `Take It Back` removes something, so neither leaves a mark to diff. Merged across all three turn phases — `applyUpkeep`, `resolveOne` and Resolution — because a rune can fire in any of them |
+| — | *(not asked for)* | `applyResolution` became a wrapper over `resolveClocks`, which returns the board **and** its attribution. Twelve call sites want only the board; making them all unpack a tuple for one reader was churn, and copying the body is how a reader and a writer of one rule drift |
+
+**A live-looking defect the screenshot found and cleared.** The Forge read *"returns
+NaN% of what is placed"*. Not production — `forge.spec.ts`'s own mock omitted
+`refundRate`, which the API has always sent. Fixed in the fixture, because an
+artifact that shows a player `NaN` trains whoever reviews it to skip past one.
+
+**Checkpoint**: ✅ **021 is feature-complete.** sim **688** · content **94** ·
+client **1057** · Playwright **107** · `apps/api` battle suites green. Four
+mutations killed and reverted: the log clause, the pip attribute, `runeFirings`
+returning nothing, and the per-target draw split.
 
 ---
 

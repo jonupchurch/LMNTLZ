@@ -28,6 +28,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { PERMANENT } from '@lmntlz/sim/rules';
 import { StatusRow } from '../../src/features/battle/StatusRow.js';
+import { RUNE_EFFECTS, runeSource } from '@lmntlz/sim/rules';
 import { durationOf, statusGroups, type WireStatus } from '../../src/features/battle/statusPips.js';
 
 const status = (patch: Partial<WireStatus> & Pick<WireStatus, 'kind'>): WireStatus => ({
@@ -230,5 +231,95 @@ describe('the row', () => {
   it('says so plainly when there are none', () => {
     show([]);
     expect(screen.getByLabelText('Bramwen, no effects')).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The rune behind a pip (021 US4, T058)
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **A rune effect places an ordinary status, which is exactly the problem.**
+ *
+ * `Cornered`'s +20 Might draws the same pip as a +20 Might from any power's rider,
+ * so a player looking straight at their 200-shard purchase working could not tell
+ * it from something the enemy did to them. These assert the row can now say whose
+ * it is — and, with a control, that it does not say so when no rune is involved.
+ */
+describe('a pip names the rune behind it', () => {
+  /** The real id and the real display name, read from the catalog rather than typed. */
+  const CORNERED = RUNE_EFFECTS['cornered']!;
+
+  const fromRune = (id: string, patch: Partial<WireStatus> = {}): WireStatus =>
+    status({ kind: 'buff', stat: 'might', sourcePowerId: runeSource(id), ...patch });
+
+  it('🔴 names it, using the catalog’s own display name', () => {
+    const groups = statusGroups([fromRune('cornered')]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]!.runes).toEqual([CORNERED.name]);
+  });
+
+  /**
+   * 🔴 **The control.** An identical effect from a power must name nothing — or
+   * the row would label every buff in the game as a rune.
+   */
+  it('🔴 names nothing for an identical effect that came from a power', () => {
+    const groups = statusGroups([status({ kind: 'buff', stat: 'might', sourcePowerId: 'Cornered' })]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]!.runes, 'a power id that merely looks like one').toEqual([]);
+  });
+
+  /** A passive is the champion, not a purchase, so it is not named here either. */
+  it('names nothing for a passive', () => {
+    const groups = statusGroups([
+      status({ kind: 'buff', stat: 'might', sourcePowerId: 'passive:Room to Swing' }),
+    ]);
+
+    expect(groups[0]!.runes).toEqual([]);
+  });
+
+  /**
+   * Two runes under one icon are both named; the same rune twice is named once.
+   *
+   * **`Cornered` and `It Spreads` both grant `Might`**, which is what puts them on
+   * one icon — pips group by icon, and a Might buff and a Penetration buff are two
+   * different pips however they arrived. Picked from the catalog for that reason
+   * rather than for convenience.
+   */
+  it('names each distinct rune once', () => {
+    const groups = statusGroups([
+      fromRune('cornered'),
+      fromRune('cornered', { sourceInstanceId: 'b' }),
+      fromRune('it-spreads'),
+    ]);
+
+    expect(groups, 'both grant Might, so one icon').toHaveLength(1);
+    expect(groups[0]!.stacks).toBe(3);
+    expect(groups[0]!.runes).toEqual([CORNERED.name, RUNE_EFFECTS['it-spreads']!.name]);
+  });
+
+  /**
+   * 🔴 **It reaches the DOM**, which is the half a unit test on `statusGroups`
+   * cannot see. `StatusPip` takes no arbitrary attributes, so a `data-rune` passed
+   * by spread would have been dropped silently and every selector below would
+   * match nothing — a green suite over an indicator that does not exist.
+   */
+  it('🔴 renders the rune name onto the pip', () => {
+    show([fromRune('cornered')]);
+
+    const rendered = pips();
+    expect(rendered, 'count before indexing').toHaveLength(1);
+    expect(rendered[0]!.getAttribute('data-rune')).toBe(CORNERED.name);
+    expect(rendered[0]!.getAttribute('title')).toContain(CORNERED.name);
+  });
+
+  it('🔴 leaves the attribute off entirely when no rune is involved', () => {
+    show([status({ kind: 'burn' })]);
+
+    const rendered = pips();
+    expect(rendered).toHaveLength(1);
+    expect(rendered[0]!.hasAttribute('data-rune')).toBe(false);
   });
 });

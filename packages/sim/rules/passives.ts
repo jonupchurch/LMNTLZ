@@ -45,6 +45,7 @@ import {
   heroStateOf,
   maxHp,
   mightOf,
+  runeIdOf,
   type BattleState,
   type HeroState,
   type StatusInstance,
@@ -336,6 +337,21 @@ export interface StrikeContext {
 }
 
 /**
+ * **Who is doing this, for the two effect kinds that leave no trace saying so.**
+ *
+ * Every other kind carries a `StatusInstance`, and a `StatusInstance` names its
+ * source: `passive:<name>` or `rune:<id>`. `damage` and `cleanse` place nothing —
+ * a reflected packet and a stripped buff are events, not effects — so by the time
+ * the fold has run there is no record of what caused them.
+ *
+ * That is why the battle log could not say *"It Passes Through sheds the burn"*
+ * while it could say *"the burn takes hold"*: the information had already been
+ * discarded one function earlier. It is the same namespace the status layer uses,
+ * so one reader answers for every kind.
+ */
+export type EffectSource = string;
+
+/**
  * Something a passive does that is not a number: a status to place, or hit points
  * to restore.
  *
@@ -382,7 +398,12 @@ export type PassiveEffect =
    * and why `fold` runs it through `lethalGuard`, the same doorway a killing blow
    * and a burn tick already use.
    */
-  | { readonly kind: 'damage'; readonly bearerInstanceId: string; readonly amount: number }
+  | {
+      readonly kind: 'damage';
+      readonly bearerInstanceId: string;
+      readonly amount: number;
+      readonly source?: EffectSource;
+    }
   /**
    * **Strip every effect of one polarity**, which is what a cleanse is.
    *
@@ -396,6 +417,7 @@ export type PassiveEffect =
       readonly kind: 'cleanse';
       readonly bearerInstanceId: string;
       readonly polarity: 'negative' | 'positive';
+      readonly source?: EffectSource;
       /**
        * At most this many, **most recently applied first**; omitted means all of
        * them (021 US3). `Take It Back` strips one buff, not the enemy's whole
@@ -1859,6 +1881,68 @@ export function actsAgainAfter(
     if (paid !== null) return paid;
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Attribution — which rune did this (021 US4)
+// ---------------------------------------------------------------------------
+
+/**
+ * The rune effect id behind one effect, or `null` if a rune did not cause it.
+ *
+ * **One reader across every kind**, which is the whole reason `damage` and
+ * `cleanse` gained a `source`. The alternative was a caller that checked
+ * `status.sourcePowerId` for four kinds and gave up on two, and *giving up on two*
+ * is invisible: the log would simply never mention `Too Close` or
+ * `It Passes Through` and read as though they had not fired.
+ *
+ * A passive returns `null` here rather than its own name. Passives are the
+ * champion — every copy of Bramwen has them, and a player did not choose them —
+ * so naming them in the *rune* channel would tell a player their 200 shards
+ * bought something a stranger's identical champion also has.
+ */
+export function runeBehind(effect: PassiveEffect): string | null {
+  /**
+   * **Every kind is named, and there is no `default`.** A future effect kind must
+   * be given an answer here rather than silently reporting *"no rune did this"* —
+   * which is the failure mode that made this function necessary in the first place.
+   */
+  switch (effect.kind) {
+    case 'damage':
+    case 'cleanse':
+      return runeIdOf(effect.source);
+    case 'heal':
+      return null;
+    case 'clear':
+      return runeIdOf(effect.sourcePowerId);
+    case 'status':
+    case 'accumulate':
+      return runeIdOf(effect.status.sourcePowerId);
+  }
+}
+
+/**
+ * Every rune firing in a batch of effects, as `<effectId>:<instanceId>`.
+ *
+ * **The same shape `ridersLanded` uses**, so the client's existing splitter reads
+ * both and the battle log gained one branch rather than a second vocabulary.
+ * `instanceId` is who it happened *to*, which is the only half a reader can name
+ * — a champion's own runes are not disclosed, and *"something of yours fired"* is
+ * exactly what a player needs and all they are owed about an opponent.
+ *
+ * Deduplicated: `The Lamp Lifted` emits one cleanse per surviving ally, and five
+ * identical log lines for one firing is noise rather than detail.
+ */
+export function runeFirings(effects: readonly PassiveEffect[]): readonly string[] {
+  const seen = new Set<string>();
+
+  for (const effect of effects) {
+    const id = runeBehind(effect);
+    if (id === null) continue;
+    seen.add(`${id}:${effect.kind === 'heal' ? effect.instanceId : effect.bearerInstanceId}`);
+  }
+
+  return [...seen];
 }
 
 // ---------------------------------------------------------------------------

@@ -45,6 +45,7 @@ import {
   onMissed,
   onStrike,
   onStruck,
+  runeFirings,
   strikeChancesOf,
   struckChancesOf,
   turnStartChancesOf,
@@ -93,6 +94,21 @@ export interface ResolvedPacket {
   readonly overheal: number;
   readonly ridersLanded: readonly string[];
   readonly ridersResisted: readonly string[];
+  /**
+   * **Which rune effects did something this action** — `<effectId>:<instanceId>`,
+   * the same `kind:instanceId` shape `ridersLanded` uses (021 US4).
+   *
+   * Stage 4 of a rune has never had a voice. A `Both Ways` bleed appeared on the
+   * attacker from nowhere and `Too Close` took health off with no line at all, so
+   * a player who spent 200 shards on a 25% effect had no way to learn it had ever
+   * fired. The pips on the board say an effect *exists*; this says **a rune you
+   * bought just did something**, which is the different question.
+   *
+   * Optional on the wire, because a replay recorded before this field existed
+   * cannot be given one and must not be shown an invented empty list — the same
+   * reasoning `overheal` carries.
+   */
+  readonly runesFired?: readonly string[];
   readonly deaths: readonly string[];
   readonly conclusion: Conclusion | null;
 }
@@ -925,7 +941,8 @@ export function resolveOne(
    * from either without either having to declare it.
    */
   const beforeTriggers = next;
-  next = applyPassiveEffects(next, [...strikeEffects, ...chanceEffects], maxHp);
+  const folded = [...strikeEffects, ...chanceEffects];
+  next = applyPassiveEffects(next, folded, maxHp);
 
   /**
    * **A trigger can kill, and the death has to be a death** (021 US2).
@@ -952,7 +969,8 @@ export function resolveOne(
    * `The Veil Closes` feeds on it. Folded after the on-hit triggers so a champion
    * that killed and was healed in the same action reports one board, not two.
    */
-  next = applyPassiveEffects(next, fallen.flatMap((f) => onDeath(next, f)), maxHp);
+  const deathEffects = fallen.flatMap((f) => onDeath(next, f));
+  next = applyPassiveEffects(next, deathEffects, maxHp);
 
   const ridersLanded = landed;
   const ridersResisted = resisted;
@@ -967,6 +985,16 @@ export function resolveOne(
       overheal: 0,
       ridersLanded,
       ridersResisted,
+      /**
+       * **Collected from the effect lists, not from the board** (021 US4).
+       *
+       * Diffing before and after would miss every effect whose consequence is not
+       * a status — `Too Close` reflects damage, `Take It Back` removes something —
+       * and those are precisely the ones a player cannot otherwise tell fired.
+       * `runeFirings` reads the effects themselves, so the answer does not depend
+       * on the effect leaving a mark.
+       */
+      runesFired: runeFirings([...folded, ...deathEffects]),
       deaths,
       conclusion: battleEnded(next),
     },

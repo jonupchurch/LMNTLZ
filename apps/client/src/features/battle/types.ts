@@ -43,6 +43,16 @@ export interface TurnEvent {
     readonly overheal?: number;
     readonly ridersLanded: readonly string[];
     readonly ridersResisted: readonly string[];
+    /**
+     * Rune effects that did something this turn, `<effectId>:<instanceId>`
+     * (021 US4).
+     *
+     * **Optional for exactly the reason `overheal` is**, one field up: a battle
+     * recorded before this existed has no such list and cannot be given one, so a
+     * required array would have the type assert *"nothing fired"* about every
+     * replay in the archive. Absent means unknown, not empty.
+     */
+    readonly runesFired?: readonly string[];
     readonly deaths: readonly string[];
   };
 }

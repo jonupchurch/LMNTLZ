@@ -51,6 +51,7 @@ import {
   onAct,
   onDeath,
   onUpkeep,
+  runeFirings,
   tickDurations,
   upkeepDamage,
   type BattleState,
@@ -175,11 +176,11 @@ export function nextActor(
  * Order matters: the tick runs first and the new cooldown is written after, or
  * a power with a 3-turn cooldown would come back after 2.
  */
-export function applyResolution(
+export function resolveClocks(
   state: BattleState,
   instanceId: string,
   firedPowerId: string | null,
-): BattleState {
+): { readonly state: BattleState; readonly runesFired: readonly string[] } {
   const hero = heroStateOf(state, instanceId);
   const ticked = { ...cooldownsAfterResolution(state, instanceId) };
 
@@ -250,11 +251,38 @@ export function applyResolution(
    * A hero that fell during its own turn gets nothing: `applyPassiveEffects`
    * refuses to fold onto a hero at 0 HP.
    */
-  return applyPassiveEffects(
-    resolved,
-    onAct(resolved, heroStateOf(resolved, instanceId)),
-    maxHp,
-  );
+  const effects = onAct(resolved, heroStateOf(resolved, instanceId));
+
+  return {
+    state: applyPassiveEffects(resolved, effects, maxHp),
+    /**
+     * **Attributed here because here is the only place that has the board these
+     * effects read** (021 US4).
+     *
+     * `It Passes Through` sheds every debuff at the end of its bearer's turn, and
+     * a player watching pips silently vanish has no way to know their rune did it
+     * — which is precisely the question this story exists to answer. `onAct` runs
+     * on the *post*-tick board and latches as it goes, so re-deriving these from
+     * the caller's state would answer about a different board and return nothing.
+     */
+    runesFired: runeFirings(effects),
+  };
+}
+
+/**
+ * Resolution, for the callers that only want the board.
+ *
+ * **A wrapper rather than a second implementation.** Twelve call sites want a
+ * `BattleState` and exactly one wants the attribution too; making all twelve
+ * unpack a tuple for one reader's benefit is churn, and copying the body is how a
+ * reader and a writer of one rule begin to disagree.
+ */
+export function applyResolution(
+  state: BattleState,
+  instanceId: string,
+  firedPowerId: string | null,
+): BattleState {
+  return resolveClocks(state, instanceId, firedPowerId).state;
 }
 
 /**
@@ -297,7 +325,12 @@ function clampToPool(hero: HeroState): HeroState {
 export function applyUpkeep(
   state: BattleState,
   instanceId: string,
-): { readonly state: BattleState; readonly damage: number; readonly died: boolean } {
+): {
+  readonly state: BattleState;
+  readonly damage: number;
+  readonly died: boolean;
+  readonly runesFired: readonly string[];
+} {
   /**
    * **The passive tick runs first, and it runs whether or not anything is
    * burning** (020 US3).
@@ -309,11 +342,11 @@ export function applyUpkeep(
    * would make Bramwen's build depend on whether she happened to be poisoned.
    */
   const beforeGrowth = state;
-  let grown = applyPassiveEffects(
-    state,
-    onUpkeep(state, heroStateOf(state, instanceId)),
-    maxHp,
-  );
+  const upkeepEffects = onUpkeep(state, heroStateOf(state, instanceId));
+  let grown = applyPassiveEffects(state, upkeepEffects, maxHp);
+
+  /** `The Draft` re-ticks from here, so this is where it can be named (021 US4). */
+  const runesFired = runeFirings(upkeepEffects);
 
   /**
    * **An Upkeep effect can now kill somebody else** (021 US2).
@@ -335,7 +368,7 @@ export function applyUpkeep(
   const damage = upkeepDamage(hero);
 
   if (damage <= 0 && hero.statuses.length === 0) {
-    return { state: grown, damage: 0, died: false };
+    return { state: grown, damage: 0, died: false, runesFired };
   }
 
   let hp = Math.max(0, hero.hp - damage);
@@ -376,6 +409,7 @@ export function applyUpkeep(
     state: died ? applyPassiveEffects(ticked, onDeath(ticked, hero), maxHp) : ticked,
     damage,
     died,
+    runesFired,
   };
 }
 
@@ -462,18 +496,23 @@ export function takeTurn(
   const hero = heroStateOf(afterUpkeepState, intent.actorInstanceId);
 
   if (isIncapacitated(hero)) {
+    const stunned = resolveClocks(afterUpkeepState, intent.actorInstanceId, null);
     return {
-      state: applyResolution(afterUpkeepState, intent.actorInstanceId, null),
-      outcome: passOutcome(afterUpkeepState),
+      state: stunned.state,
+      outcome: {
+        ...passOutcome(afterUpkeepState),
+        runesFired: [...upkeep.runesFired, ...stunned.runesFired],
+      },
       drawsConsumed: 0n,
     };
   }
 
   const resolved = resolveOne(seed, afterUpkeepState, intent, drawIndex);
+  const clocks = resolveClocks(resolved.state, intent.actorInstanceId, intent.powerId);
 
   return {
     state: grantExtraTurn(
-      applyResolution(resolved.state, intent.actorInstanceId, intent.powerId),
+      clocks.state,
       intent.actorInstanceId,
       resolved.packet.deaths.length > 0,
     ),
@@ -482,7 +521,24 @@ export function takeTurn(
      * A burn that took 14 off a champion is something the battle log has to be
      * able to say, or a player watches their health fall for no stated reason.
      */
-    outcome: { ...resolved.packet, damage: resolved.packet.damage + upkeep.damage },
+    outcome: {
+      ...resolved.packet,
+      damage: resolved.packet.damage + upkeep.damage,
+      /**
+       * **All three phases of the turn, in the order they happened** (021 US4).
+       *
+       * A turn is Upkeep, then the action, then Resolution, and a rune can fire
+       * in any of them — `The Draft` re-ticks at Upkeep, `Both Ways` bleeds
+       * mid-action, `It Passes Through` sheds at the end. Reporting only the
+       * middle one would leave two effects that a player paid for looking inert
+       * on exactly the turns they worked.
+       */
+      runesFired: [
+        ...upkeep.runesFired,
+        ...(resolved.packet.runesFired ?? []),
+        ...clocks.runesFired,
+      ],
+    },
     drawsConsumed: resolved.drawsConsumed,
   };
 }
