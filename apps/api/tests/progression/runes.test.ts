@@ -23,7 +23,7 @@ import {
   slotAccepts,
 } from '../../src/progression/runes.js';
 import { append, balance } from '../../src/progression/ledger.js';
-import { dropAccount, makeAccount } from './helpers.js';
+import { dropAccount, makeAccount, utilityFor } from './helpers.js';
 
 const HERO = 'h01';
 let accountId: string;
@@ -187,7 +187,7 @@ describe('planning is free and committing is charged', () => {
     await placeStage(accountId, HERO, 'common', { luck: 20 });
     await placeStage(accountId, HERO, 'common', { luck: 10 });
     await placeStage(accountId, HERO, 'common', { luck: 5 });
-    await placeStage(accountId, HERO, 'common', {});
+    await placeStage(accountId, HERO, 'common', {}, utilityFor(HERO, 'common'));
 
     await fund(1_000);
     await expect(placeStage(accountId, HERO, 'common', {})).rejects.toThrow(/rebuild/i);
@@ -208,7 +208,7 @@ describe('placed, never spent', () => {
     await placeStage(accountId, HERO, 'common', { luck: 20 });
     await placeStage(accountId, HERO, 'common', { luck: 10 });
     await placeStage(accountId, HERO, 'common', { luck: 5 });
-    await placeStage(accountId, HERO, 'common', {});
+    await placeStage(accountId, HERO, 'common', {}, utilityFor(HERO, 'common'));
 
     // 650 shards spent; 35 points placed. Stage 4 bought utility.
     expect(await placedStatPoints(accountId)).toBe(35);

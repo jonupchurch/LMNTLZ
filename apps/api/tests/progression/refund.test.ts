@@ -33,7 +33,7 @@ import {
 import { append, balance, lifetimeEarned } from '../../src/progression/ledger.js';
 import { BALANCE_CAP, REFUND_RATE } from '../../src/progression/config.js';
 import { installRuneSource } from '../../src/progression/install.js';
-import { dropAccount, makeAccount } from './helpers.js';
+import { dropAccount, makeAccount, utilityFor } from './helpers.js';
 
 const HERO = 'h01';
 const OTHER = 'h02';
@@ -63,7 +63,7 @@ async function completeRune(hero = HERO, slot: 'primary' | 'secondary' | 'common
   await placeStage(accountId, hero, slot, { luck: 20 });
   await placeStage(accountId, hero, slot, { luck: 10 });
   await placeStage(accountId, hero, slot, { luck: 5 });
-  await placeStage(accountId, hero, slot, {});
+  await placeStage(accountId, hero, slot, {}, utilityFor(hero, slot));
 }
 
 const runeRows = (hero: string) =>
@@ -173,7 +173,7 @@ describe('the refund itself', () => {
   it('pays for what is placed, never for what was already destroyed', async () => {
     await completeRune();
     await fund(FULL_RUNE_COST);
-    await rebuildRune(accountId, HERO, 'common', { luck: 20, might: 15 }, true);
+    await rebuildRune(accountId, HERO, 'common', { luck: 20, might: 15 }, true, utilityFor(HERO, 'common'));
 
     /* Two full runes have been bought; one rune is standing. */
     const quote = await quoteRefund(accountId, HERO);

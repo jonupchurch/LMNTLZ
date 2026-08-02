@@ -27,7 +27,7 @@
 
 import { and, eq } from 'drizzle-orm';
 import { getHero, STAT_CAP, STAT_KEYS, type StatKey } from '@lmntlz/content';
-import { poolOf } from '@lmntlz/sim/rules';
+import { RUNE_EFFECTS, effectsInPool, poolOf } from '@lmntlz/sim/rules';
 import { db } from '../db/client.js';
 import {
   MAX_STAGE,
@@ -236,11 +236,68 @@ export interface PlaceResult {
  * close — *"no window between deploying a month of shards and the league noticing"*.
  * Between the two statements a player would hold the runes and the old league.
  */
+/**
+ * Validate the utility effect a stage is being bought with (021).
+ *
+ * **Server-side and derived, never trusted and never stored.** The Forge offers a
+ * pool by reading the engine's catalog; this refuses anything outside it by
+ * reading the *same* catalog through {@link poolOf}. A client that sends any of
+ * the thirty-three gets the ones outside its pool refused by name (Constitution
+ * XII), and the pool itself is re-derived from the champion's two authored fields
+ * rather than read from the row (XV).
+ *
+ * Returns the id to store, or `null` for a stage that stores none.
+ */
+function utilityForStage(
+  heroId: string,
+  slot: RuneSlot,
+  stage: number,
+  utility: string | undefined,
+): string | null {
+  if (stage < MAX_STAGE) {
+    /* Naming an effect on a stat stage is a client bug, not a no-op to swallow:
+       it means the caller believes it is buying something it is not. */
+    if (utility !== undefined) {
+      throw new RuneError(
+        'slot-mismatch',
+        `Stage ${stage} places stat points, not a utility effect; none may be chosen yet.`,
+      );
+    }
+    return null;
+  }
+
+  if (utility === undefined) {
+    throw new RuneError(
+      'slot-mismatch',
+      'Stage 4 places a utility effect and none was chosen.',
+    );
+  }
+
+  const found = RUNE_EFFECTS[utility];
+  if (!found) {
+    throw new RuneError('slot-mismatch', `No such utility effect: ${utility}.`);
+  }
+
+  const pool = poolOf(heroId, slot);
+  if (found.pool !== pool) {
+    const offered = effectsInPool(pool)
+      .map((e) => e.id)
+      .join(', ');
+    throw new RuneError(
+      'slot-mismatch',
+      `${found.name} belongs to the ${found.pool} pool; the ${slot} slot on this champion offers ${pool} — ${offered || 'nothing yet'}.`,
+    );
+  }
+
+  return found.id;
+}
+
 export async function placeStage(
   accountId: string,
   heroId: string,
   slot: RuneSlot,
   allocations: RuneAllocations,
+  utility?: string,
 ): Promise<PlaceResult> {
   if (!RUNE_SLOTS.includes(slot)) {
     throw new RuneError('slot-mismatch', `No such rune slot: ${slot}.`);
@@ -285,6 +342,9 @@ export async function placeStage(
     }
   }
 
+  /* Validated before the charge, so a refused effect never debits a balance. */
+  const utilityEffect = utilityForStage(heroId, slot, nextStage, utility);
+
   return db().transaction(async (tx) => {
     await append(accountId, -cost, 'rune-stage', null, tx);
 
@@ -294,6 +354,14 @@ export async function placeStage(
         .set({
           stage: nextStage,
           allocations: merged(existing.allocations, allocations),
+          /**
+           * **The line this whole feature exists for.** Stage 4 is the most
+           * expensive of the four and grants no stat points by design — the
+           * effect is what it buys — and this column was written `null` on every
+           * path since 010. `utilityForStage` returns `null` below stage 4, so
+           * the earlier stages are unchanged.
+           */
+          utilityEffect,
           updatedAt: new Date(),
         })
         .where(eq(runes.id, existing.id));
@@ -332,6 +400,14 @@ export async function rebuildRune(
   slot: RuneSlot,
   allocations: RuneAllocations,
   confirmed: boolean,
+  /**
+   * **Required, unlike on `placeStage`.** A rebuild lands directly on stage 4 in
+   * one transaction — *"rebuilding to the same stage should be one transaction,
+   * not four"* — so it cannot lean on a later advance to fill the effect in. That
+   * is exactly how this function came to hardcode `utilityEffect: null`, handing
+   * back a "complete" rune with the 200-shard stage empty.
+   */
+  utility?: string,
 ): Promise<PlaceResult> {
   const existing = await runeAt(accountId, heroId, slot);
   if (!existing) {
@@ -376,6 +452,9 @@ export async function rebuildRune(
     );
   }
 
+  /* Validated before the charge, so a refused effect never debits 650 shards. */
+  const utilityEffect = utilityForStage(heroId, slot, MAX_STAGE, utility);
+
   return db().transaction(async (tx) => {
     await append(accountId, -FULL_RUNE_COST, 'rune-rebuild', null, tx);
 
@@ -386,7 +465,7 @@ export async function rebuildRune(
       slot,
       stage: MAX_STAGE,
       allocations,
-      utilityEffect: null,
+      utilityEffect,
     });
 
     const gearScore = await recordPlacement(accountId, tx);

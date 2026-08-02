@@ -8,6 +8,7 @@
  * at the wrong file.
  */
 
+import { effectsInPool, poolOf } from '@lmntlz/sim/rules';
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '../../src/db/client.js';
 import { accounts } from '../../src/db/schema/accounts.js';
@@ -70,3 +71,29 @@ export const dropAccount = (id: string): Promise<void> =>
     .delete(accounts)
     .where(eq(accounts.id, id))
     .then(() => undefined);
+
+/**
+ * A utility effect the given slot legitimately offers on the given champion (021).
+ *
+ * **Stage 4 can no longer be reached without one**, which is the whole point of
+ * the feature — a rune that completes with an empty 200-shard stage is the defect.
+ * Every fixture that walks a rune to completion needs an effect, and picking it
+ * from the engine's catalog rather than naming an id keeps the fixtures honest as
+ * the catalog fills across US2 and US3.
+ */
+export function utilityFor(heroId: string, slot: 'primary' | 'secondary' | 'common'): string {
+  const first = effectsInPool(poolOf(heroId, slot))[0];
+  if (!first) throw new Error(`no implemented rune effect in the ${slot} pool for ${heroId}`);
+  return first.id;
+}
+
+/** A different effect from the same pool, for asserting a replacement actually replaced. */
+export function otherUtilityFor(
+  heroId: string,
+  slot: 'primary' | 'secondary' | 'common',
+  notThis: string,
+): string {
+  const other = effectsInPool(poolOf(heroId, slot)).find((e) => e.id !== notThis);
+  if (!other) throw new Error(`the ${slot} pool for ${heroId} holds only ${notThis}`);
+  return other.id;
+}

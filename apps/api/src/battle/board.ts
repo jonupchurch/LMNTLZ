@@ -32,7 +32,13 @@
  */
 
 import { getHero, type StatKey } from '@lmntlz/content';
-import { AXIS_ROW_OF, HP_PER_TOUGHNESS, ROW_CAPACITY, cappedStat } from '@lmntlz/sim/rules';
+import {
+  AXIS_ROW_OF,
+  HP_PER_TOUGHNESS,
+  ROW_CAPACITY,
+  RUNE_EFFECTS,
+  cappedStat,
+} from '@lmntlz/sim/rules';
 import type { BattleState, HeroState, Side, SquadRow } from '@lmntlz/sim/rules';
 
 /**
@@ -118,6 +124,28 @@ export class MalformedSquadError extends Error {
 
 export const instanceIdOf = (side: Side, seat: SnapshotSeat): string =>
   `${side === 'attacker' ? 'a' : 'd'}-${seat.row}-${seat.index}`;
+
+/**
+ * The rune utility effects a seat carries, checked against the catalog once (021).
+ *
+ * **Loud, not lenient.** Dropping an unknown id would give the player a battle
+ * that silently ignores something they paid 200 shards for — the exact defect this
+ * feature exists to close, reintroduced one layer down. Effect ids are stable by
+ * rule, so an unknown one is corruption rather than an ordinary state.
+ */
+function knownEffects(side: Side, seat: SnapshotSeat): readonly string[] {
+  const ids = seat.runes?.utility ?? [];
+  const unknown = ids.filter((id) => !(id in RUNE_EFFECTS));
+
+  if (unknown.length > 0) {
+    throw new MalformedSquadError(
+      side,
+      `${seat.heroId} carries unknown rune utility effect(s): ${unknown.join(', ')}`,
+    );
+  }
+
+  return ids;
+}
 
 /**
  * **Validated here even though feature 006 validated it on the way in.**
@@ -215,11 +243,15 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
        * re-derives those battles exactly as they were played rather than
        * retroactively arming them (Constitution XVI).
        *
-       * An id the catalog does not know **throws** rather than being skipped —
-       * see `runeHooksFor`. A player who paid for an effect and silently received
-       * an inert battle is the failure this feature exists to end.
+       * An id the catalog does not know **throws here, at construction**, rather
+       * than deep in a hook read. `runeHooksFor` refuses one too, but it is called
+       * on every hook of every champion on every event — a throw there would
+       * surface mid-resolution, after the battle row already exists, with the
+       * failure a long way from its cause. The snapshot parser deliberately
+       * carries these ids opaquely because it reads frozen history; this is the
+       * boundary where they stop being opaque.
        */
-      runeEffects: seat.runes?.utility ?? [],
+      runeEffects: knownEffects(side, seat),
       hasActed: false,
     };
   });

@@ -158,7 +158,12 @@ progressionRoutes.post('/heroes/:heroId/runes/:slot', async (c) => {
     body = {};
   }
 
-  const payload = (body ?? {}) as { allocations?: unknown; confirmed?: unknown; rebuild?: unknown };
+  const payload = (body ?? {}) as {
+    allocations?: unknown;
+    confirmed?: unknown;
+    rebuild?: unknown;
+    utility?: unknown;
+  };
   const allocations = parseAllocations(payload.allocations);
   if (allocations === null) {
     return c.json(
@@ -167,11 +172,29 @@ progressionRoutes.post('/heroes/:heroId/runes/:slot', async (c) => {
     );
   }
 
+  /**
+   * **Shape here, membership in `runes.ts` (021).** This only asserts the field is
+   * a string if present; *which* effects this champion's slot may take is a rule,
+   * and rules are derived server-side from the catalog rather than checked at the
+   * edge — see `utilityForStage`.
+   */
+  if (payload.utility !== undefined && typeof payload.utility !== 'string') {
+    return c.json(apiError('unprocessable', 'utility must be a utility effect id.'), 422);
+  }
+  const utility = payload.utility as string | undefined;
+
   try {
     const result =
       payload.rebuild === true
-        ? await rebuildRune(accountId, heroId, slot, allocations, payload.confirmed === true)
-        : await placeStage(accountId, heroId, slot, allocations);
+        ? await rebuildRune(
+            accountId,
+            heroId,
+            slot,
+            allocations,
+            payload.confirmed === true,
+            utility,
+          )
+        : await placeStage(accountId, heroId, slot, allocations, utility);
 
     return c.json(result, 200);
   } catch (err) {

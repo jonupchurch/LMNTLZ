@@ -22,7 +22,7 @@ import { placeStage, rebuildRune } from '../../src/progression/runes.js';
 import { append, balance } from '../../src/progression/ledger.js';
 import { setRuneSource, noRuneSource } from '../../src/matchmaking/gearScore.js';
 import { installRuneSource } from '../../src/progression/install.js';
-import { dropAccount, makeAccount } from './helpers.js';
+import { dropAccount, makeAccount, otherUtilityFor, utilityFor } from './helpers.js';
 
 const HERO = 'h01';
 let accountId: string;
@@ -51,7 +51,7 @@ async function completeRune(): Promise<void> {
   await placeStage(accountId, HERO, 'common', { luck: 20 });
   await placeStage(accountId, HERO, 'common', { luck: 10 });
   await placeStage(accountId, HERO, 'common', { luck: 5 });
-  await placeStage(accountId, HERO, 'common', {});
+  await placeStage(accountId, HERO, 'common', {}, utilityFor(HERO, 'common'));
 }
 
 describe('the warning, which is the part that has to be right', () => {
@@ -102,7 +102,7 @@ describe('the rebuild itself', () => {
     await completeRune();
     await fund(FULL_RUNE_COST);
 
-    await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true);
+    await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true, utilityFor(HERO, 'common'));
 
     const rows = await db()
       .select()
@@ -114,16 +114,27 @@ describe('the rebuild itself', () => {
     expect(rebuilds[0]!.delta).toBe(-FULL_RUNE_COST);
   });
 
+  /**
+   * **The utility assertion changed shape in 021 and had to.** It read
+   * `toBeNull()`, which was true only because a rebuild could not carry an effect
+   * at all — the very defect 021 fixes. A rebuild now lands on stage 4 complete,
+   * so *"the old rune is gone"* has to be said as **the new effect is there and
+   * the old one is not**, which needs the two to differ.
+   */
   it('destroys the old rune — all four stages — and leaves exactly one', async () => {
     await completeRune();
     await fund(FULL_RUNE_COST);
 
-    await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true);
+    const old = utilityFor(HERO, 'common');
+    const replacement = otherUtilityFor(HERO, 'common', old);
+
+    await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true, replacement);
 
     const rows = await db().select().from(runes).where(eq(runes.accountId, accountId));
     expect(rows, 'the old rune was not destroyed').toHaveLength(1);
     expect(rows[0]!.allocations, 'the old allocation survived').toEqual({ might: 30, luck: 5 });
-    expect(rows[0]!.utilityEffect, 'the old utility effect survived').toBeNull();
+    expect(rows[0]!.utilityEffect, 'the rebuild did not place the chosen effect').toBe(replacement);
+    expect(rows[0]!.utilityEffect, 'the old utility effect survived').not.toBe(old);
   });
 
   it('provides no refund path', async () => {
@@ -131,7 +142,7 @@ describe('the rebuild itself', () => {
     await fund(FULL_RUNE_COST);
     const before = await balance(accountId);
 
-    await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true);
+    await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true, utilityFor(HERO, 'common'));
 
     // Commitment is the mechanic. Nothing comes back for the destroyed rune.
     expect(await balance(accountId)).toBe(before - FULL_RUNE_COST);
@@ -142,14 +153,14 @@ describe('the rebuild itself', () => {
     await fund(FULL_RUNE_COST - 1);
 
     await expect(
-      rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true),
+      rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true, utilityFor(HERO, 'common')),
     ).rejects.toMatchObject({ code: 'insufficient-shards' });
   });
 
   it('refuses a rebuild of an empty slot', async () => {
     await fund(FULL_RUNE_COST);
     await expect(
-      rebuildRune(accountId, HERO, 'secondary', { might: 30, luck: 5 }, true),
+      rebuildRune(accountId, HERO, 'secondary', { might: 30, luck: 5 }, true, utilityFor(HERO, 'secondary')),
     ).rejects.toMatchObject({ code: 'slot-mismatch' });
   });
 });
@@ -159,7 +170,7 @@ describe('the gear score moves inside the transaction', () => {
     await completeRune();
     await fund(FULL_RUNE_COST);
 
-    const result = await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true);
+    const result = await rebuildRune(accountId, HERO, 'common', { might: 30, luck: 5 }, true, utilityFor(HERO, 'common'));
 
     // A rebuild always places the full 35, so the SCORE is unchanged — which is
     // exactly why "not necessarily an upgrade" is about the allocation and the
