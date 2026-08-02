@@ -241,6 +241,7 @@ again"*, not *"did the RNG change"*.
 | `e0.2.0` | the pacing pass — every HP total in the game |
 | `e0.3.0` | the status layer — rider contests spend draws that did not exist |
 | `e0.4.0` / `e0.5.0` | the passive layer — **no draw moves at all**, but the same draws now produce different outcomes, and `Still Burning` changes whether a champion is standing |
+| `e0.6.0` | the four probabilistic rune effects — draws move again, and for the first time **the number of them depends on what a player bought** rather than on what a power does. A squad fielding none of the four spends the identical indices it always did |
 
 **Stored replays are never at risk and it is worth being exact about why.** A
 replay is a stored event log and is played back verbatim, never re-simulated

@@ -45,6 +45,9 @@ import {
   onMissed,
   onStrike,
   onStruck,
+  strikeChancesOf,
+  struckChancesOf,
+  turnStartChancesOf,
   applyPassiveEffects,
   potencyForTier,
   SURVIVAL_HP,
@@ -58,8 +61,10 @@ import {
   type BattleState,
   type Conclusion,
   type HeroState,
+  type ChanceHook,
   type PassiveEffect,
   type StatusInstance,
+  type StrikeContext,
   type Tier,
 } from '../rules/index.js';
 import { getHero, powerEffectiveness, type Power, type Rider } from '@lmntlz/content';
@@ -303,6 +308,167 @@ function enactRiders(
   return { state: next, landed, resisted, drawsUsed: used };
 }
 
+interface ChanceOutcome {
+  readonly effects: readonly PassiveEffect[];
+  readonly drawsUsed: bigint;
+}
+
+/** The context a strike-shaped hook is handed, built once and the same way everywhere. */
+function strikeContextFor(
+  state: BattleState,
+  attacker: HeroState,
+  defender: HeroState,
+  power: Power,
+): StrikeContext {
+  const pool = maxHp(defender);
+  return {
+    state,
+    attacker,
+    defender,
+    power,
+    defenderHpFraction: pool > 0 ? defender.hp / pool : 0,
+  };
+}
+
+/**
+ * Stage 5a of the draw order: **the attacker's rules that roll** (021 US3).
+ *
+ * Two rules, and both are borrowed rather than invented:
+ *
+ * - **One draw per action, not per struck target** — the rule crit already plays
+ *   by. `Take It Back` on a row power is one roll whose consequence reaches
+ *   everybody the payload reached, so a wide power is not three chances at a
+ *   rune that reads as *"25% per attack"*.
+ * - **The contest, where there is one, is per target** — the rule `enactRiders`
+ *   already plays by. `Knocked Loose`'s stun is a rider in everything but its
+ *   name, and every defender resists for itself.
+ *
+ * **Nothing is drawn when nothing was struck.** A hero whose only target fell to
+ * the payload consumes no chance draw, the same way a friendly power consumes no
+ * rider contest — `resolveOne`'s "lazy is not an order" note is the whole doctrine.
+ */
+function enactStrikeChances(
+  seed: Seed,
+  state: BattleState,
+  actor: HeroState,
+  power: Power,
+  struck: readonly string[],
+  drawIndex: bigint,
+): ChanceOutcome {
+  const chances = strikeChancesOf(actor);
+  if (chances.length === 0 || struck.length === 0) return { effects: [], drawsUsed: 0n };
+
+  const effects: PassiveEffect[] = [];
+  let used = 0n;
+
+  for (const chance of chances) {
+    const fired = drawBelow(seed, drawIndex + used, chance.chance);
+    used += 1n;
+    if (!fired) continue;
+
+    for (const targetId of struck) {
+      const defender = heroStateOf(state, targetId);
+      if (!isStanding(defender)) continue;
+
+      if (chance.contestedAt !== undefined) {
+        const sticks = drawBelow(
+          seed,
+          drawIndex + used,
+          riderLandProbability(state, actor.instanceId, targetId, chance.contestedAt),
+        );
+        used += 1n;
+        if (!sticks) continue;
+      }
+
+      effects.push(...chance.effects(strikeContextFor(state, actor, defender, power)));
+    }
+  }
+
+  return { effects, drawsUsed: used };
+}
+
+/**
+ * Stage 5b: **the defenders' rules that roll**, one draw per struck bearer.
+ *
+ * Per bearer rather than per action, because each defender is answering for its
+ * own rune — `Both Ways` belongs to whoever was hit, not to whoever swung. Where a
+ * contest applies the roles invert with it: the struck champion is the applier and
+ * the attacker is the one resisting.
+ */
+function enactStruckChances(
+  seed: Seed,
+  state: BattleState,
+  actor: HeroState,
+  power: Power,
+  struck: readonly string[],
+  drawIndex: bigint,
+): ChanceOutcome {
+  const effects: PassiveEffect[] = [];
+  let used = 0n;
+
+  for (const targetId of struck) {
+    const defender = heroStateOf(state, targetId);
+    if (!isStanding(defender)) continue;
+
+    for (const chance of struckChancesOf(defender)) {
+      const fired = drawBelow(seed, drawIndex + used, chance.chance);
+      used += 1n;
+      if (!fired) continue;
+
+      if (chance.contestedAt !== undefined) {
+        const sticks = drawBelow(
+          seed,
+          drawIndex + used,
+          riderLandProbability(state, targetId, actor.instanceId, chance.contestedAt),
+        );
+        used += 1n;
+        if (!sticks) continue;
+      }
+
+      effects.push(...chance.effects(strikeContextFor(state, actor, defender, power)));
+    }
+  }
+
+  return { effects, drawsUsed: used };
+}
+
+/**
+ * The roll a champion takes at the top of its own turn, **before it is offered
+ * targets** (021 US3, `Further Than It Looks`).
+ *
+ * Exported because the turn loop owns turn start and the resolver owns draws, and
+ * this is the one thing that is both. It returns a state rather than effects: the
+ * grant has to be *on the board* before `isChoicePoint` counts the hero's options,
+ * or the player would be shown the smaller list and the resolver the larger one.
+ *
+ * **A champion carrying nothing draws nothing**, which is what keeps every battle
+ * fought before 021 replaying exactly as it was fought.
+ */
+export function rollTurnStart(
+  seed: Seed,
+  state: BattleState,
+  instanceId: string,
+  drawIndex: bigint,
+): { readonly state: BattleState; readonly drawsConsumed: bigint } {
+  const hero = heroStateOf(state, instanceId);
+  const chances = turnStartChancesOf(hero);
+  if (chances.length === 0) return { state, drawsConsumed: 0n };
+
+  let next = state;
+  let used = 0n;
+
+  for (const chance of chances) {
+    const fired = drawBelow(seed, drawIndex + used, chance.chance);
+    used += 1n;
+    if (!fired) continue;
+
+    const holder = heroStateOf(next, instanceId);
+    next = applyPassiveEffects(next, chance.effects({ state: next, hero: holder }), maxHp);
+  }
+
+  return { state: next, drawsConsumed: used };
+}
+
 /** Apply an effect, or strip every effect of that kind. */
 function applyOrRemove(
   state: BattleState,
@@ -410,9 +576,15 @@ export interface Resolution {
  *   2. **crit** — one draw per *packet*, and **only if the hit landed**
  *   3. **riders** — one contest each, and only if the payload connected
  *   4. **targeting tiebreak** — only if the earlier tiebreaks left a choice
+ *   5. **rune chances** (021 US3) — the attacker's, then each struck defender's
  *
  * "Lazy" is not an order. Each step is skipped rather than drawn-and-discarded,
  * which is why a miss consumes one index and a landed hit consumes two.
+ *
+ * **Step 5 draws nothing for a board with no runes on it**, which is what keeps
+ * every fixture written before 021 — and every battle fought before it — resolving
+ * to the same outcome from the same seed. Turn start has a sixth draw of its own
+ * that belongs to the turn loop rather than to an action; see {@link rollTurnStart}.
  */
 export function resolveOne(
   seed: Seed,
@@ -682,6 +854,30 @@ export function resolveOne(
   next = afterRiders;
 
   /**
+   * ---- 5. rune chances — the only effects in the game that roll ------------
+   *
+   * Read off `next` for the same reason the trigger block below is: a rider that
+   * just landed is part of the board these are answering about.
+   *
+   * **Attacker first, then defenders.** The order is arbitrary and therefore has
+   * to be written down — it is the difference between two engine versions, and a
+   * replay reads every later index from wherever this one left off.
+   */
+  /**
+   * **The attacker as it stands now, not as it stood before the swing.** Nothing
+   * reads its stats through these hooks today, but `Both Ways` already scales off
+   * the *defender's* live `Might` — so a stale attacker here is a difference
+   * between two sides of one blow, waiting for the first effect that notices.
+   */
+  const swinger = heroStateOf(next, actor.instanceId);
+
+  const attackerRolls = enactStrikeChances(seed, next, swinger, power, struck, at());
+  consumed += attackerRolls.drawsUsed;
+  const defenderRolls = enactStruckChances(seed, next, swinger, power, struck, at());
+  consumed += defenderRolls.drawsUsed;
+  const chanceEffects = [...attackerRolls.effects, ...defenderRolls.effects];
+
+  /**
    * ---- `EFFECT_ORDER` step 2: on-hit triggers ----------------------------
    *
    * **After the riders and before the second death check**, which is the order
@@ -722,8 +918,14 @@ export function resolveOne(
       ...onAllyStruck(next, ctx.attacker, defender, power),
     ];
   });
+  /**
+   * **The rolls fold with the triggers, not after them.** `Too Close` reflects on
+   * being struck and `Both Ways` bleeds on being struck; they are siblings, they
+   * read the same board, and one fold means the death sweep below catches a kill
+   * from either without either having to declare it.
+   */
   const beforeTriggers = next;
-  next = applyPassiveEffects(next, strikeEffects, maxHp);
+  next = applyPassiveEffects(next, [...strikeEffects, ...chanceEffects], maxHp);
 
   /**
    * **A trigger can kill, and the death has to be a death** (021 US2).
@@ -777,6 +979,12 @@ export function resolveOne(
  * ambient state.
  *
  * Every request replays, so this is the hot path and it is the simple one.
+ *
+ * ⚠️ **It models actions, not turns**, so it does not run {@link rollTurnStart}.
+ * Production never re-derives through here — `apps/api` rebuilds a battle with
+ * `openingPacket` and `resolveToNextChoice`, which fold whole turns and therefore
+ * roll turn start exactly where the original battle did. This stays the
+ * action-level primitive the determinism suites are written against.
  */
 export function replay(
   seed: Seed,

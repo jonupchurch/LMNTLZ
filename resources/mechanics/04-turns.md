@@ -35,6 +35,23 @@ attacker never knows what it dealt until the defender has had its say. Riders
 work the same way — staged in Attack, contested in Defense, enacted in
 Additional Effects.
 
+### Before phase 1 — the turn-start roll (021 US3)
+
+**One thing happens before Upkeep, and it is not a phase.** A champion carrying a
+rune effect that rolls *at turn start* — today only Air's `Further Than It Looks` —
+takes that roll the moment the turn order names it, **before it is offered
+anything**.
+
+It sits outside the five because it is not something that resolves. It changes
+what the turn's options *are*, and the design requires it: the extra row of reach
+must be **rolled and shown before the player chooses**, or it is variance applied
+to a decision already made rather than a decision. A roll taken in phase 2 would
+enlarge the target list after the list had been offered.
+
+Everything downstream — the player's offered targets, the engine's own targeting
+for a defender, and the resolver — reads the same board, so all three widen
+together. There is one target list, not a displayed one and a real one.
+
 ---
 
 ## Flow

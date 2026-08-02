@@ -22,7 +22,23 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { RUNE_EFFECTS, UnknownRuneEffectError, runeHooksFor } from '../../rules/runeEffects.js';
 
-const SOURCE = readFileSync(new URL('../../rules/passives.ts', import.meta.url), 'utf8');
+/**
+ * ⚠️ **Normalised to `\n`, and that is load-bearing rather than tidy.**
+ *
+ * The working copy is CRLF (`core.autocrlf=true` on Windows), so a scan looking
+ * for `\n}\n` never matches a line that really ends `\r\n}\r\n`. The interface
+ * parse below silently ran past its own closing brace and latched onto the first
+ * block that happened to have been written with bare LF — so it was reading a
+ * region nobody chose, and would have started or stopped reading one somewhere
+ * else the next time an unrelated edit changed which lines had which endings.
+ *
+ * A source scan has a **region**, and outside it nothing is guarded. Pinning the
+ * region to something the file's bytes cannot move is the whole fix.
+ */
+const SOURCE = readFileSync(new URL('../../rules/passives.ts', import.meta.url), 'utf8').replace(
+  /\r\n/g,
+  '\n',
+);
 
 /**
  * Paragraph blocks, which this file's style makes a reliable unit: every function
@@ -146,6 +162,24 @@ describe('every declared hook is collected', () => {
     expect(HOOK_NAMES.length, 'the parse found nothing — the regex or the style moved').
       toBeGreaterThan(15);
     expect(new Set(HOOK_NAMES).size, 'a duplicated member name').toBe(HOOK_NAMES.length);
+  });
+
+  /**
+   * 🔴 **The region is bounded, which is the half that was silently broken.**
+   *
+   * A block that runs past the interface's closing brace still parses hook names
+   * correctly — the regex only matches `readonly x?:` lines — so the mis-parse
+   * left no trace. What it does break is the *other* half: `body` below is
+   * `SOURCE` minus this block, so an over-long block deletes real reader code from
+   * the text being searched, and a hook whose only reader sat in the deleted
+   * region would be reported unread. It read as a strict guard and was a
+   * coin flip on line endings.
+   */
+  it('stops at the interface, not at some later brace', () => {
+    expect(HOOK_BLOCK.startsWith('export interface PassiveHooks {')).toBe(true);
+    expect(HOOK_BLOCK, 'the block ran past the interface into a function body').not.toMatch(
+      /\n(export )?(function|const|interface|type) /,
+    );
   });
 
   /**

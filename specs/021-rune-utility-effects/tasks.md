@@ -170,17 +170,39 @@ work, with every added draw accounted for and the past untouched.
 **Independent test**: a fixed seed resolves identically a thousand times with all
 four live; a battle recorded at `e0.5.0` replays to the outcome it was fought with.
 
-- [ ] **T048** [US3] Implement `Take It Back` (25% per attack, strip one active buff) and `Knocked Loose` (15% per attack, stun **routed through the existing potency-versus-`Resolve` contest**, not a parallel one — FR-018) in `packages/sim/rules/runeEffects.ts`.
-- [ ] **T049** [US3] Implement `Both Ways` (25% when struck → bleed the attacker) in `packages/sim/rules/runeEffects.ts`. *This is the fourth probabilistic effect; the feature description originally counted three.*
-- [ ] **T050** [US3] Implement `Further Than It Looks` in `packages/sim/rules/runeEffects.ts` — 25% **at turn start** for +1 reach that turn, reading through the existing `reachMod`/reach-bonus path.
-- [ ] **T051** [US3] Thread the four draws in `packages/sim/resolver/resolve.ts` at the points named in [research.md](./research.md) Decision 4. **A hero carrying none of the four draws nothing**, which is what keeps existing fixtures green.
-- [ ] **T052** [US3] Roll the reach at turn-packet build time and carry `reachGranted` in the packet from `apps/api/src/battle/routes.ts`, so the enlarged target list is what the player is offered. **Server rolls, client displays** (Constitution XII) — a roll at resolution time would change the list after the player chose.
-- [ ] **T053** [US3] Bump `engineVersion` `e0.5.0` → `e0.6.0` in `packages/sim/rules/index.ts:308`. **In this commit, not earlier** — US1 and US2 add no draws. The drain-deploy note already exists in `docs/tech-stack.md`; obey it rather than rewriting it.
-- [ ] **T054** [P] [US3] Add a determinism fixture that **actually fields all four dice-rolling effects** to `packages/sim/tests/`. Today's fixtures field no runes at all, so the existing suite would prove determinism of a board where nothing rolls. Then run the `determinism`, `drawOrder` and `seedCustody` suites.
-- [ ] **T055** [P] [US3] Add `apps/api/tests/battle/turnPacket.test.ts` — assert the **legal target list is larger** when `reachGranted` is set, not merely that the flag is present. A flag with an unchanged list is the failure, and it would pass a presence check.
-- [ ] **T056** [US3] **WIRING** — prove the version gate: a stored replay recorded at `e0.5.0` replays to its recorded outcome (`apps/api/tests/replays/`). Mutation-check by moving one draw from before the hit contest to after it — draw order must go red while per-effect behaviour stays green.
+- [X] **T048** [US3] Implement `Take It Back` (25% per attack, strip one active buff) and `Knocked Loose` (15% per attack, stun **routed through the existing potency-versus-`Resolve` contest**, not a parallel one — FR-018) in `packages/sim/rules/runeEffects.ts`.
+- [X] **T049** [US3] Implement `Both Ways` (25% when struck → bleed the attacker) in `packages/sim/rules/runeEffects.ts`. *This is the fourth probabilistic effect; the feature description originally counted three.*
+- [X] **T050** [US3] Implement `Further Than It Looks` in `packages/sim/rules/runeEffects.ts` — 25% **at turn start** for +1 reach that turn, reading through the existing `reachMod`/reach-bonus path.
+- [X] **T051** [US3] Thread the four draws in `packages/sim/resolver/resolve.ts` at the points named in [research.md](./research.md) Decision 4. **A hero carrying none of the four draws nothing**, which is what keeps existing fixtures green.
+- [X] **T052** [US3] Roll the reach at turn-packet build time and carry `reachGranted` in the packet from `apps/api/src/battle/routes.ts`, so the enlarged target list is what the player is offered. **Server rolls, client displays** (Constitution XII) — a roll at resolution time would change the list after the player chose.
+- [X] **T053** [US3] Bump `engineVersion` `e0.5.0` → `e0.6.0` in `packages/sim/rules/index.ts:308`. **In this commit, not earlier** — US1 and US2 add no draws. The drain-deploy note already exists in `docs/tech-stack.md`; obey it rather than rewriting it.
+- [X] **T054** [P] [US3] Add a determinism fixture that **actually fields all four dice-rolling effects** to `packages/sim/tests/`. Today's fixtures field no runes at all, so the existing suite would prove determinism of a board where nothing rolls. Then run the `determinism`, `drawOrder` and `seedCustody` suites.
+- [X] **T055** [P] [US3] Add `apps/api/tests/battle/turnPacket.test.ts` — assert the **legal target list is larger** when `reachGranted` is set, not merely that the flag is present. A flag with an unchanged list is the failure, and it would pass a presence check.
+- [X] **T056** [US3] **WIRING** — prove the version gate: a stored replay recorded at `e0.5.0` replays to its recorded outcome (`apps/api/tests/replays/`). Mutation-check by moving one draw from before the hit contest to after it — draw order must go red while per-effect behaviour stays green.
 
-**Checkpoint**: all 33 live. ⚠️ **The deploy from here must DRAIN before the engine bump reaches production.**
+**Delivered, with the corrections this phase forced:**
+
+| Task | As written | As built, and why |
+|---|---|---|
+| T048–T050 | four effect implementations | plus **one new hook shape**, `ChanceHook<Ctx>` — a chance and a *pure* consequence, because `rules/` may never draw (`purity.test.ts` walks the whole import graph). Three hooks read it: `onStrikeChance`, `onStruckChance`, `turnStartChance` |
+| T048 | `Take It Back` strips one buff | needed a **bounded** removal. `cleanse` gained a `limit`, newest-first, rather than a second `stripOne` beside it — two removers would be two answers to *"what may a removal touch"*, free to disagree about `cleansable: false`. Documented in `05-status.md` **in this commit** (Constitution XX) |
+| T052 | *"carry `reachGranted` in the packet"* | **no flag was added.** The roll places an ordinary 1-turn `reach` status, so `inReach` sees it with no new plumbing: the player's offered list, the defence AI's list and the resolver's list widen together because there is only one of them. A flag would have been a second source for the same fact |
+| T051 | *"thread the four draws in `resolve.ts`"* | three of them. `Further Than It Looks` cannot be a resolver draw at all — by the time the resolver runs, the list the player chose from is history — so it rolls in `fold` (`apps/api/src/battle/packet.ts`) **above the choice-point stop**, and `rollTurnStart` is exported from the resolver so every draw still belongs to the module that owns the seed |
+| research Decision 4 | *"1 contest draw when `Knocked Loose` fires"* | **one contest per struck target**, following `enactRiders` — every defender resists for itself. Identical on a single-target power, which is what the note was written for |
+
+**A guard was repaired before it was trusted.** `hookReach.test.ts` parsed the
+`PassiveHooks` interface by searching for `
+}
+` — and the working copy is CRLF, so
+that never matched the interface's own close. It had been latching onto the first
+later block written with bare LF, meaning the region it scanned was decided by line
+endings rather than by the code. Normalised, bounded, and mutation-checked.
+
+**Checkpoint**: ✅ **all 33 live.** sim **688** · content **94** · `apps/api`
+`turnPacket` **8** · sim, api and client typecheck clean · client `vite build` clean.
+`engineVersion` **e0.5.0 → e0.6.0**, and a board carrying none of the four is
+asserted bit-identical to `e0.5.0` rather than assumed to be.
+⚠️ **The deploy from here must DRAIN before the engine bump reaches production.**
 
 ---
 

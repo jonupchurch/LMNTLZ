@@ -396,7 +396,45 @@ export type PassiveEffect =
       readonly kind: 'cleanse';
       readonly bearerInstanceId: string;
       readonly polarity: 'negative' | 'positive';
+      /**
+       * At most this many, **most recently applied first**; omitted means all of
+       * them (021 US3). `Take It Back` strips one buff, not the enemy's whole
+       * board — the difference between a tempo effect and a hard counter to every
+       * Buffer in the game.
+       */
+      readonly count?: number;
     };
+
+/**
+ * **A rule that rolls: the odds and the consequence, with no draw in sight.**
+ *
+ * `rules/` may never consume randomness — `purity.test.ts` walks this module's
+ * whole import graph looking for exactly that — so a probabilistic effect cannot
+ * be written as `if (roll() < 0.25)`. It is written as a *chance* plus a pure
+ * consequence, and the one module that owns the seed takes the draw.
+ *
+ * This is the same split `Rider` already uses and for the same reason: the rule
+ * says a burn lands at tier-3 potency, `enactRiders` decides whether it did.
+ *
+ * **The draw is taken whenever the hook exists, never only when the consequence
+ * would be interesting.** A hero carrying one of these draws once per qualifying
+ * event; a hero carrying none draws nothing, which is what keeps every battle
+ * fought before 021 replaying exactly as it was fought.
+ */
+export interface ChanceHook<Ctx> {
+  /** In `[0, 1]`. Read by the resolver, which draws below it. */
+  readonly chance: number;
+  /**
+   * Potency the emitted effects are contested at, or omitted for uncontested.
+   *
+   * **Routed through the existing potency-versus-`Resolve` landing system**
+   * (FR-018), never a parallel one — `Knocked Loose` is a rider in everything but
+   * name, and a second contest would be a second answer to *"does a stun stick"*.
+   * The contest is between the hook's holder and whoever the effects land on.
+   */
+  readonly contestedAt?: number;
+  readonly effects: (ctx: Ctx) => readonly PassiveEffect[];
+}
 
 export interface DeathContext {
   readonly state: BattleState;
@@ -682,6 +720,31 @@ export interface PassiveHooks {
    * a champion that never stops while it keeps killing.
    */
   readonly actsAgain?: (ctx: TurnEndContext) => readonly PassiveEffect[] | null;
+  /**
+   * A chance rolled on the **attacker**, once per action whose payload connected.
+   *
+   * **Once per action, not once per struck target** — the same rule crit already
+   * plays by. The consequence is then applied to every target the payload reached,
+   * so a row power does not roll three times for one swing.
+   */
+  readonly onStrikeChance?: ChanceHook<StrikeContext>;
+  /**
+   * A chance rolled on the **defender**, once per blow that landed on it.
+   *
+   * `Both Ways` bleeds whoever swung. Per struck bearer rather than per action,
+   * because each defender is answering for its own rune.
+   */
+  readonly onStruckChance?: ChanceHook<StrikeContext>;
+  /**
+   * A chance rolled at the top of this champion's turn, **before the player is
+   * offered targets**.
+   *
+   * `Further Than It Looks` is the design's one *"rolled and shown before you
+   * choose"* effect, which makes it a decision rather than variance applied to a
+   * decision already made. That is why it cannot be a resolver hook: by the time
+   * the resolver runs, the target list the player picked from is already history.
+   */
+  readonly turnStartChance?: ChanceHook<StatContext>;
 }
 
 // ---------------------------------------------------------------------------
@@ -1799,6 +1862,45 @@ export function actsAgainAfter(
 }
 
 // ---------------------------------------------------------------------------
+// The rules that roll (021 US3)
+// ---------------------------------------------------------------------------
+
+/**
+ * The chances this champion rolls when its own blow lands, in hook order.
+ *
+ * **Returned rather than resolved.** These readers hand the resolver a list and
+ * nothing else: this module cannot draw, and a reader that took a `boolean roll`
+ * argument would be this module knowing an outcome, which is the same breach one
+ * step further along. The order is `hooksOf`'s order — passives first, then rune
+ * effects in loadout order — and it is load-bearing, because it is the order the
+ * draws are taken in.
+ */
+export function strikeChancesOf(hero: HeroState): readonly ChanceHook<StrikeContext>[] {
+  return hooksOf(hero)
+    .map((h) => h.onStrikeChance)
+    .filter((c): c is ChanceHook<StrikeContext> => c !== undefined);
+}
+
+/** The chances this champion rolls when a blow lands **on** it, in hook order. */
+export function struckChancesOf(hero: HeroState): readonly ChanceHook<StrikeContext>[] {
+  return hooksOf(hero)
+    .map((h) => h.onStruckChance)
+    .filter((c): c is ChanceHook<StrikeContext> => c !== undefined);
+}
+
+/**
+ * The chances this champion rolls at the top of its own turn, in hook order.
+ *
+ * Read by the turn loop rather than the resolver, which is the whole point — see
+ * {@link PassiveHooks.turnStartChance}.
+ */
+export function turnStartChancesOf(hero: HeroState): readonly ChanceHook<StatContext>[] {
+  return hooksOf(hero)
+    .map((h) => h.turnStartChance)
+    .filter((c): c is ChanceHook<StatContext> => c !== undefined);
+}
+
+// ---------------------------------------------------------------------------
 // Targeting — the passive half of taunt and fade
 // ---------------------------------------------------------------------------
 
@@ -1953,7 +2055,7 @@ function fold(
     }
     next = { ...hero, hp };
   } else if (effect.kind === 'cleanse') {
-    next = { ...hero, statuses: cleanse(hero.statuses, effect.polarity) };
+    next = { ...hero, statuses: cleanse(hero.statuses, effect.polarity, effect.count) };
   } else if (effect.kind === 'accumulate') {
     next = {
       ...hero,

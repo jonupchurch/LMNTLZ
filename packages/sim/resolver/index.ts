@@ -48,5 +48,11 @@ export {
    * a primitive rather than a turn.
    */
   resolveOne,
+  /**
+   * **Turn start's own draw** (021 US3). The turn loop owns when a turn begins and
+   * this module owns every draw, so the one thing that is both is exported rather
+   * than reimplemented on the far side of the boundary.
+   */
+  rollTurnStart,
 } from './resolve.js';
 export type { ActionIntent, DefenderChooser, ResolvedPacket, Resolution } from './resolve.js';

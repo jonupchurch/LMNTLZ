@@ -562,14 +562,33 @@ export function tickDurations(
  * cannot be removed early — they still expire on their own clock. That is the
  * whole of their two passives, and it is why the flag is on the instance rather
  * than on the kind.
+ *
+ * **`limit` takes the most recent first** (021 US3). `Take It Back` strips *one*
+ * active buff rather than all of them, and it is the only caller that passes one.
+ * Newest-first is what the name says — the thing the enemy just gained is the
+ * thing taken back — and it is deterministic, because `statuses` is appended to in
+ * application order and every filter along the way preserves it.
+ *
+ * A second `stripOne` beside this would be two implementations of *"what is a
+ * cleanse allowed to remove"*, free to disagree about `cleansable: false`. One
+ * function with a bound has no second answer to give.
  */
 export function cleanse(
   statuses: readonly StatusInstance[],
   polarity: 'negative' | 'positive',
+  limit = Number.POSITIVE_INFINITY,
 ): readonly StatusInstance[] {
-  return statuses.filter(
-    (s) => !s.cleansable || definitionOf(s.kind).polarity !== polarity,
-  );
+  const removable = (s: StatusInstance): boolean =>
+    s.cleansable && definitionOf(s.kind).polarity === polarity;
+
+  if (limit === Number.POSITIVE_INFINITY) return statuses.filter((s) => !removable(s));
+
+  const doomed = new Set<number>();
+  for (let i = statuses.length - 1; i >= 0 && doomed.size < limit; i--) {
+    if (removable(statuses[i]!)) doomed.add(i);
+  }
+
+  return statuses.filter((_, i) => !doomed.has(i));
 }
 
 // ---------------------------------------------------------------------------

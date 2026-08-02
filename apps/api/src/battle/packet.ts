@@ -38,7 +38,7 @@ import {
   type Conclusion,
 } from '@lmntlz/sim/rules';
 import { decideAction, type SquadMemberConfig } from '@lmntlz/sim/ai';
-import type { ActionIntent, Seed } from '@lmntlz/sim/resolver';
+import { rollTurnStart, type ActionIntent, type Seed } from '@lmntlz/sim/resolver';
 import { forcedMove, isChoicePoint } from './choicePoint.js';
 import { applyResolution, nextActor, takeTurn } from './turnLoop.js';
 import type { ActionPacket, TurnEvent } from './idempotency.js';
@@ -148,6 +148,23 @@ function fold(
     if (!step) return finish(battleEnded(state));
 
     state = step.state;
+
+    /**
+     * **Turn start rolls before anything reads the board** (021 US3).
+     *
+     * `Further Than It Looks` grants a row of reach for this turn, and the design
+     * requires it be rolled and shown *before* the player chooses — so it has to
+     * land above the choice-point check, above the forced-move search, and above
+     * the defence AI. Every one of those asks `legalTargets`, and all three would
+     * otherwise be answering about a smaller board than the resolver will.
+     *
+     * It draws only for a champion carrying one of these, so a battle with no
+     * runes on it takes exactly the indices it always did.
+     */
+    const rolled = rollTurnStart(seed, state, step.instanceId, index);
+    state = rolled.state;
+    index += rolled.drawsConsumed;
+
     const actor = heroStateOf(state, step.instanceId);
     const isAttacker = sideOfRow(actor.row) === 'attacker';
 

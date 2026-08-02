@@ -513,4 +513,55 @@ describe('cleanse and strip', () => {
     expect(cleanse([stubborn], 'negative')).toHaveLength(1);
     expect(tickDurations([stubborn])).toEqual([]);
   });
+
+  /**
+   * 🔴 **A bounded removal, and the two rules `05-status.md` states about it**
+   * (021 US3). `Take It Back` strips *one* buff, which is the only thing that
+   * passes a count today.
+   */
+  describe('a bounded removal', () => {
+    const buff = (stat: 'might' | 'agility' | 'speed', patch = {}) =>
+      status('buff', { stat, magnitude: 10, ...patch });
+
+    it('🔴 takes the most recently applied, not the oldest', () => {
+      const after = cleanse([buff('might'), buff('agility'), buff('speed')], 'positive', 1);
+
+      expect(after, 'exactly one went').toHaveLength(2);
+      expect(after.map((s) => s.stat), 'the newest is the one taken back').toEqual([
+        'might',
+        'agility',
+      ]);
+    });
+
+    /**
+     * 🔴 **The rule most likely to be got wrong**, and it is not the obvious one:
+     * an uncleansable effect must not *consume* the bound. An implementation that
+     * counted it would leave the real buff standing and the strip spent on
+     * something it was never allowed to take — a rune that visibly does nothing
+     * against exactly the champions it is meant to answer.
+     */
+    it('🔴 passes over an uncleansable effect rather than spending the count on it', () => {
+      const after = cleanse(
+        [buff('might'), buff('agility'), buff('speed', { cleansable: false })],
+        'positive',
+        1,
+      );
+
+      expect(after).toHaveLength(2);
+      expect(after.map((s) => s.stat), 'the protected one stays; the next one down goes').toEqual([
+        'might',
+        'speed',
+      ]);
+    });
+
+    it('removes fewer than the count when there are fewer to remove', () => {
+      const after = cleanse([buff('might'), status('burn')], 'positive', 3);
+      expect(after.map((s) => s.kind)).toEqual(['burn']);
+    });
+
+    it('an omitted count still removes every one — the default is unchanged', () => {
+      const all = [buff('might'), buff('agility'), status('burn')];
+      expect(cleanse(all, 'positive')).toHaveLength(1);
+    });
+  });
 });

@@ -126,8 +126,11 @@ export {
   shapeOutgoing,
   shapedAs,
   statBonusFor,
+  strikeChancesOf,
+  struckChancesOf,
   targetingFlagsOf,
   targetingFor,
+  turnStartChancesOf,
   type ContestContext,
   type HealContext,
   type ShapedIncoming,
@@ -158,6 +161,7 @@ export {
 export type { EffectRole, EffectShape, PoolKey, RuneEffect, RuneSlot } from './runeEffects.js';
 export type {
   ApplyContext,
+  ChanceHook,
   DeathContext,
   PassiveEffect,
   PassiveHooks,
@@ -297,6 +301,14 @@ export type { Conclusion } from './ending.js';
  *
  * ### Changelog
  *
+ * - **`e0.6.0`** — the four probabilistic rune effects (021 US3). **The first bump
+ *   since `e0.3.0` that moves draws**, and the first ever whose draw count depends
+ *   on *what a player bought* rather than on what a power does: `Take It Back`,
+ *   `Knocked Loose` and `Both Ways` each spend an index per landed attack, and
+ *   `Further Than It Looks` spends one at the top of its bearer's turn — the only
+ *   draw in the engine that belongs to a turn rather than to an action. A board
+ *   fielding none of the four takes the identical indices it always did, which is
+ *   what confines the damage to battles open across the deploy.
  * - **`e0.5.0`** — the nineteen approved uniques (020 US3). Still **no draw
  *   moves**, and one of them changes whether a champion is standing at all:
  *   `Still Burning` refuses one lethal blow per battle.
@@ -340,5 +352,27 @@ export const ENGINE_RNG = 'splitmix64';
  *
  * The risk is confined to battles that are open when the deploy lands, which is
  * why **deploys drain before switching**. See `specs/020-status-and-passives/`.
+ *
+ * ---
+ *
+ * **`e0.5.0` → `e0.6.0` for 021 US3 — and this one moves draws, which the last two
+ * did not.**
+ *
+ * Three of the four spend an index inside an action and the fourth spends one at
+ * turn start, so a battle open across the deploy would resume reading its next
+ * outcome from an index the original run never reached. That is the failure the
+ * stamp exists to refuse, and `act.ts` refuses it.
+ *
+ * **What is new about this bump is where the draw count comes from.** Every
+ * earlier one was a property of the *rules* — a rider contest happens because a
+ * power has riders. These are a property of a **player's purchases**, so two
+ * battles fought with identical squads and identical powers can now consume
+ * different numbers of indices. Nothing downstream assumes otherwise —
+ * `drawsConsumed` has been recorded per action rather than derived since 003,
+ * precisely so a count could stop being predictable.
+ *
+ * A board carrying none of the four is bit-identical to `e0.5.0`, which is
+ * asserted rather than believed: `tests/resolver/runeChances.test.ts` measures a
+ * rune-less control on the same seed and demands the same indices.
  */
-export const engineVersion = (): string => `e0.5.0-${ENGINE_RNG}`;
+export const engineVersion = (): string => `e0.6.0-${ENGINE_RNG}`;

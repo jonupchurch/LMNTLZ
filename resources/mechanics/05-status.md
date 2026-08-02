@@ -310,6 +310,28 @@ Two passives override this: **Ember Saelith's `Never Quite Out`** (her burns
 cannot be cleansed) and **Umbriel's `Written in Pencil`** (her debuffs cannot be
 cleansed). Both can still expire — they cannot be removed early.
 
+#### A removal may be bounded, and it takes the newest first (021 US3)
+
+The default is *"every effect of that polarity"*, which is what a cleanse rider on
+a power does. A removal may also name a **count** — *"one active buff"* — and the
+only thing that does today is the common rune `Take It Back`.
+
+Two rules, both because a bounded removal has a choice to make and an arbitrary
+choice is a replay hazard:
+
+- **Newest first.** The effect most recently applied is the one removed. That is
+  what the name says — the thing the enemy just gained is the thing taken back —
+  and it is deterministic, because effects are held in application order.
+- **`cleansable: false` is checked first, exactly as it is for an unbounded
+  cleanse.** An uncleansable effect is not *"the one buff"* and is not counted
+  toward the bound; the removal passes over it and takes the next one down. So a
+  bounded strip cannot be spent on something it was never allowed to take.
+
+There is one implementation of removal and the count is a parameter to it. A
+separate *"remove one"* routine beside the existing one would be two answers to
+*"what is a removal allowed to touch"*, free to disagree about the flag above —
+and the disagreement would be a passive that stops protecting its owner.
+
 ---
 
 ## Findings from the balance review — **all four applied**

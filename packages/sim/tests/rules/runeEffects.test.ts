@@ -97,13 +97,12 @@ describe('the catalog', () => {
    * effect per pool"* outcome `06-progression.md` names as the one to avoid,
    * because it strands half the elemental shard sink.
    *
-   * The four names below are the probabilistic effects, which land in US3 behind
-   * an `engineVersion` bump because they add RNG draws. **They are a countdown, not
-   * an allowance**: US3 deletes them from this list and the arithmetic then demands
-   * all 33. Written as ids rather than a bare number so that implementing the wrong
-   * four fails here instead of passing on a count.
+   * The list below held the four probabilistic effects until US3 landed them
+   * behind the `e0.6.0` bump. **It was a countdown, not an allowance** — emptying
+   * it is what made the arithmetic demand all 33, and it is left in place rather
+   * than deleted so the next partial feature has the shape to reuse.
    */
-  const PENDING_US3 = ['take-it-back', 'further-than-it-looks', 'both-ways', 'knocked-loose'];
+  const PENDING_US3: readonly string[] = [];
 
   it('offers every effect its pool is designed for, less the four US3 owes', () => {
     const owed = (pool: string): number =>

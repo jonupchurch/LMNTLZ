@@ -36,13 +36,22 @@ import {
   shapeIncoming,
   shapeOutgoing,
   statBonusFor,
+  strikeChancesOf,
+  struckChancesOf,
   targetingFor,
+  turnStartChancesOf,
   type StrikeContext,
 } from '../../rules/passives.js';
 import { legalTargets } from '../../rules/targeting.js';
 import { MAX_HIT_PROBABILITY, hitProbability } from '../../rules/probability.js';
 import { absorb, maxHp } from '../../rules/damage.js';
-import { PERMANENT, markCount, upkeepDamageFrom } from '../../rules/status.js';
+import {
+  PERMANENT,
+  markCount,
+  potencyForTier,
+  upkeepDamageFrom,
+  type Tier,
+} from '../../rules/status.js';
 import { heroStateOf, packetOf, type BattleState, type HeroState } from '../../rules/state.js';
 import { heroStateFor, stateOf, status, withHero } from './fixtures.js';
 
@@ -1110,5 +1119,201 @@ describe('Straight Past — attacks that pass through shields', () => {
 
     expect(through.throughput).toBe(0);
     expect(through.absorbed).toBe(60);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US3 — the four that roll (T048-T050)
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **These four are the only rules in the game that carry odds, and the odds
+ * are all this file can see.**
+ *
+ * A `ChanceHook` is a number and a pure consequence; the draw belongs to the
+ * resolver, which is what keeps `rules/` free of entropy. So the tests here assert
+ * the declared chance and **what happens when it fires**, and the draw accounting —
+ * how many, in what order, and that a rune-less board takes none — is asserted
+ * against the real seed in `tests/resolver/runeChances.test.ts`.
+ *
+ * Splitting it that way is deliberate: a test that mocked a roll in here would be
+ * asserting against a fake of the one thing that has to be real.
+ */
+
+describe('Take It Back', () => {
+  const twoBuffs = (runes: readonly string[]): BattleState => {
+    const state = board({ heroId: 'h19', runes }, [{ heroId: 'h21', row: 4, id: 'd' }]);
+    return withHero(state, 'd', {
+      statuses: [
+        status('buff', { stat: 'might', magnitude: 10, turnsRemaining: 5 }),
+        status('buff', { stat: 'agility', magnitude: 10, turnsRemaining: 5 }),
+      ],
+    });
+  };
+
+  it('declares the designed chance and no contest', () => {
+    const chances = strikeChancesOf(heroStateOf(twoBuffs(['take-it-back']), 'a'));
+
+    expect(chances).toHaveLength(1);
+    expect(chances[0]!.chance).toBe(M.takeItBackChance);
+    expect(chances[0]!.contestedAt, 'a strip is not contested — nothing is landing').toBeUndefined();
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(strikeChancesOf(heroStateOf(twoBuffs([]), 'a'))).toEqual([]);
+  });
+
+  /**
+   * 🔴 **One buff, not the board.** Asserted as a delta — *"one fewer than before"* —
+   * rather than as a total, because the count on a real champion has more than one
+   * contributor and a total invites correcting the wrong one.
+   */
+  it('🔴 strips exactly one buff, leaving the rest standing', () => {
+    const state = twoBuffs(['take-it-back']);
+    const before = heroStateOf(state, 'd').statuses.filter((s) => s.kind === 'buff').length;
+    const chance = strikeChancesOf(heroStateOf(state, 'a'))[0]!;
+
+    const after = fold(state, chance.effects(strike(state, 'a', 'd')));
+    const left = heroStateOf(after, 'd').statuses.filter((s) => s.kind === 'buff');
+
+    expect(before, 'the fixture put two on').toBe(2);
+    expect(left).toHaveLength(before - 1);
+    expect(left[0]!.stat, 'the most recent goes — the thing they just gained').toBe('might');
+  });
+});
+
+describe('Knocked Loose', () => {
+  const boardWith = (runes: readonly string[]): BattleState =>
+    board({ heroId: 'h25', runes }, [{ heroId: 'h21', row: 4, id: 'd' }]);
+
+  /**
+   * 🔴 **Routed through the existing contest, not a parallel one** (FR-018). The
+   * declared potency is the tier-3 rung read from `status.ts` — if this rune ever
+   * grew its own landing rule, `contestedAt` would be the field that stopped
+   * carrying it, and this is what would notice.
+   */
+  it('declares a contest at the tier the design names', () => {
+    const chances = strikeChancesOf(heroStateOf(boardWith(['knocked-loose']), 'a'));
+
+    expect(chances).toHaveLength(1);
+    expect(chances[0]!.chance).toBe(M.knockedLooseChance);
+    expect(chances[0]!.contestedAt).toBe(potencyForTier(M.knockedLooseTier as Tier));
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(strikeChancesOf(heroStateOf(boardWith([]), 'a'))).toEqual([]);
+  });
+
+  it('🔴 stuns the target, attributed to the attacker', () => {
+    const state = boardWith(['knocked-loose']);
+    const chance = strikeChancesOf(heroStateOf(state, 'a'))[0]!;
+    const effects = runeOnly(chance.effects(strike(state, 'a', 'd')));
+
+    expect(effects).toHaveLength(1);
+    const only = effects[0]!;
+    if (only.kind !== 'status') throw new Error('expected a status effect');
+    expect(only.bearerInstanceId).toBe('d');
+    expect(only.status.kind).toBe('stun');
+    expect(only.status.sourceInstanceId, 'the attacker applied it').toBe('a');
+  });
+});
+
+describe('Both Ways', () => {
+  const boardWith = (runes: readonly string[]): BattleState =>
+    board({ heroId: 'h25' }, [{ heroId: 'h20', row: 4, id: 'd', runes }]);
+
+  it('rolls on the defender, at the designed chance', () => {
+    const chances = struckChancesOf(heroStateOf(boardWith(['both-ways']), 'd'));
+
+    expect(chances).toHaveLength(1);
+    expect(chances[0]!.chance).toBe(M.bothWaysChance);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(struckChancesOf(heroStateOf(boardWith([]), 'd'))).toEqual([]);
+  });
+
+  /**
+   * 🔴 **The bleed goes the other way**, which is the whole name. A version that
+   * put it on the defender would still place a bleed, still be non-empty, and be
+   * exactly backwards — so the bearer is asserted, not merely the kind.
+   */
+  it('🔴 bleeds the attacker, applied by the champion that was struck', () => {
+    const state = boardWith(['both-ways']);
+    const chance = struckChancesOf(heroStateOf(state, 'd'))[0]!;
+    const effects = runeOnly(chance.effects(strike(state, 'a', 'd')));
+
+    expect(effects).toHaveLength(1);
+    const only = effects[0]!;
+    if (only.kind !== 'status') throw new Error('expected a status effect');
+    expect(only.bearerInstanceId, 'on whoever swung, not on the one who was hit').toBe('a');
+    expect(only.status.kind).toBe('bleed');
+    expect(only.status.sourceInstanceId, 'the struck champion applied it').toBe('d');
+    expect(only.status.magnitude, 'scaled off the defender, not a flat number').toBeGreaterThan(0);
+  });
+
+  it('🔴 is not read as a strike chance — the two hooks are different sides', () => {
+    expect(strikeChancesOf(heroStateOf(boardWith(['both-ways']), 'd'))).toEqual([]);
+  });
+});
+
+describe('Further Than It Looks', () => {
+  /**
+   * h07 Ember Saelith: **reach 1, and `air` is her secondary**, so this rune is
+   * genuinely in one of her pools. Chosen over h04 Zephyrine deliberately —
+   * Zephyrine carries `Out of Reach`, which grants a reach status of its own, and a
+   * fixture holding the thing under test's competitor is how three of US2's tests
+   * failed against correct code.
+   */
+  const reachBoard = (runes: readonly string[]): BattleState =>
+    board({ heroId: 'h07', runes }, [
+      { heroId: 'h21', row: 4, id: 'd4' },
+      { heroId: 'h27', row: 5, id: 'd5' },
+    ]);
+
+  const reachable = (state: BattleState): number =>
+    legalTargets(state, 'a', tier0Of('h07')).candidates.length;
+
+  it('rolls at turn start, at the designed chance', () => {
+    const chances = turnStartChancesOf(heroStateOf(reachBoard(['further-than-it-looks']), 'a'));
+
+    expect(chances).toHaveLength(1);
+    expect(chances[0]!.chance).toBe(M.furtherThanItLooksChance);
+  });
+
+  it('🔴 does nothing without the rune — the control', () => {
+    expect(turnStartChancesOf(heroStateOf(reachBoard([]), 'a'))).toEqual([]);
+  });
+
+  /**
+   * 🔴 **The target LIST grows.** A test asserting only *"a reach status is
+   * present"* would pass against a grant nothing reads — precisely the shape of
+   * defect that let a whole status system sit unwired through 393 green tests. So
+   * this asserts the thing the player actually gets.
+   */
+  it('🔴 opens a row that was out of reach, and the list is strictly larger', () => {
+    const state = reachBoard(['further-than-it-looks']);
+    const before = reachable(state);
+    const chance = turnStartChancesOf(heroStateOf(state, 'a'))[0]!;
+
+    const after = fold(state, chance.effects({ state, hero: heroStateOf(state, 'a') }));
+
+    expect(before, 'reach 1 from row 3 touches row 4 only').toBe(1);
+    expect(reachable(after)).toBeGreaterThan(before);
+    expect(reachable(after), 'row 5 as well, not the whole board').toBe(2);
+  });
+
+  /** One turn means *this* turn: Resolution ticks it away at the bottom of it. */
+  it('lasts exactly the turn it was granted', () => {
+    const state = reachBoard(['further-than-it-looks']);
+    const chance = turnStartChancesOf(heroStateOf(state, 'a'))[0]!;
+    const granted = runeOnly(chance.effects({ state, hero: heroStateOf(state, 'a') }));
+
+    expect(granted).toHaveLength(1);
+    const only = granted[0]!;
+    if (only.kind !== 'status') throw new Error('expected a status effect');
+    expect(only.status.kind).toBe('reach');
+    expect(only.status.magnitude).toBe(M.furtherThanItLooksReach);
+    expect(only.status.turnsRemaining).toBe(M.furtherThanItLooksTurns);
   });
 });

@@ -46,14 +46,18 @@
 import { DAMAGE_TYPES, getHero, type DamageType } from '@lmntlz/content';
 import type { PassiveEffect, PassiveHooks } from './passives.js';
 import { inReach } from './reach.js';
-import { maxHp, packetOf, type HeroState, type StatusInstance } from './state.js';
+import { maxHp, mightOf, packetOf, type HeroState, type StatusInstance } from './state.js';
 import {
   PERMANENT,
   definitionOf,
+  dotTickForTier,
+  durationForTier,
   markCount,
+  potencyForTier,
   statusFrom,
   upkeepDamageFrom,
   type StatKey,
+  type Tier,
 } from './status.js';
 
 // ---------------------------------------------------------------------------
@@ -151,6 +155,16 @@ export const RUNE_MAGNITUDES = Object.freeze({
   furtherThanItLooksChance: 0.25,
   /** `Further Than It Looks` — rows of reach granted for that turn. */
   furtherThanItLooksReach: 1,
+  /**
+   * `Further Than It Looks` — how long the extra row lasts, in turns.
+   *
+   * **One turn means *this* turn.** The roll happens at the top of the champion's
+   * turn and Resolution ticks its durations at the bottom of the same turn, so a
+   * duration of 1 is granted, used, and gone before anybody else acts. Held apart
+   * from {@link RUNE_MAGNITUDES.furtherThanItLooksReach} because rows and turns are
+   * different quantities that happen to share a value.
+   */
+  furtherThanItLooksTurns: 1,
 
   // -- Fire ----------------------------------------------------------------
   /** `It Spreads` — `Might` per killing blow. */
@@ -479,6 +493,31 @@ const THE_LINE_SHORTENS: PassiveHooks = {
   },
 };
 
+/** *"25% per attack: strip one active buff from the target"* */
+const TAKE_IT_BACK: PassiveHooks = {
+  name: 'Take It Back',
+  /**
+   * **One buff, not the enemy's whole board**, which is the difference between a
+   * tempo effect and a hard counter to every Buffer in the game. `count: 1` takes
+   * the most recently applied — the thing they just gained, which is what the name
+   * says and what a player watching the board will read it as.
+   *
+   * Uncontested: nothing is landing on the target, something is leaving it, and
+   * `Resolve` answers *"does this stick"* rather than *"may this be removed"*.
+   */
+  onStrikeChance: {
+    chance: M.takeItBackChance,
+    effects: (ctx) => [
+      {
+        kind: 'cleanse',
+        bearerInstanceId: ctx.defender.instanceId,
+        polarity: 'positive',
+        count: 1,
+      },
+    ],
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Earth
 // ---------------------------------------------------------------------------
@@ -600,6 +639,41 @@ const HARDER_TO_FOLLOW: PassiveHooks = {
         }),
       },
     ];
+  },
+};
+
+/** *"25% at turn start, +1 reach that turn"* */
+const FURTHER_THAN_IT_LOOKS: PassiveHooks = {
+  name: 'Further Than It Looks',
+  /**
+   * **The strongest effect in the catalog, and it is in the Air pool on purpose.**
+   * At full formation an extra row is worth about 1.2× to a front-seat reach-2
+   * champion and turns *cannot attack at all* into a real target list from the
+   * middle and back seats (`02-squads.md`). It manipulates the formation rule
+   * rather than a stat, so it needs a home with real opportunity cost.
+   *
+   * **Rolled at the top of the turn and shown before the player chooses**, which
+   * is the design's requirement and the reason this is a turn-loop hook rather
+   * than a resolver one: a roll taken at resolution would enlarge the target list
+   * *after* the player had already picked from the smaller one — variance applied
+   * to a decision rather than a decision.
+   *
+   * The grant is an ordinary `reach` status, so `inReach` sees it with no new
+   * plumbing at all: the player's offered list, the AI's list and the resolver's
+   * list all widen together because there is only one of them.
+   */
+  turnStartChance: {
+    chance: M.furtherThanItLooksChance,
+    effects: (ctx) => [
+      {
+        kind: 'status',
+        bearerInstanceId: ctx.hero.instanceId,
+        status: fromRune('further-than-it-looks', ctx.hero, 'reach', {
+          magnitude: M.furtherThanItLooksReach,
+          turnsRemaining: M.furtherThanItLooksTurns,
+        }),
+      },
+    ],
   },
 };
 
@@ -973,6 +1047,40 @@ const IT_STAYS_OPEN: PassiveHooks = {
     definitionOf(instance.kind).ticksDamage ? { ...instance, cleansable: false } : instance,
 };
 
+/** *"when struck, 25% to apply a magnitude-2 bleed to the attacker"* */
+const BOTH_WAYS: PassiveHooks = {
+  name: 'Both Ways',
+  /**
+   * **The defender's rune, applied by the defender.** The bleed's source is the
+   * champion that was struck, which is what keeps it a different source from a
+   * bleed that champion applied by rider — the two then stack toward the cap of 3
+   * rather than refreshing each other into one.
+   *
+   * Scaled off the defender's own `Might` through the same rung the rider system
+   * uses, so a Buffer's retaliation is a Buffer's retaliation rather than a flat
+   * number that reads identically on all 27 champions.
+   */
+  onStruckChance: {
+    chance: M.bothWaysChance,
+    effects: (ctx) => {
+      const tier = M.bothWaysBleedMagnitude as Tier;
+      const magnitude = dotTickForTier(tier, mightOf(ctx.defender));
+      if (magnitude <= 0) return [];
+
+      return [
+        {
+          kind: 'status',
+          bearerInstanceId: ctx.attacker.instanceId,
+          status: fromRune('both-ways', ctx.defender, 'bleed', {
+            magnitude,
+            turnsRemaining: durationForTier(tier),
+          }),
+        },
+      ];
+    },
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Pierce
 // ---------------------------------------------------------------------------
@@ -1043,6 +1151,36 @@ const STAYS_BROKEN: PassiveHooks = {
     instance.kind === 'shred'
       ? { ...instance, turnsRemaining: PERMANENT, cleansable: false }
       : instance,
+};
+
+/** *"15% per attack to attempt a Stun at tier-3 potency, contested by `Resolve`"* */
+const KNOCKED_LOOSE: PassiveHooks = {
+  name: 'Knocked Loose',
+  /**
+   * **Two draws, and the second one is not this rune's** (FR-018). The chance
+   * decides whether the attempt happens; whether the stun *sticks* goes through the
+   * potency-versus-`Resolve` contest every rider already uses. A parallel landing
+   * rule would be a second answer to *"does a stun stick"*, and the two would drift
+   * the first time either was tuned.
+   *
+   * The design notes this is what finally gives `Resolve` a job — it is the least
+   * exercised of the ten stats, because until now only a power's own riders ever
+   * asked it anything.
+   */
+  onStrikeChance: {
+    chance: M.knockedLooseChance,
+    contestedAt: potencyForTier(M.knockedLooseTier as Tier),
+    effects: (ctx) => [
+      {
+        kind: 'status',
+        bearerInstanceId: ctx.defender.instanceId,
+        status: fromRune('knocked-loose', ctx.attacker, 'stun', {
+          magnitude: 0,
+          turnsRemaining: durationForTier(M.knockedLooseTier as Tier),
+        }),
+      },
+    ],
+  },
 };
 
 /** *"below 50%: Stun every enemy in reach for 1 turn"* */
@@ -1129,6 +1267,15 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     shape: 'ward',
     hooks: NOT_THIS_TIME,
   },
+  'take-it-back': {
+    id: 'take-it-back',
+    name: 'Take It Back',
+    description: `Each attack you land has a ${pct(M.takeItBackChance)} chance to strip one active buff from your target.`,
+    pool: 'common',
+    role: 'tempo',
+    shape: 'chance',
+    hooks: TAKE_IT_BACK,
+  },
 
   // -- Earth ---------------------------------------------------------------
   'made-heavy': {
@@ -1178,6 +1325,15 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     role: 'defense',
     shape: 'trigger',
     hooks: HARDER_TO_FOLLOW,
+  },
+  'further-than-it-looks': {
+    id: 'further-than-it-looks',
+    name: 'Further Than It Looks',
+    description: `At the start of your turn, a ${pct(M.furtherThanItLooksChance)} chance of ${M.furtherThanItLooksReach} extra row of reach for that turn. Rolled before you choose.`,
+    pool: 'air',
+    role: 'tempo',
+    shape: 'chance',
+    hooks: FURTHER_THAN_IT_LOOKS,
   },
 
   // -- Fire ----------------------------------------------------------------
@@ -1317,6 +1473,15 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     shape: 'trigger',
     hooks: IT_STAYS_OPEN,
   },
+  'both-ways': {
+    id: 'both-ways',
+    name: 'Both Ways',
+    description: `Each blow that lands on you has a ${pct(M.bothWaysChance)} chance to leave a bleed on whoever swung.`,
+    pool: 'slash',
+    role: 'defense',
+    shape: 'chance',
+    hooks: BOTH_WAYS,
+  },
 
   // -- Pierce --------------------------------------------------------------
   'turned-aside': {
@@ -1356,6 +1521,15 @@ export const RUNE_EFFECTS: Readonly<Record<string, RuneEffect>> = Object.freeze(
     role: 'tempo',
     shape: 'trigger',
     hooks: STAYS_BROKEN,
+  },
+  'knocked-loose': {
+    id: 'knocked-loose',
+    name: 'Knocked Loose',
+    description: `Each attack you land has a ${pct(M.knockedLooseChance)} chance to attempt a Stun, contested by the target's Resolve.`,
+    pool: 'crush',
+    role: 'offense',
+    shape: 'chance',
+    hooks: KNOCKED_LOOSE,
   },
   'the-floor-comes-up': {
     id: 'the-floor-comes-up',
