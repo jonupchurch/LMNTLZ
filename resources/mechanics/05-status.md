@@ -77,6 +77,42 @@ Two consequences worth holding onto:
   therefore deals the same total whatever the bearer's Speed — three ticks is
   three ticks — it simply arrives compressed.
 
+### The class above the table — **added by feature 021**
+
+There is a sixth duration and the tier table does not contain it: **`PERMANENT`,
+meaning *for the rest of this battle*.** It has existed in the engine since 020
+(`packages/sim/rules/status.ts`) and was documented nowhere, which made it a rule
+living only in TypeScript — the thing Constitution XX exists to prevent.
+
+| Class | Ticks down | Ends when |
+|---|---|---|
+| Tiers 1–5 | yes, on the bearer's Resolution | its counter reaches zero |
+| **`PERMANENT`** | **no** | the battle does, or a cleanse removes it |
+
+**No power may author it.** A rider is bought with a cooldown and a card, and an
+effect that never expires would make the tier ladder meaningless — tier 5 buys
+4 turns, and *forever* is not the next rung up. It is reachable from exactly two
+places:
+
+- **Passives** (020), which are priced at tier 1 precisely because they cost
+  nothing — `Made Heavy`-style permanence is the trade for a magnitude that never
+  rises.
+- **Rune utility effects** (021), where `06-progression.md` requires it: *"triggers
+  fire once, but their consequence lasts the rest of the battle."* A once-firing
+  proc has to beat 150 shards of flat stats, and only persistence gets both a
+  readable moment and ongoing weight. The design names this extension explicitly
+  and calls it *"a feature, since it is what makes a rune feel unlike a power
+  rider."*
+
+> **A permanent effect is still cleansable unless it says otherwise.** The two are
+> independent flags: `PERMANENT` is *when it ends*, `cleansable: false` is *whether
+> anything may end it early*. Ember Saelith's burns are cleanse-proof and still
+> expire; a rune's `Cornered` is permanent and can still be stripped.
+
+⚠️ **`PERMANENT` is `Infinity`, and `JSON.stringify(Infinity)` is `null`.** Any
+wire view of a duration must therefore treat *"no numeral"* as a state rather than
+as a number — see *Effect visibility* below.
+
 ---
 
 ## Landing an effect

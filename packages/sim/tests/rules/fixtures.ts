@@ -39,6 +39,10 @@ export function heroStateFor(
     statuses: [],
     statMods: {},
     reachMod: 0,
+    /* No runes by default — the same thing an absent loadout means in `board.ts`,
+       so a fixture and a real battle agree about a champion who owns none. */
+    runeEffects: [],
+    hasActed: false,
     ...patch,
   };
 }

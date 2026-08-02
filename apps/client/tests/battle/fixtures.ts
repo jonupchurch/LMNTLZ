@@ -39,6 +39,8 @@ function squad(side: 'attacker' | 'defender', heroIds: readonly string[]): HeroS
       statuses: [],
       statMods: {},
       reachMod: 0,
+      runeEffects: [],
+      hasActed: false,
     };
   });
 }

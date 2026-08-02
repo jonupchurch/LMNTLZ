@@ -65,6 +65,7 @@ import {
   type StatKey,
   type Tier,
 } from './status.js';
+import { runeHooksFor } from './runeEffects.js';
 import type { Compulsion, TargetFilter } from './targeting.js';
 
 // ---------------------------------------------------------------------------
@@ -1319,7 +1320,26 @@ export function hooksFor(heroId: string): readonly PassiveHooks[] {
   return hooks;
 }
 
-const hooksOf = (hero: HeroState): readonly PassiveHooks[] => hooksFor(hero.heroId);
+/**
+ * **Every hook this champion carries, from both sources — and the only lookup any
+ * reader may use.**
+ *
+ * There are twenty-two registry lookups in this file. Twenty-one go through here,
+ * which is why 021 could turn on thirty-three rune effects across the damage path,
+ * the stat path, the targeting path and the turn loop by widening one function
+ * rather than editing twenty-one call sites, each of which can be forgotten.
+ * `hookReach.test.ts` reads this file's source and fails if a reader calls
+ * {@link hooksFor} directly, so the invariant is checked rather than remembered.
+ *
+ * **The two sources are keyed differently and must stay that way.** Passives are
+ * keyed by `heroId` — every copy of a champion has the same three. Rune effects
+ * are keyed off the *instance*, because runes are per account: an attacker and a
+ * defender fielding the same champion carry different ones.
+ */
+const hooksOf = (hero: HeroState): readonly PassiveHooks[] =>
+  hero.runeEffects.length === 0
+    ? hooksFor(hero.heroId)
+    : [...hooksFor(hero.heroId), ...runeHooksFor(hero.runeEffects)];
 
 // ---------------------------------------------------------------------------
 // Readers — what the damage pipeline asks
@@ -1495,7 +1515,19 @@ export function targetingFor(
     }
   }
 
-  const actorHooks = hooksFor(heroStateOf(state, actorInstanceId).heroId);
+  /**
+   * **`hooksOf`, not `hooksFor` — this was the one reader that bypassed it.**
+   *
+   * It decides `ignoresFade` and `immuneToTaunt` for the *acting* hero, so reading
+   * only `hero.passives` here meant a rune granting fade-piercing was seen for
+   * every champion on the board except the one actually taking a turn — which is
+   * to say never. Light's `Nowhere to Stand` is exactly that effect, and it is one
+   * half of a deliberate counter-pair with Dark's `No One Saw`.
+   *
+   * Nothing would have failed. The loop above already used `hooksOf`, so the
+   * targeting scan looked complete.
+   */
+  const actorHooks = hooksOf(heroStateOf(state, actorInstanceId));
 
   return composeTargeting(state, actorInstanceId, {
     taunting,

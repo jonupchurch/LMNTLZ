@@ -44,6 +44,8 @@ export function heroState(
     statuses: [],
     statMods: {},
     reachMod: 0,
+    runeEffects: [],
+    hasActed: false,
     ...patch,
   };
 }

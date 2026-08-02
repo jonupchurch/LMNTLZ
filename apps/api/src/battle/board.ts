@@ -203,6 +203,24 @@ function seatsOf(side: Side, seats: readonly SnapshotSeat[]): HeroState[] {
        */
       statMods: { ...(seat.runes?.statPoints ?? {}) },
       reachMod: 0,
+      /**
+       * **The other half of the same rune, and it was inert for the same reason.**
+       * `RuneLoadout.utility` has been declared, populated and carried into the
+       * snapshot since 019, and `grep -rn utility packages/sim` returned nothing
+       * — so stage 4 charged 200 shards, the most expensive stage of the four,
+       * and delivered a string nobody read.
+       *
+       * **Absent means none**, which is honest for every battle already recorded:
+       * no player has ever fought with one of these, so defaulting to `[]`
+       * re-derives those battles exactly as they were played rather than
+       * retroactively arming them (Constitution XVI).
+       *
+       * An id the catalog does not know **throws** rather than being skipped —
+       * see `runeHooksFor`. A player who paid for an effect and silently received
+       * an inert battle is the failure this feature exists to end.
+       */
+      runeEffects: seat.runes?.utility ?? [],
+      hasActed: false,
     };
   });
 }

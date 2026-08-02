@@ -27,6 +27,7 @@
 
 import { and, eq } from 'drizzle-orm';
 import { getHero, STAT_CAP, STAT_KEYS, type StatKey } from '@lmntlz/content';
+import { poolOf } from '@lmntlz/sim/rules';
 import { db } from '../db/client.js';
 import {
   MAX_STAGE,
@@ -66,10 +67,21 @@ export class RuneError extends Error {
  * a hero is re-authored.
  */
 export function slotAccepts(heroId: string, slot: RuneSlot): string | null {
-  const hero = getHero(heroId);
-  if (slot === 'primary') return hero.primary;
-  if (slot === 'secondary') return hero.secondary;
-  return null;
+  /**
+   * **Delegates to the engine rather than deriving it again (021).**
+   *
+   * This function and `poolOf` in `packages/sim/rules/runeEffects.ts` answered the
+   * same question — *which element does this slot accept* — from the same two
+   * authored fields, in two places. That is the drift this repo keeps producing,
+   * and here it would have been load-bearing: the Forge offers a pool from the
+   * engine's answer while the server validates against this one, so any
+   * disagreement is a purchase the client offers and the server refuses.
+   *
+   * The `null`-means-common shape is kept because 010's callers and its JSON
+   * responses are written against it; only the derivation moved.
+   */
+  const pool = poolOf(heroId, slot);
+  return pool === 'common' ? null : pool;
 }
 
 /** The stat points a rune at `stage` has granted in total — `20 + 10 + 5` by stage 3. */

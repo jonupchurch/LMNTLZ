@@ -145,6 +145,30 @@ export interface HeroState {
   readonly statMods: Readonly<Partial<Record<keyof Hero['stats'], number>>>;
   /** e.g. +1 from a reach rune. `inReach` is never bounded by a constant. */
   readonly reachMod: number;
+  /**
+   * The rune utility effect ids this champion carries into this battle (021).
+   *
+   * **Per instance, and that is the whole reason it is here rather than looked up
+   * from `heroId`.** Passives are keyed by `heroId` because every copy of a
+   * champion carries the same three. Runes are per *account*, so an attacker and a
+   * defender fielding the same champion carry different ones — and a champion may
+   * hold a seat in both defensive zones. Keying these by `heroId` would hand one
+   * player's runes to their opponent's identical champion.
+   *
+   * Frozen into the battle by `board.ts` from the snapshot, never read live:
+   * buying a rune mid-battle changes your *next* fight (Constitution XVI).
+   * **Empty means none**, which is honest for every battle recorded before 021.
+   */
+  readonly runeEffects: readonly string[];
+  /**
+   * Whether this champion has taken a turn yet.
+   *
+   * Read by exactly one rune effect — Dark's `Before It Knew`, *"your first attack
+   * against a target that has not yet acted deals double"* — and carried on the
+   * state rather than derived, because the action log knows who *acted* and this
+   * asks who has *had a turn*, which a hero can lose entirely to a stun.
+   */
+  readonly hasActed: boolean;
 }
 
 export interface BattleState {

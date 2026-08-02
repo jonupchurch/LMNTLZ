@@ -33,6 +33,8 @@ function heroState(heroId: string, side: Side, row: Row, instanceId: string): He
     statuses: [],
     statMods: {},
     reachMod: 0,
+    runeEffects: [],
+    hasActed: false,
   };
 }
 

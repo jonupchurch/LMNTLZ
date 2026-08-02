@@ -91,6 +91,15 @@ const stand = (heroId: string, instanceId: string, side: HeroState['side'], row:
   statuses: [],
   statMods: {},
   reachMod: 0,
+  /**
+   * **No rune effects, deliberately, and this preview is honest without them.**
+   * The only rune that touches reach is Air's `Further Than It Looks`, which rolls
+   * at the start of a *battle* turn and lasts that turn. There is nothing for a
+   * squad-builder preview to show: the champion's reach outside a battle is its
+   * authored reach.
+   */
+  runeEffects: [],
+  hasActed: false,
 });
 
 /**

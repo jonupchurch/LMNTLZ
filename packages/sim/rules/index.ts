@@ -120,6 +120,27 @@ export {
   statBonusFor,
   targetingFor,
 } from './passives.js';
+/**
+ * Rune utility effects (021) — the thirty-three abilities stage 4 buys.
+ *
+ * **Exported for the Forge as much as for the engine.** `apps/client` may import
+ * `@lmntlz/sim/rules` and is banned from `/resolver` and `/ai`, so the stage-4
+ * builder describes an effect by reading the same catalog the resolver runs
+ * (Constitution XIII). There is no second copy to drift — not a rule against
+ * writing one.
+ */
+export {
+  POOL_KEYS,
+  RUNE_EFFECTS,
+  RUNE_MAGNITUDES,
+  RUNE_SLOTS,
+  UnknownRuneEffectError,
+  effectsForSlot,
+  effectsInPool,
+  poolOf,
+  runeHooksFor,
+} from './runeEffects.js';
+export type { EffectRole, EffectShape, PoolKey, RuneEffect, RuneSlot } from './runeEffects.js';
 export type {
   ApplyContext,
   DeathContext,

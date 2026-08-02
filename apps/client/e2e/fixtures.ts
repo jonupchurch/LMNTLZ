@@ -54,6 +54,8 @@ function boardSide(side: 'attacker' | 'defender', heroIds: readonly string[]): H
       statuses: [],
       statMods: {},
       reachMod: 0,
+      runeEffects: [],
+      hasActed: false,
     };
   });
 }
