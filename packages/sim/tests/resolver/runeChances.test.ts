@@ -221,12 +221,11 @@ describe('all four at once', () => {
  * whether or not the refusal still works.
  */
 describe('the engine stamp', () => {
-  const PREVIOUS = `e0.5.0-${ENGINE_RNG}`;
+  const PREVIOUS = `e0.6.0-${ENGINE_RNG}`;
 
-  it('🔴 moved, and moved to e0.6.0', () => {
-    expect(engineVersion()).toBe(`e0.6.0-${ENGINE_RNG}`);
-    expect(engineVersion(), 'US3 adds draws — a stamp that did not move is the defect').
-      not.toBe(PREVIOUS);
+  it('🔴 moved, and moved to e0.7.0', () => {
+    expect(engineVersion()).toBe(`e0.7.0-${ENGINE_RNG}`);
+    expect(engineVersion(), 'a stamp that did not move is the defect').not.toBe(PREVIOUS);
   });
 
   it('🔴 refuses to re-derive a battle recorded under the previous engine', () => {

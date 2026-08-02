@@ -305,6 +305,11 @@ export type { Conclusion } from './ending.js';
  *
  * ### Changelog
  *
+ * - **`e0.7.0`** — **Reckoning runs.** `It All Comes Back` left `HELD_UNIQUES`, so
+ *   Marisel's tier-4 and tier-5 now scale with banked stacks and her tier-5 spends
+ *   them. **No draw moves** — the third bump for that reason, after `e0.4.0` and
+ *   `e0.5.0` — and it is mandatory anyway: the same log replays into a world where
+ *   a finisher hits for twice what it did, which is the question the stamp answers.
  * - **`e0.6.0`** — the four probabilistic rune effects (021 US3). **The first bump
  *   since `e0.3.0` that moves draws**, and the first ever whose draw count depends
  *   on *what a player bought* rather than on what a power does: `Take It Back`,
@@ -379,4 +384,19 @@ export const ENGINE_RNG = 'splitmix64';
  * asserted rather than believed: `tests/resolver/runeChances.test.ts` measures a
  * rune-less control on the same seed and demands the same indices.
  */
-export const engineVersion = (): string => `e0.6.0-${ENGINE_RNG}`;
+/**
+ * ---
+ *
+ * **`e0.6.0` → `e0.7.0` for Reckoning, and it moves no draw at all.**
+ *
+ * `It All Comes Back` was the last of the three passives held for a missing
+ * mechanic, and turning it on changes only what a multiplier evaluates to. Every
+ * determinism suite reconstructs the identical sequence.
+ *
+ * It still needs the bump, for the reason `e0.4.0` and `e0.5.0` needed theirs: a
+ * battle open across the deploy would replay the same indices into a world where
+ * Marisel's finisher is worth up to twice what it was. *A version stamp answers
+ * "would this log produce this state again", not "did the RNG change"* — five
+ * bumps now, four unrelated causes, one question.
+ */
+export const engineVersion = (): string => `e0.7.0-${ENGINE_RNG}`;
